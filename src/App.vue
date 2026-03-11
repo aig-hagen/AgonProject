@@ -32,17 +32,30 @@ const extensionToHighlight = computed(() => {
   <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
     <!-- TODO test with scroll -->
     <div role="tablist" class="tabs tabs-lift min-w-full bg-base-300">
-      <a role="tab" class="tab"
+      <!-- replace content editable with https://css-tricks.com/auto-growing-inputs-textareas/#aa-other-ideas -->
+      <a
+        role="tab"
+        class="tab focus:outline-none"
+        contenteditable="plaintext-only"
+        spellcheck="false"
         >AF Aufgabe 1 SS2026
         <button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button
       ></a>
-      <a role="tab" class="tab tab-active"
+      <a
+        role="tab"
+        class="tab tab-active focus:outline-none"
+        contenteditable="plaintext-only"
+        spellcheck="false"
         >Demo Bipolar
         <button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button
       ></a>
-      <a role="tab" class="tab"
+      <a
+        role="tab"
+        class="tab focus:outline-none"
+        contenteditable="plaintext-only"
+        spellcheck="false"
         >ABA Test
         <button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button

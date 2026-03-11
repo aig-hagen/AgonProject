@@ -773,7 +773,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">A</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              A
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(28,228)">
@@ -792,7 +798,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">B</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              B
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(112,228)">
@@ -811,7 +823,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">C</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              C
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(183,484)">
@@ -830,7 +848,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">D</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              D
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(267,356)">
@@ -849,7 +873,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">E</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              E
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(183,612)">
@@ -868,7 +898,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">F</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              F
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(183,356)">
@@ -887,7 +923,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">G</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              G
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(267,612)">
@@ -906,7 +948,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">H</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              H
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(267,740)">
@@ -925,7 +973,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">I</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              I
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(267,868)">
@@ -944,7 +998,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">J</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              J
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(260,-28)">
@@ -963,7 +1023,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">K</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              K
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(260,100)">
@@ -982,7 +1048,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">L</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              L
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(338,228)">
@@ -1001,7 +1073,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">M</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              M
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(344,100)">
@@ -1020,7 +1098,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">N</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              N
+            </div></foreignObject
           >
         </g>
         <g class="graph-controller__node-container" transform="translate(196,228)">
@@ -1039,7 +1123,13 @@ L92.2483681064744,130.09772479013427"
             height="56"
             x="-28"
             y="-28"
-            ><div class="graph-controller__node-label not-editable">O</div></foreignObject
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              O
+            </div></foreignObject
           >
         </g>
       </g>
