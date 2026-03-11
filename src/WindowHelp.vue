@@ -6,7 +6,12 @@ import interact from '@interactjs/interact'
 import { onMounted, useTemplateRef } from 'vue'
 import { MinusIcon } from '@heroicons/vue/24/solid'
 
-import { basicSetup, EditorView } from 'codemirror'
+import {
+  ArrowTopRightOnSquareIcon,
+  CodeBracketIcon,
+  AcademicCapIcon,
+  BookOpenIcon,
+} from '@heroicons/vue/24/outline'
 
 const position = { x: 100, y: 100 }
 const floating = useTemplateRef('floating')
@@ -48,37 +53,6 @@ onMounted(() => {
         },
       },
     })
-
-  new EditorView({
-    doc: `X
-Y
-Z
-#
-E L
-L K
-N M
-M L
-M N
-B A support
-F D
-H E
-M E
-D E
-C A
-G D
-D C
-E C
-D G
-E D
-E M
-I H
-J I
-O A
-H D
-`,
-    extensions: [basicSetup],
-    parent: floating.value!.lastElementChild!,
-  })
 })
 </script>
 
@@ -92,12 +66,57 @@ H D
     }"
   >
     <div class="border-b border-base-300 flex justify-between py-1 px-4">
-      <div>Graph Source</div>
+      <div>Help</div>
       <button @click="open = false" class="btn btn-square btn-xs btn-ghost">
         <MinusIcon class="size-4"></MinusIcon>
       </button>
     </div>
-    <div class="flex-1 bg-base-100 overflow-x-auto"></div>
+    <div class="flex-1 bg-base-100 overflow-x-auto p-4">
+      <div class="my-4 gap-2 flex flex-wrap">
+        <a class="btn btn-xs btn-soft"><BookOpenIcon class="size-3" />User Guide</a>
+        <a class="btn btn-xs btn-soft"><CodeBracketIcon class="size-3" />Source v0.12.0</a>
+        <a class="btn btn-xs btn-soft"><AcademicCapIcon class="size-3" />AIG Hagen</a>
+        <a class="btn btn-xs btn-soft"><ArrowTopRightOnSquareIcon class="size-3" />Attributions</a>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Control</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Create atom</td>
+            <td><kbd class="kbd">Left double-click</kbd> on canvas</td>
+          </tr>
+          <tr>
+            <td>Delete atom</td>
+            <td><kbd class="kbd">Right-click</kbd> on atom and hold</td>
+          </tr>
+          <tr>
+            <td>Move atom</td>
+            <td><kbd class="kbd">Left-click</kbd> on atom hold and drag</td>
+          </tr>
+          <tr>
+            <td>Create attack</td>
+            <td><kbd class="kbd">Right-click</kbd> on atom, hold and drag towards atom</td>
+          </tr>
+          <tr>
+            <td>Delete attack</td>
+            <td><kbd class="kbd">Right-click</kbd> on attack and hold</td>
+          </tr>
+          <tr>
+            <td>Pan</td>
+            <td><kbd class="kbd">Left-click</kbd> on canvas, hold and drag</td>
+          </tr>
+          <tr>
+            <td>Zoom in/out</td>
+            <td><kbd class="kbd">Scroll wheel</kbd> on canvas</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 

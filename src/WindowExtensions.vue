@@ -60,13 +60,13 @@ onMounted(() => {
       transform: `translate(${position.x}px, ${position.y}px)`,
     }"
   >
-    <div class="border-b border-base-300 flex justify-between py-1 px-2">
+    <div class="border-b border-base-300 flex justify-between py-1 px-4">
       <div>Extensions</div>
       <button @click="open = false" class="btn btn-square btn-xs btn-ghost">
         <MinusIcon class="size-4"></MinusIcon>
       </button>
     </div>
-    <div class="flex-1 bg-base-100 py-1 px-2 overflow-x-auto">
+    <div class="flex-1 bg-base-100 p-4 overflow-x-auto">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Inputs</legend>
         <div class="flex gap-2 flex-wrap">

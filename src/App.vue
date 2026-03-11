@@ -3,7 +3,6 @@ import CreateGraphModal from './CreateGraphModal.vue'
 import {
   Bars3Icon,
   QuestionMarkCircleIcon,
-  ArrowTopRightOnSquareIcon,
   DocumentTextIcon,
   VariableIcon,
   FolderOpenIcon,
@@ -11,19 +10,18 @@ import {
   ArrowDownTrayIcon,
   PhotoIcon,
   ArrowLongRightIcon,
-  CodeBracketIcon,
-  AcademicCapIcon,
-  BookOpenIcon,
 } from '@heroicons/vue/24/outline'
 import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import GraphExample from './GraphExample.vue'
 import WindowExtensions from './WindowExtensions.vue'
 import WindowSource from './WindowSource.vue'
+import WindowHelp from './WindowHelp.vue'
 import { computed, ref } from 'vue'
 
 const isExtensionsOpened = ref<boolean>(false)
 const isSourceOpened = ref<boolean>(false)
+const isHelpOpened = ref<boolean>(false)
 const selectedExtension = ref<string>('s1')
 const extensionToHighlight = computed(() => {
   return isExtensionsOpened.value ? selectedExtension.value : undefined
@@ -152,7 +150,7 @@ const extensionToHighlight = computed(() => {
           </div>
           <div class="flex flex-col gap-2">
             <div class="tooltip tooltip-right" data-tip="Help">
-              <button class="btn btn-square btn-sm" onclick="my_modal_2.showModal()">
+              <button @click="isHelpOpened = true" class="btn btn-square btn-sm">
                 <QuestionMarkCircleIcon class="size-6 opacity-70" />
               </button>
             </div>
@@ -162,59 +160,9 @@ const extensionToHighlight = computed(() => {
     </main>
   </div>
   <CreateGraphModal />
-  <dialog id="my_modal_2" class="modal">
-    <div class="modal-box">
-      <h3 class="text-lg font-bold">Help</h3>
-      <div class="my-4 gap-2 flex flex-wrap">
-        <a class="btn btn-xs btn-soft"><BookOpenIcon class="size-3" />User Guide</a>
-        <a class="btn btn-xs btn-soft"><CodeBracketIcon class="size-3" />Source v0.12.0</a>
-        <a class="btn btn-xs btn-soft"><AcademicCapIcon class="size-3" />AIG Hagen</a>
-        <a class="btn btn-xs btn-soft"><ArrowTopRightOnSquareIcon class="size-3" />Attributions</a>
-      </div>
-      <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-        <table class="table table table-zebra">
-          <thead>
-            <tr>
-              <th>Action</th>
-              <th>Control</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Create atom</td>
-              <td><kbd class="kbd">Left double-click</kbd> on canvas</td>
-            </tr>
-            <tr>
-              <td>Delete atom</td>
-              <td><kbd class="kbd">Right-click</kbd> on atom and hold</td>
-            </tr>
-            <tr>
-              <td>Move atom</td>
-              <td><kbd class="kbd">Left-click</kbd> on atom hold and drag</td>
-            </tr>
-            <tr>
-              <td>Create attack</td>
-              <td><kbd class="kbd">Right-click</kbd> on atom, hold and drag towards atom</td>
-            </tr>
-            <tr>
-              <td>Delete attack</td>
-              <td><kbd class="kbd">Right-click</kbd> on attack and hold</td>
-            </tr>
-            <tr>
-              <td>Pan</td>
-              <td><kbd class="kbd">Left-click</kbd> on canvas, hold and drag</td>
-            </tr>
-            <tr>
-              <td>Zoom in/out</td>
-              <td><kbd class="kbd">Scroll wheel</kbd> on canvas</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </dialog>
   <WindowExtensions v-model:open="isExtensionsOpened" v-model:extension="selectedExtension" />
-  <WindowSource v-model:open="isSourceOpened"/>
+  <WindowSource v-model:open="isSourceOpened" />
+  <WindowHelp v-model:open="isHelpOpened" />
 </template>
 
 <style scoped>
