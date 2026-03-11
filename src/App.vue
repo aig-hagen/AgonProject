@@ -60,9 +60,11 @@ const extensionToHighlight = computed(() => {
         <button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button
       ></a>
-      <a role="tab" class="tab" onclick="my_modal_1.showModal()"
-        ><button class="btn btn-square btn-xs btn-ghost">
-          <PlusIcon class="size-4"></PlusIcon></button
+      <a role="tab" class="tab" onclick="my_modal_1.showModal()">
+        <div class="tooltip tooltip-bottom" data-tip="New Graph">
+          <button class="btn btn-square btn-xs btn-ghost">
+            <PlusIcon class="size-4"></PlusIcon>
+          </button></div
       ></a>
     </div>
     <main class="border-t -mt-px border-base-300 editor flex-1">
