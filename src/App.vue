@@ -38,8 +38,7 @@ const extensionToHighlight = computed(() => {
         class="tab focus:outline-none"
         contenteditable="plaintext-only"
         spellcheck="false"
-        >AF Aufgabe 1 SS2026
-        <button class="btn btn-square btn-xs ml-2 btn-ghost">
+        >AF Aufgabe 1 SS2026<button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button
       ></a>
       <a
@@ -47,8 +46,7 @@ const extensionToHighlight = computed(() => {
         class="tab tab-active focus:outline-none"
         contenteditable="plaintext-only"
         spellcheck="false"
-        >Demo Bipolar
-        <button class="btn btn-square btn-xs ml-2 btn-ghost">
+        >Demo Bipolar<button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button
       ></a>
       <a
@@ -56,8 +54,7 @@ const extensionToHighlight = computed(() => {
         class="tab focus:outline-none"
         contenteditable="plaintext-only"
         spellcheck="false"
-        >ABA Test
-        <button class="btn btn-square btn-xs ml-2 btn-ghost">
+        >ABA Test<button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button
       ></a>
       <a role="tab" class="tab" onclick="my_modal_1.showModal()">
