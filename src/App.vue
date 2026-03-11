@@ -72,22 +72,7 @@ const extensionToHighlight = computed(() => {
         <GraphExample :extension="extensionToHighlight" />
         <div class="absolute top-4 left-4 right-4 flex flex-row justify-between">
           <div class="flex flex-row gap-2"></div>
-          <div class="flex flex-row gap-2">
-            <div class="join">
-              <div class="tooltip tooltip-bottom" data-tip="Attack">
-                <label class="join-item btn btn-toggle btn-square btn-sm">
-                  <input checked type="radio" name="arrow" />
-                  <ArrowLongRightIcon class="size-5 opacity-70" />
-                </label>
-              </div>
-              <div class="tooltip tooltip-bottom" data-tip="Support">
-                <label class="join-item btn btn-toggle checked btn-square btn-sm">
-                  <input type="radio" name="arrow" />
-                  <ArrowDoubleLongRightIcon class="size-5 opacity-70" />
-                </label>
-              </div>
-            </div>
-          </div>
+          <div class="flex flex-row gap-2"></div>
           <div class="flex flex-col gap-2"></div>
         </div>
         <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
@@ -119,6 +104,20 @@ const extensionToHighlight = computed(() => {
             </ul>
           </div>
           <div class="flex flex-col gap-2">
+            <div class="join join-vertical mb-8">
+              <div class="tooltip tooltip-right" data-tip="Attack">
+                <label class="join-item btn btn-toggle btn-square btn-sm">
+                  <input checked type="radio" name="arrow" />
+                  <ArrowLongRightIcon class="size-5 opacity-70" />
+                </label>
+              </div>
+              <div class="tooltip tooltip-right" data-tip="Support">
+                <label class="join-item btn btn-toggle checked btn-square btn-sm">
+                  <input type="radio" name="arrow" />
+                  <ArrowDoubleLongRightIcon class="size-5 opacity-70" />
+                </label>
+              </div>
+            </div>
             <div class="tooltip tooltip-right" data-tip="Edit">
               <button class="btn btn-square btn-sm">
                 <PencilSquareIcon class="size-6 opacity-70" />
