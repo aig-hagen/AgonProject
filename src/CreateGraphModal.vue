@@ -2,6 +2,7 @@
   <dialog id="my_modal_1" class="modal">
     <div class="modal-box">
       <h3 class="text-lg font-bold">Create new Argumenation</h3>
+      <!-- TODO https://daisyui.com/components/fieldset/ used wrong-->
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Type</legend>
         <select class="select">

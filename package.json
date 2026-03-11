@@ -18,6 +18,12 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
+    "@interactjs/actions": "^1.10.27",
+    "@interactjs/auto-start": "^1.10.27",
+    "@interactjs/dev-tools": "^1.10.27",
+    "@interactjs/interact": "^1.10.27",
+    "@interactjs/modifiers": "^1.10.27",
+    "interactjs": "^1.10.27",
     "pinia": "^3.0.4",
     "vue": "^3.5.28",
     "vue-router": "^5.0.2"

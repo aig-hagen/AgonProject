@@ -18,11 +18,20 @@ import {
 } from '@heroicons/vue/24/outline'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import GraphExample from './GraphExample.vue'
+import WindowExtensions from './WindowExtensions.vue'
+import { computed, ref } from 'vue'
+
+const isExtensionsOpened = ref<boolean>(false)
+const selectedExtension = ref<string>('s1')
+const extensionToHighlight = computed(() => {
+  return isExtensionsOpened.value ? selectedExtension.value : undefined
+})
 </script>
 
 <template>
   <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
-    <div role="tablist" class="tabs tabs-lift min-w-full bg-base-200">
+    <!-- TODO test with scroll -->
+    <div role="tablist" class="tabs tabs-lift min-w-full bg-base-300">
       <a role="tab" class="tab"
         >AF Aufgabe 1 SS2026
         <button class="btn btn-square btn-xs ml-2 btn-ghost">
@@ -45,7 +54,7 @@ import GraphExample from './GraphExample.vue'
     </div>
     <main class="border-t -mt-px border-base-300 editor flex-1">
       <div class="relative h-full w-full">
-        <GraphExample />
+        <GraphExample :extension="extensionToHighlight" />
         <div class="absolute top-4 left-4 right-4 flex flex-row justify-between">
           <div class="flex flex-row gap-2"></div>
           <div class="flex flex-row gap-2">
@@ -78,7 +87,7 @@ import GraphExample from './GraphExample.vue'
               </button>
             </div>
             <ul
-              class="dropdown menu rounded-box bg-base-100 shadow-lg"
+              class="dropdown menu rounded-box bg-base-100 shadow-md"
               popover
               id="popover-1"
               style="position-anchor: --anchor-1"
@@ -110,12 +119,12 @@ import GraphExample from './GraphExample.vue'
               </button>
             </div>
             <ul
-              class="dropdown dropdown-right menu rounded-box bg-base-100 shadow-lg"
+              class="dropdown dropdown-right menu rounded-box bg-base-100 shadow-md"
               popover
               id="popover-2"
               style="position-anchor: --anchor-2"
             >
-              <li>
+              <li @click="isExtensionsOpened = true">
                 <a>Extensions</a>
               </li>
               <li>
@@ -191,6 +200,7 @@ import GraphExample from './GraphExample.vue'
       </div>
     </div>
   </dialog>
+  <WindowExtensions v-model:open="isExtensionsOpened" v-model:extension="selectedExtension" />
 </template>
 
 <style scoped>

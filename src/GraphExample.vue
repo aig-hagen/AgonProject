@@ -3,6 +3,16 @@ import { ref } from 'vue'
 
 import { ArrowLongRightIcon, ArrowTrendingUpIcon } from '@heroicons/vue/24/outline'
 const isOpen = ref(true)
+
+const NODE_GREEN = '#99ff99'
+const NODE_RED = '#ff9999'
+
+// s1 {B, C, F, G, H, J, L, N, O}
+// s1 {B, C, F, G, H, J, K, N, O}
+
+const { extension } = defineProps<{
+  extension?: string
+}>()
 </script>
 
 <template>
@@ -750,7 +760,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-0"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_RED : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -767,7 +779,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-1"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -784,7 +798,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-2"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_RED : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -801,7 +817,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-3"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_RED : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -818,7 +836,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-4"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_RED : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -835,7 +855,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-5"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -852,7 +874,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-6"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -869,7 +893,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-7"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -886,7 +912,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-8"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_RED : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -903,7 +931,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-9"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -920,7 +950,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-10"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? (extension == 's1' ? NODE_RED : NODE_GREEN) : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -937,7 +969,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-11"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? (extension == 's1' ? NODE_GREEN : NODE_RED) : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -954,7 +988,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-12"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_RED : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -971,7 +1007,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-13"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
@@ -988,7 +1026,9 @@ L92.2483681064744,130.09772479013427"
             class="graph-controller__node"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-14"
             r="28"
-            style="fill: rgb(153, 183, 213)"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
           ></circle>
           <foreignObject
             class="graph-controller__node-label-container"
