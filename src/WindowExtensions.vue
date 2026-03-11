@@ -90,6 +90,7 @@ onMounted(() => {
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Results</legend>
+        <!-- TODO Consider using grid to align items in columns-->
         <div class="flex gap-2 flex-wrap">
           <label class="label" for="louie">
             <input
@@ -100,7 +101,7 @@ onMounted(() => {
               value="s1"
               v-model="extension"
             />
-            {B, C, F, G, H, J, L, N, O}
+            {B, C, F, G, H, J, L, N, O, X, Y, Z}
           </label>
           <label class="label" for="louie2">
             <input
@@ -111,7 +112,7 @@ onMounted(() => {
               value="s2"
               v-model="extension"
             />
-            {B, C, F, G, H, J, K, M, O}
+            {B, C, F, G, H, J, K, M, O, X, Y, Z}
           </label>
           <label class="label" for="louie3">
             <input
@@ -133,7 +134,7 @@ onMounted(() => {
               value="s4"
               v-model="extension"
             />
-            {X, X}
+            {X, Y, Z}
           </label>
         </div>
         <p class="label">Select result to be highligted in the graph</p>

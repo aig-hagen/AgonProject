@@ -4,7 +4,7 @@ import {
   Bars3Icon,
   QuestionMarkCircleIcon,
   ArrowTopRightOnSquareIcon,
-  PencilSquareIcon,
+  DocumentTextIcon,
   VariableIcon,
   FolderOpenIcon,
   AdjustmentsVerticalIcon,
@@ -19,9 +19,11 @@ import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import GraphExample from './GraphExample.vue'
 import WindowExtensions from './WindowExtensions.vue'
+import WindowSource from './WindowSource.vue'
 import { computed, ref } from 'vue'
 
 const isExtensionsOpened = ref<boolean>(false)
+const isSourceOpened = ref<boolean>(false)
 const selectedExtension = ref<string>('s1')
 const extensionToHighlight = computed(() => {
   return isExtensionsOpened.value ? selectedExtension.value : undefined
@@ -115,9 +117,9 @@ const extensionToHighlight = computed(() => {
                 </label>
               </div>
             </div>
-            <div class="tooltip tooltip-right" data-tip="Edit">
-              <button class="btn btn-square btn-sm">
-                <PencilSquareIcon class="size-6 opacity-70" />
+            <div class="tooltip tooltip-right" data-tip="Show source">
+              <button class="btn btn-square btn-sm" @click="isSourceOpened = true">
+                <DocumentTextIcon class="size-6 opacity-70" />
               </button>
             </div>
             <div class="tooltip tooltip-right" data-tip="Evaluate">
@@ -212,6 +214,7 @@ const extensionToHighlight = computed(() => {
     </div>
   </dialog>
   <WindowExtensions v-model:open="isExtensionsOpened" v-model:extension="selectedExtension" />
+  <WindowSource v-model:open="isSourceOpened"/>
 </template>
 
 <style scoped>

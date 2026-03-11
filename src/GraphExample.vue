@@ -932,6 +932,81 @@ L92.2483681064744,130.09772479013427"
             </div></foreignObject
           >
         </g>
+        <g class="graph-controller__node-container" transform="translate(351,356)">
+          <circle
+            class="graph-controller__node"
+            id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-6"
+            r="28"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
+          ></circle>
+          <foreignObject
+            class="graph-controller__node-label-container"
+            xmlns="http://www.w3.org/2000/svg"
+            width="56"
+            height="56"
+            x="-28"
+            y="-28"
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              X
+            </div></foreignObject
+          >
+        </g>
+        <g class="graph-controller__node-container" transform="translate(435,356)">
+          <circle
+            class="graph-controller__node"
+            id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-6"
+            r="28"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
+          ></circle>
+          <foreignObject
+            class="graph-controller__node-label-container"
+            xmlns="http://www.w3.org/2000/svg"
+            width="56"
+            height="56"
+            x="-28"
+            y="-28"
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              Y
+            </div></foreignObject
+          >
+        </g>
+        <g class="graph-controller__node-container" transform="translate(519,356)">
+          <circle
+            class="graph-controller__node"
+            id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-node-6"
+            r="28"
+            :style="{
+              fill: extension ? NODE_GREEN : 'rgb(153, 183, 213)',
+            }"
+          ></circle>
+          <foreignObject
+            class="graph-controller__node-label-container"
+            xmlns="http://www.w3.org/2000/svg"
+            width="56"
+            height="56"
+            x="-28"
+            y="-28"
+            ><div
+              class="graph-controller__node-label not-editable focus:outline-none"
+              contenteditable="plaintext-only"
+              spellcheck="false"
+            >
+              Z
+            </div></foreignObject
+          >
+        </g>
         <g class="graph-controller__node-container" transform="translate(267,612)">
           <circle
             class="graph-controller__node"
