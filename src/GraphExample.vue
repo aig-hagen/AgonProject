@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { ArrowLongRightIcon, ArrowTrendingUpIcon } from '@heroicons/vue/24/outline'
+import { ArrowLongRightIcon } from '@heroicons/vue/24/outline'
+import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
+
 const isOpen = ref(true)
 
 const NODE_GREEN = '#99ff99'
@@ -1084,7 +1086,7 @@ L92.2483681064744,130.09772479013427"
             <a><ArrowLongRightIcon class="size-5 opacity-70" />Attack</a>
           </li>
           <li class="bg-base-300">
-            <a><ArrowTrendingUpIcon class="size-5 opacity-70 rotate-25" />Support</a>
+            <a><ArrowDoubleLongRightIcon class="size-5 opacity-70" />Support</a>
           </li>
         </ul>
       </div></foreignObject

@@ -11,11 +11,11 @@ import {
   ArrowDownTrayIcon,
   PhotoIcon,
   ArrowLongRightIcon,
-  ArrowTrendingUpIcon,
   CodeBracketIcon,
   AcademicCapIcon,
   BookOpenIcon,
 } from '@heroicons/vue/24/outline'
+import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import GraphExample from './GraphExample.vue'
 import WindowExtensions from './WindowExtensions.vue'
@@ -68,7 +68,7 @@ const extensionToHighlight = computed(() => {
               <div class="tooltip tooltip-bottom" data-tip="Support">
                 <label class="join-item btn btn-toggle checked btn-square btn-sm">
                   <input type="radio" name="arrow" />
-                  <ArrowTrendingUpIcon class="size-5 opacity-70 rotate-25" />
+                  <ArrowDoubleLongRightIcon class="size-5 opacity-70" />
                 </label>
               </div>
             </div>
