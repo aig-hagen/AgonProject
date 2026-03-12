@@ -1247,7 +1247,7 @@ L92.2483681064744,130.09772479013427"
       x="820"
       y="280"
       ><div class="graph-controller__link-label-placeholder w-md h-100 relative z-100">
-        <ul class="dropdown menu rounded-box bg-base-100 shadow-lg">
+        <ul class="dropdown menu rounded-box bg-base-100 shadow-sm/30">
           <li>
             <a><ArrowLongRightIcon class="size-5 opacity-70" />Attack</a>
           </li>

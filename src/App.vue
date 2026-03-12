@@ -10,6 +10,8 @@ import {
   ArrowDownTrayIcon,
   PhotoIcon,
   ArrowLongRightIcon,
+  FolderPlusIcon,
+  ChevronRightIcon,
 } from '@heroicons/vue/24/outline'
 import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
 import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
@@ -57,12 +59,30 @@ const extensionToHighlight = computed(() => {
         >ABA Test<button class="btn btn-square btn-xs ml-2 btn-ghost">
           <XMarkIcon class="size-4"></XMarkIcon></button
       ></a>
-      <a role="tab" class="tab" onclick="my_modal_1.showModal()">
-        <div class="tooltip tooltip-bottom" data-tip="New Graph">
-          <button class="btn btn-square btn-xs btn-ghost">
+      <a role="tab" class="tab">
+        <div class="tooltip tooltip-bottom" data-tip="New">
+          <button
+            class="btn btn-square btn-xs btn-ghost"
+            popovertarget="popover-3"
+            style="anchor-name: --anchor-3"
+          >
             <PlusIcon class="size-4"></PlusIcon>
-          </button></div
-      ></a>
+          </button>
+        </div>
+        <ul
+          class="dropdown menu rounded-box bg-base-100 shadow-md/30"
+          popover
+          id="popover-3"
+          style="position-anchor: --anchor-3"
+        >
+          <li>
+            <a>Argumentation</a>
+          </li>
+          <li>
+            <a>Bipolar Argumentation</a>
+          </li>
+        </ul></a
+      >
     </div>
     <main class="border-t -mt-px border-base-300 editor flex-1">
       <div class="relative h-full w-full">
@@ -73,34 +93,45 @@ const extensionToHighlight = computed(() => {
           <div class="flex flex-col gap-2"></div>
         </div>
         <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
-          <div class="flex flex-col gap-2">
-            <div class="tooltip tooltip-right" data-tip="Menu">
-              <button
-                class="btn btn-square btn-sm"
-                popovertarget="popover-1"
-                style="anchor-name: --anchor-1"
-              >
+          <div class="flex grow-0 flex-col gap-2">
+            <!-- TODO Revisit how to properly make dropdowns in dropdowns with daisyUI-->
+            <div class="dropdown">
+              <div tabindex="0" role="button" class="btn btn-square btn-sm">
                 <Bars3Icon class="size-6 opacity-70" />
-              </button>
+              </div>
+              <ul
+                tabindex="-1"
+                class="dropdown-content w-max menu bg-base-100 rounded-box z-1 shadow-md/30"
+              >
+                <li>
+                  <div class="dropdown dropdown-right dropdown-start dropdown-hover pr-1">
+                    <div tabindex="0" role="button" class="flex gap-2 -mx-4 px-4">
+                      <FolderPlusIcon class="size-5 opacity-70" />
+                      <span class="grow">New</span>
+                      <ChevronRightIcon class="self-center size-4 opacity-70" />
+                    </div>
+                    <ul
+                      tabindex="-1"
+                      class="dropdown-content menu bg-base-100 rounded-box z-1 -mt-2 ml-2 w-max shadow-md/30"
+                    >
+                      <li><a>Argumentation</a></li>
+                      <li><a>Bipolar Argumentation</a></li>
+                    </ul>
+                  </div>
+                </li>
+                <li>
+                  <a><FolderOpenIcon class="size-5 opacity-70" />Open...</a>
+                </li>
+                <li>
+                  <a><ArrowDownTrayIcon class="size-5 opacity-70" />Save As...</a>
+                </li>
+                <li>
+                  <a><PhotoIcon class="size-5 opacity-70" />Export As...</a>
+                </li>
+              </ul>
             </div>
-            <ul
-              class="dropdown menu rounded-box bg-base-100 shadow-md"
-              popover
-              id="popover-1"
-              style="position-anchor: --anchor-1"
-            >
-              <li>
-                <a><FolderOpenIcon class="size-5 opacity-70" />Open...</a>
-              </li>
-              <li>
-                <a><ArrowDownTrayIcon class="size-5 opacity-70" />Save to...</a>
-              </li>
-              <li>
-                <a><PhotoIcon class="size-5 opacity-70" />Export as...</a>
-              </li>
-            </ul>
           </div>
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-1 justify-end flex-col gap-2">
             <div class="join join-vertical mb-8">
               <div class="tooltip tooltip-right" data-tip="Attack">
                 <label class="join-item btn btn-toggle btn-square btn-sm">
@@ -130,7 +161,7 @@ const extensionToHighlight = computed(() => {
               </button>
             </div>
             <ul
-              class="dropdown dropdown-right menu rounded-box bg-base-100 shadow-md"
+              class="dropdown dropdown-right menu rounded-box bg-base-100 shadow-md/30"
               popover
               id="popover-2"
               style="position-anchor: --anchor-2"
@@ -148,7 +179,8 @@ const extensionToHighlight = computed(() => {
               </button>
             </div>
           </div>
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-1"></div>
+          <div class="flex grow-0 justify-end flex-col gap-2">
             <div class="tooltip tooltip-right" data-tip="Help">
               <button @click="isHelpOpened = true" class="btn btn-square btn-sm">
                 <QuestionMarkCircleIcon class="size-6 opacity-70" />

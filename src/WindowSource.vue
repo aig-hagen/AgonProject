@@ -86,12 +86,12 @@ H D
   <div
     v-show="open"
     ref="floating"
-    class="absolute top-0 left-0 rounded-box bg-base-200 flex flex-col shadow-lg border border-base-300 min-w-3xs"
+    class="absolute top-0 left-0 rounded-box bg-base-200 flex flex-col shadow-lg/30 border border-base-300 min-w-3xs"
     :style="{
       transform: `translate(${position.x}px, ${position.y}px)`,
     }"
   >
-    <div class="border-b border-base-300 flex justify-between py-1 px-4">
+    <div class="border-b border-base-300 flex justify-between py-1 pl-4 pr-2">
       <div>Graph Source</div>
       <button @click="open = false" class="btn btn-square btn-xs btn-ghost">
         <MinusIcon class="size-4"></MinusIcon>
