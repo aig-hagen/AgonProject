@@ -54,12 +54,12 @@ onMounted(() => {
 Y
 Z
 #
-E L
 L K
+E L support
 N M
 M L
 M N
-B A support
+B A
 F D
 H E
 M E

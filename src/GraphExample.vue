@@ -73,25 +73,16 @@ const { extension } = defineProps<{
       <g class="links">
         <g class="graph-controller__link-container">
           <path
-            class="graph-controller__link"
+            class="graph-controller__link graph-controller__link-double"
             style="stroke: rgb(0, 0, 0)"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-link-1-0"
             marker-end="url(#g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-link-arrow-\#000000)"
             d="M42.813723920144206,205.4267064073993
-L53.2,190.8
-L61.5,194.5
-L72.8,169.9
-L81.1,173.6
 L92.2483681064744,130.09772479013427"
           ></path>
           <path
-            @click="isOpen = !isOpen"
             class="graph-controller__link-click-box"
             d="M42.813723920144206,205.4267064073993
-L53.2,190.8
-L61.5,194.5
-L72.8,169.9
-L81.1,173.6
 L92.2483681064744,130.09772479013427"
           ></path>
           <text class="graph-controller__line-path-text" dy="-10">
@@ -119,10 +110,20 @@ L92.2483681064744,130.09772479013427"
             style="stroke: rgb(0, 0, 0)"
             id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-link-2-0"
             marker-end="url(#g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-link-arrow-\#000000)"
-            d="M112,201
+            d="M112,137
 	          L112,136"
           ></path>
           <path
+            class="graph-controller__link"
+            style="stroke: rgb(0, 0, 0)"
+            id="g2abc8f74-dbb6-4fc7-9b93-762b5f400c27-link-2-0"
+            d="M109,201
+	          L109,140
+            M115,201
+	          L115,140"
+          ></path>
+          <path
+            @click="isOpen = !isOpen"
             class="graph-controller__link-click-box"
             d="M112,201
 	          L112,136"
@@ -1243,8 +1244,8 @@ L92.2483681064744,130.09772479013427"
       xmlns="http://www.w3.org/2000/svg"
       width="1"
       height="1"
-      x="731.066650390625"
-      y="270.11666870117188"
+      x="820"
+      y="280"
       ><div class="graph-controller__link-label-placeholder w-md h-100 relative z-100">
         <ul class="dropdown menu rounded-box bg-base-100 shadow-lg">
           <li>
