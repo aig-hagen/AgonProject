@@ -44,7 +44,6 @@ const extensionToHighlight = computed(() => {
 
 <template>
   <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
-    <!-- TODO take care of tab widht with https://css-tricks.com/auto-growing-inputs-textareas/#aa-other-ideas -->
     <div role="tablist" class="tabs bg-base-200 tabs-lift flex-nowrap overflow-x-auto">
       <LayoutTab
         v-for="document in documents"
