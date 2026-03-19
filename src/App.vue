@@ -12,14 +12,27 @@ import {
   ArrowLongRightIcon,
   FolderPlusIcon,
   ChevronRightIcon,
+  XMarkIcon,
+  PlusIcon,
 } from '@heroicons/vue/24/outline'
 import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
-import { XMarkIcon, PlusIcon } from '@heroicons/vue/24/solid'
 import GraphExample from './GraphExample.vue'
 import WindowExtensions from './WindowExtensions.vue'
 import WindowSource from './WindowSource.vue'
 import WindowHelp from './WindowHelp.vue'
 import { computed, ref } from 'vue'
+import useDocuments from './modules/document/useDocuments'
+import LayoutTab from './LayoutTab.vue'
+
+// TODO ask for conformation before deleting
+const {
+  documents,
+  selectedDocument,
+  createDocument,
+  deleteDocument,
+  renameDocument,
+  selectDocument,
+} = useDocuments<string>()
 
 const isExtensionsOpened = ref<boolean>(false)
 const isSourceOpened = ref<boolean>(false)
@@ -33,32 +46,17 @@ const extensionToHighlight = computed(() => {
 <template>
   <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
     <!-- TODO test with scroll -->
+    <!-- TODO take care of tab widht with https://css-tricks.com/auto-growing-inputs-textareas/#aa-other-ideas -->
     <div role="tablist" class="tabs tabs-lift min-w-full bg-base-300">
-      <!-- replace content editable with https://css-tricks.com/auto-growing-inputs-textareas/#aa-other-ideas -->
-      <a
-        role="tab"
-        class="tab focus:outline-none"
-        contenteditable="plaintext-only"
-        spellcheck="false"
-        >AF Aufgabe 1 SS2026<button class="btn btn-square btn-xs ml-2 btn-ghost">
-          <XMarkIcon class="size-4"></XMarkIcon></button
-      ></a>
-      <a
-        role="tab"
-        class="tab tab-active focus:outline-none"
-        contenteditable="plaintext-only"
-        spellcheck="false"
-        >Demo Bipolar<button class="btn btn-square btn-xs ml-2 btn-ghost">
-          <XMarkIcon class="size-4"></XMarkIcon></button
-      ></a>
-      <a
-        role="tab"
-        class="tab focus:outline-none"
-        contenteditable="plaintext-only"
-        spellcheck="false"
-        >ABA Test<button class="btn btn-square btn-xs ml-2 btn-ghost">
-          <XMarkIcon class="size-4"></XMarkIcon></button
-      ></a>
+      <LayoutTab
+        v-for="document in documents"
+        :key="document.id"
+        :value="document.name"
+        :active="document.id === selectedDocument?.metadata.id"
+        @delete="deleteDocument(document.id)"
+        @rename="renameDocument(document.id, $event)"
+        @click="selectDocument(document.id)"
+      />
       <a role="tab" class="tab">
         <div class="tooltip tooltip-bottom" data-tip="New">
           <button
@@ -76,10 +74,10 @@ const extensionToHighlight = computed(() => {
           style="position-anchor: --anchor-3"
         >
           <li>
-            <a>Argumentation</a>
+            <a @click="createDocument('myAG')">Argumentation</a>
           </li>
           <li>
-            <a>Bipolar Argumentation</a>
+            <a @click="createDocument('myBAG')">Bipolar Argumentation</a>
           </li>
         </ul></a
       >
