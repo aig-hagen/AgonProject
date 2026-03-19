@@ -26,7 +26,7 @@ function handleDelete() {
 }
 </script>
 <template>
-  <div role="tab" class="tab" :class="{ 'tab-active': active }">
+  <div role="tab" class="tab shrink-0" :class="{ 'tab-active': active }">
     <template v-if="active">
       <input
         spellcheck="false"
@@ -39,7 +39,7 @@ function handleDelete() {
     <template v-else>
       {{ value }}
     </template>
-    <button class="btn btn-square btn-xs ml-2 btn-ghost" @click="handleDelete">
+    <button class="btn btn-square btn-xs ml-2 btn-ghost" @click="handleDelete" title="Close">
       <XMarkIcon class="size-4"></XMarkIcon>
     </button>
   </div>
