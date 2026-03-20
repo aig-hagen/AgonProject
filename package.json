@@ -14,7 +14,9 @@
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
@@ -59,7 +61,18 @@
     "vite": "^7.3.1",
     "vite-plugin-vue-devtools": "^8.0.6",
     "vitest": "^4.0.18",
-    "vue-tsc": "^3.2.4"
+    "vue-tsc": "^3.2.4",
+    "storybook": "^10.3.1",
+    "@storybook/vue3-vite": "^10.3.1",
+    "@chromatic-com/storybook": "^5.0.2",
+    "@storybook/addon-vitest": "^10.3.1",
+    "@storybook/addon-a11y": "^10.3.1",
+    "@storybook/addon-docs": "^10.3.1",
+    "@storybook/addon-onboarding": "^10.3.1",
+    "eslint-plugin-storybook": "^10.3.1",
+    "playwright": "^1.58.2",
+    "@vitest/browser-playwright": "^4.0.18",
+    "@vitest/coverage-v8": "^4.0.18"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
