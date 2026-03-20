@@ -78,7 +78,7 @@ const extensionToHighlight = computed(() => {
           <div class="flex grow-0 flex-col gap-2">
             <!-- TODO Revisit how to properly make dropdowns in dropdowns with daisyUI-->
             <div class="dropdown">
-              <div tabindex="0" role="button" class="btn btn-square btn-sm">
+              <div tabindex="0" role="button" class="btn btn-square btn-sm" title="Menu">
                 <Bars3Icon class="size-6 opacity-70" />
               </div>
               <ul
@@ -115,33 +115,30 @@ const extensionToHighlight = computed(() => {
           </div>
           <div class="flex flex-1 justify-end flex-col gap-2">
             <div class="join join-vertical mb-8">
-              <div class="tooltip tooltip-right" data-tip="Attack">
-                <label class="join-item btn btn-toggle btn-square btn-sm">
-                  <input checked type="radio" name="arrow" />
-                  <ArrowLongRightIcon class="size-5 opacity-70" />
-                </label>
-              </div>
-              <div class="tooltip tooltip-right" data-tip="Support">
-                <label class="join-item btn btn-toggle checked btn-square btn-sm">
-                  <input type="radio" name="arrow" />
-                  <ArrowDoubleLongRightIcon class="size-5 opacity-70" />
-                </label>
-              </div>
+              <label class="join-item btn btn-toggle btn-square btn-sm" title="Attack">
+                <input checked type="radio" name="arrow" />
+                <ArrowLongRightIcon class="size-5 opacity-70" />
+              </label>
+              <label class="join-item btn btn-toggle checked btn-square btn-sm" title="Support">
+                <input type="radio" name="arrow" />
+                <ArrowDoubleLongRightIcon class="size-5 opacity-70" />
+              </label>
             </div>
-            <div class="tooltip tooltip-right" data-tip="Show source">
-              <button class="btn btn-square btn-sm" @click="isSourceOpened = true">
-                <DocumentTextIcon class="size-6 opacity-70" />
-              </button>
-            </div>
-            <div class="tooltip tooltip-right" data-tip="Evaluate">
-              <button
-                class="btn btn-square btn-sm"
-                popovertarget="popover-2"
-                style="anchor-name: --anchor-2"
-              >
-                <VariableIcon class="size-6 opacity-70" />
-              </button>
-            </div>
+            <button
+              class="btn btn-square btn-sm"
+              @click="isSourceOpened = true"
+              title="Show source"
+            >
+              <DocumentTextIcon class="size-6 opacity-70" />
+            </button>
+            <button
+              class="btn btn-square btn-sm"
+              popovertarget="popover-2"
+              style="anchor-name: --anchor-2"
+              title="Evaluate"
+            >
+              <VariableIcon class="size-6 opacity-70" />
+            </button>
             <ul
               class="dropdown dropdown-right menu rounded-box bg-base-100 shadow-md/30"
               popover
@@ -155,19 +152,15 @@ const extensionToHighlight = computed(() => {
                 <a>Rankings</a>
               </li>
             </ul>
-            <div class="tooltip tooltip-right" data-tip="Generate">
-              <button class="btn btn-square btn-sm">
-                <AdjustmentsVerticalIcon class="size-6 opacity-70" />
-              </button>
-            </div>
+            <button class="btn btn-square btn-sm" title="Generate">
+              <AdjustmentsVerticalIcon class="size-6 opacity-70" />
+            </button>
           </div>
           <div class="flex flex-1"></div>
           <div class="flex grow-0 justify-end flex-col gap-2">
-            <div class="tooltip tooltip-right" data-tip="Help">
-              <button @click="isHelpOpened = true" class="btn btn-square btn-sm">
-                <QuestionMarkCircleIcon class="size-6 opacity-70" />
-              </button>
-            </div>
+            <button @click="isHelpOpened = true" class="btn btn-square btn-sm" title="Help">
+              <QuestionMarkCircleIcon class="size-6 opacity-70" />
+            </button>
           </div>
         </div>
       </div>

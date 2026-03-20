@@ -1,0 +1,1 @@
+- [ ] a11y for elements with icons (e.g. `aria-label` in addtion to `title` and other best practices)
