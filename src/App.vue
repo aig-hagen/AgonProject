@@ -21,6 +21,7 @@ import WindowHelp from './WindowHelp.vue'
 import { computed, ref } from 'vue'
 import useDocuments, { useDocumentsDb } from './modules/document/useDocuments'
 import LayoutTabs from './app/view/EditorTabs.vue'
+import BlankDocument from './app/view/BlankDocument.vue'
 
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 type DocumentT = string
@@ -47,6 +48,7 @@ const extensionToHighlight = computed(() => {
 <template>
   <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
     <LayoutTabs
+      class="grow-0"
       :data="documents.map((document) => ({ id: document.id, name: document.name }))"
       :selected="selectedDocument?.metadata.id"
       @select="selectDocument($event)"
@@ -55,7 +57,8 @@ const extensionToHighlight = computed(() => {
       @rename="(id, name) => renameDocument(id, name)"
     />
     <main class="border-t -mt-px border-base-300 editor flex-1">
-      <div class="relative h-full w-full">
+      <BlankDocument v-if="selectedDocument === null"></BlankDocument>
+      <div v-else class="relative h-full w-full">
         <GraphExample :extension="extensionToHighlight" />
         <div class="absolute top-4 left-4 right-4 flex flex-row justify-between">
           <div class="flex flex-row gap-2"></div>
