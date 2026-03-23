@@ -11,8 +11,8 @@ const { active, value } = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'rename', name: string): void
-  (e: 'delete'): void
+  rename: [name: string]
+  delete: []
 }>()
 
 const debouncedRename = useDebounceFn((name) => {

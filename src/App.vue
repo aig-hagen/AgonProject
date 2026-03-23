@@ -12,7 +12,6 @@ import {
   ArrowLongRightIcon,
   FolderPlusIcon,
   ChevronRightIcon,
-  PlusIcon,
 } from '@heroicons/vue/24/outline'
 import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
 import GraphExample from './GraphExample.vue'
@@ -20,10 +19,12 @@ import WindowExtensions from './WindowExtensions.vue'
 import WindowSource from './WindowSource.vue'
 import WindowHelp from './WindowHelp.vue'
 import { computed, ref } from 'vue'
-import useDocuments from './modules/document/useDocuments'
-import LayoutTab from './LayoutTab.vue'
+import useDocuments, { useDocumentsDb } from './modules/document/useDocuments'
+import LayoutTabs from './app/view/EditorTabs.vue'
 
-// TODO ask for conformation before deleting
+const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
+type DocumentT = string
+const { db } = useDocumentsDb<DocumentT>(PRODUCTION_DATABASE_DOCUMENTS_NAME)
 const {
   documents,
   selectedDocument,
@@ -31,7 +32,7 @@ const {
   deleteDocument,
   renameDocument,
   selectDocument,
-} = useDocuments<string>()
+} = useDocuments<DocumentT>(db)
 
 const isExtensionsOpened = ref<boolean>(false)
 const isSourceOpened = ref<boolean>(false)
@@ -42,30 +43,17 @@ const extensionToHighlight = computed(() => {
 })
 </script>
 
+<!-- Ask before deleting -->
 <template>
   <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
-    <div role="tablist" class="tabs bg-base-200 tabs-lift flex-nowrap overflow-x-auto">
-      <LayoutTab
-        v-for="document in documents"
-        :key="document.id"
-        :value="document.name"
-        :active="document.id === selectedDocument?.metadata.id"
-        @delete="deleteDocument(document.id)"
-        @rename="renameDocument(document.id, $event)"
-        @click="selectDocument(document.id)"
-      />
-      <div role="tab" class="tab sticky right-0 bg-base-200">
-        <button
-          class="btn btn-square btn-xs btn-ghost"
-          popovertarget="popover-3"
-          style="anchor-name: --anchor-3"
-          @click="createDocument('myBAG')"
-          title="Create"
-        >
-          <PlusIcon class="size-4"></PlusIcon>
-        </button>
-      </div>
-    </div>
+    <LayoutTabs
+      :data="documents.map((document) => ({ id: document.id, name: document.name }))"
+      :selected="selectedDocument?.metadata.id"
+      @select="selectDocument($event)"
+      @create="createDocument('some avlue')"
+      @delete="deleteDocument($event)"
+      @rename="(id, name) => renameDocument(id, name)"
+    />
     <main class="border-t -mt-px border-base-300 editor flex-1">
       <div class="relative h-full w-full">
         <GraphExample :extension="extensionToHighlight" />
@@ -173,18 +161,6 @@ const extensionToHighlight = computed(() => {
 </template>
 
 <style scoped>
-/* .screen {
-  background: green;
-}
-
-.editor {
-  background-color: red;
-}
-
-.graph {
-  background-color: blue;
-} */
-
 /**
 Toggle button idea and implementation from https://github.com/saadeghi/daisyui/discussions/4249-
  */
