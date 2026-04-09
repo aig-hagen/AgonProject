@@ -1,0 +1,287 @@
+{
+  "name": "wild_animal",
+  "arguments": [
+    {
+      "id": "A",
+      "annotation": "Pursuer had right to animal",
+      "url": ""
+    },
+    {
+      "id": "B",
+      "annotation": "Pursuer not in possession",
+      "url": ""
+    },
+    {
+      "id": "C",
+      "annotation": "Owns the land so possesses animals",
+      "url": ""
+    },
+    {
+      "id": "D",
+      "annotation": "Animals not confined by owner",
+      "url": ""
+    },
+    {
+      "id": "E",
+      "annotation": "Effort promising success made to secure animal made by pursuer",
+      "url": ""
+    },
+    {
+      "id": "F",
+      "annotation": "Pursuer has right to pursue livelihood",
+      "url": ""
+    },
+    {
+      "id": "G",
+      "annotation": "Interferer was trespassing",
+      "url": ""
+    },
+    {
+      "id": "H",
+      "annotation": "Pursuer was trespassing",
+      "url": ""
+    },
+    {
+      "id": "I",
+      "annotation": "Pursuit not enough (JUSTINIAN)",
+      "url": ""
+    },
+    {
+      "id": "J",
+      "annotation": "Animal was taken (JUSTINIAN)",
+      "url": ""
+    },
+    {
+      "id": "K",
+      "annotation": "Animal was mortally wounded (Puffendorf)",
+      "url": ""
+    },
+    {
+      "id": "L",
+      "annotation": "Bodily seizure is not necessary (Barbeyrac), interpreted as animal was brought within certain control (TOMPKINS)",
+      "url": ""
+    },
+    {
+      "id": "M",
+      "annotation": "Mere pursuit is not enough(TOMPKINS)",
+      "url": ""
+    },
+    {
+      "id": "N",
+      "annotation": "Justinian is too old an authority (LIVINGSTON)",
+      "url": ""
+    },
+    {
+      "id": "O",
+      "annotation": "Bodily seizure is not necessary (Barbeyrac), interpreted as reasonable prospect of capture is enough (LIVINGSTON)",
+      "url": "https://en.wikipedia.org/wiki/Pierson_v._Post"
+    },
+    {
+      "id": "Q",
+      "annotation": "The land was open",
+      "url": ""
+    },
+    {
+      "id": "S",
+      "annotation": "Defendant in competition with the plaintiff",
+      "url": ""
+    },
+    {
+      "id": "T",
+      "annotation": "Competition was unfair",
+      "url": ""
+    },
+    {
+      "id": "U",
+      "annotation": "Not for courts to regulate competition",
+      "url": ""
+    },
+    {
+      "id": "V",
+      "annotation": "The iron holds the whale is an established convention of whaling",
+      "url": "https://en.wikipedia.org/wiki/Ghen_v._Rich"
+    },
+    {
+      "id": "W",
+      "annotation": "Owners of domesticated animals have a right to regain possession",
+      "url": ""
+    },
+    {
+      "id": "X",
+      "annotation": "Unbranded animals living on land belong to owner of land",
+      "url": ""
+    },
+    {
+      "id": "Y",
+      "annotation": "Branding establishes title",
+      "url": ""
+    },
+    {
+      "id": "Z",
+      "annotation": "Physical presence (straying) insufficient to confer title on owner",
+      "url": "https://en.wikipedia.org/wiki/Kleppe_v._New_Mexico"
+    }
+  ],
+  "defeats": [
+    {
+      "from": "B",
+      "to": "A",
+      "annotation": ""
+    },
+    {
+      "from": "B",
+      "to": "T",
+      "annotation": ""
+    },
+    {
+      "from": "C",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "D",
+      "to": "C",
+      "annotation": ""
+    },
+    {
+      "from": "E",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "E",
+      "to": "D",
+      "annotation": ""
+    },
+    {
+      "from": "F",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "G",
+      "to": "S",
+      "annotation": ""
+    },
+    {
+      "from": "H",
+      "to": "F",
+      "annotation": ""
+    },
+    {
+      "from": "I",
+      "to": "E",
+      "annotation": ""
+    },
+    {
+      "from": "J",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "K",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "L",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "M",
+      "to": "E",
+      "annotation": ""
+    },
+    {
+      "from": "M",
+      "to": "O",
+      "annotation": ""
+    },
+    {
+      "from": "M",
+      "to": "N",
+      "annotation": ""
+    },
+    {
+      "from": "N",
+      "to": "J",
+      "annotation": ""
+    },
+    {
+      "from": "O",
+      "to": "I",
+      "annotation": ""
+    },
+    {
+      "from": "O",
+      "to": "M",
+      "annotation": ""
+    },
+    {
+      "from": "Q",
+      "to": "G",
+      "annotation": ""
+    },
+    {
+      "from": "Q",
+      "to": "H",
+      "annotation": ""
+    },
+    {
+      "from": "Q",
+      "to": "C",
+      "annotation": ""
+    },
+    {
+      "from": "S",
+      "to": "E",
+      "annotation": ""
+    },
+    {
+      "from": "S",
+      "to": "F",
+      "annotation": ""
+    },
+    {
+      "from": "T",
+      "to": "S",
+      "annotation": ""
+    },
+    {
+      "from": "U",
+      "to": "T",
+      "annotation": ""
+    },
+    {
+      "from": "V",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "V",
+      "to": "U",
+      "annotation": ""
+    },
+    {
+      "from": "W",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "X",
+      "to": "D",
+      "annotation": ""
+    },
+    {
+      "from": "Y",
+      "to": "B",
+      "annotation": ""
+    },
+    {
+      "from": "Z",
+      "to": "C",
+      "annotation": ""
+    }
+  ]
+}
