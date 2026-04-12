@@ -1,4 +1,14 @@
-import { onScopeDispose, readonly, ref, type Ref } from 'vue'
+import {
+  initCustomFormatter,
+  onScopeDispose,
+  onUnmounted,
+  readonly,
+  ref,
+  shallowRef,
+  unref,
+  watch,
+  type Ref,
+} from 'vue'
 import { openDB, type IDBPDatabase, type DBSchema, type IDBPTransaction } from 'idb'
 
 const CHANNEL_DOCUMENTS_NAME = 'documents'
@@ -9,15 +19,11 @@ const OBJECT_STORE_METADATA_KEY_PATH = 'id'
 
 const OBJECT_STORE_EVENT_NAME = 'events'
 const OBJECT_STORE_EVENT_DOCUMENT_ID = 'documentId'
-const OBJECT_STORE_EVENT_EVENT_ID = 'eventId'
+const OBJECT_STORE_EVENT_EVENT_ID = 'id'
 
 const MESSAGE_UPDATE = 'update'
 
 const INITIAL_VERSION = 0
-
-function getRandomInt() {
-  return Math.floor(Math.random() * 999_999_999_999)
-}
 
 export type DocumentId = number
 type DocumentVersion = number
@@ -27,37 +33,60 @@ type EventId = number
 export interface DocumentMetadata {
   id: DocumentId
   name: DocumentName
-  version: DocumentVersion
+  metadataVersion: DocumentVersion
+  dataVersion: DocumentVersion
 }
 
-interface Document<DocumentT> {
-  metadata: DocumentMetadata
-  content: DocumentT
+export interface Event {
+  type: string
+  data: unknown
 }
 
-interface DocumentsDB<DocumentT> extends DBSchema {
+export interface DocumentCreated extends Event {
+  type: 'DOCUMENT_CREATED'
+}
+
+function documentCreatedEvent(): DocumentCreated {
+  return {
+    type: 'DOCUMENT_CREATED',
+    data: {},
+  }
+}
+
+function isDocumentCreated(event: Event): event is DocumentCreated {
+  return event.type === 'DOCUMENT_CREATED'
+}
+
+// todo layout
+// todo move
+// todo rename
+
+export interface DocumentsDB extends DBSchema {
   metadata: {
     key: DocumentId
     value: {
       id: DocumentId
       name: DocumentName
-      version: DocumentVersion
+      // TODO name metadata version
+      metadataVersion: DocumentVersion
+      dataVersion: DocumentVersion
     }
   }
   events: {
     key: [DocumentId, EventId]
     value: {
       documentId: DocumentId
-      eventId: EventId
-      event: DocumentT
-    }
+      id: EventId
+    } & Event
   }
 }
 
-async function setupDb<DocumentT>(dbName: string): Promise<IDBPDatabase<DocumentsDB<DocumentT>>> {
-  const db = await openDB<DocumentsDB<DocumentT>>(dbName, DATABASE_DOCUMENTS_VERSION, {
+// TODO extract into database file
+export async function openDocumentsDB(dbName: string): Promise<IDBPDatabase<DocumentsDB>> {
+  const db = await openDB<DocumentsDB>(dbName, DATABASE_DOCUMENTS_VERSION, {
     upgrade(db, oldVersion, newVersion, _transaction, _event) {
       if (newVersion !== 1) {
+        // When making breaking changes to data, either migrate or delete old data here.
         throw new Error(`Cannot upgrade database from version ${oldVersion} to ${newVersion}.`)
       }
 
@@ -84,95 +113,60 @@ async function setupDb<DocumentT>(dbName: string): Promise<IDBPDatabase<Document
       window.location.reload()
     },
   })
-  console.log(`Opened database version with version ${db.version}.`)
+  console.debug(`Opened database version with version ${db.version}.`)
   return db
 }
 
-export function useDocumentsDb<DocumentT>(dbName: string) {
-  return {
-    db: setupDb<DocumentT>(dbName),
-  }
-}
-
-export default function useDocuments<DocumentT>(
-  dbAsync: Promise<IDBPDatabase<DocumentsDB<DocumentT>>>,
-) {
-  const selectedDocumentRef: Ref<Document<DocumentT> | null> = ref(null)
+export default function useDocuments(db: IDBPDatabase<DocumentsDB>) {
   const documentsRef: Ref<DocumentMetadata[]> = ref([])
 
   async function updateDocumentRefs(
-    tx: IDBPTransaction<
-      DocumentsDB<DocumentT>,
-      ('metadata' | 'events')[],
-      'readonly' | 'readwrite'
-    >,
-    documentIdToSelect?: DocumentId,
+    tx: IDBPTransaction<DocumentsDB, ('metadata' | 'events')[], 'readonly' | 'readwrite'>,
   ) {
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
     const nextDocuments = await metadataStore.getAll()
-    let nextSelectedDocumentMetadata
-
-    if (documentIdToSelect !== undefined) {
-      nextSelectedDocumentMetadata = await metadataStore.get(documentIdToSelect)
-    }
-
-    if (nextSelectedDocumentMetadata === undefined) {
-      nextSelectedDocumentMetadata = nextDocuments[nextDocuments.length - 1]
-    }
-
     documentsRef.value = nextDocuments
-    if (nextSelectedDocumentMetadata !== undefined) {
-      selectedDocumentRef.value = {
-        metadata: nextSelectedDocumentMetadata,
-        content: 'TODO',
-      }
-    } else {
-      selectedDocumentRef.value = null
-    }
   }
 
-  async function createDocument(initValue: DocumentT) {
-    const db = (await setupPromise).db
+  async function createDocument() {
     const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_EVENT_NAME], 'readwrite')
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
     const eventStore = tx.objectStore(OBJECT_STORE_EVENT_NAME)
 
     const version = INITIAL_VERSION
-    const name = 'myName'
     const id = await metadataStore.add({
-      name: name,
-      version: version,
+      name: '',
+      metadataVersion: version,
+      dataVersion: INITIAL_VERSION,
     })
     await eventStore.add({
       documentId: id,
-      eventId: getRandomInt(),
-      event: initValue,
+      id: INITIAL_VERSION,
+      ...documentCreatedEvent(),
     })
 
-    await updateDocumentRefs(tx, id)
+    await updateDocumentRefs(tx)
     notifyUpdate()
 
     await tx.done
   }
 
   async function deleteDocument(id: DocumentId) {
-    const db = (await setupPromise).db
     const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_EVENT_NAME], 'readwrite')
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
     const eventStore = tx.objectStore(OBJECT_STORE_EVENT_NAME)
 
     metadataStore.delete(id)
-    const range = IDBKeyRange.bound([id, 1], [id, Number.POSITIVE_INFINITY])
+    const range = IDBKeyRange.bound([id, INITIAL_VERSION], [id, Number.POSITIVE_INFINITY])
     await eventStore.delete(range)
 
-    await updateDocumentRefs(tx, selectedDocumentRef.value?.metadata.id)
+    await updateDocumentRefs(tx)
     notifyUpdate()
 
     await tx.done
   }
 
   async function renameDocument(id: DocumentId, name: string) {
-    const db = (await setupPromise).db
     const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_EVENT_NAME], 'readwrite')
     const documentLoaded = documentsRef.value.find((document) => document.id === id)
     let updated = false
@@ -180,17 +174,17 @@ export default function useDocuments<DocumentT>(
       const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
       const metadata = await metadataStore.get(id)
       if (metadata !== undefined) {
-        if (metadata.version === documentLoaded.version) {
+        if (metadata.metadataVersion === documentLoaded.metadataVersion) {
           metadataStore.put({
             ...metadata,
             name: name,
-            version: metadata.version + 1,
+            metadataVersion: metadata.metadataVersion + 1,
           })
           updated = true
         }
       }
     }
-    await updateDocumentRefs(tx, selectedDocumentRef.value?.metadata.id)
+    await updateDocumentRefs(tx)
     if (updated) {
       notifyUpdate()
     }
@@ -198,38 +192,15 @@ export default function useDocuments<DocumentT>(
     await tx.done
   }
 
-  async function selectDocument(id: DocumentId) {
-    const db = (await setupPromise).db
-    const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_EVENT_NAME], 'readonly')
-    await updateDocumentRefs(tx, id)
-    tx.commit()
-  }
-
-  let db: IDBPDatabase<DocumentsDB<DocumentT>> | undefined
   const channel = new BroadcastChannel(CHANNEL_DOCUMENTS_NAME)
 
   function notifyUpdate() {
     channel.postMessage(MESSAGE_UPDATE)
   }
 
-  async function setup() {
-    db = await dbAsync
-
+  channel.onmessage = async (_event) => {
     const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_EVENT_NAME], 'readonly')
     await updateDocumentRefs(tx)
-    tx.commit()
-
-    return {
-      db: db,
-    }
-  }
-
-  const setupPromise = setup()
-
-  channel.onmessage = async (_event) => {
-    const db = (await setupPromise).db
-    const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_EVENT_NAME], 'readonly')
-    await updateDocumentRefs(tx, selectedDocumentRef.value?.metadata.id)
     tx.commit()
   }
 
@@ -246,12 +217,45 @@ export default function useDocuments<DocumentT>(
     }
   })
 
+  async function init() {
+    const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_EVENT_NAME], 'readonly')
+    await updateDocumentRefs(tx)
+    tx.commit()
+  }
+
+  void init()
+
   return {
-    selectedDocument: readonly(selectedDocumentRef),
     documents: readonly(documentsRef),
     createDocument,
     deleteDocument,
     renameDocument,
+  }
+}
+
+export function useSelectedDocumentId(documentsRef: Readonly<Ref<Readonly<DocumentMetadata[]>>>) {
+  const selectedDocumentRef = shallowRef<DocumentId | undefined>(undefined)
+
+  function selectDocument(id: DocumentId | undefined) {
+    const documents = unref(documentsRef)
+    let newDocument
+    if (id !== undefined) {
+      newDocument = documents.find((document) => document.id === id)
+    }
+    if (newDocument === undefined) {
+      newDocument = documents[documents.length - 1]
+    }
+    selectedDocumentRef.value = newDocument?.id
+  }
+
+  watch(documentsRef, () => {
+    selectDocument(selectedDocumentRef.value)
+  })
+
+  selectDocument(undefined)
+
+  return {
+    selectedDocumentId: readonly(selectedDocumentRef),
     selectDocument,
   }
 }

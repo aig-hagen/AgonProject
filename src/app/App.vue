@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import CreateGraphModal from './CreateGraphModal.vue'
+import CreateGraphModal from '../CreateGraphModal.vue'
 import {
   Bars3Icon,
   QuestionMarkCircleIcon,
@@ -13,53 +13,52 @@ import {
   FolderPlusIcon,
   ChevronRightIcon,
 } from '@heroicons/vue/24/outline'
-import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
-import GraphExample from './GraphExample.vue'
-import WindowExtensions from './WindowExtensions.vue'
-import WindowSource from './WindowSource.vue'
-import WindowHelp from './WindowHelp.vue'
-import { computed, ref } from 'vue'
-import useDocuments, { useDocumentsDb } from './modules/document/useDocuments'
-import LayoutTabs from './app/view/EditorTabs.vue'
-import BlankDocument from './app/view/BlankDocument.vue'
+import ArrowDoubleLongRightIcon from '../ArrowDoubleLongRightIcon.vue'
+import WindowExtensions from '../WindowExtensions.vue'
+import WindowSource from '../WindowSource.vue'
+import WindowHelp from '../WindowHelp.vue'
+import { ref } from 'vue'
+import useDocuments, {
+  useSelectedDocumentId,
+  type DocumentsDB,
+} from '../modules/document/useDocuments'
+import LayoutTabs from '../app/view/EditorTabs.vue'
+import BlankDocument from '../app/view/BlankDocument.vue'
+import type { IDBPDatabase } from 'idb'
 
-const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
-type DocumentT = string
-const { db } = useDocumentsDb<DocumentT>(PRODUCTION_DATABASE_DOCUMENTS_NAME)
-const {
-  documents,
-  selectedDocument,
-  createDocument,
-  deleteDocument,
-  renameDocument,
-  selectDocument,
-} = useDocuments<DocumentT>(db)
+const { db } = defineProps<{
+  db: Promise<IDBPDatabase<DocumentsDB>>
+}>()
+
+const { documents, createDocument, deleteDocument, renameDocument } = useDocuments(db)
+const { selectedDocumentId, selectDocument } = useSelectedDocumentId(documents)
 
 const isExtensionsOpened = ref<boolean>(false)
 const isSourceOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
 const selectedExtension = ref<string>('s1')
-const extensionToHighlight = computed(() => {
-  return isExtensionsOpened.value ? selectedExtension.value : undefined
-})
+// const extensionToHighlight = computed(() => {
+//   return isExtensionsOpened.value ? selectedExtension.value : undefined
+// })
 </script>
 
 <!-- Ask before deleting -->
 <template>
   <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
     <LayoutTabs
-      class="grow-0"
+      class="flex-none"
       :data="documents.map((document) => ({ id: document.id, name: document.name }))"
-      :selected="selectedDocument?.metadata.id"
+      :selected="selectedDocumentId"
       @select="selectDocument($event)"
-      @create="createDocument('some avlue')"
+      @create="createDocument"
       @delete="deleteDocument($event)"
       @rename="(id, name) => renameDocument(id, name)"
     />
     <main class="border-t -mt-px border-base-300 editor flex-1">
-      <BlankDocument v-if="selectedDocument === null"></BlankDocument>
+      <BlankDocument v-if="selectedDocumentId === undefined"></BlankDocument>
       <div v-else class="relative h-full w-full">
-        <GraphExample :extension="extensionToHighlight" />
+        <!-- TODO only unload after timeout -->
+        <!-- TODO editor component -->
         <div class="absolute top-4 left-4 right-4 flex flex-row justify-between">
           <div class="flex flex-row gap-2"></div>
           <div class="flex flex-row gap-2"></div>
