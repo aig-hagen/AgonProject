@@ -3,7 +3,7 @@ import { XMarkIcon } from '@heroicons/vue/24/outline'
 import { useDebounceFn } from '@vueuse/core'
 import { useTemplateRef } from 'vue'
 
-const PLACEHOLDER = 'Untitled'
+const PLACEHOLDER = 'new argumentation'
 
 const { active, value } = defineProps<{
   active: boolean
