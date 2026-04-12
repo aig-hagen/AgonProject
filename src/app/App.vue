@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CreateGraphModal from '../CreateGraphModal.vue'
 import {
   Bars3Icon,
   QuestionMarkCircleIcon,
@@ -154,7 +153,6 @@ const selectedExtension = ref<string>('s1')
       </div>
     </main>
   </div>
-  <CreateGraphModal />
   <WindowExtensions v-model:open="isExtensionsOpened" v-model:extension="selectedExtension" />
   <WindowSource v-model:open="isSourceOpened" />
   <WindowHelp v-model:open="isHelpOpened" />
