@@ -18,16 +18,14 @@ import WindowExtensions from '../WindowExtensions.vue'
 import WindowSource from '../WindowSource.vue'
 import WindowHelp from '../WindowHelp.vue'
 import { ref } from 'vue'
-import useDocuments, {
-  useSelectedDocumentId,
-  type DocumentsDB,
-} from '../modules/document/useDocuments'
+import useDocuments, { useSelectedDocumentId } from './useDocuments'
 import LayoutTabs from '../app/view/EditorTabs.vue'
 import BlankDocument from '../app/view/BlankDocument.vue'
 import type { IDBPDatabase } from 'idb'
+import type { DocumentsDB } from './db'
 
 const { db } = defineProps<{
-  db: Promise<IDBPDatabase<DocumentsDB>>
+  db: IDBPDatabase<DocumentsDB>
 }>()
 
 const { documents, createDocument, deleteDocument, renameDocument } = useDocuments(db)

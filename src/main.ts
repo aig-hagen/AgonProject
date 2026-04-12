@@ -5,7 +5,7 @@ import { createPinia } from 'pinia'
 import App from './app/App.vue'
 import router from './router'
 import './app/setup-immer'
-import { openDocumentsDB } from './modules/document/useDocuments'
+import { openDocumentsDB } from './app/db'
 
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)
