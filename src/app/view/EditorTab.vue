@@ -59,7 +59,7 @@ const inputSizerRef = useTemplateRef('input-sizer')
   </div>
 </template>
 
-<style>
+<style scoped>
 input {
   position: absolute;
   top: 0;

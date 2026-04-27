@@ -119,15 +119,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<style>
-/* TODO Revisit this quick and dirty solution */
-.cm-editor:focus,
-.cm-editor.cm-focused,
-.cm-editor .cm-editor:focus-within {
-  outline: none !important;
-}
-.cm-editor {
-  height: 100%;
-}
-</style>

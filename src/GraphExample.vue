@@ -1260,7 +1260,7 @@ L92.2483681064744,130.09772479013427"
   </svg>
 </template>
 
-<style>
+<style scoped>
 .graph-controller__graph-host {
   position: absolute;
   width: 100%;

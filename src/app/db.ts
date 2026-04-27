@@ -1,4 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
+import type { DocumentState } from '../modules/common/state'
+import type { Objectish } from 'immer'
 
 const DATABASE_DOCUMENTS_VERSION = 1
 
@@ -25,14 +27,10 @@ export interface DocumentsDB extends DBSchema {
   }
   content: {
     key: DocumentId
-    value: {
-      type: string
-      content: unknown
-    }
+    value: DocumentState<Objectish>
   }
 }
 
-// TODO extract into database file
 export async function openDocumentsDB(dbName: string): Promise<IDBPDatabase<DocumentsDB>> {
   const db = await openDB<DocumentsDB>(dbName, DATABASE_DOCUMENTS_VERSION, {
     upgrade(db, oldVersion, newVersion, _transaction, _event) {

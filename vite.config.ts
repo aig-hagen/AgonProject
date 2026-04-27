@@ -6,13 +6,12 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 
-const isStoryBook = process.env.STORYBOOK === 'true'
+const isStorybook = !!process.env.STORYBOOK
 const plugins: PluginOption[] = [tailwindcss(), vue(), vueJsx()]
-if (!isStoryBook) {
+if (!isStorybook) {
   plugins.push(vueDevTools())
 }
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: plugins,
   resolve: {

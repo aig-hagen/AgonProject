@@ -1,4 +1,4 @@
-<!-- Modified version of import `ArrowLongRightIcon` from '@heroicons/vue/24/outline' -->
+<!-- Modified version of import `ArrowLongRightIcon` from '@heroicons/vue/24/outline' licensed under MIT. -->
 <!-- https://yqnn.github.io/svg-path-editor/ was a usfull editor. -->
 <template>
   <svg

@@ -19,7 +19,10 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.3.tgz",
+    "@floating-ui/vue": "^1.1.11",
     "@heroicons/vue": "^2.2.0",
+    "@hpcc-js/wasm-graphviz": "^1.21.2",
     "@interactjs/actions": "^1.10.27",
     "@interactjs/auto-start": "^1.10.27",
     "@interactjs/dev-tools": "^1.10.27",
@@ -28,10 +31,12 @@
     "@vueuse/core": "^14.2.1",
     "codemirror": "^6.0.2",
     "idb": "^8.0.3",
+    "immer": "^11.1.4",
     "interactjs": "^1.10.27",
     "pinia": "^3.0.4",
     "vue": "^3.5.28",
-    "vue-router": "^5.0.2"
+    "vue-router": "^5.0.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.0.2",

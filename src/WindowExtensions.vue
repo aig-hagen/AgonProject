@@ -142,5 +142,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<style></style>
