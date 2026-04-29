@@ -1,6 +1,6 @@
 import type { Component } from 'vue'
-import type { UUID } from './ids'
-import type { DocumentState } from './state'
+import type { UUID } from '../ids'
+import type { DocumentState } from '../state'
 
 export const LinkType = {
   SINGLE: 'SINGLE',

@@ -15,7 +15,7 @@ import type { Example } from './modules/common/examples'
 import type { Objectish } from 'immer'
 import BipiolarArgumentationGraphEditor from './modules/bipolar-argumentation/GraphEditor.vue'
 import AbstractArgumentationGraphEditor from './modules/abstract-argumentation/GraphEditor.vue'
-import type { EditorComponent } from './modules/common/graphEditor'
+import type { EditorComponent } from './modules/common/graph-editor/graphEditor'
 
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)

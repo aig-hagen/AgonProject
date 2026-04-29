@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 
 import { ArrowLongRightIcon } from '@heroicons/vue/24/outline'
-import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
+import ArrowDoubleLongRightIcon from './modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 
 const isOpen = ref(true)
 

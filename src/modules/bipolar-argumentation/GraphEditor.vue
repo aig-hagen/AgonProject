@@ -7,8 +7,8 @@ import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
   type NodeId,
-} from '../common/graphEditor'
-import GraphEditor from '../common/GraphEditor.vue'
+} from '../common/graph-editor/graphEditor'
+import GraphEditor from '../common/graph-editor/GraphEditor.vue'
 import { modifyDocument, type DocumentState } from '../common/state'
 import type { BipoloarArgumentation } from './model'
 
