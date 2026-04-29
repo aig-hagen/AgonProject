@@ -7,7 +7,7 @@ import {
   PhotoIcon,
   PlusCircleIcon,
 } from '@heroicons/vue/24/outline'
-import WindowHelp from '../WindowHelp.vue'
+import WindowHelp from './WindowHelp.vue'
 import { computed, ref } from 'vue'
 import { useSelectedDocumentId, useDocumentMetadata, useDocumentContent } from './useDocuments'
 import LayoutTabs from '../app/view/EditorTabs.vue'
