@@ -3,13 +3,15 @@ import { toRef, useTemplateRef } from 'vue'
 import { offset, useFloating } from '@floating-ui/vue'
 import { ArrowLongRightIcon } from '@heroicons/vue/24/outline'
 import ArrowDoubleLongRightIcon from '../../ArrowDoubleLongRightIcon.vue'
+import { LinkType, type LinkConfigs } from './graphEditor'
 
-const { reference } = defineProps<{
+const { reference, linkConfigs } = defineProps<{
   reference: SVGElement
+  linkConfigs: LinkConfigs
 }>()
 
 const emit = defineEmits<{
-  'update:arrowType': [value: 'attack' | 'support']
+  'update:arrowType': [value: LinkType]
 }>()
 
 const floating = useTemplateRef('floating')
@@ -18,7 +20,7 @@ const { floatingStyles } = useFloating(
   floating,
   {
     middleware: [
-      // Centers on reference
+      // Centers vertically on reference
       offset(({ rects }) => {
         return -rects.reference.height / 2 - rects.floating.height / 2
       }),
@@ -30,17 +32,15 @@ const { floatingStyles } = useFloating(
 <template>
   <div ref="floating" :style="floatingStyles">
     <ul class="dropdown menu rounded-box bg-base-100 shadow-sm/30">
-      <li>
-        <a @click="emit('update:arrowType', 'attack')"
-          ><ArrowLongRightIcon class="size-5 opacity-70" />Attack</a
-        >
-      </li>
-      <li>
-        <a @click="emit('update:arrowType', 'support')"
-          ><ArrowDoubleLongRightIcon class="size-5 opacity-70" />Support</a
+      <li v-for="(config, linkType) in linkConfigs" :key="linkType">
+        <a @click="emit('update:arrowType', linkType)"
+          ><ArrowLongRightIcon v-if="linkType === LinkType.SINGLE" class="size-5 opacity-70" />
+          <ArrowDoubleLongRightIcon
+            v-if="linkType === LinkType.DOUBLE"
+            class="size-5 opacity-70"
+          />{{ config!.displayName }}</a
         >
       </li>
     </ul>
   </div>
 </template>
-<style scoped></style>

@@ -10,14 +10,14 @@ import {
 } from '../common/graphEditor'
 import GraphEditor from '../common/GraphEditor.vue'
 import { modifyDocument, type DocumentState } from '../common/state'
-import type { BipoloarArgumentation } from './model'
+import type { AbstractArgumentation } from './model'
 
 const { state } = defineProps<{
-  state: DocumentState<BipoloarArgumentation<ArgumentData>>
+  state: DocumentState<AbstractArgumentation<ArgumentData>>
 }>()
 
 const emit = defineEmits<{
-  change: [state: DocumentState<BipoloarArgumentation<ArgumentData>>]
+  change: [state: DocumentState<AbstractArgumentation<ArgumentData>>]
 }>()
 
 const workingState = shallowRef(state)
@@ -47,21 +47,11 @@ const editorState = computed<GraphEditorState | undefined>(() => {
       y: data.y,
     }
   })
-  const attackLinks: GraphEditorStateLink[] = [...argumentation.attacks()].map(
-    ([source, target]) => ({
-      sourceId: source,
-      targetId: target,
-      type: LinkType.SINGLE,
-    }),
-  )
-  const supportLinks: GraphEditorStateLink[] = [...argumentation.supports()].map(
-    ([source, target]) => ({
-      sourceId: source,
-      targetId: target,
-      type: LinkType.DOUBLE,
-    }),
-  )
-  const links = [...attackLinks, ...supportLinks]
+  const links: GraphEditorStateLink[] = [...argumentation.attacks()].map(([source, target]) => ({
+    sourceId: source,
+    targetId: target,
+    type: LinkType.SINGLE,
+  }))
   return {
     stateId: workingState.value.stateId,
     nodes,
@@ -73,12 +63,9 @@ const linkConfig = {
   SINGLE: {
     displayName: 'Attack',
   },
-  DOUBLE: {
-    displayName: 'Support',
-  },
 }
 
-function createNewState(recipe: (draft: BipoloarArgumentation<ArgumentData>) => void) {
+function createNewState(recipe: (draft: AbstractArgumentation<ArgumentData>) => void) {
   if (workingState.value === undefined) {
     throw new Error('Cannot create new state from undefined state.')
   }
@@ -124,24 +111,12 @@ function onNodesMoved(
   })
 }
 
-function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId; type: LinkType }) {
-  onLinkCreatedOrChanged(data)
+function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
+  createNewState((draft) => draft.addAttack(data.sourceId, data.targetId))
 }
 
 function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
-  createNewState((draft) => draft.deleteAttackOrSupport(data.sourceId, data.targetId))
-}
-
-function onLinkChanged(data: { sourceId: NodeId; targetId: NodeId; type: LinkType }) {
-  onLinkCreatedOrChanged(data)
-}
-
-function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type: LinkType }) {
-  if (data.type === LinkType.SINGLE) {
-    createNewState((draft) => draft.addAttack(data.sourceId, data.targetId))
-  } else {
-    createNewState((draft) => draft.addSupport(data.sourceId, data.targetId))
-  }
+  createNewState((draft) => draft.deleteAttack(data.sourceId, data.targetId))
 }
 </script>
 <template>
@@ -152,7 +127,6 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     @node-label-edited="onNodeLabelEdited"
     @nodes-moved="onNodesMoved"
     @link-created="onLinkCreated"
-    @link-changed="onLinkChanged"
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"

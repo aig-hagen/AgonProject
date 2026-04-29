@@ -29,9 +29,9 @@ function getChannelDocumentContent(id: DocumentId) {
   return `document:${id}`
 }
 
-export function useDocumentMetadata(
+export function useDocumentMetadata<DocumentT extends Objectish>(
   db: IDBPDatabase<DocumentsDB>,
-  modules: ModuleConfig<Objectish>[],
+  modules: ModuleConfig<DocumentT>[],
 ) {
   const documentsRef: Ref<DocumentMetadata[]> = ref([])
 
@@ -47,7 +47,7 @@ export function useDocumentMetadata(
     return nextDocuments
   }
 
-  async function createDocument(content?: Objectish) {
+  async function createDocument(content?: DocumentT) {
     let rawContent: Objectish = {}
     if (content !== undefined) {
       rawContent = serializeContent(content, modules)
@@ -181,7 +181,10 @@ export function useSelectedDocumentId(documentsRef: Readonly<Ref<Readonly<Docume
   }
 }
 
-function serializeContent(content: Objectish, modules: ModuleConfig<Objectish>[]) {
+function serializeContent<DocumentT extends Objectish>(
+  content: DocumentT,
+  modules: ModuleConfig<DocumentT>[],
+) {
   for (const module of modules) {
     const rawContent = module.serialize(content)
     if (rawContent !== undefined) {
@@ -191,14 +194,14 @@ function serializeContent(content: Objectish, modules: ModuleConfig<Objectish>[]
   throw new Error('Could not serialize content: ' + JSON.stringify(content))
 }
 
-export function useDocumentContent(
+export function useDocumentContent<DocumentT extends Objectish>(
   db: IDBPDatabase<DocumentsDB>,
-  modules: ModuleConfig<Objectish>[],
+  modules: ModuleConfig<DocumentT>[],
   idRef: Readonly<MaybeRef<DocumentId | undefined>>,
 ) {
-  const documentStateRef: Ref<DocumentState<Objectish> | undefined> = shallowRef(undefined)
+  const documentStateRef: Ref<DocumentState<DocumentT> | undefined> = shallowRef(undefined)
 
-  async function updateDocument(state: DocumentState<Objectish>) {
+  async function updateDocument(state: DocumentState<DocumentT>) {
     const id = unref(idRef)
     if (id === undefined) {
       return
@@ -229,8 +232,13 @@ export function useDocumentContent(
       for (const module of modules) {
         const content = module.deserialize(deserializedContent)
         if (content !== undefined) {
-          state.current.content = content
-          documentStateRef.value = state
+          documentStateRef.value = {
+            ...state,
+            current: {
+              ...state.current,
+              content: content,
+            },
+          }
           return
         }
       }

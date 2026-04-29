@@ -6,9 +6,7 @@ export type ArgumentId = number
 export class AbstractArgumentation<ArgumentDataT> {
   [immerable] = true
 
-  static id = 'abstract-argumentation-v1'
-
-  private g = new DirectedGraph<ArgumentDataT, undefined>()
+  constructor(private g = new DirectedGraph<ArgumentDataT, undefined>()) {}
 
   addArgument(id: ArgumentId, data: ArgumentDataT) {
     this.g.setNode(id, data)
@@ -24,6 +22,10 @@ export class AbstractArgumentation<ArgumentDataT> {
 
   deleteAttack(sourceId: ArgumentId, targetId: ArgumentId) {
     this.g.deleteEdge(sourceId, targetId)
+  }
+
+  getArgument(id: ArgumentId): ArgumentDataT {
+    return this.g.getNode(id)
   }
 
   arguments() {

@@ -13,6 +13,9 @@ import { AbstractArgumentation } from './modules/abstract-argumentation/model'
 import { datasets } from './modules/abstract-argumentation/examples'
 import type { Example } from './modules/common/examples'
 import type { Objectish } from 'immer'
+import BipiolarArgumentationGraphEditor from './modules/bipolar-argumentation/GraphEditor.vue'
+import AbstractArgumentationGraphEditor from './modules/abstract-argumentation/GraphEditor.vue'
+import type { EditorComponent } from './modules/common/graphEditor'
 
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)
@@ -24,6 +27,7 @@ export interface ModuleConfig<DocumentT extends Objectish> {
   serialize(model: Objectish): Objectish | undefined
   examples: Example<DocumentT>[]
   initialCotent: DocumentT
+  editorComponent: EditorComponent<DocumentT>
 }
 
 const initialBipolarArgumentation = new BipoloarArgumentation<ArgumentData>()
@@ -66,74 +70,76 @@ initialAbstractArgumentation.addAttack(1, 2)
 const TYPE_KEY = 'type'
 const BIPOLAR_ARGUMENTATION_V1_TYPE = 'bipolar-argumentation-v1'
 const ABSTRACT_ARGUMENTATION_V1_TYPE = 'abstract-argumentation-v1'
-const modules: ModuleConfig<Objectish>[] = [
-  {
-    displayNameSingular: 'Abstract Argumentation',
-    is(model: unknown) {
-      return model instanceof AbstractArgumentation
-    },
-    deserialize(modelSerialized: unknown): AbstractArgumentation<ArgumentData> | undefined {
-      if (typeof modelSerialized !== 'object' || modelSerialized === null) {
-        return undefined
-      }
-      // @ts-expect-error TS7053: ignore because we deserilize
-      if (modelSerialized[TYPE_KEY] !== ABSTRACT_ARGUMENTATION_V1_TYPE) {
-        return undefined
-      }
-      const content: AbstractArgumentation<ArgumentData> = new AbstractArgumentation(
-        // @ts-expect-error TS7053: ignore because we deserilize
-        new DirectedGraph(modelSerialized['g']['v'], modelSerialized['g']['e']),
-      )
-
-      return content
-    },
-    serialize(model: Objectish) {
-      if (!this.is(model)) {
-        return undefined
-      }
-      return {
-        [TYPE_KEY]: ABSTRACT_ARGUMENTATION_V1_TYPE,
-        // @ts-expect-error TS2341: intentional private access for serialization
-        g: model.g,
-      }
-    },
-    examples: datasets,
-    initialCotent: initialAbstractArgumentation,
+const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<ArgumentData>> = {
+  displayNameSingular: 'Abstract Argumentation',
+  is(model: unknown) {
+    return model instanceof AbstractArgumentation
   },
-  {
-    displayNameSingular: 'Bipolar Argumentation',
-    is(model: unknown) {
-      return model instanceof BipoloarArgumentation
-    },
-    deserialize(modelSerialized: unknown): BipoloarArgumentation<ArgumentData> | undefined {
-      if (typeof modelSerialized !== 'object' || modelSerialized === null) {
-        return undefined
-      }
+  deserialize(modelSerialized: unknown): AbstractArgumentation<ArgumentData> | undefined {
+    if (typeof modelSerialized !== 'object' || modelSerialized === null) {
+      return undefined
+    }
+    // @ts-expect-error TS7053: ignore because we deserilize
+    if (modelSerialized[TYPE_KEY] !== ABSTRACT_ARGUMENTATION_V1_TYPE) {
+      return undefined
+    }
+    const content: AbstractArgumentation<ArgumentData> = new AbstractArgumentation(
       // @ts-expect-error TS7053: ignore because we deserilize
-      if (modelSerialized[TYPE_KEY] !== BIPOLAR_ARGUMENTATION_V1_TYPE) {
-        return undefined
-      }
-      const content: BipoloarArgumentation<ArgumentData> = new BipoloarArgumentation(
-        // @ts-expect-error TS7053: ignore because we deserilize
-        new DirectedGraph(modelSerialized['g']['v'], modelSerialized['g']['e']),
-      )
+      new DirectedGraph(modelSerialized['g']['v'], modelSerialized['g']['e']),
+    )
 
-      return content
-    },
-    serialize(model: Objectish) {
-      if (!this.is(model)) {
-        return undefined
-      }
-      return {
-        [TYPE_KEY]: BIPOLAR_ARGUMENTATION_V1_TYPE,
-        // @ts-expect-error TS2341: intentional private access for serialization
-        g: model.g,
-      }
-    },
-    examples: [],
-    initialCotent: initialBipolarArgumentation,
+    return content
   },
-]
+  serialize(model: Objectish) {
+    if (!this.is(model)) {
+      return undefined
+    }
+    return {
+      [TYPE_KEY]: ABSTRACT_ARGUMENTATION_V1_TYPE,
+      // @ts-expect-error TS2341: intentional private access for serialization
+      g: model.g,
+    }
+  },
+  examples: datasets,
+  initialCotent: initialAbstractArgumentation,
+  editorComponent: AbstractArgumentationGraphEditor,
+}
+const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<ArgumentData>> = {
+  displayNameSingular: 'Bipolar Argumentation',
+  is(model: unknown) {
+    return model instanceof BipoloarArgumentation
+  },
+  deserialize(modelSerialized: unknown): BipoloarArgumentation<ArgumentData> | undefined {
+    if (typeof modelSerialized !== 'object' || modelSerialized === null) {
+      return undefined
+    }
+    // @ts-expect-error TS7053: ignore because we deserilize
+    if (modelSerialized[TYPE_KEY] !== BIPOLAR_ARGUMENTATION_V1_TYPE) {
+      return undefined
+    }
+
+    const content: BipoloarArgumentation<ArgumentData> = new BipoloarArgumentation(
+      // @ts-expect-error TS7053: ignore because we deserilize
+      new DirectedGraph(modelSerialized['g']['v'], modelSerialized['g']['e']),
+    )
+
+    return content
+  },
+  serialize(model: Objectish) {
+    if (!this.is(model)) {
+      return undefined
+    }
+    return {
+      [TYPE_KEY]: BIPOLAR_ARGUMENTATION_V1_TYPE,
+      // @ts-expect-error TS2341: intentional private access for serialization
+      g: model.g,
+    }
+  },
+  examples: [],
+  initialCotent: initialBipolarArgumentation,
+  editorComponent: BipiolarArgumentationGraphEditor,
+}
+const modules = [abstractArgumentationModule, bipoloarArgumentationModule] as const
 
 const app = createApp(App, {
   db: db,

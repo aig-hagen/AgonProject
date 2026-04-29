@@ -1,0 +1,510 @@
+<script setup lang="ts">
+import {
+  GraphComponent,
+  EVENT_CAUSE,
+  NodeShape,
+  type jsonNode,
+  type jsonLink,
+  type PositionSnapshot,
+  ArrowType,
+} from '@aig-hagen/graph-component/lib'
+import '@aig-hagen/graph-component/lib/graph-component.css'
+import { nextTick, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { generateUUID, IdGenerator, IdMapping } from '../common/ids'
+import { getNextName } from '../common/nextName'
+import { ARGUMENT_COLOR, ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '../common/argumentation/model'
+import ArrowSwitcher from './LinkTypeSwitch.vue'
+import ArrowDoubleLongRightIcon from '../../ArrowDoubleLongRightIcon.vue'
+import WindowExtensions from '../../WindowExtensions.vue'
+import WindowSource from '../../WindowSource.vue'
+import { DocumentTextIcon, VariableIcon, ArrowLongRightIcon } from '@heroicons/vue/24/outline'
+import { LinkType, type GraphEditorState, type LinkConfigs, type NodeId } from './graphEditor'
+
+// The `GraphComponent` is implemented in away,
+// that each instance needs an ID
+// if multiple instances are used on the same site.
+const graphComponentId = generateUUID()
+const graphComponentRef = useTemplateRef('graph-component')
+
+const { state, linkConfigs } = defineProps<{
+  state: GraphEditorState
+  linkConfigs: LinkConfigs
+}>()
+
+const isExtensionsOpened = ref<boolean>(false)
+const isSourceOpened = ref<boolean>(false)
+const selectedExtension = ref<string>('s1')
+const enableLinkSwitching = Object.keys(linkConfigs).length > 1
+const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
+if (defaultLinkType === undefined) {
+  throw Error('At least one link type must be defined.')
+}
+const selectedLinkType = ref<LinkType>(defaultLinkType)
+
+let renderedState: GraphEditorState | undefined
+
+function renderNewState(state: GraphEditorState, center: boolean) {
+  renderedState = state
+  setGraph(renderedState, center)
+}
+
+watch(
+  () => state,
+  async (newState, oldState) => {
+    if (newState.stateId !== oldState.stateId) {
+      if (renderedState !== undefined && newState.stateId !== renderedState.stateId) {
+        renderNewState(newState, false)
+      }
+    }
+  },
+)
+
+const emit = defineEmits<{
+  nodeCreated: [
+    data: {
+      id: NodeId
+      label: string
+      x: number
+      y: number
+    },
+  ]
+  nodeDeleted: [
+    data: {
+      id: NodeId
+    },
+  ]
+  nodeLabelEdited: [
+    data: {
+      id: NodeId
+      label: string
+    },
+  ]
+  nodesMoved: [
+    data: {
+      id: NodeId
+      x: number
+      y: number
+    }[],
+  ]
+  linkCreated: [
+    data: {
+      sourceId: NodeId
+      targetId: NodeId
+      type: LinkType
+    },
+  ]
+  linkChanged: [
+    data: {
+      sourceId: NodeId
+      targetId: NodeId
+      type: LinkType
+    },
+  ]
+  linkDeleted: [
+    data: {
+      sourceId: NodeId
+      targetId: NodeId
+    },
+  ]
+}>()
+
+let idGenerator = new IdGenerator()
+let idMapping = new IdMapping<number, number>()
+
+function* argumentNames() {
+  for (const { label } of renderedState!.nodes) {
+    yield label
+  }
+}
+
+function getNextArgumentName() {
+  return getNextName(argumentNames())
+}
+
+function hasMoreThenOneEntry<T>(array: T[]): array is [T, T, ...T[]] & [...T[], T, T] {
+  return array.length > 1
+}
+
+function parseLinkId(linkId: string) {
+  const linkParts = linkId.split('-')
+  if (!hasMoreThenOneEntry(linkParts)) {
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Seperator \`-\` is not contained.`)
+  }
+  if (linkParts.length > 2) {
+    throw new Error(
+      `Link with ID \`${linkId}\` is not valid: Seperator \`-\` is contained more then once.`,
+    )
+  }
+  const sourceId = parseInt(linkParts[0])
+  const tragetId = parseInt(linkParts[1])
+  if (!Number.isSafeInteger(sourceId))
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid source node ID ${sourceId}.`)
+  if (!Number.isSafeInteger(tragetId))
+    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid target node ID ${tragetId}.`)
+  return {
+    sourceId: sourceId,
+    targetId: tragetId,
+  }
+}
+
+function onNodeCreated(
+  node: {
+    id: number
+    label?: string
+    x?: number
+    y?: number
+  },
+  cause: EVENT_CAUSE,
+) {
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
+    return
+  }
+
+  if (node.x === undefined) {
+    throw Error('X position is not defined.')
+  }
+
+  if (node.y === undefined) {
+    throw Error('Y position is not defined.')
+  }
+
+  const name = getNextArgumentName()
+
+  const publicId = idGenerator.generate()
+  idMapping.add(node.id, publicId)
+  const nodeData = {
+    id: publicId,
+    label: name,
+    x: node.x,
+    y: node.y,
+  }
+  emit('nodeCreated', nodeData)
+  nextTick(() => {
+    graphComponentRef.value!.setLabel(name, node.id)
+    graphComponentRef.value!.setColor(ARGUMENT_COLOR, node.id)
+  })
+}
+function onNodeDeleted(
+  node: {
+    id: number
+    label?: string
+    x?: number
+    y?: number
+  },
+  cause: EVENT_CAUSE,
+) {
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
+    return
+  }
+
+  const publicId = idMapping.delete(node.id)
+  emit('nodeDeleted', { id: publicId })
+}
+
+function openLinkTypeSwitch(
+  link: {
+    id: string
+    label?: string
+  },
+  event: PointerEvent,
+) {
+  if (event.button !== 0) {
+    return
+  }
+  arrowSwitcherTarget.value = {
+    linkId: link.id,
+    targetElement: event.currentTarget as SVGElement,
+  }
+}
+
+function noOp() {}
+
+const onLinkClicked = enableLinkSwitching ? openLinkTypeSwitch : noOp
+
+function onLinkCreated(
+  link: {
+    id: string
+    label?: string
+  },
+  cause: EVENT_CAUSE,
+) {
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
+    return
+  }
+  const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(link.id)
+  const publicSourceId = idMapping.getOrFail(internalSourceId)
+  const publicTargetId = idMapping.getOrFail(internalTargetId)
+  emit('linkCreated', {
+    sourceId: publicSourceId,
+    targetId: publicTargetId,
+    type: selectedLinkType.value,
+  })
+  const arrowType = LinkType.SINGLE ? ArrowType.SINGLE : ArrowType.DOUBLE
+  void nextTick(() => {
+    graphComponentRef.value!.setColor(ATTACK_COLOR, link.id)
+    graphComponentRef.value!.setLinkArrowType(arrowType, link.id)
+  })
+}
+
+function onLinkDeleted(
+  link: {
+    id: string
+    label?: string
+  },
+  cause: EVENT_CAUSE,
+) {
+  if (arrowSwitcherTarget.value?.linkId === link.id) {
+    arrowSwitcherTarget.value = undefined
+  }
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
+    return
+  }
+  const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(link.id)
+  // If mapping does not exist,
+  // the link deletion is a cascading result of a node deletion..
+  if (!idMapping.has(internalSourceId) || !idMapping.has(internalTargetId)) {
+    return
+  }
+  const publicSourceId = idMapping.getOrFail(internalSourceId)
+  const publicTargetId = idMapping.getOrFail(internalTargetId)
+  emit('linkDeleted', { sourceId: publicSourceId, targetId: publicTargetId })
+}
+
+function onNodesMoved(positions: PositionSnapshot[]) {
+  const data = positions.map((position) => {
+    const internalId = position.nodeId
+    const publicId = idMapping.getOrFail(internalId)
+    return {
+      id: publicId,
+      x: position.x,
+      y: position.y,
+    }
+  })
+  emit('nodesMoved', data)
+}
+
+onMounted(() => {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) {
+    throw new Error('Graph component is not rendered.')
+  }
+  graphComponent.toggleZoom(true)
+  graphComponent.toggleNodePhysics(false)
+  graphComponent.toggleCollisionDetection(false)
+  graphComponent.setDefaults({
+    nodeAutoGrowToLabelSize: false,
+    nodeProps: {
+      shape: NodeShape.CIRCLE,
+      radius: ARGUMENT_RADIUS_IN_PX,
+    },
+    allowNodeCreationViaGUI: true,
+    nodeGUIEditability: {
+      fixedPosition: { x: false, y: false },
+      deletable: true,
+      labelEditable: true,
+      allowIncomingLinks: true,
+      allowOutgoingLinks: true,
+    },
+    linkGUIEditability: {
+      deletable: true,
+      labelEditable: false,
+    },
+  })
+
+  renderNewState(state, true)
+})
+
+function toArrowType(linkType: LinkType): ArrowType {
+  if (linkType === LinkType.SINGLE) {
+    return ArrowType.SINGLE
+  }
+  if (linkType === LinkType.DOUBLE) {
+    return ArrowType.DOUBLE
+  }
+  throw new Error('Encountered unsupported linkType')
+}
+
+function setGraph(state: GraphEditorState, center: boolean): void {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) {
+    throw new Error('Graph component is not rendered.')
+  }
+  idGenerator = new IdGenerator()
+  idMapping = new IdMapping()
+  const nodes: jsonNode[] = state.nodes.map((node) => ({
+    id: node.id,
+    label: node.label,
+    x: node.x,
+    y: node.y,
+    color: ARGUMENT_COLOR,
+  }))
+  const links: jsonLink[] = state.links.map((link) => ({
+    sourceId: link.sourceId,
+    targetId: link.targetId,
+    color: ATTACK_COLOR,
+    arrowType: toArrowType(link.type),
+  }))
+
+  graphComponent.setGraph({ nodes, links }, true)
+  const { nodes: importedNodes } = graphComponent.getGraph(
+    'json',
+    false,
+    false,
+    false,
+    false,
+    true,
+  ) as { nodes: { id: number; idImported: number }[] }
+
+  for (const importedNode of importedNodes) {
+    idGenerator.forward(importedNode.idImported)
+    idMapping.add(importedNode.id, importedNode.idImported)
+  }
+
+  if (center) {
+    const margin = ARGUMENT_RADIUS_IN_PX * 2
+    graphComponent.centerView(
+      {
+        top: margin,
+        right: margin,
+        bottom: margin,
+        left: margin,
+      },
+      undefined,
+      1,
+    )
+  }
+}
+
+function updateLinkType(linkId: string, linkType: LinkType) {
+  arrowSwitcherTarget.value = undefined
+  const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(linkId)
+  const publicSourceId = idMapping.getOrFail(internalSourceId)
+  const publicTargetId = idMapping.getOrFail(internalTargetId)
+  emit('linkChanged', { sourceId: publicSourceId, targetId: publicTargetId, type: linkType })
+  const arrowType = toArrowType(linkType)
+  graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
+}
+
+function onLabelEdited(
+  parent: {
+    id: string | number
+  },
+  label: string,
+) {
+  const privateId = parent.id
+  if (typeof privateId !== 'number') {
+    return
+  }
+  if (!idMapping.has(privateId)) {
+    return
+  }
+  const publicId = idMapping.getOrFail(privateId)
+  emit('nodeLabelEdited', { id: publicId, label: label })
+}
+
+const arrowSwitcherTarget = shallowRef<
+  | {
+      targetElement: SVGElement
+      linkId: string
+    }
+  | undefined
+>(undefined)
+</script>
+<template>
+  <div>
+    <GraphComponent
+      @node-created="onNodeCreated"
+      @node-deleted="onNodeDeleted"
+      @link-clicked="onLinkClicked"
+      @link-created="onLinkCreated"
+      @link-deleted="onLinkDeleted"
+      @nodes-moved="onNodesMoved"
+      @label-edited="onLabelEdited"
+      :id="graphComponentId"
+      ref="graph-component"
+    />
+    <ArrowSwitcher
+      v-if="arrowSwitcherTarget"
+      :link-configs="linkConfigs"
+      :reference="arrowSwitcherTarget.targetElement"
+      @update:arrow-type="updateLinkType(arrowSwitcherTarget.linkId, $event)"
+    />
+    <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
+      <div class="flex flex-1 justify-end flex-col gap-2">
+        <div class="join join-vertical mb-8" v-if="enableLinkSwitching">
+          <label
+            v-for="(linkConfig, linkKey) in linkConfigs"
+            :key="linkKey"
+            class="join-item btn btn-toggle btn-square btn-sm"
+            :title="linkConfig!.displayName"
+          >
+            <input v-model="selectedLinkType" :value="linkKey" type="radio" name="arrow" />
+            <ArrowLongRightIcon v-if="linkKey === LinkType.SINGLE" class="size-5 opacity-70" />
+            <ArrowDoubleLongRightIcon
+              v-if="linkKey === LinkType.DOUBLE"
+              class="size-5 opacity-70"
+            />
+          </label>
+        </div>
+        <button class="btn btn-square btn-sm" @click="isSourceOpened = true" title="Show source">
+          <DocumentTextIcon class="size-6 opacity-70" />
+        </button>
+        <button
+          class="btn btn-square btn-sm"
+          :popovertarget="'popover' + graphComponentId"
+          :style="{
+            anchorName: '--anchor' + graphComponentId,
+          }"
+          title="Evaluate"
+        >
+          <VariableIcon class="size-6 opacity-70" />
+        </button>
+        <ul
+          class="dropdown dropdown-right menu rounded-box bg-base-100 shadow-md/30"
+          popover
+          :id="'popover' + graphComponentId"
+          :style="{
+            positionAnchor: '--anchor' + graphComponentId,
+          }"
+        >
+          <li @click="isExtensionsOpened = true">
+            <a>Extensions</a>
+          </li>
+          <li>
+            <a>Rankings</a>
+          </li>
+        </ul>
+      </div>
+      <div class="flex flex-1"></div>
+      <WindowExtensions v-model:open="isExtensionsOpened" v-model:extension="selectedExtension" />
+      <WindowSource v-model:open="isSourceOpened" />
+    </div>
+  </div>
+</template>
+<style scoped>
+/**
+Toggle button idea and implementation from https://github.com/saadeghi/daisyui/discussions/4249-
+ */
+.btn-toggle {
+  position: relative;
+
+  & > input:is([type='checkbox'], [type='radio']) {
+    display: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    max-width: calc(100% - (var(--size) / 2));
+    width: 1rem;
+    height: 0.2rem;
+    background-color: color-mix(in oklab, var(--color-base-content) 30%, #ddd);
+    bottom: calc(var(--size) / 8);
+    border-radius: var(--radius-field);
+  }
+
+  &:has(input:checked)::after {
+    background: var(--color-base-content);
+  }
+}
+</style>
