@@ -1,0 +1,26 @@
+info:
+  name: Get Models
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/dung"
+  body:
+    type: json
+    data: |-
+      {
+        "cmd": "get_models",
+        "nr_of_arguments": 2,
+        "attacks": [[1, 2]],
+        "semantics": "pr",
+        "timeout": 10,
+        "unit_timeout": "s"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

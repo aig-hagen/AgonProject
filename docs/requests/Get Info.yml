@@ -1,0 +1,21 @@
+info:
+  name: Get Info
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/dung"
+  body:
+    type: json
+    data: |-
+      {
+        "cmd": "info"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
