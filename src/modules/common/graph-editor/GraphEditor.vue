@@ -9,16 +9,30 @@ import {
   ArrowType,
 } from '@aig-hagen/graph-component/lib'
 import '@aig-hagen/graph-component/lib/graph-component.css'
-import { nextTick, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onMounted,
+  ref,
+  shallowRef,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 import { generateUUID, IdGenerator, IdMapping } from '../ids'
 import { getNextName } from '../nextName'
 import { ARGUMENT_COLOR, ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '../argumentation/model'
 import ArrowSwitcher from './LinkTypeSwitch.vue'
 import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
-import WindowExtensions from '../../../WindowExtensions.vue'
 import WindowSource from '../../../WindowSource.vue'
 import { DocumentTextIcon, VariableIcon, ArrowLongRightIcon } from '@heroicons/vue/24/outline'
-import { LinkType, type GraphEditorState, type LinkConfigs, type NodeId } from './graphEditor'
+import {
+  LinkType,
+  type GraphEditorState,
+  type LinkConfigs,
+  type NodeId,
+  type Highlight,
+} from './graphEditor'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
@@ -33,7 +47,6 @@ const { state, linkConfigs } = defineProps<{
 
 const isExtensionsOpened = ref<boolean>(false)
 const isSourceOpened = ref<boolean>(false)
-const selectedExtension = ref<string>('s1')
 const enableLinkSwitching = Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
 if (defaultLinkType === undefined) {
@@ -51,10 +64,14 @@ function renderNewState(state: GraphEditorState, center: boolean) {
 watch(
   () => state,
   async (newState, oldState) => {
-    if (newState.stateId !== oldState.stateId) {
-      if (renderedState !== undefined && newState.stateId !== renderedState.stateId) {
-        renderNewState(newState, false)
-      }
+    if (newState.stateId === oldState.stateId) {
+      return
+    }
+    if (renderedState === undefined) {
+      return
+    }
+    if (newState.stateId !== renderedState.stateId) {
+      renderNewState(newState, false)
     }
   },
 )
@@ -409,9 +426,50 @@ const arrowSwitcherTarget = shallowRef<
     }
   | undefined
 >(undefined)
+
+const extensionHighlightRef = ref<Highlight | undefined>(undefined)
+const highlightToShow = computed(() => {
+  if (!isExtensionsOpened.value) {
+    return undefined
+  }
+  if (extensionHighlightRef.value?.stateId !== renderedState?.stateId) {
+    return undefined
+  }
+  return extensionHighlightRef.value
+})
+
+watchEffect(() => {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) {
+    return
+  }
+  if (renderedState === undefined) {
+    return
+  }
+  const nodes = highlightToShow.value?.nodes ?? new Set()
+  const hightlightNodes = []
+  const restNodes = []
+  for (const { id } of renderedState.nodes) {
+    if (!idMapping.has(id)) {
+      continue
+    }
+    const internalNodeId = idMapping.getOrFail(id)
+    if (nodes.has(id)) {
+      hightlightNodes.push(internalNodeId)
+    } else {
+      restNodes.push(internalNodeId)
+    }
+  }
+  const highlightColor = highlightToShow.value?.color ?? undefined
+  const restColor = highlightToShow.value?.restColor ?? ARGUMENT_COLOR
+  if (highlightColor !== undefined) {
+    graphComponent.setColor(highlightColor, hightlightNodes)
+  }
+  graphComponent.setColor(restColor, restNodes)
+})
 </script>
 <template>
-  <div>
+  <div class="h-full w-full">
     <GraphComponent
       @node-created="onNodeCreated"
       @node-deleted="onNodeDeleted"
@@ -476,9 +534,13 @@ const arrowSwitcherTarget = shallowRef<
         </ul>
       </div>
       <div class="flex flex-1"></div>
-      <WindowExtensions v-model:open="isExtensionsOpened" v-model:extension="selectedExtension" />
-      <WindowSource v-model:open="isSourceOpened" />
     </div>
+    <slot
+      name="evaluationExtensions"
+      v-bind:open="isExtensionsOpened"
+      @highlight="extensionHighlightRef = $event"
+    ></slot>
+    <WindowSource v-model:open="isSourceOpened" />
   </div>
 </template>
 <style scoped>

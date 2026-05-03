@@ -11,7 +11,7 @@ const open = defineModel('open', { required: true })
 </script>
 
 <template>
-  <FloatingWindow v-model:open="open" title="Help">
+  <FloatingWindow v-model:open="open" title="Help" :initial-position="{ x: 256, y: 256 }">
     <div class="p-4">
       <div class="my-4 gap-2 flex flex-wrap">
         <a class="btn btn-xs btn-soft"><BookOpenIcon class="size-3" />User Guide</a>

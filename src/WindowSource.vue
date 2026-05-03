@@ -41,7 +41,7 @@ H D
 </script>
 
 <template>
-  <FloatingWindow v-model:open="open" title="Source">
+  <FloatingWindow v-model:open="open" title="Source" :initial-position="{ x: 256, y: 128 }">
     <div ref="content"></div>
   </FloatingWindow>
 </template>

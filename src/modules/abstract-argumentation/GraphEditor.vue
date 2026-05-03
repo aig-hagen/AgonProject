@@ -11,10 +11,19 @@ import {
 import GraphEditor from '../common/graph-editor/GraphEditor.vue'
 import { modifyDocument, type DocumentState } from '../common/state'
 import type { AbstractArgumentation } from './model'
+import WindowExtensions from './WindowExtensions.vue'
+import type { Input } from '../common/evaluation/types'
 
 const { state } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>
 }>()
+
+const evaluationInput = computed<Input<AbstractArgumentation<ArgumentData>>>(() => {
+  return {
+    stateId: state.stateId,
+    content: state.current.content,
+  }
+})
 
 const emit = defineEmits<{
   change: [state: DocumentState<AbstractArgumentation<ArgumentData>>]
@@ -130,5 +139,9 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
-  ></GraphEditor>
+  >
+    <template #evaluationExtensions="{ open, onHighlight }">
+      <WindowExtensions :input="evaluationInput" v-bind:open="open" @highlight="onHighlight" />
+    </template>
+  </GraphEditor>
 </template>

@@ -33,7 +33,7 @@ test('works with immer', () => {
     {
       op: 'replace',
       path: ['g', 'e', 1, 2],
-      value: undefined,
+      value: 'a',
     },
   ])
 })

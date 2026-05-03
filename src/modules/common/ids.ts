@@ -24,6 +24,17 @@ export class IdMapping<InputIdT, OutputIdT> {
     }
     throw new Error('No ID mapping found.')
   }
+
+  hasReverse(outputId: OutputIdT): boolean {
+    return this.perOutputIdInputId.has(outputId)
+  }
+
+  getOrFailReverse(outputId: OutputIdT): InputIdT {
+    if (this.hasReverse(outputId)) {
+      return this.perOutputIdInputId.get(outputId)!
+    }
+    throw new Error('No ID mapping found.')
+  }
 }
 
 export class IdGenerator {

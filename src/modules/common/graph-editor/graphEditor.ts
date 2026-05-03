@@ -51,3 +51,10 @@ export interface GraphEditorState {
   nodes: GraphEditorStateNode[]
   links: GraphEditorStateLink[]
 }
+
+export interface Highlight {
+  stateId: UUID
+  nodes: Set<NodeId>
+  color: string
+  restColor: string
+}
