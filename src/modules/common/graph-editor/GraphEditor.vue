@@ -54,24 +54,15 @@ if (defaultLinkType === undefined) {
 }
 const selectedLinkType = ref<LinkType>(defaultLinkType)
 
-let renderedState: GraphEditorState | undefined
-
 function renderNewState(state: GraphEditorState, center: boolean) {
-  renderedState = state
-  setGraph(renderedState, center)
+  setGraph(state, center)
 }
 
 watch(
   () => state,
-  async (newState, oldState) => {
-    if (newState.stateId === oldState.stateId) {
-      return
-    }
-    if (renderedState === undefined) {
-      return
-    }
-    if (newState.stateId !== renderedState.stateId) {
-      renderNewState(newState, false)
+  () => {
+    if (state.redraw) {
+      setGraph(state, false)
     }
   },
 )
@@ -129,7 +120,7 @@ let idGenerator = new IdGenerator()
 let idMapping = new IdMapping<number, number>()
 
 function* argumentNames() {
-  for (const { label } of renderedState!.nodes) {
+  for (const { label } of state.nodes) {
     yield label
   }
 }
@@ -432,9 +423,6 @@ const highlightToShow = computed(() => {
   if (!isExtensionsOpened.value) {
     return undefined
   }
-  if (extensionHighlightRef.value?.stateId !== renderedState?.stateId) {
-    return undefined
-  }
   return extensionHighlightRef.value
 })
 
@@ -443,17 +431,15 @@ watchEffect(() => {
   if (graphComponent === null) {
     return
   }
-  if (renderedState === undefined) {
-    return
-  }
   const nodes = highlightToShow.value?.nodes ?? new Set()
+
   const hightlightNodes = []
   const restNodes = []
-  for (const { id } of renderedState.nodes) {
-    if (!idMapping.has(id)) {
+  for (const { id } of state.nodes) {
+    if (!idMapping.hasReverse(id)) {
       continue
     }
-    const internalNodeId = idMapping.getOrFail(id)
+    const internalNodeId = idMapping.getOrFailReverse(id)
     if (nodes.has(id)) {
       hightlightNodes.push(internalNodeId)
     } else {
@@ -537,7 +523,8 @@ watchEffect(() => {
     </div>
     <slot
       name="evaluationExtensions"
-      v-bind:open="isExtensionsOpened"
+      :isOpen="isExtensionsOpened"
+      @isOpen="isExtensionsOpened = $event"
       @highlight="extensionHighlightRef = $event"
     ></slot>
     <WindowSource v-model:open="isSourceOpened" />

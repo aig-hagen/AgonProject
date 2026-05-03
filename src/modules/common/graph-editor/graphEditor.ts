@@ -48,6 +48,7 @@ export interface GraphEditorStateLink {
 
 export interface GraphEditorState {
   stateId: UUID
+  redraw: boolean
   nodes: GraphEditorStateNode[]
   links: GraphEditorStateLink[]
 }

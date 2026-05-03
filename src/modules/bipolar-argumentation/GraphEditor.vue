@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { computed, shallowRef, watch } from 'vue'
+import { shallowRef, watch } from 'vue'
 import type { ArgumentData } from '../common/argumentation/model'
 import {
   LinkType,
-  type GraphEditorState,
   type GraphEditorStateLink,
   type GraphEditorStateNode,
   type NodeId,
@@ -20,25 +19,23 @@ const emit = defineEmits<{
   change: [state: DocumentState<BipoloarArgumentation<ArgumentData>>]
 }>()
 
-const workingState = shallowRef(state)
+const renderedState = shallowRef(state)
+const editorState = shallowRef(transformToEditorState(state, true))
 watch(
   () => state,
-  async (newState, oldState) => {
-    if (newState.stateId === oldState.stateId) {
+  () => {
+    if (state.stateId === renderedState.value.stateId) {
       return
     }
-    if (newState.stateId === workingState.value.stateId) {
-      return
-    }
-    workingState.value = newState
+    renderedState.value = state
+    editorState.value = transformToEditorState(state, true)
   },
 )
-
-const editorState = computed<GraphEditorState | undefined>(() => {
-  if (workingState.value === undefined) {
-    return undefined
-  }
-  const argumentation = workingState.value.current.content
+function transformToEditorState(
+  state: DocumentState<BipoloarArgumentation<ArgumentData>>,
+  redraw: boolean,
+) {
+  const argumentation = state.current.content
   const nodes: GraphEditorStateNode[] = [...argumentation.arguments()].map(([id, data]) => {
     return {
       id: id,
@@ -63,11 +60,12 @@ const editorState = computed<GraphEditorState | undefined>(() => {
   )
   const links = [...attackLinks, ...supportLinks]
   return {
-    stateId: workingState.value.stateId,
+    stateId: state.stateId,
     nodes,
     links,
+    redraw,
   }
-})
+}
 
 const linkConfig = {
   SINGLE: {
@@ -79,12 +77,14 @@ const linkConfig = {
 }
 
 function createNewState(recipe: (draft: BipoloarArgumentation<ArgumentData>) => void) {
-  if (workingState.value === undefined) {
+  if (renderedState.value === undefined) {
     throw new Error('Cannot create new state from undefined state.')
   }
-  const nextState = modifyDocument(workingState.value, recipe)
+  const nextState = modifyDocument(renderedState.value, recipe)
   if (nextState !== undefined) {
-    workingState.value = nextState
+    renderedState.value = nextState
+    editorState.value = transformToEditorState(nextState, false)
+
     emit('change', nextState)
   }
 }
