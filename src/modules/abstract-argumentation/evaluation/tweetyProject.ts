@@ -100,26 +100,44 @@ export const KNOWN_SEMANTIC_GROUPS = [
       {
         key: 'cf',
         displayName: 'Conflict-free',
+        info: 'A set of arguments $$E$$ is conflict-free iff for all arguments $$a,b \\in E$$ we have that $$(a,b) \\notin R$$.',
+        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
       },
       {
         key: 'ad',
         displayName: 'Admissible',
-      },
-      {
-        key: 'gr',
-        displayName: 'Grounded',
+        info: 'A set of arguments $$E$$ is admissible iff $$E$$ is conflict-free and defends every argument $$a \\in E$$.',
+        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
       },
       {
         key: 'co',
         displayName: 'Complete',
+        info: 'A set of arguments $$E$$ is a complete extension iff $$E$$ is admissible and for every argument $$a \\in A$$ defended by $$E$$, we have that $$a \\in E$$.',
+        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+      },
+      {
+        key: 'gr',
+        displayName: 'Grounded',
+        info: 'A set of arguments $$E$$ is a grounded extension iff $$E$$ is complete and $$\\subseteq$$-minimal.',
+        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
       },
       {
         key: 'pr',
         displayName: 'Preferred',
+        info: 'A set of arguments $$E$$ is a preferred extension iff $$E$$ is complete and $$\\subseteq$$-maximal.',
+        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
       },
       {
         key: KEY_STABLE_SEMANTIC,
         displayName: 'Stable',
+        info: 'A set of arguments $$E$$ is a stable extension iff $$E$$ is conflict-free and we have that $$E \\cup E^+ = A$$.',
+        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
       },
     ],
   },
@@ -129,11 +147,13 @@ export const KNOWN_SEMANTIC_GROUPS = [
     semantics: [
       {
         key: 'sad',
-        displayName: 'Strongly Admissable',
+        displayName: 'Strongly Admissible',
       },
       {
         key: 'SST',
-        displayName: 'Semi Stable',
+        displayName: 'Semi-Stable',
+        info: 'A set of arguments $$E$$ is a semi-stable extension iff $$E$$ is complete and $$E \\cup E^+$$ is $$\\subseteq$$-maximal.',
+        reference: 'Caminada, M. (2006). "Semi-Stable Semantics". In: Computational Models of Argument - Proceedings of COMMA 2006. pp. 121 - 130',
       },
       {
         key: 'id',
@@ -146,6 +166,9 @@ export const KNOWN_SEMANTIC_GROUPS = [
       {
         key: 'in',
         displayName: 'Initial',
+        info: 'A set of arguments $$E$$ is initial iff $$E$$ is non-empty, admissible and $$\\subseteq$$-minimal.',
+        url: 'https://doi.org/10.1080/11663081.2018.1457252',
+        reference: 'Xu, Y. and C. Cayrol (2018). "Initial Sets in Abstract Argumentation Frameworks". In: Journal of Applied Non-Classical Logics, Vol. 28.2-3, pp. 260 - 279'
       },
       {
         key: 'soad',
@@ -177,7 +200,7 @@ export const KNOWN_SEMANTIC_GROUPS = [
     semantics: [
       {
         key: 'wad',
-        displayName: 'Weakly Admissable',
+        displayName: 'Weakly Admissible',
       },
       {
         key: 'wco',
