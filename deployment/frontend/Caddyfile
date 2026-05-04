@@ -1,0 +1,22 @@
+{
+	auto_https disable_redirects
+	admin off
+}
+:8080 {
+	# log {
+	#	output stdout
+	#	format json
+	# }
+	handle /dung {
+		# log_append proxy_target {$TWEETYPROJECT_BACKEND_BASE_URL}
+		reverse_proxy {$TWEETYPROJECT_BACKEND_BASE_URL} {
+			header_up -Origin
+			header_up -Referer
+		}
+	}
+
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}

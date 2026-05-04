@@ -1,0 +1,3 @@
+[submodule "third-party/TweetyProjectTeam/TweetyProject"]
+	path = third-party/TweetyProjectTeam/TweetyProject
+	url = https://github.com/TweetyProjectTeam/TweetyProject.git
