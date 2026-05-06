@@ -38,11 +38,16 @@ export function modifyDocument<DocumentT>(
   }
 }
 
-export function setNewContent<DocumentT>(
-  state: DocumentState<DocumentT>,
-  content: DocumentT,
-): DocumentState<DocumentT> | undefined {
-  return modifyDocument<DocumentT>(state, () => content)
+export function setNewContent<DocumentT>(content: DocumentT): DocumentState<DocumentT> | undefined {
+  return {
+    stateId: generateUUID(),
+    current: {
+      changeIdx: -1,
+      content: content,
+    },
+    changes: [],
+    inverseChanges: [],
+  }
 }
 
 export function undoContent<DocumentT extends Objectish>(

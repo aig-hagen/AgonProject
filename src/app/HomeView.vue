@@ -36,11 +36,7 @@ const { documentState, updateDocument } = useDocumentContent<DocumentT>(
 const isHelpOpened = ref<boolean>(false)
 
 function overrideWithContent(content: DocumentT) {
-  const currentState = documentState.value
-  if (currentState === undefined) {
-    throw new Error('Document state does not exit.')
-  }
-  const nextDocumentState = setNewContent(currentState, content)
+  const nextDocumentState = setNewContent(content)
   if (nextDocumentState !== undefined) {
     updateDocument(nextDocumentState)
   }
@@ -120,12 +116,12 @@ const editorComponent = computed(() => {
     <main class="border-t -mt-px border-base-300 editor flex-1">
       <div class="relative h-full w-full">
         <BlankDocumentCanvas
-          v-if="documentState === undefined"
+          v-if="selectedDocumentId === undefined"
           :example-groups="modules"
           @open="createDocumentWithContent"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
-          v-else-if="documentState.current.content === undefined"
+          v-else-if="documentState === undefined"
           :example-groups="modules"
           @open="overrideWithContent"
         ></BlankDocumentCanvas>
