@@ -2,7 +2,7 @@
 	auto_https disable_redirects
 	admin off
 }
-:8080 {
+http://:8080 {
 	# log {
 	#	output stdout
 	#	format json

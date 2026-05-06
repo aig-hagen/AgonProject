@@ -7,7 +7,7 @@ RUN --mount=type=cache,target=/root/.m2 \
 RUN --mount=type=cache,target=/root/.m2 \
     mvn --batch-mode --fail-fast -Dgpg.skip -Dmaven.test.skip \
     -pl org-tweetyproject-web -am \
-    package
+    install
 RUN --mount=type=cache,target=/root/.m2  \
     mvn --batch-mode --fail-fast -Dgpg.skip -Dmaven.test.skip \
     -pl org-tweetyproject-web \
