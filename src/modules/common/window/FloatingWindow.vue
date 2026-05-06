@@ -81,8 +81,9 @@ onMounted(() => {
         }),
       ],
       allowFrom: floating.value!,
+      ignoreFrom: header.value!,
       invert: 'none',
-      edges: { top: true, left: true, bottom: true, right: true },
+      edges: { top: false, left: true, bottom: true, right: true },
       listeners: {
         start: startDragOrResize,
         move(event) {
