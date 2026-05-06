@@ -35,7 +35,20 @@ const { documentState, updateDocument } = useDocumentContent<DocumentT>(
 )
 const isHelpOpened = ref<boolean>(false)
 
-function overrideWithContent(content: DocumentT) {
+function overrideWithContent(content: DocumentT, newNamePrefix: string) {
+  if (selectedDocumentId.value === undefined) {
+    return
+  }
+  const selectedDocumentMetadata = documents.value.find(
+    (document) => document.id === selectedDocumentId.value,
+  )
+  if (selectedDocumentMetadata === undefined) {
+    return
+  }
+  if (selectedDocumentMetadata.name.trim() === '') {
+    const name = getNextName(newNamePrefix)
+    renameDocument(selectedDocumentId.value, name)
+  }
   const nextDocumentState = setNewContent(content)
   if (nextDocumentState !== undefined) {
     updateDocument(nextDocumentState)
@@ -43,13 +56,27 @@ function overrideWithContent(content: DocumentT) {
 }
 
 async function createAndSelectBlankDocument() {
-  const id = await createDocument()
+  const id = await createDocument('', undefined)
   selectDocument(id)
 }
 
-async function createDocumentWithContent(content: DocumentT) {
-  const id = await createDocument(content)
+async function createDocumentWithContent(content: DocumentT, newNamePrefix: string) {
+  const name = getNextName(newNamePrefix)
+  const id = await createDocument(name, content)
   selectDocument(id)
+}
+
+function getNextName(newNamePrefix: string) {
+  const allNames = new Set(documents.value.map((document) => document.name))
+  if (!allNames.has(newNamePrefix)) {
+    return newNamePrefix
+  }
+  for (let i = 1; ; i++) {
+    const newName = newNamePrefix + i.toString(10)
+    if (!allNames.has(newName)) {
+      return newName
+    }
+  }
 }
 
 function undo() {

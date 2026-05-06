@@ -2,6 +2,7 @@
 import type { Example } from '@/modules/common/examples'
 
 export interface ExampleGroup<DocumentT> {
+  newNamePrefix: string
   displayNameSingular: string
   examples: Example<DocumentT>[]
   initialCotent: DocumentT
@@ -11,15 +12,15 @@ const { exampleGroups } = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  open: [content: DocumentT]
+  open: [content: DocumentT, newNamePrefix: string]
 }>()
 
-function openExample(example: Example<DocumentT>) {
-  emit('open', example.load())
+function openExample(example: Example<DocumentT>, newNamePrefix: string) {
+  emit('open', example.load(), newNamePrefix)
 }
 
-function openContent(content: DocumentT) {
-  emit('open', content)
+function openContent(content: DocumentT, newNamePrefix: string) {
+  emit('open', content, newNamePrefix)
 }
 </script>
 <template>
@@ -35,7 +36,7 @@ function openContent(content: DocumentT) {
         <h3 class="text-xl font-bold mb-2">{{ exampleGroup.displayNameSingular }}</h3>
         <h4
           class="text-lg btn btn-ghost font-normal mb-2 p-1 px-1"
-          @click="openContent(exampleGroup.initialCotent)"
+          @click="openContent(exampleGroup.initialCotent, exampleGroup.newNamePrefix)"
         >
           Create New
         </h4>
@@ -48,7 +49,7 @@ function openContent(content: DocumentT) {
             v-for="(example, index) in exampleGroup.examples"
             :key="index"
             class="block btn btn-ghost p-1 px-2 h-8 font-normal"
-            @click="openExample(example)"
+            @click="openExample(example, example.name)"
           >
             Open <span class="italic">{{ example.name }}</span>
           </button>

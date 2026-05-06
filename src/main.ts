@@ -22,6 +22,7 @@ const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)
 
 export interface ModuleConfig<DocumentT extends Objectish> {
+  newNamePrefix: string
   displayNameSingular: string
   is(model: Objectish): model is DocumentT
   deserialize(modelSerialized: Objectish): DocumentT | undefined
@@ -72,6 +73,7 @@ const TYPE_KEY = 'type'
 const BIPOLAR_ARGUMENTATION_V1_TYPE = 'bipolar-argumentation-v1'
 const ABSTRACT_ARGUMENTATION_V1_TYPE = 'abstract-argumentation-v1'
 const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<ArgumentData>> = {
+  newNamePrefix: 'AF',
   displayNameSingular: 'Abstract Argumentation',
   is(model: unknown) {
     return model instanceof AbstractArgumentation
@@ -106,6 +108,7 @@ const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<ArgumentDa
   editorComponent: AbstractArgumentationGraphEditor,
 }
 const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<ArgumentData>> = {
+  newNamePrefix: 'BAF',
   displayNameSingular: 'Bipolar Argumentation',
   is(model: unknown) {
     return model instanceof BipoloarArgumentation

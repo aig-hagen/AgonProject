@@ -47,7 +47,7 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
     return nextDocuments
   }
 
-  async function createDocument(content?: DocumentT) {
+  async function createDocument(name: string, content?: DocumentT) {
     let rawContent: Objectish = {}
     if (content !== undefined) {
       rawContent = serializeContent(content, modules)
@@ -58,7 +58,7 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
 
     // @ts-expect-error id will be autogenrated
     const id = await metadataStore.add({
-      name: '',
+      name: name,
     })
     await contentStore.add(
       {
