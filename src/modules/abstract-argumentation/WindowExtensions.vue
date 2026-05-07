@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, toRef, useTemplateRef, watchEffect, nextTick } from 'vue'
+import { computed, ref, toRef, useTemplateRef, watchEffect, nextTick, shallowRef } from 'vue'
 import { AbstractArgumentation } from './model'
 import type { ArgumentData } from '../common/argumentation/model'
 import FloatingWindow from '../../modules/common/window/FloatingWindow.vue'
@@ -10,8 +10,10 @@ import {
   KNOWN_SEMANTIC_GROUPS,
   useExtensionEvaluationQuery,
   type Extension,
+  type Semantic,
 } from './evaluation/tweetyProject'
 import { NODE_GREEN, NODE_RED } from '../common/colors'
+import KatexInlineElement from '../common/KatexInlineElement.vue'
 
 const open = defineModel<boolean>('open', { required: true })
 const { input } = defineProps<{
@@ -23,12 +25,18 @@ const emit = defineEmits<{
 }>()
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
-const selectedSemantic = ref<string>(KEY_STABLE_SEMANTIC)
+const stableSemantic = semanticGroups[0]?.semantics.find(
+  (semantics) => semantics.key === KEY_STABLE_SEMANTIC,
+)
+if (stableSemantic === undefined) {
+  throw new Error('Stable semantic does not exist.')
+}
+const selectedSemantic = shallowRef<Semantic>(stableSemantic)
 const evaluateContiously = ref(false)
 const enabled = computed(() => evaluateContiously.value && open.value)
 const { data, status, refetch, isLoading, isPending, isError } = useExtensionEvaluationQuery(
   toRef(() => input),
-  selectedSemantic,
+  computed(() => selectedSemantic.value.key),
   enabled,
 )
 const userCanTriggerFetch = computed(
@@ -135,17 +143,34 @@ watchEffect(() => {
             <span class="label">Semantics</span>
             <select v-model="selectedSemantic">
               <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-                <option
-                  v-for="semantic in group.semantics"
-                  :key="semantic.key"
-                  :value="semantic.key"
-                >
+                <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
                   {{ semantic.displayName }}
                 </option>
               </optgroup>
             </select>
           </label>
         </div>
+      </fieldset>
+      <fieldset class="fieldset" v-if="selectedSemantic.info !== undefined">
+        <details class="collapse collapse-arrow">
+          <summary class="collapse-title fieldset-legend ps-0 max-w-max">
+            {{ selectedSemantic.displayName }} semantics definition
+          </summary>
+          <div class="collapse-content text-sm p-0">
+            <p class="mb-1">
+              <KatexInlineElement :text="selectedSemantic.info.description" /><sup
+                :title="selectedSemantic.info.reference.name"
+                ><a
+                  class="link link-primary"
+                  :href="selectedSemantic.info.reference.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >[1] ↗</a
+                ></sup
+              >
+            </p>
+          </div>
+        </details>
       </fieldset>
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Evaluation</legend>

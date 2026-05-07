@@ -92,7 +92,7 @@ function matchAvailableSemanticKeyToSemanticGroups(semanticKeys: string[]): Sema
 }
 
 export const KEY_STABLE_SEMANTIC = 'st'
-export const KNOWN_SEMANTIC_GROUPS = [
+export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   {
     key: 'classical',
     displayName: 'Classical',
@@ -100,44 +100,74 @@ export const KNOWN_SEMANTIC_GROUPS = [
       {
         key: 'cf',
         displayName: 'Conflict-free',
-        info: 'A set of arguments $$E$$ is conflict-free iff for all arguments $$a,b \\in E$$ we have that $$(a,b) \\notin R$$.',
-        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
-        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+        info: {
+          description:
+            'A set of arguments $E$ is conflict-free iff for all arguments $a,b \\in E$ we have that $(a,b) \\notin R$.',
+          reference: {
+            name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+          },
+        },
       },
       {
         key: 'ad',
         displayName: 'Admissible',
-        info: 'A set of arguments $$E$$ is admissible iff $$E$$ is conflict-free and defends every argument $$a \\in E$$.',
-        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
-        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+        info: {
+          description:
+            'A set of arguments $E$ is admissible iff $E$ is conflict-free and defends every argument $a \\in E$.',
+          reference: {
+            name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+          },
+        },
       },
       {
         key: 'co',
         displayName: 'Complete',
-        info: 'A set of arguments $$E$$ is a complete extension iff $$E$$ is admissible and for every argument $$a \\in A$$ defended by $$E$$, we have that $$a \\in E$$.',
-        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
-        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+        info: {
+          description:
+            'A set of arguments $E$ is a complete extension iff $E$ is admissible and for every argument $a \\in A$ defended by $E$, we have that $a \\in E$.',
+          reference: {
+            name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+          },
+        },
       },
       {
         key: 'gr',
         displayName: 'Grounded',
-        info: 'A set of arguments $$E$$ is a grounded extension iff $$E$$ is complete and $$\\subseteq$$-minimal.',
-        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
-        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+        info: {
+          description:
+            'A set of arguments $E$ is a grounded extension iff $E$ is complete and $\\subseteq$-minimal.',
+          reference: {
+            name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+          },
+        },
       },
       {
         key: 'pr',
         displayName: 'Preferred',
-        info: 'A set of arguments $$E$$ is a preferred extension iff $$E$$ is complete and $$\\subseteq$$-maximal.',
-        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
-        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+        info: {
+          description:
+            'A set of arguments $E$ is a preferred extension iff $E$ is complete and $\\subseteq$-maximal.',
+          reference: {
+            name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+          },
+        },
       },
       {
         key: KEY_STABLE_SEMANTIC,
         displayName: 'Stable',
-        info: 'A set of arguments $$E$$ is a stable extension iff $$E$$ is conflict-free and we have that $$E \\cup E^+ = A$$.',
-        url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
-        reference: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+        info: {
+          description:
+            'A set of arguments $E$ is a stable extension iff $E$ is conflict-free and we have that $E \\cup E^+ = A$.',
+          reference: {
+            name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
+            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+          },
+        },
       },
     ],
   },
@@ -152,8 +182,14 @@ export const KNOWN_SEMANTIC_GROUPS = [
       {
         key: 'SST',
         displayName: 'Semi-Stable',
-        info: 'A set of arguments $$E$$ is a semi-stable extension iff $$E$$ is complete and $$E \\cup E^+$$ is $$\\subseteq$$-maximal.',
-        reference: 'Caminada, M. (2006). "Semi-Stable Semantics". In: Computational Models of Argument - Proceedings of COMMA 2006. pp. 121 - 130',
+        info: {
+          description:
+            'A set of arguments $E$ is a semi-stable extension iff $E$ is complete and $E \\cup E^+$ is $\\subseteq$-maximal.',
+          reference: {
+            name: 'Caminada, M. (2006). "Semi-Stable Semantics". In: Computational Models of Argument - Proceedings of COMMA 2006. pp. 121 - 130',
+            url: 'https://dl.acm.org/doi/abs/10.5555/1565233.1565248',
+          },
+        },
       },
       {
         key: 'id',
@@ -166,9 +202,14 @@ export const KNOWN_SEMANTIC_GROUPS = [
       {
         key: 'in',
         displayName: 'Initial',
-        info: 'A set of arguments $$E$$ is initial iff $$E$$ is non-empty, admissible and $$\\subseteq$$-minimal.',
-        url: 'https://doi.org/10.1080/11663081.2018.1457252',
-        reference: 'Xu, Y. and C. Cayrol (2018). "Initial Sets in Abstract Argumentation Frameworks". In: Journal of Applied Non-Classical Logics, Vol. 28.2-3, pp. 260 - 279'
+        info: {
+          description:
+            'A set of arguments $E$ is initial iff $E$ is non-empty, admissible and $\\subseteq$-minimal.',
+          reference: {
+            name: 'Xu, Y. and C. Cayrol (2018). "Initial Sets in Abstract Argumentation Frameworks". In: Journal of Applied Non-Classical Logics, Vol. 28.2-3, pp. 260 - 279',
+            url: 'https://doi.org/10.1080/11663081.2018.1457252',
+          },
+        },
       },
       {
         key: 'soad',
@@ -221,7 +262,7 @@ export const KNOWN_SEMANTIC_GROUPS = [
     displayName: 'Qualified Semantics',
     semantics: [],
   },
-] as const
+].filter((group) => group.semantics.length > 0)
 
 const SEMANTIC_GROUP_UNCATAGORIZED_KEY = 'uncategorized'
 const SEMANTIC_GROUP_UNCATAGORIZED_DISPLAY_NAME = 'Uncategorized'
@@ -235,6 +276,13 @@ export interface SemanticGroup {
 export interface Semantic {
   key: string
   displayName: string
+  info?: {
+    description: string
+    reference: {
+      name: string
+      url: string
+    }
+  }
 }
 
 export function useSemanticsQuery() {
