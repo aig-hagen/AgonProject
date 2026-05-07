@@ -1,5 +1,5 @@
-import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from '@/modules/common/argumentation/model'
-import { type AbstractArgumentation, type ArgumentId } from './model'
+import { ARGUMENT_RADIUS_IN_PX, type ArgumentId, type ArgumentData } from '@/modules/common/argumentation/model'
+import { type AbstractArgumentation } from './model'
 import { Graphviz } from '@hpcc-js/wasm-graphviz'
 
 const NUMERIC_ID_TO_STRING_RADIX = 16

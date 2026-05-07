@@ -1,12 +1,12 @@
 import z from 'zod'
 
 import { useQuery } from '@tanstack/vue-query'
-import { type ArgumentId, type AbstractArgumentation } from '../model'
-import type { ArgumentData } from '@/modules/common/argumentation/model'
+import { type AbstractArgumentation } from '../model'
+import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import { computed, unref, type MaybeRef } from 'vue'
 import { IdMapping } from '@/modules/common/ids'
-import { parserListOfSets } from './listOfSets'
+import { parserListOfSets } from '../../common/evaluation/tweety-project/listOfSets'
 import type { UUID } from 'crypto'
 
 const ENDPOINT_ABSTRACT_ARGUMENTATION = '/dung'
@@ -29,69 +29,10 @@ async function fetchTyped<T extends z.ZodTypeAny>(
   return schema.parse(await response.json())
 }
 
-const InfoResponseSchema = z.object({
-  semantics: z.array(z.string()),
-})
-
 const TIMEOUT_IN_SECONDS = 300
 const TIMEOUT_UNIT_SECONDS = 's'
 
-async function fetchSemantics(): Promise<SemanticGroup[]> {
-  const infoResponse = await fetchTyped(
-    ENDPOINT_ABSTRACT_ARGUMENTATION,
-    {
-      cmd: 'info',
-    },
-    InfoResponseSchema,
-  )
-  const semanticKeys = infoResponse.semantics
-  const semanticGroups = matchAvailableSemanticKeyToSemanticGroups(semanticKeys)
-  return semanticGroups
-}
-
-function matchAvailableSemanticKeyToSemanticGroups(semanticKeys: string[]): SemanticGroup[] {
-  const semanticKeysAvailable = new Set(semanticKeys)
-  const semanticKeysUncatagorized = new Set(semanticKeysAvailable)
-  const groups = []
-  for (const knownGroup of KNOWN_SEMANTIC_GROUPS) {
-    const semantics = []
-    for (const knownSemantic of knownGroup.semantics) {
-      if (!semanticKeysAvailable.has(knownSemantic.key)) {
-        continue
-      }
-      semanticKeysUncatagorized.delete(knownSemantic.key)
-      semantics.push({
-        key: knownSemantic.key,
-        displayName: knownSemantic.displayName,
-      })
-    }
-    if (semantics.length < 1) {
-      continue
-    }
-    groups.push({
-      key: knownGroup.key,
-      displayName: knownGroup.displayName,
-      semantics: semantics,
-    })
-  }
-  if (semanticKeysUncatagorized.size > 0) {
-    const semantics = []
-    for (const key of semanticKeysUncatagorized) {
-      semantics.push({
-        key: key,
-        displayName: key,
-      })
-    }
-    groups.push({
-      key: SEMANTIC_GROUP_UNCATAGORIZED_KEY,
-      displayName: SEMANTIC_GROUP_UNCATAGORIZED_DISPLAY_NAME,
-      semantics: semantics,
-    })
-  }
-  return groups
-}
-
-export const KEY_STABLE_SEMANTIC = 'st'
+export const KEY_DEFAULT_SEMANTIC = 'st'
 export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   {
     key: 'classical',
@@ -158,7 +99,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: KEY_STABLE_SEMANTIC,
+        key: 'st',
         displayName: 'Stable',
         info: {
           description:
@@ -264,9 +205,6 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   },
 ].filter((group) => group.semantics.length > 0)
 
-const SEMANTIC_GROUP_UNCATAGORIZED_KEY = 'uncategorized'
-const SEMANTIC_GROUP_UNCATAGORIZED_DISPLAY_NAME = 'Uncategorized'
-
 export interface SemanticGroup {
   key: string
   displayName: string
@@ -283,10 +221,6 @@ export interface Semantic {
       url: string
     }
   }
-}
-
-export function useSemanticsQuery() {
-  return useQuery({ queryKey: ['dung_info'], queryFn: fetchSemantics })
 }
 
 interface GetModelsRequestBody {

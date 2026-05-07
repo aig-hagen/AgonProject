@@ -7,7 +7,7 @@ http://:8080 {
 	#	output stdout
 	#	format json
 	# }
-	handle /dung {
+	handle /dung|/bipolar {
 		# log_append proxy_target {$TWEETYPROJECT_BACKEND_BASE_URL}
 		reverse_proxy {$TWEETYPROJECT_BACKEND_BASE_URL} {
 			header_up -Origin

@@ -22,6 +22,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/dung': 'http://localhost:8080/',
+      '/bipolar': 'http://localhost:8080/',
     },
   },
 })

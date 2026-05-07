@@ -1,23 +1,23 @@
 <script setup lang="ts">
 import { computed, ref, toRef, useTemplateRef, watchEffect, nextTick, shallowRef } from 'vue'
-import { AbstractArgumentation } from './model'
 import type { ArgumentData } from '../common/argumentation/model'
 import FloatingWindow from '../../modules/common/window/FloatingWindow.vue'
 import type { Input } from '../common/evaluation/types'
 import type { Highlight } from '../common/graph-editor/graphEditor'
+import { NODE_GREEN, NODE_RED } from '../common/colors'
+import KatexInlineElement from '../common/KatexInlineElement.vue'
+import type { BipoloarArgumentation } from './model'
 import {
   KEY_DEFAULT_SEMANTIC,
   KNOWN_SEMANTIC_GROUPS,
   useExtensionEvaluationQuery,
   type Extension,
   type Semantic,
-} from './evaluation/tweetyProject'
-import { NODE_GREEN, NODE_RED } from '../common/colors'
-import KatexInlineElement from '../common/KatexInlineElement.vue'
+} from './tweetyProject'
 
 const open = defineModel<boolean>('open', { required: true })
 const { input } = defineProps<{
-  input: Input<AbstractArgumentation<ArgumentData>>
+  input: Input<BipoloarArgumentation<ArgumentData>>
 }>()
 
 const emit = defineEmits<{
@@ -25,13 +25,33 @@ const emit = defineEmits<{
 }>()
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
-const stableSemantic = semanticGroups
+
+const byInterpretationSemantics = computed(() => {
+  const allInterpretations = new Set(semanticGroups.flatMap((group) => group.interpretations))
+  const result: Record<string, Semantic[]> = {}
+  for (const interpretation of allInterpretations) {
+    const semantics = semanticGroups
+      .filter((group) => group.interpretations.includes(interpretation))
+      .flatMap((group) => group.semantics)
+    result[interpretation] = semantics
+  }
+  return result
+})
+
+const defaultSemantic = semanticGroups
   .flatMap((group) => group.semantics)
   .find((semantics) => semantics.key === KEY_DEFAULT_SEMANTIC)
-if (stableSemantic === undefined) {
+if (defaultSemantic === undefined) {
   throw new Error('Default semantic does not exist.')
 }
-const selectedSemantic = shallowRef<Semantic>(stableSemantic)
+const defaultInterpretation = semanticGroups.find((group) =>
+  group.semantics.some((semantics) => semantics.key === KEY_DEFAULT_SEMANTIC),
+)?.interpretations[0]
+const selectedSemantic = shallowRef<Semantic>(defaultSemantic)
+if (defaultInterpretation === undefined) {
+  throw new Error('Default interpretation does not exist.')
+}
+const selectedInterpretation = shallowRef<string>(defaultInterpretation)
 const evaluateContiously = ref(false)
 const enabled = computed(() => evaluateContiously.value && open.value)
 const { data, status, refetch, isLoading, isPending, isError } = useExtensionEvaluationQuery(
@@ -39,6 +59,20 @@ const { data, status, refetch, isLoading, isPending, isError } = useExtensionEva
   computed(() => selectedSemantic.value.key),
   enabled,
 )
+
+watchEffect(() => {
+  const validSemantics = byInterpretationSemantics.value[selectedInterpretation.value]
+  if (validSemantics === undefined || validSemantics.length === 0) {
+    throw new Error('Encountred invalid interpretation without semantics.')
+  }
+  const selectedValidSemantic = validSemantics?.find(
+    (semantic) => semantic.key === selectedSemantic.value.key,
+  )
+  if (selectedValidSemantic !== undefined) {
+    return
+  }
+  selectedSemantic.value = validSemantics[0]!
+})
 const userCanTriggerFetch = computed(
   () => open.value && !evaluateContiously.value && status.value !== 'success',
 )
@@ -133,20 +167,28 @@ watchEffect(() => {
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-52">
-            <span class="label">Solver</span>
-            <select disabled>
-              <option selected>TweetyProject</option>
+          <label class="select select-sm w-54">
+            <span class="label min-w-24">Interpretation</span>
+            <select v-model="selectedInterpretation">
+              <option
+                v-for="interpretation in Object.keys(byInterpretationSemantics)"
+                :key="interpretation"
+                :value="interpretation"
+              >
+                {{ interpretation }}
+              </option>
             </select>
           </label>
-          <label class="select select-sm w-52">
-            <span class="label">Semantics</span>
+          <label class="select select-sm w-54">
+            <span class="label min-w-24">Semantics</span>
             <select v-model="selectedSemantic">
-              <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-                <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
-                  {{ semantic.displayName }}
-                </option>
-              </optgroup>
+              <option
+                v-for="semantic in byInterpretationSemantics[selectedInterpretation]"
+                :key="semantic.key"
+                :value="semantic"
+              >
+                {{ semantic.displayName }}
+              </option>
             </select>
           </label>
         </div>

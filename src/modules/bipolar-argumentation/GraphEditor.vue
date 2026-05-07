@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef, watch } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import type { ArgumentData } from '../common/argumentation/model'
 import {
   LinkType,
@@ -10,6 +10,8 @@ import {
 import GraphEditor from '../common/graph-editor/GraphEditor.vue'
 import { modifyDocument, type DocumentState } from '../common/state'
 import type { BipoloarArgumentation } from './model'
+import WindowExtensions from './WindowExtensions.vue'
+import type { Input } from '../common/evaluation/types'
 
 const { state } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
@@ -18,6 +20,13 @@ const { state } = defineProps<{
 const emit = defineEmits<{
   change: [state: DocumentState<BipoloarArgumentation<ArgumentData>>]
 }>()
+
+const evaluationInput = computed<Input<BipoloarArgumentation<ArgumentData>>>(() => {
+  return {
+    stateId: state.stateId,
+    content: state.current.content,
+  }
+})
 
 const renderedState = shallowRef(state)
 const editorState = shallowRef(transformToEditorState(state, true))
@@ -156,5 +165,14 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
-  ></GraphEditor>
+  >
+    <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
+      <WindowExtensions
+        :input="evaluationInput"
+        :open="isOpen"
+        @update:open="onIsOpen"
+        @highlight="onHighlight"
+      />
+    </template>
+  </GraphEditor>
 </template>

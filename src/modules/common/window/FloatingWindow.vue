@@ -44,8 +44,8 @@ onMounted(() => {
     throw Error('Window ref not set.')
   }
   floating.value.style.transform = `translate(${position.x}px, ${position.y}px)`
-  floating.value.style.width = '512px'
-  floating.value.style.height = '384px'
+  floating.value.style.width = '576px'
+  floating.value.style.height = '448px'
   pointerShield.value!.style.display = 'none'
   interact(floating.value)
     .draggable({
