@@ -34,6 +34,7 @@ import {
   type Highlight,
 } from './graphEditor'
 
+// TODO use `useId`
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
 // if multiple instances are used on the same site.
@@ -247,7 +248,7 @@ function onLinkCreated(
     targetId: publicTargetId,
     type: selectedLinkType.value,
   })
-  const arrowType = LinkType.SINGLE ? ArrowType.SINGLE : ArrowType.DOUBLE
+  const arrowType = selectedLinkType.value === LinkType.SINGLE ? ArrowType.SINGLE : ArrowType.DOUBLE
   void nextTick(() => {
     graphComponentRef.value!.setColor(ATTACK_COLOR, link.id)
     graphComponentRef.value!.setLinkArrowType(arrowType, link.id)
