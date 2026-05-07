@@ -105,7 +105,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
             'A set of arguments $E$ is conflict-free iff for all arguments $a,b \\in E$ we have that $(a,b) \\notin R$.',
           reference: {
             name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
-            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+            url: 'https://doi.org/10.1016/0004-3702(94)00041-X',
           },
         },
       },
@@ -117,7 +117,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
             'A set of arguments $E$ is admissible iff $E$ is conflict-free and defends every argument $a \\in E$.',
           reference: {
             name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
-            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+            url: 'https://doi.org/10.1016/0004-3702(94)00041-X',
           },
         },
       },
@@ -129,7 +129,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
             'A set of arguments $E$ is a complete extension iff $E$ is admissible and for every argument $a \\in A$ defended by $E$, we have that $a \\in E$.',
           reference: {
             name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
-            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+            url: 'https://doi.org/10.1016/0004-3702(94)00041-X',
           },
         },
       },
@@ -141,7 +141,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
             'A set of arguments $E$ is a grounded extension iff $E$ is complete and $\\subseteq$-minimal.',
           reference: {
             name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
-            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+            url: 'https://doi.org/10.1016/0004-3702(94)00041-X',
           },
         },
       },
@@ -153,7 +153,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
             'A set of arguments $E$ is a preferred extension iff $E$ is complete and $\\subseteq$-maximal.',
           reference: {
             name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
-            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+            url: 'https://doi.org/10.1016/0004-3702(94)00041-X',
           },
         },
       },
@@ -165,7 +165,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
             'A set of arguments $E$ is a stable extension iff $E$ is conflict-free and we have that $E \\cup E^+ = A$.',
           reference: {
             name: 'Dung, P.M. (1995). "On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games". In: Artificial Intelligence, Vol. 77.2, pp. 321 - 358',
-            url: 'https://doi.org/10.1007/978-0-387-98197-0_10',
+            url: 'https://doi.org/10.1016/0004-3702(94)00041-X',
           },
         },
       },
