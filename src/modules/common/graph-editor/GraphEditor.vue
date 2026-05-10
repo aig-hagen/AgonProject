@@ -15,17 +15,23 @@ import {
   onMounted,
   ref,
   shallowRef,
+  useId,
   useTemplateRef,
   watch,
   watchEffect,
 } from 'vue'
-import { generateUUID, IdGenerator, IdMapping } from '../ids'
+import { IdGenerator, IdMapping } from '../ids'
 import { getNextName } from '../nextName'
 import { ARGUMENT_COLOR, ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '../argumentation/model'
 import ArrowSwitcher from './LinkTypeSwitch.vue'
 import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
 import WindowSource from '../../../WindowSource.vue'
-import { DocumentTextIcon, VariableIcon, ArrowLongRightIcon } from '@heroicons/vue/24/outline'
+import {
+  DocumentTextIcon,
+  VariableIcon,
+  ArrowLongRightIcon,
+  PhotoIcon,
+} from '@heroicons/vue/24/outline'
 import {
   LinkType,
   type GraphEditorState,
@@ -34,11 +40,10 @@ import {
   type Highlight,
 } from './graphEditor'
 
-// TODO use `useId`
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
 // if multiple instances are used on the same site.
-const graphComponentId = generateUUID()
+const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
 const { state, linkConfigs } = defineProps<{
@@ -47,6 +52,7 @@ const { state, linkConfigs } = defineProps<{
 }>()
 
 const isExtensionsOpened = ref<boolean>(false)
+const isExportOpened = ref<boolean>(false)
 const isSourceOpened = ref<boolean>(false)
 const enableLinkSwitching = Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
@@ -494,6 +500,9 @@ watchEffect(() => {
         <button class="btn btn-square btn-sm" @click="isSourceOpened = true" title="Show source">
           <DocumentTextIcon class="size-6 opacity-70" />
         </button>
+        <button class="btn btn-square btn-sm" @click="isExportOpened = true" title="Export">
+          <PhotoIcon class="size-6 opacity-70" />
+        </button>
         <button
           class="btn btn-square btn-sm"
           :popovertarget="'popover' + graphComponentId"
@@ -528,6 +537,7 @@ watchEffect(() => {
       @isOpen="isExtensionsOpened = $event"
       @highlight="extensionHighlightRef = $event"
     ></slot>
+    <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
     <WindowSource v-model:open="isSourceOpened" />
   </div>
 </template>

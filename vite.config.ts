@@ -1,13 +1,60 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig, PluginOption } from 'vite'
+import { defineConfig, PluginOption, Plugin, ViteDevServer, PreviewServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+
+// Solves with vite compression when serving `*.sty.gz` files:
+// See https://github.com/vitejs/vite/issues/12266#issuecomment-2131263039
+function gzipFixPlugin(): Plugin {
+  const fixHeader = (server: ViteDevServer | PreviewServer) => {
+    server.middlewares.use((req, res, next) => {
+      if (req.originalUrl?.endsWith('.gz')) {
+        res.setHeader('Content-Encoding', 'invalid-value')
+      }
+      next()
+    })
+  }
+
+  return {
+    name: 'gzip-fix-plugin',
+    configureServer: fixHeader,
+    // vite dev and vite preview use different server, so we need to configure both.
+    configurePreviewServer: fixHeader,
+  }
+}
 
 const isStorybook = !!process.env.STORYBOOK
-const plugins: PluginOption[] = [tailwindcss(), vue(), vueJsx()]
+const plugins: PluginOption[] = [
+  tailwindcss(),
+  vue(),
+  vueJsx(),
+  viteStaticCopy({
+    targets: [
+      {
+        src: 'node_modules/@drgrice1/tikzjax/dist/**',
+        dest: '',
+      },
+      // Add custom TeX package to the ones provided by @drgrice1/tikzjax
+      // See https://github.com/drgrice1/tikzjax#options
+      {
+        src: 'third-party/ctan.org/pkg/argumentation/1.6 2026-07-31/argumentation.sty.gz',
+        dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
+        rename: { stripBase: 5 }
+      },
+      // `pgfopts.sty.gz` is required by `argumentation.sty.gz`
+      {
+        src: 'third-party/ctan.org/pkg/pgfopts/2.1a/pgfopts.sty.gz',
+        dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
+        rename: { stripBase: 5 }
+      },
+    ],
+  }),
+  gzipFixPlugin(),
+]
 if (!isStorybook) {
   plugins.push(vueDevTools())
 }

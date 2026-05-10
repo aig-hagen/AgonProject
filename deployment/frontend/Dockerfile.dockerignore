@@ -6,7 +6,8 @@
 !/public/
 !/src/
 !/third-party/aig-hagen/aig_graph_component/*.tgz
-!/third-party/xai-ca/**
+!/third-party/ctan.org/
+!/third-party/xai-ca/
 !/env.d.ts
 !/index.html
 !/tsconfig*.json

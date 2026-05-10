@@ -1,6 +1,7 @@
 import { immerable } from 'immer'
 import { DirectedGraph } from '../common/graph/graph'
 import type { ArgumentId } from '../common/argumentation/model'
+import { BipoloarArgumentation } from '../bipolar-argumentation/model'
 
 export class AbstractArgumentation<ArgumentDataT> {
   [immerable] = true
@@ -36,4 +37,18 @@ export class AbstractArgumentation<ArgumentDataT> {
       yield [sourceId, targetId]
     }
   }
+}
+
+export function convertToBipoloarArgumentation<DataT>(
+  abstractArgumentation: AbstractArgumentation<DataT>,
+): BipoloarArgumentation<DataT> {
+  const bipoloarArgumentation = new BipoloarArgumentation<DataT>()
+
+  for (const [argumentId, argumentData] of abstractArgumentation.arguments()) {
+    bipoloarArgumentation.addArgument(argumentId, argumentData)
+  }
+  for (const [attackerId, attackedId] of abstractArgumentation.attacks()) {
+    bipoloarArgumentation.addAttack(attackerId, attackedId)
+  }
+  return bipoloarArgumentation
 }

@@ -229,7 +229,7 @@ watchEffect(() => {
     </div>
   </FloatingWindow>
 </template>
-<style>
+<style style="scoped">
 .extensions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--extension-item-min-width), 1fr));

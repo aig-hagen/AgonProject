@@ -9,9 +9,10 @@ import {
 } from '../common/graph-editor/graphEditor'
 import GraphEditor from '../common/graph-editor/GraphEditor.vue'
 import { modifyDocument, type DocumentState } from '../common/state'
-import type { AbstractArgumentation } from './model'
+import { convertToBipoloarArgumentation, type AbstractArgumentation } from './model'
 import WindowExtensions from './WindowExtensions.vue'
 import type { Input } from '../common/evaluation/types'
+import WindowExport from '../bipolar-argumentation/WindowExport.vue'
 
 const { state } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>
@@ -127,6 +128,10 @@ function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
 function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
   createNewState((draft) => draft.deleteAttack(data.sourceId, data.targetId))
 }
+
+const convertedToBipoloarArgumentation = computed(() =>
+  convertToBipoloarArgumentation(state.current.content),
+)
 </script>
 <template>
   <GraphEditor
@@ -146,6 +151,13 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
         :open="isOpen"
         @update:open="onIsOpen"
         @highlight="onHighlight"
+      />
+    </template>
+    <template #export="{ isOpen, onIsOpen }">
+      <WindowExport
+        :input="convertedToBipoloarArgumentation"
+        :open="isOpen"
+        @update:open="onIsOpen"
       />
     </template>
   </GraphEditor>

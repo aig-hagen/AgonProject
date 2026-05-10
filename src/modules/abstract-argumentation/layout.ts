@@ -1,4 +1,8 @@
-import { ARGUMENT_RADIUS_IN_PX, type ArgumentId, type ArgumentData } from '@/modules/common/argumentation/model'
+import {
+  ARGUMENT_RADIUS_IN_PX,
+  type ArgumentId,
+  type ArgumentData,
+} from '@/modules/common/argumentation/model'
 import { type AbstractArgumentation } from './model'
 import { Graphviz } from '@hpcc-js/wasm-graphviz'
 

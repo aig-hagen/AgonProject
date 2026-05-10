@@ -1,5 +1,5 @@
 {
-  "name": "argumenation-toolbox",
+  "name": "argumentation-toolbox",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.3.tgz",
+    "@drgrice1/tikzjax": "^1.0.0-beta24",
     "@floating-ui/vue": "^1.1.11",
     "@heroicons/vue": "^2.2.0",
     "@hpcc-js/wasm-graphviz": "^1.21.2",
@@ -79,6 +80,7 @@
     "tailwindcss": "^4.2.0",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
+    "vite-plugin-static-copy": "^4.1.0",
     "vite-plugin-vue-devtools": "^8.0.6",
     "vitest": "^4.0.18",
     "vue-tsc": "^3.2.4"
