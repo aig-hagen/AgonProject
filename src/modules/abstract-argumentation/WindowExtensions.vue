@@ -128,7 +128,12 @@ watchEffect(() => {
 </script>
 
 <template>
-  <FloatingWindow v-model:open="open" title="Extensions" :initial-position="{ x: 128, y: 128 }">
+  <FloatingWindow
+    v-model:open="open"
+    title="Extensions"
+    :initial-position="{ x: 128, y: 64 }"
+    :intitalSize="{ width: 576, height: 448 }"
+  >
     <div class="p-4">
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>

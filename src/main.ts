@@ -8,7 +8,7 @@ import router from './app/router'
 import './app/setup-immer'
 import { openDocumentsDB } from './app/db'
 import { BipoloarArgumentation } from './modules/bipolar-argumentation/model'
-import type { ArgumentData } from './modules/common/argumentation/model'
+import { type ArgumentData } from './modules/common/argumentation/model'
 import { DirectedGraph } from './modules/common/graph/graph'
 import { AbstractArgumentation } from './modules/abstract-argumentation/model'
 import { datasets } from './modules/abstract-argumentation/examples'
@@ -107,6 +107,7 @@ const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<ArgumentDa
   initialCotent: initialAbstractArgumentation,
   editorComponent: AbstractArgumentationGraphEditor,
 }
+
 const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<ArgumentData>> = {
   newNamePrefix: 'BAF',
   displayNameSingular: 'Bipolar Argumentation',
@@ -143,6 +144,7 @@ const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<ArgumentDa
   initialCotent: initialBipolarArgumentation,
   editorComponent: BipiolarArgumentationGraphEditor,
 }
+
 const modules = [abstractArgumentationModule, bipoloarArgumentationModule] as const
 
 const app = createApp(App, {

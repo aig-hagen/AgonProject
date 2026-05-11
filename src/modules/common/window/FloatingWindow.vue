@@ -1,22 +1,23 @@
-0
 <script setup lang="ts">
 import '@interactjs/auto-start'
 import '@interactjs/actions/drag'
 import '@interactjs/actions/resize'
 import '@interactjs/modifiers'
 import interact from '@interactjs/interact'
-import { onMounted, useTemplateRef } from 'vue'
+import { nextTick, onMounted, useTemplateRef, watchEffect } from 'vue'
 import { MinusIcon } from '@heroicons/vue/24/solid'
 import { useEventListener } from '@vueuse/core'
+import { POINTER_SHIELD_Z_INDEX, useZIndex } from './useZIndex'
 
 const floating = useTemplateRef('floating')
 const content = useTemplateRef('content')
 const header = useTemplateRef('header')
 const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
-const { title, initialPosition } = defineProps<{
+const { title, initialPosition, intitalSize } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
+  intitalSize: { width: number; height: number }
 }>()
 
 const position = { ...initialPosition }
@@ -44,8 +45,8 @@ onMounted(() => {
     throw Error('Window ref not set.')
   }
   floating.value.style.transform = `translate(${position.x}px, ${position.y}px)`
-  floating.value.style.width = '576px'
-  floating.value.style.height = '448px'
+  floating.value.style.width = intitalSize.width + 'px'
+  floating.value.style.height = intitalSize.height + 'px'
   pointerShield.value!.style.display = 'none'
   interact(floating.value)
     .draggable({
@@ -101,21 +102,40 @@ onMounted(() => {
     })
 })
 
-const Z_INDEX_FORGROUND = '1001'
-const Z_INDEX_BACKGROUND = '999'
+const { zIndex: zIndexValue, focusIn, focusOut } = useZIndex()
+
 useEventListener(floating, 'focus', () => {
   const style = floating.value?.style
   if (style === undefined) {
     return
   }
-  style.zIndex = Z_INDEX_FORGROUND
+  focusIn()
 })
-useEventListener(floating, 'blur', () => {
+
+useEventListener(floating, 'focusout', (event) => {
   const style = floating.value?.style
   if (style === undefined) {
     return
   }
-  style.zIndex = Z_INDEX_BACKGROUND
+
+  const relatedTarget = event.relatedTarget as Node | null
+  if (floating.value?.contains(relatedTarget)) return
+  focusOut()
+})
+
+watchEffect(() => {
+  const style = floating.value?.style
+  if (style === undefined) {
+    return
+  }
+  style.zIndex = zIndexValue.value
+})
+
+watchEffect(async () => {
+  if (open.value) {
+    await nextTick()
+    floating.value?.focus()
+  }
 })
 </script>
 
@@ -142,7 +162,13 @@ useEventListener(floating, 'blur', () => {
       <slot> </slot>
     </div>
   </div>
-  <div ref="pointerShield" class="pointer-shield"></div>
+  <div
+    ref="pointerShield"
+    class="pointer-shield"
+    :style="{
+      zIndex: POINTER_SHIELD_Z_INDEX,
+    }"
+  ></div>
 </template>
 <style scoped>
 .floating-window {
@@ -158,8 +184,6 @@ useEventListener(floating, 'blur', () => {
 .pointer-shield {
   position: fixed;
   inset: 0;
-  /* It is smaller then Z_INDEX_FORGROUND and higher then Z_INDEX_BACKGROUND */
-  z-index: 1000;
   cursor: inherit;
   opacity: 1;
 }

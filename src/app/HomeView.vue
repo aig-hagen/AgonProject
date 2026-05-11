@@ -116,7 +116,7 @@ function hanleEditorShortcut(event: KeyboardEvent) {
   }
 }
 
-const editorComponent = computed(() => {
+const responsibleModule = computed(() => {
   const content = documentState.value?.current.content
   if (content === undefined) {
     return
@@ -125,7 +125,7 @@ const editorComponent = computed(() => {
   if (module === undefined) {
     return undefined
   }
-  return module.editorComponent
+  return module
 })
 </script>
 
@@ -154,7 +154,7 @@ const editorComponent = computed(() => {
         ></BlankDocumentCanvas>
         <component
           v-else-if="documentState !== undefined"
-          :is="editorComponent"
+          :is="responsibleModule?.editorComponent"
           @change="updateDocument"
           :state="documentState"
           tabindex="0"

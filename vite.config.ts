@@ -51,6 +51,12 @@ const plugins: PluginOption[] = [
         dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
         rename: { stripBase: 5 }
       },
+      {
+        // `wawoff2` needs to be loaded differently then other modules.
+        // See https://github.com/opentypejs/opentype.js#loading-a-woffotfttf-font
+        src: 'node_modules/wawoff2/build/decompress_binding.js',
+        dest: '',
+      },
     ],
   }),
   gzipFixPlugin(),

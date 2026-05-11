@@ -10,9 +10,10 @@ import {
 import GraphEditor from '../common/graph-editor/GraphEditor.vue'
 import { modifyDocument, type DocumentState } from '../common/state'
 import type { BipoloarArgumentation } from './model'
-import WindowExport from './WindowExport.vue'
+import WindowExport from '../common/export/WindowExport.vue'
 import WindowExtensions from './WindowExtensions.vue'
 import type { Input } from '../common/evaluation/types'
+import { availableExports } from './export'
 
 const { state } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
@@ -166,6 +167,7 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
+    :exports="availableExports"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions
@@ -176,7 +178,12 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
       />
     </template>
     <template #export="{ isOpen, onIsOpen }">
-      <WindowExport :input="state.current.content" :open="isOpen" @update:open="onIsOpen" />
+      <WindowExport
+        :input="state.current.content"
+        :open="isOpen"
+        @update:open="onIsOpen"
+        :export-configs="availableExports"
+      />
     </template>
   </GraphEditor>
 </template>
