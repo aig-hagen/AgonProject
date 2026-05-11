@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import {
-  ArrowTopRightOnSquareIcon,
-  CodeBracketIcon,
   AcademicCapIcon,
+  ArrowTopRightOnSquareIcon,
   BookOpenIcon,
+  CodeBracketIcon,
 } from '@heroicons/vue/24/outline'
+
+import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const open = defineModel('open', { required: true })
 </script>

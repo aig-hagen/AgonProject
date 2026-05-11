@@ -1,27 +1,28 @@
+import { type IDBPDatabase, type IDBPTransaction } from 'idb'
+import type { Objectish } from 'immer'
 import {
   computed,
+  type MaybeRef,
   onScopeDispose,
   readonly,
+  type Ref,
   ref,
   shallowRef,
   unref,
   watch,
   watchEffect,
-  type MaybeRef,
-  type Ref,
 } from 'vue'
-import { type IDBPDatabase, type IDBPTransaction } from 'idb'
+
 import {
-  OBJECT_STORE_CONTENT_NAME,
-  OBJECT_STORE_METADATA_NAME,
   type DocumentId,
   type DocumentMetadata,
   type DocumentsDB,
+  OBJECT_STORE_CONTENT_NAME,
+  OBJECT_STORE_METADATA_NAME,
 } from '@/app/db'
 import type { ModuleConfig } from '@/main'
 import { generateUUID } from '@/modules/common/ids'
 import type { DocumentState } from '@/modules/common/state'
-import type { Objectish } from 'immer'
 
 const CHANNEL_DOCUMENTS_METADATA = 'documents'
 

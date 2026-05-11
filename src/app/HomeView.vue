@@ -1,22 +1,23 @@
 <script setup lang="ts" generic="DocumentT extends Objectish">
 import {
-  Bars3Icon,
-  QuestionMarkCircleIcon,
-  FolderOpenIcon,
   ArrowDownTrayIcon,
+  Bars3Icon,
+  FolderOpenIcon,
   PhotoIcon,
   PlusCircleIcon,
+  QuestionMarkCircleIcon,
 } from '@heroicons/vue/24/outline'
-import WindowHelp from '@/app/WindowHelp.vue'
-import { computed, ref } from 'vue'
-import { useSelectedDocumentId, useDocumentMetadata, useDocumentContent } from '@/app/useDocuments'
-import LayoutTabs from '@/app/view/EditorTabs.vue'
-import BlankDocumentCanvas from '@/app/view/BlankDocumentCanvas.vue'
 import type { IDBPDatabase } from 'idb'
-import type { ModuleConfig } from '@/main'
-import type { DocumentsDB } from '@/app/db'
-import { redoContent, setNewContent, undoContent } from '@/modules/common/state'
 import type { Objectish } from 'immer'
+import { computed, ref } from 'vue'
+
+import type { DocumentsDB } from '@/app/db'
+import { useDocumentContent, useDocumentMetadata, useSelectedDocumentId } from '@/app/useDocuments'
+import BlankDocumentCanvas from '@/app/view/BlankDocumentCanvas.vue'
+import LayoutTabs from '@/app/view/EditorTabs.vue'
+import WindowHelp from '@/app/WindowHelp.vue'
+import type { ModuleConfig } from '@/main'
+import { redoContent, setNewContent, undoContent } from '@/modules/common/state'
 
 const { db, modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>

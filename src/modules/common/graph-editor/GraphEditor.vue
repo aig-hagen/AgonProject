@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import {
-  GraphComponent,
-  EVENT_CAUSE,
-  NodeShape,
-  type jsonNode,
-  type jsonLink,
-  type PositionSnapshot,
-  ArrowType,
-} from '@aig-hagen/graph-component/lib'
 import '@aig-hagen/graph-component/lib/graph-component.css'
+
+import {
+  ArrowType,
+  EVENT_CAUSE,
+  GraphComponent,
+  type jsonLink,
+  type jsonNode,
+  NodeShape,
+  type PositionSnapshot,
+} from '@aig-hagen/graph-component/lib'
+import { ArrowLongRightIcon, PhotoIcon, VariableIcon } from '@heroicons/vue/24/outline'
 import {
   computed,
   nextTick,
@@ -20,19 +22,23 @@ import {
   watch,
   watchEffect,
 } from 'vue'
+
+import {
+  ARGUMENT_COLOR,
+  ARGUMENT_RADIUS_IN_PX,
+  ATTACK_COLOR,
+} from '@/modules/common/argumentation/model'
+import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
+import {
+  type GraphEditorState,
+  type Highlight,
+  type LinkConfigs,
+  LinkType,
+  type NodeId,
+} from '@/modules/common/graph-editor/graphEditor'
+import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { getNextName } from '@/modules/common/nextName'
-import { ARGUMENT_COLOR, ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
-import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
-import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
-import { VariableIcon, ArrowLongRightIcon, PhotoIcon } from '@heroicons/vue/24/outline'
-import {
-  LinkType,
-  type GraphEditorState,
-  type LinkConfigs,
-  type NodeId,
-  type Highlight,
-} from '@/modules/common/graph-editor/graphEditor'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID

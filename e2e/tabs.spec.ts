@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect,test } from '@playwright/test'
 
 test('rename tab', async ({ context }) => {
   const page1 = await context.newPage()

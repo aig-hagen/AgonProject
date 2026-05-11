@@ -1,6 +1,7 @@
-import type { Preview } from '@storybook/vue3-vite'
 import '../src/style.css'
 import '../app/setup-immer.ts'
+
+import type { Preview } from '@storybook/vue3-vite'
 
 const preview: Preview = {
   parameters: {

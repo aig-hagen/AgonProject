@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+
 import type { UUID } from '@/modules/common/ids'
 import type { DocumentState } from '@/modules/common/state'
 

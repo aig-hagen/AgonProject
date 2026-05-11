@@ -1,13 +1,13 @@
+import { useQuery } from '@tanstack/vue-query'
+import type { UUID } from 'crypto'
+import { computed, type MaybeRef, unref } from 'vue'
 import z from 'zod'
 
-import { useQuery } from '@tanstack/vue-query'
-import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
-import type { Input } from '@/modules/common/evaluation/types'
-import { computed, unref, type MaybeRef } from 'vue'
-import { IdMapping } from '@/modules/common/ids'
-import type { UUID } from 'crypto'
-import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
+import type { Input } from '@/modules/common/evaluation/types'
+import { IdMapping } from '@/modules/common/ids'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
 

@@ -3,10 +3,12 @@ import '@interactjs/auto-start'
 import '@interactjs/actions/drag'
 import '@interactjs/actions/resize'
 import '@interactjs/modifiers'
-import interact from '@interactjs/interact'
-import { nextTick, onMounted, useTemplateRef, watchEffect } from 'vue'
+
 import { MinusIcon } from '@heroicons/vue/24/solid'
+import interact from '@interactjs/interact'
 import { useEventListener } from '@vueuse/core'
+import { nextTick, onMounted, useTemplateRef, watchEffect } from 'vue'
+
 import { POINTER_SHIELD_Z_INDEX, useZIndex } from '@/modules/common/window/useZIndex'
 
 const floating = useTemplateRef('floating')

@@ -1,4 +1,5 @@
 import { expect, test } from 'vitest'
+
 import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
 
 test.each([

@@ -1,4 +1,5 @@
 import { immerable } from 'immer'
+
 import { DirectedGraph } from '@/modules/common/graph/graph'
 
 const Edge = {

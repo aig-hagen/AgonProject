@@ -1,4 +1,4 @@
-import { onUnmounted, ref, type Ref } from 'vue'
+import { onUnmounted, type Ref, ref } from 'vue'
 
 const allRefs: Ref<string>[] = []
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import 'katex/dist/katex.min.css'
+
 import renderMathInElement from 'katex/contrib/auto-render'
 import { useTemplateRef, watchEffect } from 'vue'
 const { text } = defineProps<{

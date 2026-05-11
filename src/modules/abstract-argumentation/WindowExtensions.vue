@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { computed, ref, toRef, useTemplateRef, watchEffect, nextTick, shallowRef } from 'vue'
-import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import type { ArgumentData } from '@/modules/common/argumentation/model'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
-import type { Input } from '@/modules/common/evaluation/types'
-import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import { computed, nextTick, ref, shallowRef, toRef, useTemplateRef, watchEffect } from 'vue'
+
 import {
+  type Extension,
   KEY_DEFAULT_SEMANTIC,
   KNOWN_SEMANTIC_GROUPS,
-  useExtensionEvaluationQuery,
-  type Extension,
   type Semantic,
+  useExtensionEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
+import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import type { Input } from '@/modules/common/evaluation/types'
+import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
+import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const open = defineModel<boolean>('open', { required: true })
 const { input } = defineProps<{

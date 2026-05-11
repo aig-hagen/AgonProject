@@ -1,11 +1,11 @@
 import { fileURLToPath, URL } from 'node:url'
 
-import { defineConfig, PluginOption, Plugin, ViteDevServer, PreviewServer } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import vueDevTools from 'vite-plugin-vue-devtools'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig, Plugin, PluginOption, PreviewServer,ViteDevServer } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
+import vueDevTools from 'vite-plugin-vue-devtools'
 
 // Solves with vite compression when serving `*.sty.gz` files:
 // See https://github.com/vitejs/vite/issues/12266#issuecomment-2131263039

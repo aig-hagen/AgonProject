@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { computed, shallowRef, watch } from 'vue'
+
+import { availableExports } from '@/modules/bipolar-argumentation/export'
+import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
+import type { Input } from '@/modules/common/evaluation/types'
+import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
-  LinkType,
   type GraphEditorStateLink,
   type GraphEditorStateNode,
+  LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
-import { modifyDocument, type DocumentState } from '@/modules/common/state'
-import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
-import WindowExport from '@/modules/common/export/WindowExport.vue'
-import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
-import type { Input } from '@/modules/common/evaluation/types'
-import { availableExports } from '@/modules/bipolar-argumentation/export'
+import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
 const { state } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>

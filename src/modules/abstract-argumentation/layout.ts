@@ -1,10 +1,11 @@
+import { Graphviz } from '@hpcc-js/wasm-graphviz'
+
+import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import {
   ARGUMENT_RADIUS_IN_PX,
-  type ArgumentId,
   type ArgumentData,
+  type ArgumentId,
 } from '@/modules/common/argumentation/model'
-import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import { Graphviz } from '@hpcc-js/wasm-graphviz'
 
 const NUMERIC_ID_TO_STRING_RADIX = 16
 

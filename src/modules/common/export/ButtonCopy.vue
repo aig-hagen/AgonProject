@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ClipboardDocumentIcon, ClipboardDocumentCheckIcon } from '@heroicons/vue/24/outline'
-import { ref } from 'vue'
+import { ClipboardDocumentCheckIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/outline'
 import copy from 'copy-to-clipboard'
+import { ref } from 'vue'
 
 const { text } = defineProps<{
   text: string | undefined

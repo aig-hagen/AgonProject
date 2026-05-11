@@ -1,7 +1,7 @@
 import * as z from 'zod'
 
-import dix from '@/../third-party/xai-ca/xray/7a83aa5/examples/dix.json'
 import double_loop from '@/../third-party/xai-ca//xray/7a83aa5/examples/double_loop.json'
+import dix from '@/../third-party/xai-ca/xray/7a83aa5/examples/dix.json'
 import martin_str from '@/../third-party/xai-ca/xray/7a83aa5/examples/martin_str.json'
 import matti_lpnmr_2024 from '@/../third-party/xai-ca/xray/7a83aa5/examples/matti_lpnmr_2024.json'
 import meal_wine from '@/../third-party/xai-ca/xray/7a83aa5/examples/meal_wine.json'
@@ -30,11 +30,11 @@ const afXrayExampleSources = [
   wild_animals,
 ]
 
-import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { layout } from '@/modules/abstract-argumentation/layout'
-import { IdMapping } from '@/modules/common/ids'
+import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
+import { IdMapping } from '@/modules/common/ids'
 
 const AfXrayExampleId = z.string()
 

@@ -1,4 +1,5 @@
 import { immerable } from 'immer'
+
 import { type ArgumentId } from '@/modules/common/argumentation/model'
 
 export type NodeId = number

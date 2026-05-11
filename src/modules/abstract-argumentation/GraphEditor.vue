@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { computed, shallowRef, watch } from 'vue'
+
+import { availableExports } from '@/modules/abstract-argumentation/export'
+import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
+import type { Input } from '@/modules/common/evaluation/types'
+import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
-  LinkType,
   type GraphEditorStateLink,
   type GraphEditorStateNode,
+  LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
-import { modifyDocument, type DocumentState } from '@/modules/common/state'
-import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
-import type { Input } from '@/modules/common/evaluation/types'
-import WindowExport from '@/modules/common/export/WindowExport.vue'
-import { availableExports } from '@/modules/abstract-argumentation/export'
+import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
 const { state } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>

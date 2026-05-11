@@ -1,3 +1,4 @@
+import type { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import {
   exportLatexArgumentationCommon,
   latexExportCommonConfig,
@@ -5,7 +6,6 @@ import {
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { ExportConfig } from '@/modules/common/export'
 import { IdMapping } from '@/modules/common/ids'
-import type { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 
 // See https://argumentationcompetition.org/2025/rules.html
 const exportICCMA: ExportConfig<AbstractArgumentation<ArgumentData>> = {

@@ -1,5 +1,6 @@
+import { applyPatches, type Objectish, type Patch, produce } from 'immer'
+
 import { generateUUID, type UUID } from '@/modules/common/ids'
-import { applyPatches, produce, type Objectish, type Patch } from 'immer'
 
 export interface DocumentState<DocumentT> {
   stateId: UUID

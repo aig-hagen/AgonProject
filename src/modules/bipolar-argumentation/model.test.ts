@@ -1,5 +1,6 @@
-import { test, expect } from 'vitest'
-import { produce, type Patch } from 'immer'
+import { type Patch, produce } from 'immer'
+import { expect, test } from 'vitest'
+
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 
 test('works with immer', () => {
