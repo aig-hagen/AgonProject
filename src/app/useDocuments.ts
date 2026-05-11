@@ -17,7 +17,7 @@ import {
   type DocumentId,
   type DocumentMetadata,
   type DocumentsDB,
-} from './db'
+} from '@/app/db'
 import type { ModuleConfig } from '@/main'
 import { generateUUID } from '@/modules/common/ids'
 import type { DocumentState } from '@/modules/common/state'

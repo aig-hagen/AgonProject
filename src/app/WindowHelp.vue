@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import FloatingWindow from '../modules/common/window/FloatingWindow.vue'
+import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import {
   ArrowTopRightOnSquareIcon,
   CodeBracketIcon,

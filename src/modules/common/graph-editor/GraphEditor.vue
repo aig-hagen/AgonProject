@@ -20,11 +20,11 @@ import {
   watch,
   watchEffect,
 } from 'vue'
-import { IdGenerator, IdMapping } from '../ids'
-import { getNextName } from '../nextName'
-import { ARGUMENT_COLOR, ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '../argumentation/model'
-import ArrowSwitcher from './LinkTypeSwitch.vue'
-import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
+import { IdGenerator, IdMapping } from '@/modules/common/ids'
+import { getNextName } from '@/modules/common/nextName'
+import { ARGUMENT_COLOR, ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
+import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
+import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import { VariableIcon, ArrowLongRightIcon, PhotoIcon } from '@heroicons/vue/24/outline'
 import {
   LinkType,
@@ -32,7 +32,7 @@ import {
   type LinkConfigs,
   type NodeId,
   type Highlight,
-} from './graphEditor'
+} from '@/modules/common/graph-editor/graphEditor'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID

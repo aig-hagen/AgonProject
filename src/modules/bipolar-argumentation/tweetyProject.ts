@@ -6,8 +6,8 @@ import type { Input } from '@/modules/common/evaluation/types'
 import { computed, unref, type MaybeRef } from 'vue'
 import { IdMapping } from '@/modules/common/ids'
 import type { UUID } from 'crypto'
-import { parserListOfSets } from '../common/evaluation/tweety-project/listOfSets'
-import type { BipoloarArgumentation } from './model'
+import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
+import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
 

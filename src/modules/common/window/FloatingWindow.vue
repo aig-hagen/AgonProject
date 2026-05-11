@@ -7,7 +7,7 @@ import interact from '@interactjs/interact'
 import { nextTick, onMounted, useTemplateRef, watchEffect } from 'vue'
 import { MinusIcon } from '@heroicons/vue/24/solid'
 import { useEventListener } from '@vueuse/core'
-import { POINTER_SHIELD_Z_INDEX, useZIndex } from './useZIndex'
+import { POINTER_SHIELD_Z_INDEX, useZIndex } from '@/modules/common/window/useZIndex'
 
 const floating = useTemplateRef('floating')
 const content = useTemplateRef('content')

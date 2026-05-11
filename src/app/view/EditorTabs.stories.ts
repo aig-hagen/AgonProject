@@ -1,6 +1,6 @@
 import type { Meta } from '@storybook/vue3-vite'
 
-import Tabs from './EditorTabs.vue'
+import Tabs from '@/app/view/EditorTabs.vue'
 
 const meta = {
   component: Tabs,

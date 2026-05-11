@@ -2,8 +2,8 @@
 import { toRef, useTemplateRef } from 'vue'
 import { offset, useFloating } from '@floating-ui/vue'
 import { ArrowLongRightIcon } from '@heroicons/vue/24/outline'
-import ArrowDoubleLongRightIcon from './ArrowDoubleLongRightIcon.vue'
-import { LinkType, type LinkConfigs } from './graphEditor'
+import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
+import { LinkType, type LinkConfigs } from '@/modules/common/graph-editor/graphEditor'
 
 const { reference, linkConfigs } = defineProps<{
   reference: SVGElement

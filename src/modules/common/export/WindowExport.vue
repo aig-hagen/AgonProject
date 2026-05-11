@@ -1,13 +1,13 @@
 <script setup lang="ts" generic="DocumentT">
-import FloatingWindow from '../window/FloatingWindow.vue'
+import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import { computed, shallowRef, useTemplateRef, watchEffect } from 'vue'
 import { EditorView } from '@codemirror/view'
 import { EditorState, type Extension } from '@codemirror/state'
 
 import { basicSetup } from 'codemirror'
-import ButtonCopy from '../export/ButtonCopy.vue'
+import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import type { ExportConfig } from '.'
-import ButtonSave from '../export/ButtonSave.vue'
+import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import { computedAsync } from '@vueuse/core'
 
 const open = defineModel<boolean>('open', { required: true })

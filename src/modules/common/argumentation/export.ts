@@ -1,8 +1,8 @@
-import type { ExportResult } from '../export'
+import type { ExportResult } from '@/modules/common/export'
 import { latex } from 'codemirror-lang-latex'
-import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from './model'
+import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from '@/modules/common/argumentation/model'
 import { type Extension } from '@codemirror/state'
-import { renderSvg } from '../export/renderSvg'
+import { renderSvg } from '@/modules/common/export/renderSvg'
 
 export function latexExportCommonConfig(): {
   name: string

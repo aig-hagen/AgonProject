@@ -3,7 +3,7 @@ import {
   type ArgumentId,
   type ArgumentData,
 } from '@/modules/common/argumentation/model'
-import { type AbstractArgumentation } from './model'
+import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { Graphviz } from '@hpcc-js/wasm-graphviz'
 
 const NUMERIC_ID_TO_STRING_RADIX = 16

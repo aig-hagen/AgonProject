@@ -7,14 +7,14 @@ import {
   PhotoIcon,
   PlusCircleIcon,
 } from '@heroicons/vue/24/outline'
-import WindowHelp from './WindowHelp.vue'
+import WindowHelp from '@/app/WindowHelp.vue'
 import { computed, ref } from 'vue'
-import { useSelectedDocumentId, useDocumentMetadata, useDocumentContent } from './useDocuments'
-import LayoutTabs from '../app/view/EditorTabs.vue'
-import BlankDocumentCanvas from './view/BlankDocumentCanvas.vue'
+import { useSelectedDocumentId, useDocumentMetadata, useDocumentContent } from '@/app/useDocuments'
+import LayoutTabs from '@/app/view/EditorTabs.vue'
+import BlankDocumentCanvas from '@/app/view/BlankDocumentCanvas.vue'
 import type { IDBPDatabase } from 'idb'
 import type { ModuleConfig } from '@/main'
-import type { DocumentsDB } from './db'
+import type { DocumentsDB } from '@/app/db'
 import { redoContent, setNewContent, undoContent } from '@/modules/common/state'
 import type { Objectish } from 'immer'
 

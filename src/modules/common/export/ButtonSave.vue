@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 import { ref } from 'vue'
-import { saveToFile } from './saveFile'
+import { saveToFile } from '@/modules/common/export/saveFile'
 
 const { filedata } = defineProps<{
   filedata?: {

@@ -30,11 +30,11 @@ const afXrayExampleSources = [
   wild_animals,
 ]
 
-import { AbstractArgumentation } from './model'
-import { layout } from './layout'
+import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import { layout } from '@/modules/abstract-argumentation/layout'
 import { IdMapping } from '@/modules/common/ids'
-import type { ArgumentData } from '../common/argumentation/model'
-import type { Example } from '../common/examples'
+import type { ArgumentData } from '@/modules/common/argumentation/model'
+import type { Example } from '@/modules/common/examples'
 
 const AfXrayExampleId = z.string()
 

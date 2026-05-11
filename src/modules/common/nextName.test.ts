@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest'
 
-import { getNextName } from './nextName'
+import { getNextName } from '@/modules/common/nextName'
 
 const cases: [string[], string][] = [
   [[], 'a'],

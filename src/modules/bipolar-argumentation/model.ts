@@ -1,5 +1,5 @@
 import { immerable } from 'immer'
-import { DirectedGraph } from '../common/graph/graph'
+import { DirectedGraph } from '@/modules/common/graph/graph'
 
 const Edge = {
   ATTACK: 'a',

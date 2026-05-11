@@ -1,12 +1,12 @@
 import z from 'zod'
 
 import { useQuery } from '@tanstack/vue-query'
-import { type AbstractArgumentation } from '../model'
+import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import { computed, unref, type MaybeRef } from 'vue'
 import { IdMapping } from '@/modules/common/ids'
-import { parserListOfSets } from '../../common/evaluation/tweety-project/listOfSets'
+import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { UUID } from 'crypto'
 
 const ENDPOINT_ABSTRACT_ARGUMENTATION = '/dung'

@@ -1,4 +1,4 @@
-import { LINK_BLACK, NODE_BLUE } from '../colors'
+import { LINK_BLACK, NODE_BLUE } from '@/modules/common/colors'
 
 export const ARGUMENT_RADIUS_IN_PX = 28
 export const ARGUMENT_COLOR = NODE_BLUE

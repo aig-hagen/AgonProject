@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest'
 import { produce, type Patch } from 'immer'
-import { BipoloarArgumentation } from './model'
+import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 
 test('works with immer', () => {
   const argumentation = new BipoloarArgumentation<undefined>()

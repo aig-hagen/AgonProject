@@ -1,5 +1,5 @@
 import { immerable } from 'immer'
-import { type ArgumentId } from '../argumentation/model'
+import { type ArgumentId } from '@/modules/common/argumentation/model'
 
 export type NodeId = number
 export class DirectedGraph<NodeDataT, EdgeDataT> {

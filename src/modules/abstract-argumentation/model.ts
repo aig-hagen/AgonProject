@@ -1,6 +1,6 @@
 import { immerable } from 'immer'
-import { DirectedGraph } from '../common/graph/graph'
-import type { ArgumentId } from '../common/argumentation/model'
+import { DirectedGraph } from '@/modules/common/graph/graph'
+import type { ArgumentId } from '@/modules/common/argumentation/model'
 
 export class AbstractArgumentation<ArgumentDataT> {
   [immerable] = true

@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest'
-import { DirectedGraph } from './graph'
+import { DirectedGraph } from '@/modules/common/graph/graph'
 
 test('addEdge', () => {
   const graph = new DirectedGraph<undefined, undefined>()

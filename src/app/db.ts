@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
-import type { DocumentState } from '../modules/common/state'
+import type { DocumentState } from '@/modules/common/state'
 import type { Objectish } from 'immer'
 
 const DATABASE_DOCUMENTS_VERSION = 1

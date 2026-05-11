@@ -1,10 +1,10 @@
 import {
   exportLatexArgumentationCommon,
   latexExportCommonConfig,
-} from '../common/argumentation/export'
-import type { ArgumentData } from '../common/argumentation/model'
-import type { ExportConfig } from '../common/export'
-import type { BipoloarArgumentation } from './model'
+} from '@/modules/common/argumentation/export'
+import type { ArgumentData } from '@/modules/common/argumentation/model'
+import type { ExportConfig } from '@/modules/common/export'
+import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 
 const exportLatexBipolarArgumentation: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
   ...latexExportCommonConfig(),
