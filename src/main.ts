@@ -3,7 +3,6 @@ import '@/app/setup-immer'
 
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import type { Objectish } from 'immer'
-import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
 import App from '@/app/App.vue'
@@ -162,7 +161,6 @@ const queryClient = new QueryClient({
 })
 
 app.use(VueQueryPlugin, { queryClient })
-app.use(createPinia())
 app.use(router)
 
 app.mount('#app')
