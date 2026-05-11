@@ -7,10 +7,13 @@ http://:8080 {
 	#	output stdout
 	#	format json
 	# }
+
+	root * ./dist
+
 	@backend path /dung /bipolar
 	handle @backend {
 		# log_append proxy_target {$TWEETYPROJECT_BACKEND_BASE_URL}
-		reverse_proxy {$TWEETYPROJECT_BACKEND_BASE_URL}
+		reverse_proxy http://localhost:8081
 	}
 
 	handle {

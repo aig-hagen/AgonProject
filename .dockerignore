@@ -1,6 +1,11 @@
 **
 
-!/deployment/backend/logback.xml
+**
+
+!/deployment/Caddyfile
+!/deployment/logback.xml
+!/deployment/wrapper_script.sh
+!/dist
 !/third-party/TweetyProjectTeam/TweetyProject/pom.xml
 !/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/src/**
 !/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/pom.xml

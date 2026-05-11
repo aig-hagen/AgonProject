@@ -18,5 +18,4 @@ function upload_image {
   echo "✅ Uploaded ${source_image} as ${target_image} to ${REMOTE}."
 }
 
-upload_image "aig-hagen/argumentation-toolbox-frontend:latest" "aig-hagen/argumentation-toolbox-frontend:${TARGET_TAG}"
-upload_image "aig-hagen/argumentation-toolbox-backend:latest" "aig-hagen/argumentation-toolbox-backend:${TARGET_TAG}"
+upload_image "aig-hagen/argumentation-toolbox:latest" "aig-hagen/argumentation-toolbox:${TARGET_TAG}"
