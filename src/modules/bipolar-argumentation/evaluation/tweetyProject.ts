@@ -32,7 +32,7 @@ async function fetchTyped<T extends z.ZodTypeAny>(
 const TIMEOUT_IN_SECONDS = 300
 const TIMEOUT_UNIT_SECONDS = 's'
 
-export const KEY_DEFAULT_SEMANTIC = 'sa'
+export const KEY_DEFAULT_SEMANTIC = 'b-cf'
 export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   {
     key: 'none-interpretation',
@@ -40,16 +40,36 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     interpretations: ['None'],
     semantics: [
       {
-        key: 'cf',
+        key: 'b-cf',
         displayName: 'Conflict-free',
       },
       {
-        key: 'sa',
-        displayName: 'Safe',
+        key: 'b-coh',
+        displayName: 'Coherent',
       },
       {
-        key: 'cl',
-        displayName: 'Closed',
+        key: 'b-ad',
+        displayName: 'Coherent Admissible',
+      },
+      {
+        key: 'b-coal-ad',
+        displayName: 'Coalition-Admissible',
+      },
+      {
+        key: 'b-coal-co',
+        displayName: 'Coalition-Complete',
+      },
+      {
+        key: 'b-coal-gr',
+        displayName: 'Coalition-Grounded',
+      },
+      {
+        key: 'b-coal-pr',
+        displayName: 'Coalition-Preferred',
+      },
+      {
+        key: 'b-coal-st',
+        displayName: 'Coalition-Stable',
       },
     ],
   },
@@ -59,12 +79,24 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     interpretations: ['Deductive'],
     semantics: [
       {
-        key: 'c-ad',
-        displayName: 'c-Admissible',
+        key: 'd-ad',
+        displayName: 'Admissible',
       },
       {
-        key: 'd-ad',
-        displayName: 'd-Admissible',
+        key: 'd-co',
+        displayName: 'Complete',
+      },
+      {
+        key: 'd-gr',
+        displayName: 'Grounded',
+      },
+      {
+        key: 'd-pr',
+        displayName: 'Preferred',
+      },
+      {
+        key: 'd-st',
+        displayName: 'Stable',
       },
     ],
   },

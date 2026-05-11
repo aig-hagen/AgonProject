@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, shallowRef, toRef, useTemplateRef, watchEffect } from 'vue'
 
-import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import {
   type Extension,
   KEY_DEFAULT_SEMANTIC,
   KNOWN_SEMANTIC_GROUPS,
   type Semantic,
   useExtensionEvaluationQuery,
-} from '@/modules/bipolar-argumentation/tweetyProject'
+} from '@/modules/bipolar-argumentation/evaluation/tweetyProject'
+import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import type { Input } from '@/modules/common/evaluation/types'
