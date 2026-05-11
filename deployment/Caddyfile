@@ -12,7 +12,7 @@ http://:8080 {
 
 	@backend path /dung /bipolar
 	handle @backend {
-		# log_append proxy_target {$TWEETYPROJECT_BACKEND_BASE_URL}
+		# log_append proxy_target http://localhost:8081
 		reverse_proxy http://localhost:8081
 	}
 
