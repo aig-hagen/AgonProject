@@ -77,3 +77,7 @@ export function loadFromString(
     return argumentation
   })
 }
+
+export function canLoadFromObject(dataObject: Record<string, unknown>) {
+  return dataObject['apiVersion'] === API_VERSION
+}

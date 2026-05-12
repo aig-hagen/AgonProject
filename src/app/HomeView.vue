@@ -2,7 +2,7 @@
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 
 import type { DocumentsDB } from '@/app/db'
 import type { ModuleConfig } from '@/app/moduleConfig'
@@ -10,12 +10,16 @@ import { useDocumentContent, useDocumentMetadata, useSelectedDocumentId } from '
 import BlankDocumentCanvas from '@/app/view/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/view/EditorTabs.vue'
 import WindowHelp from '@/app/WindowHelp.vue'
+import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
+import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import { redoContent, setNewContent, undoContent } from '@/modules/common/state'
 
 const { db, modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<DocumentT>[]
 }>()
+
+const { notifications, addSuccessNotification, addErrorNotification } = useNotifications()
 
 const { documents, createDocument, deleteDocument, renameDocument } = useDocumentMetadata(
   db,
@@ -121,6 +125,80 @@ const responsibleModule = computed(() => {
   }
   return module
 })
+
+const fileInput = useTemplateRef<HTMLInputElement>('file-input')
+
+function loadFile() {
+  fileInput.value?.click()
+}
+
+async function loadFromFileInput(inputEvent: Event) {
+  let fileName: string
+  let dataStr: string
+  try {
+    const input = inputEvent.target as HTMLInputElement
+    const files = [...(input.files ?? [])]
+    if (files.length === 0) return
+    if (files.length !== 1) throw new Error('Only one file can be loaded at a time')
+    const file = files[0]!
+    fileName = file.name
+    dataStr = await loadTextData(file)
+  } catch (_) {
+    addErrorNotification('Failed to upload file')
+    return
+  }
+
+  let unvalidatedData: unknown
+  try {
+    unvalidatedData = JSON.parse(dataStr)
+  } catch (_) {
+    addErrorNotification('Uploaded file is not JSON')
+    return
+  }
+
+  if (typeof unvalidatedData !== 'object' || unvalidatedData === null) {
+    addErrorNotification('Uploaded file contains unsupported JSON')
+    return
+  }
+
+  const importModule = modules.find((module) =>
+    module.canLoadFromObject(unvalidatedData as Record<string, unknown>),
+  )
+
+  if (importModule === undefined) {
+    addErrorNotification('Uploaded file contains unsupported JSON')
+    return
+  }
+
+  const result = importModule.load(dataStr, fileName)
+
+  if (result.errors !== undefined) {
+    for (const error of result.errors) {
+      addErrorNotification('Failed loading', error.message)
+    }
+  }
+  if (result.data !== undefined) {
+    createDocumentWithContent(result.data, importModule.newNamePrefix)
+    addSuccessNotification('Data loaded')
+  }
+}
+
+async function loadTextData(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => {
+      resolve(reader.result as string)
+    })
+    reader.addEventListener('error', () => {
+      const error = reader.error
+      if (error === null) {
+        throw new Error('Error callback called but reader provided no error.')
+      }
+      reject(error)
+    })
+    reader.readAsText(file)
+  })
+}
 </script>
 
 <template>
@@ -140,12 +218,14 @@ const responsibleModule = computed(() => {
           v-if="selectedDocumentId === undefined"
           :example-groups="modules"
           @open="createDocumentWithContent"
+          @load="loadFile"
           @new="createAndSelectBlankDocument"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
           v-else-if="documentState === undefined"
           :example-groups="modules"
           @open="overrideWithContent"
+          @load="loadFile"
           @new="createAndSelectBlankDocument"
         ></BlankDocumentCanvas>
         <component
@@ -153,6 +233,7 @@ const responsibleModule = computed(() => {
           :is="responsibleModule?.editorComponent"
           @change="updateDocument"
           @new="createAndSelectBlankDocument"
+          @load="loadFile"
           :state="documentState"
           tabindex="0"
           @keydown="hanleEditorShortcut"
@@ -169,5 +250,13 @@ const responsibleModule = computed(() => {
       </div>
     </main>
   </div>
+  <NotificationsDisplay :notifications="notifications" />
   <WindowHelp v-model:open="isHelpOpened" />
+  <input
+    ref="file-input"
+    type="file"
+    v-show="false"
+    accept="application/json"
+    @change="loadFromFileInput($event)"
+  />
 </template>

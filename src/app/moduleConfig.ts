@@ -13,5 +13,6 @@ export interface ModuleConfig<DocumentT extends Objectish> {
   examples: Example<DocumentT>[]
   initialCotent: DocumentT
   editorComponent: EditorComponent<DocumentT>
+  canLoadFromObject(dataObject: Record<string, unknown>): boolean
   load(dataString: string, fileName: string): DeserializationResult<DocumentT>
 }

@@ -15,6 +15,7 @@ const { exampleGroups } = defineProps<{
 const emit = defineEmits<{
   open: [content: DocumentT, newNamePrefix: string]
   new: []
+  load: []
 }>()
 
 function openExample(example: Example<DocumentT>, newNamePrefix: string) {
@@ -59,7 +60,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
       </div>
     </div>
     <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-start pointer-events-none">
-      <MainMenu @new="emit('new')" />
+      <MainMenu @new="emit('new')" @load="emit('load')" />
     </div>
   </div>
 </template>
