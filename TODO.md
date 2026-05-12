@@ -1,2 +1,4 @@
-- [ ] a11y for elements with icons (e.g. `aria-label` in addtion to `title` and other best practices)
-- [ ] Setup ESLint for Storybook https://storybook.js.org/docs/configure/integration/eslint-plugin#installation
+- [ ] Clean up and write usefull qREADME.md
+- [ ] Rewrite custom help to talk about arguments and attacks
+- [ ] Show custom Help in Background that is also shown in Window
+- [ ] Document to use git submodules when checking out
