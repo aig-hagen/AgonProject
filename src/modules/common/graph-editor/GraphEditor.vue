@@ -496,34 +496,20 @@ watchEffect(() => {
             />
           </label>
         </div>
-        <button class="btn btn-square btn-sm" @click="isExportOpened = true" title="Export">
+        <button
+          class="btn btn-square btn-sm"
+          @click="isExportOpened = !isExportOpened"
+          title="Export"
+        >
           <PhotoIcon class="size-6 opacity-70" />
         </button>
         <button
           class="btn btn-square btn-sm"
-          :popovertarget="'popover' + graphComponentId"
-          :style="{
-            anchorName: '--anchor' + graphComponentId,
-          }"
-          title="Evaluate"
+          @click="isExtensionsOpened = !isExtensionsOpened"
+          title="Evalution"
         >
           <VariableIcon class="size-6 opacity-70" />
         </button>
-        <ul
-          class="dropdown dropdown-right menu rounded-box bg-base-100 shadow-md/30"
-          popover
-          :id="'popover' + graphComponentId"
-          :style="{
-            positionAnchor: '--anchor' + graphComponentId,
-          }"
-        >
-          <li @click="isExtensionsOpened = true">
-            <a>Extensions</a>
-          </li>
-          <li>
-            <a>Rankings</a>
-          </li>
-        </ul>
       </div>
       <div class="flex flex-1"></div>
     </div>

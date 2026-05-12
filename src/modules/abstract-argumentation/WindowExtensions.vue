@@ -131,7 +131,7 @@ watchEffect(() => {
 <template>
   <FloatingWindow
     v-model:open="open"
-    title="Extensions"
+    title="Extension evalution"
     :initial-position="{ x: 128, y: 64 }"
     :intitalSize="{ width: 576, height: 448 }"
   >
@@ -177,7 +177,6 @@ watchEffect(() => {
         </details>
       </fieldset>
       <fieldset class="fieldset">
-        <legend class="fieldset-legend">Evaluation</legend>
         <div class="flex gap-2 flex-wrap">
           <button
             class="btn btn-sm btn-soft btn-neutral mt-2"
