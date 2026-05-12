@@ -40,8 +40,6 @@ function openContent(content: DocumentT, newNamePrefix: string) {
         >
           Create New
         </h4>
-        <!-- TODO This UI is not clear. Buttons are not visible as such. -->
-
         <template v-if="exampleGroup.examples.length !== 0">
           <h4 class="text-lg p-1 px-1 mb-1">Select Example</h4>
 
