@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { offset, useFloating } from '@floating-ui/vue'
 import { ArrowLongRightIcon } from '@heroicons/vue/24/outline'
+import { onClickOutside } from '@vueuse/core'
 import { toRef, useTemplateRef } from 'vue'
 
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
@@ -13,6 +14,7 @@ const { reference, linkConfigs } = defineProps<{
 
 const emit = defineEmits<{
   'update:arrowType': [value: LinkType]
+  close: []
 }>()
 
 const floating = useTemplateRef('floating')
@@ -28,10 +30,14 @@ const { floatingStyles } = useFloating(
     ],
   },
 )
+
+onClickOutside(floating, () => emit('close'), {
+  ignore: [reference],
+})
 </script>
 
 <template>
-  <div ref="floating" :style="floatingStyles">
+  <div tabindex="0" ref="floating" :style="floatingStyles">
     <ul class="dropdown menu rounded-box bg-base-100 shadow-sm/30">
       <li v-for="(config, linkType) in linkConfigs" :key="linkType">
         <a @click="emit('update:arrowType', linkType)"

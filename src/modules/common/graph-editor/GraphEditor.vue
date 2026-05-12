@@ -488,6 +488,7 @@ function saveDocumentToFile() {
       :link-configs="linkConfigs"
       :reference="arrowSwitcherTarget.targetElement"
       @update:arrow-type="updateLinkType(arrowSwitcherTarget.linkId, $event)"
+      @close="arrowSwitcherTarget = undefined"
     />
     <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
       <div class="flex flex-1 flex-col justify-between">
