@@ -1,12 +1,5 @@
 <script setup lang="ts" generic="DocumentT extends Objectish">
-import {
-  ArrowDownTrayIcon,
-  Bars3Icon,
-  FolderOpenIcon,
-  PhotoIcon,
-  PlusCircleIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/vue/24/outline'
+import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
 import { computed, ref } from 'vue'
@@ -147,11 +140,13 @@ const responsibleModule = computed(() => {
           v-if="selectedDocumentId === undefined"
           :example-groups="modules"
           @open="createDocumentWithContent"
+          @new="createAndSelectBlankDocument"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
           v-else-if="documentState === undefined"
           :example-groups="modules"
           @open="overrideWithContent"
+          @new="createAndSelectBlankDocument"
         ></BlankDocumentCanvas>
         <component
           v-else-if="documentState !== undefined"
@@ -161,34 +156,7 @@ const responsibleModule = computed(() => {
           tabindex="0"
           @keydown="hanleEditorShortcut"
         />
-        <div
-          class="absolute top-4 bottom-4 left-4 flex flex-col justify-between pointer-events-none"
-        >
-          <!-- TODO Revisit how to properly make dropdowns in dropdowns with daisyUI-->
-          <div class="dropdown pointer-events-auto">
-            <div tabindex="0" role="button" class="btn btn-square btn-sm" title="Menu">
-              <Bars3Icon class="size-6 opacity-70" />
-            </div>
-            <ul
-              tabindex="-1"
-              class="dropdown-content w-max menu bg-base-100 rounded-box z-1 shadow-md/30"
-            >
-              <li>
-                <a @click="createAndSelectBlankDocument"
-                  ><PlusCircleIcon class="size-5 opacity-70" />New</a
-                >
-              </li>
-              <li>
-                <a><FolderOpenIcon class="size-5 opacity-70" />Open...</a>
-              </li>
-              <li>
-                <a><ArrowDownTrayIcon class="size-5 opacity-70" />Save As...</a>
-              </li>
-              <li>
-                <a><PhotoIcon class="size-5 opacity-70" />Export As...</a>
-              </li>
-            </ul>
-          </div>
+        <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
           <button
             @click="isHelpOpened = true"
             class="btn btn-square btn-sm pointer-events-auto"

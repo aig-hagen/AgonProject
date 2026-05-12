@@ -38,6 +38,8 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
+import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
+import { EntryState } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
 
 // The `GraphComponent` is implemented in away,
@@ -480,36 +482,45 @@ watchEffect(() => {
       @update:arrow-type="updateLinkType(arrowSwitcherTarget.linkId, $event)"
     />
     <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
-      <div class="flex flex-1 justify-end flex-col gap-2">
-        <div class="join join-vertical mb-8" v-if="enableLinkSwitching">
-          <label
-            v-for="(linkConfig, linkKey) in linkConfigs"
-            :key="linkKey"
-            class="join-item btn btn-toggle btn-square btn-sm"
-            :title="linkConfig!.displayName"
+      <div class="flex flex-1 flex-col justify-between">
+        <MainMenu
+          :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"
+          @evaluate="isExtensionsOpened = !isExtensionsOpened"
+          :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
+          @export="isExportOpened = !isExportOpened"
+        />
+
+        <div class="flex flex-1 justify-end flex-col gap-2">
+          <div class="join join-vertical mb-8" v-if="enableLinkSwitching">
+            <label
+              v-for="(linkConfig, linkKey) in linkConfigs"
+              :key="linkKey"
+              class="join-item btn btn-toggle btn-square btn-sm"
+              :title="linkConfig!.displayName"
+            >
+              <input v-model="selectedLinkType" :value="linkKey" type="radio" name="arrow" />
+              <ArrowLongRightIcon v-if="linkKey === LinkType.SINGLE" class="size-5 opacity-70" />
+              <ArrowDoubleLongRightIcon
+                v-if="linkKey === LinkType.DOUBLE"
+                class="size-5 opacity-70"
+              />
+            </label>
+          </div>
+          <button
+            class="btn btn-square btn-sm"
+            @click="isExtensionsOpened = !isExtensionsOpened"
+            title="Evalution"
           >
-            <input v-model="selectedLinkType" :value="linkKey" type="radio" name="arrow" />
-            <ArrowLongRightIcon v-if="linkKey === LinkType.SINGLE" class="size-5 opacity-70" />
-            <ArrowDoubleLongRightIcon
-              v-if="linkKey === LinkType.DOUBLE"
-              class="size-5 opacity-70"
-            />
-          </label>
+            <VariableIcon class="size-6 opacity-70" />
+          </button>
+          <button
+            class="btn btn-square btn-sm"
+            @click="isExportOpened = !isExportOpened"
+            title="Export"
+          >
+            <PhotoIcon class="size-6 opacity-70" />
+          </button>
         </div>
-        <button
-          class="btn btn-square btn-sm"
-          @click="isExportOpened = !isExportOpened"
-          title="Export"
-        >
-          <PhotoIcon class="size-6 opacity-70" />
-        </button>
-        <button
-          class="btn btn-square btn-sm"
-          @click="isExtensionsOpened = !isExtensionsOpened"
-          title="Evalution"
-        >
-          <VariableIcon class="size-6 opacity-70" />
-        </button>
       </div>
       <div class="flex flex-1"></div>
     </div>
