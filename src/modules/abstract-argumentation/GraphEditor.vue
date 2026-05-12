@@ -3,6 +3,7 @@ import { computed, shallowRef, watch } from 'vue'
 
 import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import { saveAsString } from '@/modules/abstract-argumentation/save/saveFormat'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -28,6 +29,8 @@ const evaluationInput = computed<Input<AbstractArgumentation<ArgumentData>>>(() 
 })
 
 const emit = defineEmits<{
+  load: []
+  new: []
   change: [state: DocumentState<AbstractArgumentation<ArgumentData>>]
 }>()
 
@@ -134,6 +137,8 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
 <template>
   <GraphEditor
     v-if="editorState"
+    @new="emit('new')"
+    @load="emit('load')"
     @node-created="onNodeCreated"
     @node-deleted="onNodeDeleted"
     @node-label-edited="onNodeLabelEdited"
@@ -142,6 +147,7 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
+    :get-save-string="() => saveAsString(state.current.content)"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions

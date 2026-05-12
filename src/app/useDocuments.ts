@@ -20,7 +20,7 @@ import {
   OBJECT_STORE_CONTENT_NAME,
   OBJECT_STORE_METADATA_NAME,
 } from '@/app/db'
-import type { ModuleConfig } from '@/main'
+import type { ModuleConfig } from '@/app/moduleConfig'
 import { generateUUID } from '@/modules/common/ids'
 import type { DocumentState } from '@/modules/common/state'
 

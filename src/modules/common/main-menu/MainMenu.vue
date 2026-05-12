@@ -13,11 +13,13 @@ import {
 import { EntryState } from '@/modules/common/main-menu/types'
 
 const {
+  showSave = EntryState.HIDE,
   showUndo = EntryState.HIDE,
   showRedo = EntryState.HIDE,
   showExport = EntryState.HIDE,
   showEvaluate = EntryState.HIDE,
 } = defineProps<{
+  showSave?: EntryState
   showUndo?: EntryState
   showRedo?: EntryState
   showExport?: EntryState
@@ -45,10 +47,16 @@ const emit = defineEmits<{
         <a @click="emit('new')"><PlusCircleIcon class="size-5 opacity-70" />New</a>
       </li>
       <li>
-        <a><FolderOpenIcon @click="emit('load')" class="size-5 opacity-70" />Open...</a>
+        <a @click="emit('load')"><FolderOpenIcon class="size-5 opacity-70" />Open...</a>
       </li>
-      <li>
-        <a><ArrowDownTrayIcon @click="emit('save')" class="size-5 opacity-70" />Save</a>
+      <li v-if="showSave !== EntryState.HIDE">
+        <a
+          :class="{
+            'opacity-50 pointer-events-none': showSave === EntryState.DISABLE,
+          }"
+          @click="emit('save')"
+          ><ArrowDownTrayIcon class="size-5 opacity-70" />Save</a
+        >
       </li>
       <template v-if="showUndo !== EntryState.HIDE || showRedo !== EntryState.HIDE">
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
@@ -95,8 +103,8 @@ const emit = defineEmits<{
             :class="{
               'opacity-50 pointer-events-none': showEvaluate === EntryState.DISABLE,
             }"
-            @click="emit('export')"
-            ><PhotoIcon class="size-5 opacity-70" />Evaluate...</a
+            @click="emit('evaluate')"
+            ><VariableIcon class="size-5 opacity-70" />Evaluate...</a
           >
         </li>
         <li>
@@ -104,8 +112,8 @@ const emit = defineEmits<{
             :class="{
               'opacity-50 pointer-events-none': showExport === EntryState.DISABLE,
             }"
-            @click="emit('evaluate')"
-            ><VariableIcon class="size-5 opacity-70" />Export...</a
+            @click="emit('export')"
+            ><PhotoIcon class="size-5 opacity-70" />Export...</a
           >
         </li>
       </template>

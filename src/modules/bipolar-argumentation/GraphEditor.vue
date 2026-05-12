@@ -3,6 +3,7 @@ import { computed, shallowRef, watch } from 'vue'
 
 import { availableExports } from '@/modules/bipolar-argumentation/export'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import { saveAsString } from '@/modules/bipolar-argumentation/save/saveFormat'
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -21,6 +22,8 @@ const { state } = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  load: []
+  new: []
   change: [state: DocumentState<BipoloarArgumentation<ArgumentData>>]
 }>()
 
@@ -159,6 +162,8 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
 <template>
   <GraphEditor
     v-if="editorState"
+    @new="emit('new')"
+    @load="emit('load')"
     @node-created="onNodeCreated"
     @node-deleted="onNodeDeleted"
     @node-label-edited="onNodeLabelEdited"
@@ -168,7 +173,7 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
-    :exports="availableExports"
+    :get-save-string="() => saveAsString(state.current.content)"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions

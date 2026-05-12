@@ -17,6 +17,8 @@ export type EditorComponent<DocumentT> = Component<
   Record<string, never>,
   Record<string, never>,
   {
+    load: () => void
+    new: () => void
     change: (state: DocumentState<DocumentT>) => void
   }
 >

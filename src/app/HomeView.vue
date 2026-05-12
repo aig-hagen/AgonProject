@@ -5,11 +5,11 @@ import type { Objectish } from 'immer'
 import { computed, ref } from 'vue'
 
 import type { DocumentsDB } from '@/app/db'
+import type { ModuleConfig } from '@/app/moduleConfig'
 import { useDocumentContent, useDocumentMetadata, useSelectedDocumentId } from '@/app/useDocuments'
 import BlankDocumentCanvas from '@/app/view/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/view/EditorTabs.vue'
 import WindowHelp from '@/app/WindowHelp.vue'
-import type { ModuleConfig } from '@/main'
 import { redoContent, setNewContent, undoContent } from '@/modules/common/state'
 
 const { db, modules } = defineProps<{
@@ -152,6 +152,7 @@ const responsibleModule = computed(() => {
           v-else-if="documentState !== undefined"
           :is="responsibleModule?.editorComponent"
           @change="updateDocument"
+          @new="createAndSelectBlankDocument"
           :state="documentState"
           tabindex="0"
           @keydown="hanleEditorShortcut"

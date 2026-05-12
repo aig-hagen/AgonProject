@@ -1,0 +1,79 @@
+import * as z from 'zod'
+
+import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import type { ArgumentData } from '@/modules/common/argumentation/model'
+import {
+  ArgumentsSaveSchema,
+  type LinksSave,
+  LinksSaveSchema,
+  loadFromStringWithSchema,
+  toFormatedJsonString,
+  validateLinks,
+} from '@/modules/common/argumentation/save/saveFormat'
+import { type DeserializationResult } from '@/modules/common/save/load'
+
+const API_VERSION = 'bipolar-argumentation-framework/v1' as const
+
+export const SaveSchema = z
+  .strictObject({
+    apiVersion: z.literal(API_VERSION),
+    arguments: ArgumentsSaveSchema,
+    attacks: LinksSaveSchema,
+    supports: LinksSaveSchema,
+  })
+  .superRefine((argumentation, ctx) => {
+    validateLinks(ctx, argumentation.arguments, argumentation.attacks, argumentation.supports)
+  })
+
+export type Save = z.infer<typeof SaveSchema>
+
+export function saveAsString(argumentation: BipoloarArgumentation<ArgumentData>): string {
+  const argumentsSave = Object.create(null)
+  for (const [argumentId, argumentData] of argumentation.arguments()) {
+    argumentsSave[argumentId] = {
+      name: argumentData.name,
+      x: argumentData.x,
+      y: argumentData.y,
+    }
+  }
+  const attacksSave: LinksSave = []
+  for (const [attackerId, attackedId] of argumentation.attacks()) {
+    attacksSave.push([attackerId, attackedId])
+  }
+  const supportsSave: LinksSave = []
+  for (const [supporterId, supportedId] of argumentation.supports()) {
+    supportsSave.push([supporterId, supportedId])
+  }
+  const save: Save = {
+    apiVersion: API_VERSION,
+    arguments: argumentsSave,
+    attacks: attacksSave,
+    supports: supportsSave,
+  }
+
+  return toFormatedJsonString(save)
+}
+
+export function loadFromString(
+  dataString: string,
+  fileName: string,
+): DeserializationResult<BipoloarArgumentation<ArgumentData>> {
+  return loadFromStringWithSchema(SaveSchema, dataString, fileName, (data) => {
+    const argumentation = new BipoloarArgumentation<ArgumentData>()
+    for (const [id, argumentData] of Object.entries(data.arguments)) {
+      const numericId = parseInt(id, 10)
+      argumentation.addArgument(numericId, {
+        name: argumentData.name,
+        x: argumentData.x,
+        y: argumentData.y,
+      })
+    }
+    for (const [attackerId, attackedId] of data.attacks) {
+      argumentation.addAttack(attackerId, attackedId)
+    }
+    for (const [supporterId, supportedId] of data.supports) {
+      argumentation.addSupport(supporterId, supportedId)
+    }
+    return argumentation
+  })
+}
