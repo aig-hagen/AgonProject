@@ -12,7 +12,14 @@ import LayoutTabs from '@/app/view/EditorTabs.vue'
 import WindowHelp from '@/app/WindowHelp.vue'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
-import { redoContent, setNewContent, undoContent } from '@/modules/common/state'
+import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+import {
+  canRedoContent,
+  canUndoContent,
+  redoContent,
+  setNewContent,
+  undoContent,
+} from '@/modules/common/state'
 
 const { db, modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>
@@ -88,6 +95,14 @@ function undo() {
   }
 }
 
+const canUndo = computed(() => {
+  const currentState = documentState.value
+  if (currentState === undefined) {
+    return false
+  }
+  return canUndoContent(currentState)
+})
+
 function redo() {
   const currentState = documentState.value
   if (currentState === undefined) {
@@ -99,18 +114,19 @@ function redo() {
   }
 }
 
-function hanleEditorShortcut(event: KeyboardEvent) {
-  const isMac = navigator.platform.indexOf('Mac') >= 0
-  const ctrl = isMac ? event.metaKey : event.ctrlKey
-  if (!ctrl) {
-    return
+const canRedo = computed(() => {
+  const currentState = documentState.value
+  if (currentState === undefined) {
+    return false
   }
-  if (event.shiftKey && event.key === 'z') {
-    event.preventDefault()
-    redo()
-  } else if (event.key === 'z') {
-    event.preventDefault()
+  return canRedoContent(currentState)
+})
+
+function hanleEditorShortcut(event: KeyboardEvent) {
+  if (isShortcut(UNDO_SHORTCUT, event)) {
     undo()
+  } else if (isShortcut(REDO_SHORTCUT, event)) {
+    redo()
   }
 }
 
@@ -237,6 +253,10 @@ async function loadTextData(file: File): Promise<string> {
           :state="documentState"
           tabindex="0"
           @keydown="hanleEditorShortcut"
+          @undo="undo"
+          :can-undo="canUndo"
+          @redo="redo"
+          :can-redo="canRedo"
         />
         <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
           <button

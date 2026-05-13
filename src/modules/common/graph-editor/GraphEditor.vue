@@ -51,10 +51,12 @@ import { getNextName } from '@/modules/common/nextName'
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
-const { state, linkConfigs, getSaveString } = defineProps<{
+const { state, linkConfigs, getSaveString, canUndo, canRedo } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   getSaveString(): string
+  canUndo: boolean
+  canRedo: boolean
 }>()
 
 const isExtensionsOpened = ref<boolean>(false)
@@ -128,6 +130,8 @@ const emit = defineEmits<{
       targetId: NodeId
     },
   ]
+  undo: []
+  redo: []
 }>()
 
 let idGenerator = new IdGenerator()
@@ -530,6 +534,10 @@ function doLayout(layout: Layout) {
           :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
           @export="isExportOpened = !isExportOpened"
           @layout="doLayout($event)"
+          :show-undo="canUndo ? EntryState.ENABLE : EntryState.DISABLE"
+          @undo="emit('undo')"
+          :show-redo="canRedo ? EntryState.ENABLE : EntryState.DISABLE"
+          @redo="emit('redo')"
         />
 
         <div class="flex flex-1 justify-end flex-col gap-2">

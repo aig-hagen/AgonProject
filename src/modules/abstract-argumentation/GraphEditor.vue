@@ -17,8 +17,10 @@ import {
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state } = defineProps<{
+const { state, canUndo, canRedo } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>
+  canUndo: boolean
+  canRedo: boolean
 }>()
 
 const evaluationInput = computed<Input<AbstractArgumentation<ArgumentData>>>(() => {
@@ -32,6 +34,8 @@ const emit = defineEmits<{
   load: []
   new: []
   change: [state: DocumentState<AbstractArgumentation<ArgumentData>>]
+  undo: []
+  redo: []
 }>()
 
 const renderedState = shallowRef(state)
@@ -148,6 +152,10 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
     :link-configs="linkConfig"
     :state="editorState"
     :get-save-string="() => saveAsString(state.current.content)"
+    @undo="emit('undo')"
+    :can-undo="canUndo"
+    @redo="emit('redo')"
+    :can-redo="canRedo"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions

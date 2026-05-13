@@ -4,6 +4,7 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   Bars3Icon,
+  ChevronRightIcon,
   FolderOpenIcon,
   PhotoIcon,
   PlusCircleIcon,
@@ -14,6 +15,7 @@ import { computed } from 'vue'
 
 import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
 import { EntryState } from '@/modules/common/main-menu/types'
+import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
 const {
   showSave = EntryState.HIDE,
@@ -82,17 +84,21 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
       <template v-if="layoutsToShow.length > 0">
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
         <li>
-          <div class="dropdown dropdown-hover">
+          <div class="dropdown dropdown-hover dropdown-right">
             <a
-              class="flex flex-row gap-2"
+              class="flex flex-row justify-between"
               :class="{
                 'opacity-50 pointer-events-none': showUndo === EntryState.DISABLE,
               }"
             >
-              <SparklesIcon class="size-5 opacity-70" />Relayout
+              <div>
+                <SparklesIcon class="inline size-5 opacity-70 mr-2" />
+                <span>Relayout</span>
+              </div>
+              <ChevronRightIcon class="size-5 opacity-40" />
             </a>
-            <div tabindex="-1" class="dropdown-content m-0">
-              <ul class="menu bg-base-100 rounded-box z-1 w-max shadow-sm/30">
+            <div tabindex="-1" class="dropdown-content p-0">
+              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
                 <li v-for="(layoutData, layoutType) in layoutDatasToShow" :key="layoutType">
                   <a @click="onClickLayout(layoutType)"
                     ><component :is="layoutData.icon" class="size-5 opacity-70" />{{
@@ -119,8 +125,15 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
               <ArrowUturnLeftIcon class="size-5 opacity-70" />Undo
             </span>
             <span class="flex gap-1 items-center">
-              <kbd class="text-xs opacity-40 font-mono">Ctrl</kbd>
-              <kbd class="text-xs opacity-40 font-mono">Z</kbd>
+              <kbd class="text-xs opacity-40 font-mono" v-if="REDO_SHORTCUT.modifiers.ctrl"
+                >Ctrl</kbd
+              >
+              <kbd class="text-xs opacity-40 font-mono" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
+              <kbd class="text-xs opacity-40 font-mono" v-if="UNDO_SHORTCUT.modifiers.shift"
+                >Shift</kbd
+              >
+
+              <kbd class="text-xs opacity-40 font-mono">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
             </span>
           </a>
         </li>
@@ -136,9 +149,14 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
               <ArrowUturnRightIcon class="size-5 opacity-70" />Redo
             </span>
             <span class="flex gap-1 items-center">
-              <kbd class="text-xs opacity-40 font-mono">Ctrl</kbd>
-              <kbd class="text-xs opacity-40 font-mono">Shift</kbd>
-              <kbd class="text-xs opacity-40 font-mono">Z</kbd>
+              <kbd class="text-xs opacity-40 font-mono" v-if="REDO_SHORTCUT.modifiers.ctrl"
+                >Ctrl</kbd
+              >
+              <kbd class="text-xs opacity-40 font-mono" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
+              <kbd class="text-xs opacity-40 font-mono" v-if="REDO_SHORTCUT.modifiers.shift"
+                >Shift</kbd
+              >
+              <kbd class="text-xs opacity-40 font-mono">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
             </span>
           </a>
         </li>

@@ -51,13 +51,19 @@ export function setNewContent<DocumentT>(content: DocumentT): DocumentState<Docu
   }
 }
 
+export function canUndoContent<DocumentT extends Objectish>(
+  state: DocumentState<DocumentT>,
+): boolean {
+  return state.current.changeIdx !== -1
+}
+
 export function undoContent<DocumentT extends Objectish>(
   state: DocumentState<DocumentT>,
 ): DocumentState<DocumentT> | undefined {
-  const changeIdx = state.current.changeIdx
-  if (state.current.changeIdx === -1) {
+  if (!canUndoContent(state)) {
     return undefined
   }
+  const changeIdx = state.current.changeIdx
   const changes = [...state.changes]
   const inverseChanges = [...state.inverseChanges]
   const next = produce(state.current.content, (draft) => {
@@ -74,14 +80,22 @@ export function undoContent<DocumentT extends Objectish>(
   }
 }
 
+export function canRedoContent<DocumentT extends Objectish>(
+  state: DocumentState<DocumentT>,
+): boolean {
+  const changeIdx = state.current.changeIdx
+  const nextChangeIdx = changeIdx + 1
+  return nextChangeIdx < state.changes.length
+}
+
 export function redoContent<DocumentT extends Objectish>(
   state: DocumentState<DocumentT>,
 ): DocumentState<DocumentT> | undefined {
-  const changeIdx = state.current.changeIdx
-  const nextChangeIdx = changeIdx + 1
-  if (nextChangeIdx >= state.changes.length) {
+  if (!canRedoContent(state)) {
     return undefined
   }
+  const changeIdx = state.current.changeIdx
+  const nextChangeIdx = changeIdx + 1
   const changes = [...state.changes]
   const inverseChanges = [...state.inverseChanges]
   const next = produce(state.current.content, (draft) => {

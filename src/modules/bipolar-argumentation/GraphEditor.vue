@@ -19,12 +19,16 @@ import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
 const { state } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
+  canUndo: boolean
+  canRedo: boolean
 }>()
 
 const emit = defineEmits<{
   load: []
   new: []
   change: [state: DocumentState<BipoloarArgumentation<ArgumentData>>]
+  undo: []
+  redo: []
 }>()
 
 const evaluationInput = computed<Input<BipoloarArgumentation<ArgumentData>>>(() => {
@@ -174,6 +178,10 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     :link-configs="linkConfig"
     :state="editorState"
     :get-save-string="() => saveAsString(state.current.content)"
+    @undo="emit('undo')"
+    :can-undo="canUndo"
+    @redo="emit('redo')"
+    :can-redo="canRedo"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions

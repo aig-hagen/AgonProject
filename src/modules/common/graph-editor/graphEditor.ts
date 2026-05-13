@@ -11,6 +11,8 @@ export const LinkType = {
 export type EditorComponent<DocumentT> = Component<
   {
     state: DocumentState<DocumentT>
+    canUndo: boolean
+    canRedo: boolean
   },
   unknown,
   unknown,
@@ -20,6 +22,8 @@ export type EditorComponent<DocumentT> = Component<
     load: () => void
     new: () => void
     change: (state: DocumentState<DocumentT>) => void
+    undo: () => void
+    redo: () => void
   }
 >
 
