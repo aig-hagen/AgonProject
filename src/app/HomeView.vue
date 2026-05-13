@@ -240,7 +240,7 @@ async function loadTextData(file: File): Promise<string> {
         />
         <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
           <button
-            @click="isHelpOpened = true"
+            @click="isHelpOpened = !isHelpOpened"
             class="btn btn-square btn-sm pointer-events-auto"
             title="Help"
           >
