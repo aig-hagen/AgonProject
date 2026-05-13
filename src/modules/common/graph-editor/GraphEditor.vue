@@ -37,8 +37,10 @@ import {
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
+import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
@@ -469,6 +471,26 @@ watchEffect(() => {
 function saveDocumentToFile() {
   saveToFile(getSaveString(), 'argumentation', 'json')
 }
+
+function doLayout(layout: Layout) {
+  if (graphComponentRef.value === null) {
+    return
+  }
+  const nodes = state.nodes.map((node) => node.id)
+  const links: [number, number][] = state.links.map((link) => [link.sourceId, link.targetId])
+  const positions = getNodePositions(nodes, links, layout)
+  const newPositions = []
+  for (const nodeId of nodes) {
+    const position = positions.get(nodeId)!
+    graphComponentRef.value.setNodePosition(position, undefined, nodeId)
+    newPositions.push({
+      id: nodeId,
+      x: position.x,
+      y: position.y,
+    })
+  }
+  emit('nodesMoved', newPositions)
+}
 </script>
 <template>
   <div class="h-full w-full">
@@ -496,11 +518,18 @@ function saveDocumentToFile() {
           @new="emit('new')"
           @load="emit('load')"
           :show-save="EntryState.ENABLE"
+          :layouts-to-show="[
+            Layout.TopToBottom,
+            Layout.BottomToTop,
+            Layout.LeftToRight,
+            Layout.RightToLeft,
+          ]"
           @save="saveDocumentToFile"
           :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"
           @evaluate="isExtensionsOpened = !isExtensionsOpened"
           :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
           @export="isExportOpened = !isExportOpened"
+          @layout="doLayout($event)"
         />
 
         <div class="flex flex-1 justify-end flex-col gap-2">

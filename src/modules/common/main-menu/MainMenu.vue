@@ -7,9 +7,12 @@ import {
   FolderOpenIcon,
   PhotoIcon,
   PlusCircleIcon,
+  SparklesIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
+import { computed } from 'vue'
 
+import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
 import { EntryState } from '@/modules/common/main-menu/types'
 
 const {
@@ -18,12 +21,14 @@ const {
   showRedo = EntryState.HIDE,
   showExport = EntryState.HIDE,
   showEvaluate = EntryState.HIDE,
+  layoutsToShow = [],
 } = defineProps<{
   showSave?: EntryState
   showUndo?: EntryState
   showRedo?: EntryState
   showExport?: EntryState
   showEvaluate?: EntryState
+  layoutsToShow?: Layout[]
 }>()
 
 const emit = defineEmits<{
@@ -31,13 +36,29 @@ const emit = defineEmits<{
   load: []
   save: []
   undo: []
+  layout: [layout: Layout]
   redo: []
   export: []
   evaluate: []
 }>()
+
+function onClickLayout(layout: Layout) {
+  emit('layout', layout)
+  const activeElement = document.activeElement
+  if (activeElement instanceof HTMLElement) {
+    activeElement.blur()
+  }
+}
+
+const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
+  const layoutDatasToShow: Record<Layout, LayoutData> = Object.create(null)
+  for (const layout of layoutsToShow) {
+    layoutDatasToShow[layout] = layoutDatas[layout]
+  }
+  return layoutDatasToShow
+})
 </script>
 <template>
-  <!-- TODO Revisit how to properly make dropdowns in dropdowns with daisyUI-->
   <div class="dropdown pointer-events-auto">
     <div tabindex="0" role="button" class="btn btn-square btn-sm" title="Menu">
       <Bars3Icon class="size-6 opacity-70" />
@@ -58,6 +79,32 @@ const emit = defineEmits<{
           ><ArrowDownTrayIcon class="size-5 opacity-70" />Save</a
         >
       </li>
+      <template v-if="layoutsToShow.length > 0">
+        <li class="disabled"><hr class="mt-2 border-base-300" /></li>
+        <li>
+          <div class="dropdown dropdown-hover">
+            <a
+              class="flex flex-row gap-2"
+              :class="{
+                'opacity-50 pointer-events-none': showUndo === EntryState.DISABLE,
+              }"
+            >
+              <SparklesIcon class="size-5 opacity-70" />Relayout
+            </a>
+            <div tabindex="-1" class="dropdown-content m-0">
+              <ul class="menu bg-base-100 rounded-box z-1 w-max shadow-sm/30">
+                <li v-for="(layoutData, layoutType) in layoutDatasToShow" :key="layoutType">
+                  <a @click="onClickLayout(layoutType)"
+                    ><component :is="layoutData.icon" class="size-5 opacity-70" />{{
+                      layoutData.name
+                    }}</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </li>
+      </template>
       <template v-if="showUndo !== EntryState.HIDE || showRedo !== EntryState.HIDE">
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
         <li v-if="showUndo !== EntryState.HIDE">
