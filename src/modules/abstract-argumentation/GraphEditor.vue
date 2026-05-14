@@ -3,7 +3,6 @@ import { computed, shallowRef, watch } from 'vue'
 
 import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import { saveAsString } from '@/modules/abstract-argumentation/save/saveFormat'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -36,6 +35,7 @@ const emit = defineEmits<{
   change: [state: DocumentState<AbstractArgumentation<ArgumentData>>]
   undo: []
   redo: []
+  save: []
 }>()
 
 const renderedState = shallowRef(state)
@@ -151,11 +151,11 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
-    :get-save-string="() => saveAsString(state.current.content)"
     @undo="emit('undo')"
     :can-undo="canUndo"
     @redo="emit('redo')"
     :can-redo="canRedo"
+    @save="emit('save')"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions

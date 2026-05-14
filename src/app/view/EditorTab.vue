@@ -1,18 +1,29 @@
-<script setup lang="ts">
-import { XMarkIcon } from '@heroicons/vue/24/outline'
+<script setup lang="ts" generic="DocumentT extends Objectish">
+import { ArrowDownTrayIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { useDebounceFn } from '@vueuse/core'
+import type { IDBPDatabase } from 'idb'
+import type { Objectish } from 'immer'
 import { useTemplateRef } from 'vue'
+
+import type { DocumentsDB } from '@/app/db'
+import type { ModuleConfig } from '@/app/moduleConfig'
+import { loadDocumentState } from '@/app/useDocuments'
 
 const PLACEHOLDER = 'new argumentation'
 
-const { active, value } = defineProps<{
+const { active, documentId, value, db, modules } = defineProps<{
   active: boolean
   value: string
+  documentId: number
+  db: IDBPDatabase<DocumentsDB>
+  modules: ModuleConfig<DocumentT>[]
 }>()
 
 const emit = defineEmits<{
   rename: [name: string]
   delete: []
+  select: []
+  save: []
 }>()
 
 const debouncedRename = useDebounceFn((name) => {
@@ -32,14 +43,19 @@ function handleInput(e: InputEvent) {
   debouncedRename(target.value)
 }
 
-function handleDelete() {
-  emit('delete')
+async function doRequestClose() {
+  const [state] = await loadDocumentState(db, modules, documentId)
+  if (state === undefined) {
+    emit('delete')
+  }
+  closeModal.value?.showModal()
 }
 
 const inputSizerRef = useTemplateRef('input-sizer')
+const closeModal = useTemplateRef('closeModal')
 </script>
 <template>
-  <div role="tab" class="tab shrink-0" :class="{ 'tab-active': active }">
+  <div @click="emit('select')" role="tab" class="tab shrink-0" :class="{ 'tab-active': active }">
     <!--
       Input sizer to make input dynamically grow.
       See https://css-tricks.com/auto-growing-inputs-textareas/#aa-other-ideas
@@ -53,10 +69,43 @@ const inputSizerRef = useTemplateRef('input-sizer')
         @input="handleInput"
       />
     </label>
-    <button class="btn btn-square btn-xs ml-2 btn-ghost" @click="handleDelete" title="Close">
+    <button
+      class="btn btn-square btn-xs ml-2 btn-ghost"
+      @click.stop="doRequestClose()"
+      title="Close"
+    >
       <XMarkIcon class="size-4"></XMarkIcon>
     </button>
   </div>
+  <dialog class="modal" ref="closeModal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-square btn-ghost absolute right-2 top-2">
+          <XMarkIcon class="size-4"></XMarkIcon>
+        </button>
+      </form>
+      <h3 class="text-lg font-bold">
+        Delete <span v-if="value" class="underline">{{ value }}</span
+        ><template v-else>unnamed document</template>
+      </h3>
+      <p class="py-4">
+        All unsaved data will be <span class="font-bold">permanently deleted</span>.
+        <br />
+        Save your data before closing if you want to keep it.
+      </p>
+      <div class="modal-action">
+        <button class="btn btn-sm" @click="emit('save')">
+          <ArrowDownTrayIcon class="size-4"></ArrowDownTrayIcon>Save
+        </button>
+        <button class="btn btn-error btn-sm" @click="emit('delete')">
+          <TrashIcon class="size-4"></TrashIcon>Delete
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>Dismiss</button>
+    </form>
+  </dialog>
 </template>
 
 <style scoped>

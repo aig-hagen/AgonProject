@@ -6,10 +6,16 @@ import { computed, ref, useTemplateRef } from 'vue'
 
 import type { DocumentsDB } from '@/app/db'
 import type { ModuleConfig } from '@/app/moduleConfig'
-import { useDocumentContent, useDocumentMetadata, useSelectedDocumentId } from '@/app/useDocuments'
+import {
+  loadDocumentState,
+  useDocumentContent,
+  useDocumentMetadata,
+  useSelectedDocumentId,
+} from '@/app/useDocuments'
 import BlankDocumentCanvas from '@/app/view/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/view/EditorTabs.vue'
 import WindowHelp from '@/app/WindowHelp.vue'
+import { saveToFile } from '@/modules/common/export/saveFile'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
@@ -33,7 +39,7 @@ const { documents, createDocument, deleteDocument, renameDocument } = useDocumen
   modules,
 )
 const { selectedDocumentId, selectDocument } = useSelectedDocumentId(documents)
-const { documentState, updateDocument } = useDocumentContent<DocumentT>(
+const { documentState, updateDocument, documentModule } = useDocumentContent<DocumentT>(
   db,
   modules,
   selectedDocumentId,
@@ -130,18 +136,6 @@ function hanleEditorShortcut(event: KeyboardEvent) {
   }
 }
 
-const responsibleModule = computed(() => {
-  const content = documentState.value?.current.content
-  if (content === undefined) {
-    return
-  }
-  const module = modules.find((module) => module.is(content))
-  if (module === undefined) {
-    return undefined
-  }
-  return module
-})
-
 const fileInput = useTemplateRef<HTMLInputElement>('file-input')
 
 function loadFile() {
@@ -215,6 +209,24 @@ async function loadTextData(file: File): Promise<string> {
     reader.readAsText(file)
   })
 }
+
+async function saveAsFile(documentId: number) {
+  const metadata = documents.value.find((document) => document.id === documentId)
+  if (metadata === undefined) {
+    return
+  }
+  const nameEscaped = metadata.name.replace(/[^a-zA-Z0-9 ]/g, '')
+  let fileName = 'argumentation'
+  if (nameEscaped !== undefined) {
+    fileName += '_' + nameEscaped
+  }
+  const [state, module] = await loadDocumentState(db, modules, documentId)
+  if (state === undefined) {
+    return
+  }
+  const saveString = module.getSaveString(state.current.content)
+  saveToFile(saveString, fileName, 'json')
+}
 </script>
 
 <template>
@@ -227,6 +239,9 @@ async function loadTextData(file: File): Promise<string> {
       @create="createAndSelectBlankDocument"
       @delete="deleteDocument($event)"
       @rename="(id, name) => renameDocument(id, name)"
+      :db="db"
+      :modules="modules"
+      @save="saveAsFile($event)"
     />
     <main class="border-t -mt-px border-base-300 editor flex-1">
       <div class="relative h-full w-full">
@@ -246,7 +261,7 @@ async function loadTextData(file: File): Promise<string> {
         ></BlankDocumentCanvas>
         <component
           v-else-if="documentState !== undefined"
-          :is="responsibleModule?.editorComponent"
+          :is="documentModule?.editorComponent"
           @change="updateDocument"
           @new="createAndSelectBlankDocument"
           @load="loadFile"
@@ -257,6 +272,7 @@ async function loadTextData(file: File): Promise<string> {
           :can-undo="canUndo"
           @redo="redo"
           :can-redo="canRedo"
+          @save="saveAsFile(selectedDocumentId)"
         />
         <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
           <button

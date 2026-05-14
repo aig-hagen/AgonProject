@@ -15,4 +15,5 @@ export interface ModuleConfig<DocumentT extends Objectish> {
   editorComponent: EditorComponent<DocumentT>
   canLoadFromObject(dataObject: Record<string, unknown>): boolean
   load(dataString: string, fileName: string): DeserializationResult<DocumentT>
+  getSaveString(document: DocumentT): string
 }

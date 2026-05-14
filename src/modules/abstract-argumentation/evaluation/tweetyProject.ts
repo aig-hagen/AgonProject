@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/vue-query'
-import type { UUID } from 'crypto'
 import { computed, type MaybeRef, unref } from 'vue'
 import z from 'zod'
 
@@ -7,7 +6,7 @@ import { type AbstractArgumentation } from '@/modules/abstract-argumentation/mod
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
-import { IdMapping } from '@/modules/common/ids'
+import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_ABSTRACT_ARGUMENTATION = '/dung'
 

@@ -28,7 +28,6 @@ import {
   ARGUMENT_RADIUS_IN_PX,
   ATTACK_COLOR,
 } from '@/modules/common/argumentation/model'
-import { saveToFile } from '@/modules/common/export/saveFile'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
   type GraphEditorState,
@@ -51,10 +50,9 @@ import { getNextName } from '@/modules/common/nextName'
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
-const { state, linkConfigs, getSaveString, canUndo, canRedo } = defineProps<{
+const { state, linkConfigs, canUndo, canRedo } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
-  getSaveString(): string
   canUndo: boolean
   canRedo: boolean
 }>()
@@ -132,6 +130,7 @@ const emit = defineEmits<{
   ]
   undo: []
   redo: []
+  save: []
 }>()
 
 let idGenerator = new IdGenerator()
@@ -472,10 +471,6 @@ watchEffect(() => {
   graphComponent.setColor(restColor, restNodes)
 })
 
-function saveDocumentToFile() {
-  saveToFile(getSaveString(), 'argumentation', 'json')
-}
-
 function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
     return
@@ -530,7 +525,7 @@ function doLayout(layout: Layout) {
             Layout.LeftToRight,
             Layout.RightToLeft,
           ]"
-          @save="saveDocumentToFile"
+          @save="emit('save')"
           :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"
           @evaluate="isExtensionsOpened = !isExtensionsOpened"
           :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"

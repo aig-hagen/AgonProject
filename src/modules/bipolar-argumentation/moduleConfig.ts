@@ -3,7 +3,11 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/moduleConfig'
 import GraphEditor from '@/modules/bipolar-argumentation/GraphEditor.vue'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
-import { canLoadFromObject, loadFromString } from '@/modules/bipolar-argumentation/save/saveFormat'
+import {
+  canLoadFromObject,
+  loadFromString,
+  saveAsString,
+} from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { DirectedGraph } from '@/modules/common/graph/graph'
 
@@ -69,5 +73,8 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   },
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
+  },
+  getSaveString(document) {
+    return saveAsString(document)
   },
 }

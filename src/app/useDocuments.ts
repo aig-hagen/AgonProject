@@ -51,7 +51,7 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
   async function createDocument(name: string, content?: DocumentT) {
     let rawContent: Objectish = {}
     if (content !== undefined) {
-      rawContent = serializeContent(content, modules)
+      ;[rawContent] = serializeContent(content, modules)
     }
     const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_CONTENT_NAME], 'readwrite')
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
@@ -185,11 +185,11 @@ export function useSelectedDocumentId(documentsRef: Readonly<Ref<Readonly<Docume
 function serializeContent<DocumentT extends Objectish>(
   content: DocumentT,
   modules: ModuleConfig<DocumentT>[],
-) {
+): [Objectish, ModuleConfig<DocumentT>] {
   for (const module of modules) {
     const rawContent = module.serialize(content)
     if (rawContent !== undefined) {
-      return rawContent
+      return [rawContent, module]
     }
   }
   throw new Error('Could not serialize content: ' + JSON.stringify(content))
@@ -201,6 +201,7 @@ export function useDocumentContent<DocumentT extends Objectish>(
   idRef: Readonly<MaybeRef<DocumentId | undefined>>,
 ) {
   const documentStateRef: Ref<DocumentState<DocumentT> | undefined> = shallowRef(undefined)
+  const moduleRef: Ref<ModuleConfig<DocumentT> | undefined> = shallowRef(undefined)
 
   async function updateDocument(state: DocumentState<DocumentT>) {
     const id = unref(idRef)
@@ -208,7 +209,7 @@ export function useDocumentContent<DocumentT extends Objectish>(
       return
     }
     const content = state.current.content
-    const rawContent = serializeContent(content, modules)
+    const [rawContent, module] = serializeContent(content, modules)
     const rawState: DocumentState<Objectish> = {
       ...state,
       current: {
@@ -221,30 +222,15 @@ export function useDocumentContent<DocumentT extends Objectish>(
     await contentStore.put(rawState, id)
     await tx.done
     documentStateRef.value = state
+    moduleRef.value = module
+
     notifyUpdate(id)
   }
 
   async function loadState(id: DocumentId) {
-    const tx = db.transaction([OBJECT_STORE_CONTENT_NAME], 'readonly')
-    const state = await tx.objectStore(OBJECT_STORE_CONTENT_NAME).get(id)
-    await tx.done
-    if (state !== undefined) {
-      const deserializedContent = state.current.content
-      for (const module of modules) {
-        const content = module.deserialize(deserializedContent)
-        if (content !== undefined) {
-          documentStateRef.value = {
-            ...state,
-            current: {
-              ...state.current,
-              content: content,
-            },
-          }
-          return
-        }
-      }
-    }
-    documentStateRef.value = undefined
+    const [documentState, module] = await loadDocumentState(db, modules, id)
+    documentStateRef.value = documentState
+    moduleRef.value = module
   }
 
   const channels: Record<DocumentId, BroadcastChannel> = Object.create(null)
@@ -259,6 +245,7 @@ export function useDocumentContent<DocumentT extends Objectish>(
   watchEffect(() => {
     closeAndDeleteAllChannels()
     documentStateRef.value = undefined
+    moduleRef.value = undefined
     const id = unref(idRef)
     if (id !== undefined) {
       const channel = new BroadcastChannel(getChannelDocumentContent(id))
@@ -280,6 +267,36 @@ export function useDocumentContent<DocumentT extends Objectish>(
 
   return {
     documentState: computed(() => documentStateRef.value),
+    documentModule: computed(() => moduleRef.value),
     updateDocument,
   }
+}
+
+export async function loadDocumentState<DocumentT extends Objectish>(
+  db: IDBPDatabase<DocumentsDB>,
+  modules: ModuleConfig<DocumentT>[],
+  id: DocumentId,
+): Promise<[DocumentState<DocumentT>, ModuleConfig<DocumentT>] | [undefined, undefined]> {
+  const tx = db.transaction([OBJECT_STORE_CONTENT_NAME], 'readonly')
+  const state = await tx.objectStore(OBJECT_STORE_CONTENT_NAME).get(id)
+  await tx.done
+  if (state !== undefined) {
+    const deserializedContent = state.current.content
+    for (const module of modules) {
+      const content = module.deserialize(deserializedContent)
+      if (content !== undefined) {
+        return [
+          {
+            ...state,
+            current: {
+              ...state.current,
+              content: content,
+            },
+          },
+          module,
+        ]
+      }
+    }
+  }
+  return [undefined, undefined]
 }

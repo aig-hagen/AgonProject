@@ -3,7 +3,6 @@ import { computed, shallowRef, watch } from 'vue'
 
 import { availableExports } from '@/modules/bipolar-argumentation/export'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
-import { saveAsString } from '@/modules/bipolar-argumentation/save/saveFormat'
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -29,6 +28,7 @@ const emit = defineEmits<{
   change: [state: DocumentState<BipoloarArgumentation<ArgumentData>>]
   undo: []
   redo: []
+  save: []
 }>()
 
 const evaluationInput = computed<Input<BipoloarArgumentation<ArgumentData>>>(() => {
@@ -177,11 +177,11 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
-    :get-save-string="() => saveAsString(state.current.content)"
     @undo="emit('undo')"
     :can-undo="canUndo"
     @redo="emit('redo')"
     :can-redo="canRedo"
+    @save="emit('save')"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions

@@ -4,7 +4,11 @@ import type { ModuleConfig } from '@/app/moduleConfig'
 import { datasets } from '@/modules/abstract-argumentation/examples'
 import GraphEditor from '@/modules/abstract-argumentation/GraphEditor.vue'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import { canLoadFromObject, loadFromString } from '@/modules/abstract-argumentation/save/saveFormat'
+import {
+  canLoadFromObject,
+  loadFromString,
+  saveAsString,
+} from '@/modules/abstract-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { DirectedGraph } from '@/modules/common/graph/graph'
 
@@ -68,5 +72,8 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
   },
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
+  },
+  getSaveString(document) {
+    return saveAsString(document)
   },
 }

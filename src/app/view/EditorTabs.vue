@@ -1,11 +1,17 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="DocumentT extends Objectish">
 import { PlusIcon } from '@heroicons/vue/24/outline'
+import type { IDBPDatabase } from 'idb'
+import type { Objectish } from 'immer'
 
-import LayoutTab from '@/app/view/EditorTab.vue'
+import type { DocumentsDB } from '@/app/db'
+import type { ModuleConfig } from '@/app/moduleConfig'
+import EditorTab from '@/app/view/EditorTab.vue'
 
 defineProps<{
   data: readonly { readonly name: string; readonly id: number }[]
   selected?: number
+  db: IDBPDatabase<DocumentsDB>
+  modules: ModuleConfig<DocumentT>[]
 }>()
 
 const emit = defineEmits<{
@@ -13,19 +19,24 @@ const emit = defineEmits<{
   select: [id: number]
   delete: [id: number]
   create: []
+  save: [id: number]
 }>()
 </script>
 
 <template>
   <div role="tablist" class="tabs bg-base-200 tabs-lift flex-nowrap overflow-x-auto">
-    <LayoutTab
+    <EditorTab
       v-for="datum in data"
       :key="datum.id"
       :value="datum.name"
       :active="datum.id === selected"
       @delete="emit('delete', datum.id)"
       @rename="emit('rename', datum.id, $event)"
-      @click="emit('select', datum.id)"
+      @select="emit('select', datum.id)"
+      :document-id="datum.id"
+      :db="db"
+      :modules="modules"
+      @save="emit('save', datum.id)"
     />
     <div role="tab" class="tab sticky right-0 bg-base-200">
       <button class="btn btn-square btn-xs btn-ghost" @click="emit('create')" title="Create">
