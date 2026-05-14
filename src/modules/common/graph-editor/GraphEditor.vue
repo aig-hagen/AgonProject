@@ -480,7 +480,9 @@ function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
     return
   }
-  const nodes = state.nodes.map((node) => node.id)
+  const nodes = [...state.nodes]
+    .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
+    .map((node) => node.id)
   const links: [number, number][] = state.links.map((link) => [link.sourceId, link.targetId])
   const positions = getNodePositions(nodes, links, layout)
   const newPositions = []
