@@ -14,9 +14,7 @@
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
     "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.3.tgz",
@@ -49,13 +47,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^5.0.2",
     "@playwright/test": "1.59.1",
-    "@storybook/addon-a11y": "^10.3.1",
-    "@storybook/addon-docs": "^10.3.1",
-    "@storybook/addon-onboarding": "^10.3.1",
-    "@storybook/addon-vitest": "^10.3.1",
-    "@storybook/vue3-vite": "^10.3.1",
     "@tailwindcss/vite": "^4.2.0",
     "@tsconfig/node24": "^24.0.4",
     "@types/file-saver": "^2.0.7",
@@ -79,7 +71,6 @@
     "eslint-plugin-oxlint": "~1.46.0",
     "eslint-plugin-playwright": "^2.5.1",
     "eslint-plugin-simple-import-sort": "^13.0.0",
-    "eslint-plugin-storybook": "^10.3.1",
     "eslint-plugin-vue": "~10.8.0",
     "jiti": "^2.6.1",
     "jsdom": "^28.1.0",
@@ -87,7 +78,6 @@
     "oxlint": "~1.47.0",
     "playwright": "1.59.1",
     "prettier": "3.8.1",
-    "storybook": "^10.3.1",
     "tailwindcss": "^4.2.0",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",

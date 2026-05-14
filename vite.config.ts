@@ -3,7 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import { defineConfig, Plugin, PluginOption, PreviewServer,ViteDevServer } from 'vite'
+import { defineConfig, Plugin, PreviewServer, ViteDevServer } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
@@ -27,46 +27,41 @@ function gzipFixPlugin(): Plugin {
   }
 }
 
-const isStorybook = !!process.env.STORYBOOK
-const plugins: PluginOption[] = [
-  tailwindcss(),
-  vue(),
-  vueJsx(),
-  viteStaticCopy({
-    targets: [
-      {
-        src: 'node_modules/@drgrice1/tikzjax/dist/**',
-        dest: '',
-      },
-      // Add custom TeX package to the ones provided by @drgrice1/tikzjax
-      // See https://github.com/drgrice1/tikzjax#options
-      {
-        src: 'third-party/ctan.org/pkg/argumentation/1.6 2026-07-31/argumentation.sty.gz',
-        dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
-        rename: { stripBase: 5 }
-      },
-      // `pgfopts.sty.gz` is required by `argumentation.sty.gz`
-      {
-        src: 'third-party/ctan.org/pkg/pgfopts/2.1a/pgfopts.sty.gz',
-        dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
-        rename: { stripBase: 5 }
-      },
-      {
-        // `wawoff2` needs to be loaded differently then other modules.
-        // See https://github.com/opentypejs/opentype.js#loading-a-woffotfttf-font
-        src: 'node_modules/wawoff2/build/decompress_binding.js',
-        dest: '',
-      },
-    ],
-  }),
-  gzipFixPlugin(),
-]
-if (!isStorybook) {
-  plugins.push(vueDevTools())
-}
-
 export default defineConfig({
-  plugins: plugins,
+  plugins: [
+    tailwindcss(),
+    vue(),
+    vueJsx(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'node_modules/@drgrice1/tikzjax/dist/**',
+          dest: '',
+        },
+        // Add custom TeX package to the ones provided by @drgrice1/tikzjax
+        // See https://github.com/drgrice1/tikzjax#options
+        {
+          src: 'third-party/ctan.org/pkg/argumentation/1.6 2026-07-31/argumentation.sty.gz',
+          dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
+          rename: { stripBase: 5 },
+        },
+        // `pgfopts.sty.gz` is required by `argumentation.sty.gz`
+        {
+          src: 'third-party/ctan.org/pkg/pgfopts/2.1a/pgfopts.sty.gz',
+          dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
+          rename: { stripBase: 5 },
+        },
+        {
+          // `wawoff2` needs to be loaded differently then other modules.
+          // See https://github.com/opentypejs/opentype.js#loading-a-woffotfttf-font
+          src: 'node_modules/wawoff2/build/decompress_binding.js',
+          dest: '',
+        },
+      ],
+    }),
+    gzipFixPlugin(),
+    vueDevTools(),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

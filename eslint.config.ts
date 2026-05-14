@@ -6,7 +6,6 @@ import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import pluginOxlint from 'eslint-plugin-oxlint'
 import pluginPlaywright from 'eslint-plugin-playwright'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
-import storybook from 'eslint-plugin-storybook'
 import pluginVue from 'eslint-plugin-vue'
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
@@ -54,8 +53,6 @@ export default defineConfigWithVueTs(
       ],
     },
   },
-  globalIgnores(['!.storybook'], 'Include Storybook Directory'),
-  ...storybook.configs['flat/recommended'],
   {
     files: ['src/**'],
     plugins: { 'no-relative-import-paths': noRelativeImportPaths },
