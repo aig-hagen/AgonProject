@@ -85,12 +85,7 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
         <li>
           <div class="dropdown dropdown-hover dropdown-right">
-            <a
-              class="flex flex-row justify-between"
-              :class="{
-                'opacity-50 pointer-events-none': showUndo === EntryState.DISABLE,
-              }"
-            >
+            <a class="flex flex-row justify-between">
               <div>
                 <SparklesIcon class="inline size-5 opacity-70 mr-2" />
                 <span>Relayout</span>
