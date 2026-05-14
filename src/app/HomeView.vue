@@ -2,7 +2,7 @@
 import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import type { DocumentsDB } from '@/app/db'
 import type { ModuleConfig } from '@/app/moduleConfig'
@@ -22,6 +22,7 @@ import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/short
 import {
   canRedoContent,
   canUndoContent,
+  type DocumentState,
   redoContent,
   setNewContent,
   undoContent,
@@ -39,11 +40,43 @@ const { documents, createDocument, deleteDocument, renameDocument } = useDocumen
   modules,
 )
 const { selectedDocumentId, selectDocument } = useSelectedDocumentId(documents)
-const { documentState, updateDocument, documentModule } = useDocumentContent<DocumentT>(
-  db,
-  modules,
-  selectedDocumentId,
+const { documentId, documentState, updateDocument, documentModule, documentLoading } =
+  useDocumentContent<DocumentT>(db, modules, selectedDocumentId)
+
+const loadedDocuments = shallowRef<
+  {
+    id: number
+    state: DocumentState<DocumentT>
+    module: ModuleConfig<DocumentT>
+  }[]
+>([])
+
+watch(
+  [documentId, documentState, documentModule, documentLoading],
+  ([documentId, documentState, documentModule, documentLoading]) => {
+    if (documentId === undefined) return
+    if (documentLoading) return
+    loadedDocuments.value = loadedDocuments.value.filter(
+      (loadedDocument) => loadedDocument.id !== documentId,
+    )
+
+    if (documentState !== undefined && documentModule !== undefined) {
+      loadedDocuments.value.push({
+        id: documentId,
+        state: documentState,
+        module: documentModule,
+      })
+    }
+  },
+  { immediate: true },
 )
+
+watch(documents, (metadatas) => {
+  loadedDocuments.value = loadedDocuments.value.filter((loadedDocument) =>
+    metadatas.some((metadata) => metadata.id === loadedDocument.id),
+  )
+})
+
 const isHelpOpened = ref<boolean>(false)
 
 function overrideWithContent(content: DocumentT, newNamePrefix: string) {
@@ -253,26 +286,28 @@ async function saveAsFile(documentId: number) {
           @new="createAndSelectBlankDocument"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
-          v-else-if="documentState === undefined"
+          v-if="!documentLoading && documentState === undefined"
           :example-groups="modules"
           @open="overrideWithContent"
           @load="loadFile"
           @new="createAndSelectBlankDocument"
         ></BlankDocumentCanvas>
         <component
-          v-else-if="documentState !== undefined"
-          :is="documentModule?.editorComponent"
+          v-for="loadedDocument of loadedDocuments"
+          v-show="loadedDocument.id === selectedDocumentId"
+          :key="loadedDocument.id"
+          :is="loadedDocument.module.editorComponent"
           @change="updateDocument"
           @new="createAndSelectBlankDocument"
           @load="loadFile"
-          :state="documentState"
+          :state="loadedDocument.state"
           tabindex="0"
           @keydown="hanleEditorShortcut"
           @undo="undo"
           :can-undo="canUndo"
           @redo="redo"
           :can-redo="canRedo"
-          @save="saveAsFile(selectedDocumentId)"
+          @save="saveAsFile(loadedDocument.id)"
         />
         <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
           <button

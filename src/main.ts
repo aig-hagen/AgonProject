@@ -2,7 +2,7 @@ import '@/style.css'
 import '@/app/setup-immer'
 
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
-import { createApp } from 'vue'
+import { createApp, markRaw } from 'vue'
 
 import App from '@/app/App.vue'
 import { openDocumentsDB } from '@/app/db'
@@ -16,8 +16,8 @@ const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)
 const modules = [abstractArgumentationModule, bipoloarArgumentationModule] as const
 
 const app = createApp(App, {
-  db: db,
-  modules: modules,
+  db: markRaw(db),
+  modules: markRaw(modules),
 })
 
 const queryClient = new QueryClient({

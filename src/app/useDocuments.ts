@@ -7,6 +7,7 @@ import {
   readonly,
   type Ref,
   ref,
+  type ShallowRef,
   shallowRef,
   unref,
   watch,
@@ -200,8 +201,10 @@ export function useDocumentContent<DocumentT extends Objectish>(
   modules: ModuleConfig<DocumentT>[],
   idRef: Readonly<MaybeRef<DocumentId | undefined>>,
 ) {
-  const documentStateRef: Ref<DocumentState<DocumentT> | undefined> = shallowRef(undefined)
-  const moduleRef: Ref<ModuleConfig<DocumentT> | undefined> = shallowRef(undefined)
+  const documentLoadingRef: Ref<boolean> = ref(false)
+  const documentId: Ref<number | undefined> = ref(undefined)
+  const documentStateRef: ShallowRef<DocumentState<DocumentT> | undefined> = shallowRef(undefined)
+  const moduleRef: ShallowRef<ModuleConfig<DocumentT> | undefined> = shallowRef(undefined)
 
   async function updateDocument(state: DocumentState<DocumentT>) {
     const id = unref(idRef)
@@ -229,6 +232,8 @@ export function useDocumentContent<DocumentT extends Objectish>(
 
   async function loadState(id: DocumentId) {
     const [documentState, module] = await loadDocumentState(db, modules, id)
+    documentLoadingRef.value = false
+    documentId.value = id
     documentStateRef.value = documentState
     moduleRef.value = module
   }
@@ -244,6 +249,8 @@ export function useDocumentContent<DocumentT extends Objectish>(
 
   watchEffect(() => {
     closeAndDeleteAllChannels()
+    documentLoadingRef.value = true
+    documentId.value = undefined
     documentStateRef.value = undefined
     moduleRef.value = undefined
     const id = unref(idRef)
@@ -266,6 +273,8 @@ export function useDocumentContent<DocumentT extends Objectish>(
   })
 
   return {
+    documentLoading: computed(() => documentLoadingRef.value),
+    documentId: computed(() => documentId.value),
     documentState: computed(() => documentStateRef.value),
     documentModule: computed(() => moduleRef.value),
     updateDocument,
