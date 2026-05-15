@@ -43,6 +43,7 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
+import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
@@ -517,6 +518,14 @@ function doLayout(layout: Layout) {
       :id="graphComponentId"
       ref="graph-component"
     />
+    <div
+      class="pointer-events-none w-full opacity-50 absolute inset-0 flex items-center"
+      v-if="state.nodes.length === 0"
+    >
+      <div class="m-auto w-fit">
+        <HelpControls :link-names="linkNames" />
+      </div>
+    </div>
     <ArrowSwitcher
       v-if="arrowSwitcherTarget"
       :link-configs="linkConfigs"
@@ -627,5 +636,10 @@ Toggle button idea and implementation from https://github.com/saadeghi/daisyui/d
   &:has(input:checked)::after {
     background: var(--color-base-content);
   }
+}
+</style>
+<style>
+.graph-controller__controls-overview {
+  display: none !important;
 }
 </style>

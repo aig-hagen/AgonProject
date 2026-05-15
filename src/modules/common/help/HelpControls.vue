@@ -1,0 +1,92 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+
+import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+
+const { linkNames } = defineProps<{
+  linkNames: string[]
+}>()
+
+const linkNamesSlashSeperated = computed(() => linkNames.join('/'))
+const linkNamesEnumeration = computed(
+  () => linkNames.slice(0, -1).join(', ') + ' and ' + linkNames[linkNames.length - 1],
+)
+</script>
+<template>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Control</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Undo</td>
+        <td>
+          <div class="flex gap-1">
+            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
+            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
+            <kbd class="kbd">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>Redo</td>
+        <td>
+          <div class="flex gap-1">
+            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
+            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
+
+            <kbd class="kbd">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>Pan</td>
+        <td><kbd class="kbd">Left-click</kbd> on canvas, hold and drag</td>
+      </tr>
+      <tr>
+        <td>Zoom in/out</td>
+        <td><kbd class="kbd">Scroll wheel</kbd> on canvas</td>
+      </tr>
+      <tr>
+        <td>Create argument</td>
+        <td><kbd class="kbd">Left double-click</kbd> on canvas</td>
+      </tr>
+      <tr>
+        <td>Rename argument</td>
+        <td>
+          <kbd class="kbd">Left-click</kbd> on argument, enter new name and use
+          <kbd class="kbd">Return</kbd> to confirm
+        </td>
+      </tr>
+      <tr>
+        <td>Move argument</td>
+        <td><kbd class="kbd">Left-click</kbd> on argument, hold and drag</td>
+      </tr>
+      <tr>
+        <td>Delete argument</td>
+        <td><kbd class="kbd">Right-click</kbd> on argument and hold</td>
+      </tr>
+      <tr>
+        <td>Create {{ linkNamesSlashSeperated }}</td>
+        <td><kbd class="kbd">Right-click</kbd> on argument, hold and drag towards argument</td>
+      </tr>
+      <tr v-if="linkNames.length > 1">
+        <td>Switch between {{ linkNamesEnumeration }}</td>
+        <td>
+          <kbd class="kbd">Left-click</kbd> on {{ linkNamesSlashSeperated }} and select new type
+        </td>
+      </tr>
+      <tr>
+        <td>Delete {{ linkNamesSlashSeperated }}</td>
+        <td><kbd class="kbd">Right-click</kbd> on {{ linkNamesSlashSeperated }} and hold</td>
+      </tr>
+    </tbody>
+  </table>
+</template>
