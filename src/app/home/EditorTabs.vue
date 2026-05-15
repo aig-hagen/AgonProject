@@ -3,9 +3,9 @@ import { PlusIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
 
-import type { DocumentsDB } from '@/app/db'
-import type { ModuleConfig } from '@/app/moduleConfig'
-import EditorTab from '@/app/view/EditorTab.vue'
+import EditorTab from '@/app/home/EditorTab.vue'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
+import type { DocumentsDB } from '@/modules/common/documents/db'
 
 defineProps<{
   data: readonly { readonly name: string; readonly id: number }[]

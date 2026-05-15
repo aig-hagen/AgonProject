@@ -1,6 +1,6 @@
 import type { Objectish } from 'immer'
 
-import type { ModuleConfig } from '@/app/moduleConfig'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
 import GraphEditor from '@/modules/bipolar-argumentation/GraphEditor.vue'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import {

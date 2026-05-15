@@ -10,7 +10,12 @@ import {
   NodeShape,
   type PositionSnapshot,
 } from '@aig-hagen/graph-component/lib'
-import { ArrowLongRightIcon, PhotoIcon, VariableIcon } from '@heroicons/vue/24/outline'
+import {
+  ArrowLongRightIcon,
+  PhotoIcon,
+  QuestionMarkCircleIcon,
+  VariableIcon,
+} from '@heroicons/vue/24/outline'
 import {
   computed,
   nextTick,
@@ -38,6 +43,7 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
+import WindowHelp from '@/modules/common/help/WindowHelp.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
@@ -57,8 +63,13 @@ const { state, linkConfigs, canUndo, canRedo } = defineProps<{
   canRedo: boolean
 }>()
 
+const linkNames = computed(() =>
+  Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
+)
 const isExtensionsOpened = ref<boolean>(false)
 const isExportOpened = ref<boolean>(false)
+const isHelpOpened = ref<boolean>(false)
+
 const enableLinkSwitching = Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
 if (defaultLinkType === undefined) {
@@ -569,7 +580,17 @@ function doLayout(layout: Layout) {
           </button>
         </div>
       </div>
-      <div class="flex flex-1"></div>
+      <div class="flex flex-1">
+        <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
+          <button
+            @click="isHelpOpened = !isHelpOpened"
+            class="btn btn-square btn-sm pointer-events-auto"
+            title="Help"
+          >
+            <QuestionMarkCircleIcon class="size-6 opacity-70" />
+          </button>
+        </div>
+      </div>
     </div>
     <slot
       name="evaluationExtensions"
@@ -578,6 +599,7 @@ function doLayout(layout: Layout) {
       @highlight="extensionHighlightRef = $event"
     ></slot>
     <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
+    <WindowHelp :link-names="linkNames" v-model:open="isHelpOpened" />
   </div>
 </template>
 <style scoped>

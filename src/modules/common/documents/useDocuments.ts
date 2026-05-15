@@ -14,14 +14,14 @@ import {
   watchEffect,
 } from 'vue'
 
+import type { ModuleConfig } from '@/app/home/moduleConfig'
 import {
   type DocumentId,
   type DocumentMetadata,
   type DocumentsDB,
   OBJECT_STORE_CONTENT_NAME,
   OBJECT_STORE_METADATA_NAME,
-} from '@/app/db'
-import type { ModuleConfig } from '@/app/moduleConfig'
+} from '@/modules/common/documents/db'
 import { generateUUID } from '@/modules/common/ids'
 import type { DocumentState } from '@/modules/common/state'
 

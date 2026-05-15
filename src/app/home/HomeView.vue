@@ -1,20 +1,18 @@
 <script setup lang="ts" generic="DocumentT extends Objectish">
-import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, shallowRef, useTemplateRef, watch } from 'vue'
 
-import type { DocumentsDB } from '@/app/db'
-import type { ModuleConfig } from '@/app/moduleConfig'
+import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
+import LayoutTabs from '@/app/home/EditorTabs.vue'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
+import type { DocumentsDB } from '@/modules/common/documents/db'
 import {
   loadDocumentState,
   useDocumentContent,
   useDocumentMetadata,
   useSelectedDocumentId,
-} from '@/app/useDocuments'
-import BlankDocumentCanvas from '@/app/view/BlankDocumentCanvas.vue'
-import LayoutTabs from '@/app/view/EditorTabs.vue'
-import WindowHelp from '@/app/WindowHelp.vue'
+} from '@/modules/common/documents/useDocuments'
 import { saveToFile } from '@/modules/common/export/saveFile'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
@@ -76,8 +74,6 @@ watch(documents, (metadatas) => {
     metadatas.some((metadata) => metadata.id === loadedDocument.id),
   )
 })
-
-const isHelpOpened = ref<boolean>(false)
 
 function overrideWithContent(content: DocumentT, newNamePrefix: string) {
   if (selectedDocumentId.value === undefined) {
@@ -309,20 +305,10 @@ async function saveAsFile(documentId: number) {
           :can-redo="canRedo"
           @save="saveAsFile(loadedDocument.id)"
         />
-        <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
-          <button
-            @click="isHelpOpened = !isHelpOpened"
-            class="btn btn-square btn-sm pointer-events-auto"
-            title="Help"
-          >
-            <QuestionMarkCircleIcon class="size-6 opacity-70" />
-          </button>
-        </div>
       </div>
     </main>
   </div>
   <NotificationsDisplay :notifications="notifications" />
-  <WindowHelp v-model:open="isHelpOpened" />
   <input
     ref="file-input"
     type="file"

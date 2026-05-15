@@ -5,9 +5,9 @@ import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
 import { useTemplateRef } from 'vue'
 
-import type { DocumentsDB } from '@/app/db'
-import type { ModuleConfig } from '@/app/moduleConfig'
-import { loadDocumentState } from '@/app/useDocuments'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
+import type { DocumentsDB } from '@/modules/common/documents/db'
+import { loadDocumentState } from '@/modules/common/documents/useDocuments'
 
 const PLACEHOLDER = 'new argumentation'
 

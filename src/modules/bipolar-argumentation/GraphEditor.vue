@@ -88,7 +88,7 @@ function transformToEditorState(
 
 const linkConfig = {
   SINGLE: {
-    displayName: 'Attack',
+    displayName: 'attack',
   },
   DOUBLE: {
     displayName: 'Support',

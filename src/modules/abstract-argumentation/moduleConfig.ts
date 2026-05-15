@@ -1,6 +1,6 @@
 import type { Objectish } from 'immer'
 
-import type { ModuleConfig } from '@/app/moduleConfig'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/abstract-argumentation/examples'
 import GraphEditor from '@/modules/abstract-argumentation/GraphEditor.vue'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
