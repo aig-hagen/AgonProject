@@ -120,7 +120,7 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
               <ArrowUturnLeftIcon class="size-5 opacity-70" />Undo
             </span>
             <span class="flex gap-1 items-center">
-              <kbd class="text-xs opacity-40 font-mono" v-if="REDO_SHORTCUT.modifiers.ctrl"
+              <kbd class="text-xs opacity-40 font-mono" v-if="UNDO_SHORTCUT.modifiers.ctrl"
                 >Ctrl</kbd
               >
               <kbd class="text-xs opacity-40 font-mono" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>

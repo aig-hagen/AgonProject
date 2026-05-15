@@ -2,6 +2,8 @@
 import { computed } from 'vue'
 
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
+import { UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+import { REDO_SHORTCUT } from '@/modules/common/shortcuts'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { linkNames } = defineProps<{
@@ -34,6 +36,39 @@ const open = defineModel('open', { required: true })
         </thead>
         <tbody>
           <tr>
+            <td>Undo</td>
+            <td>
+              <div class="flex gap-1">
+                <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+                <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
+                <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
+                <kbd class="kbd">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Redo</td>
+            <td>
+              <div class="flex gap-1">
+                <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+                <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
+                <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
+
+                <kbd class="kbd">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Pan</td>
+            <td><kbd class="kbd">Left-click</kbd> on canvas, hold and drag</td>
+          </tr>
+          <tr>
+            <td>Zoom in/out</td>
+            <td><kbd class="kbd">Scroll wheel</kbd> on canvas</td>
+          </tr>
+          <tr>
             <td>Create argument</td>
             <td><kbd class="kbd">Left double-click</kbd> on canvas</td>
           </tr>
@@ -65,14 +100,6 @@ const open = defineModel('open', { required: true })
           <tr>
             <td>Delete {{ linkNamesSlashSeperated }}</td>
             <td><kbd class="kbd">Right-click</kbd> on {{ linkNamesSlashSeperated }} and hold</td>
-          </tr>
-          <tr>
-            <td>Pan</td>
-            <td><kbd class="kbd">Left-click</kbd> on canvas, hold and drag</td>
-          </tr>
-          <tr>
-            <td>Zoom in/out</td>
-            <td><kbd class="kbd">Scroll wheel</kbd> on canvas</td>
           </tr>
         </tbody>
       </table>
