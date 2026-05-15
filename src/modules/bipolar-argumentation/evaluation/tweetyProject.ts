@@ -4,29 +4,12 @@ import z from 'zod'
 
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
 import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
-
-async function fetchTyped<T extends z.ZodTypeAny>(
-  url: string,
-  body: unknown,
-  schema: T,
-): Promise<z.infer<T>> {
-  const response = await fetch(url, {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  if (!response.ok) {
-    throw new Error('HTTP response status: ' + response.status)
-  }
-  return schema.parse(await response.json())
-}
 
 const TIMEOUT_IN_SECONDS = 300
 const TIMEOUT_UNIT_SECONDS = 's'
@@ -148,6 +131,7 @@ export interface Semantic {
 }
 
 interface GetModelsRequestBody {
+  email: string
   cmd: 'get_models'
   nr_of_arguments: number
   attacks: number[][]
@@ -172,6 +156,7 @@ async function fetchModels(
   extensions: number[][]
 }> {
   const body: GetModelsRequestBody = {
+    email: USER_ID,
     cmd: 'get_models',
     nr_of_arguments: numberOfArguments,
     attacks: attacks,
