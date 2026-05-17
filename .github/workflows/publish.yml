@@ -36,6 +36,7 @@ jobs:
 
       - name: Build
         run: |
+          npm run generate-attributions
           npm run build
         env:
           VITE_APP_SOURCE_TREE: ${{ github.ref_name }}

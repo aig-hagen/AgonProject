@@ -21,8 +21,8 @@ const sourceLink = `https://github.com/aig-hagen/argumentation-toolbox/tree/${so
     <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" :href="sourceLink"
       ><CodeBracketIcon class="size-4" />Source {{ sourceTree }}<ArrowUpRightIcon class="size-2"
     /></a>
-    <a class="btn btn-xs btn-soft"
-      ><UserGroupIcon class="size-4" />Third-Party Licenses<ArrowUpRightIcon class="size-2"
+    <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" href="/third-party"
+      ><UserGroupIcon class="size-4" />Third-Party<ArrowUpRightIcon class="size-2"
     /></a>
   </div>
 </template>
