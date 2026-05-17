@@ -1,0 +1,29 @@
+{
+  "license": "check-license-header.txt",
+  "ignoreFile": "check-license-header-ignore.txt",
+  "defaultFormat": {
+    "prepend": "/*",
+    "append": " */",
+    "eachLine": {
+      "prepend": " * "
+    }
+  },
+  "licenseFormats": {
+    "ts|css": {
+      "prepend": "/*",
+      "append": " */",
+      "eachLine": {
+        "prepend": " * "
+      }
+    },
+    "html|vue": {
+      "prepend": "<!--",
+      "append": "-->",
+      "eachLine": {
+        "prepend": "  "
+      }
+    }
+  },
+  "regexIdentifier": "##",
+  "trailingWhitespace": "TRIM"
+}
