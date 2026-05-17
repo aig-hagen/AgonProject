@@ -6,6 +6,7 @@ import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/mode
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
+import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
   type GraphEditorStateLink,
@@ -20,6 +21,7 @@ const { state } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
   canUndo: boolean
   canRedo: boolean
+  saveFileName: string
 }>()
 
 const emit = defineEmits<{
@@ -29,6 +31,7 @@ const emit = defineEmits<{
   undo: []
   redo: []
   save: []
+  export: [filedata: ExportFileData]
 }>()
 
 const evaluationInput = computed<Input<BipoloarArgumentation<ArgumentData>>>(() => {
@@ -197,6 +200,8 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
         :open="isOpen"
         @update:open="onIsOpen"
         :export-configs="availableExports"
+        :save-file-name="saveFileName"
+        @export="emit('export', $event)"
       />
     </template>
   </GraphEditor>

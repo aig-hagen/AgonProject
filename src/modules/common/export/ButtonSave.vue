@@ -2,14 +2,14 @@
 import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 import { ref } from 'vue'
 
-import { saveToFile } from '@/modules/common/export/saveFile'
+import type { ExportFileData } from '.'
 
 const { filedata } = defineProps<{
-  filedata?: {
-    content: string
-    name: string
-    ending: string
-  }
+  filedata?: ExportFileData
+}>()
+
+const emit = defineEmits<{
+  export: [filedata: ExportFileData]
 }>()
 
 const showSaved = ref(false)
@@ -20,7 +20,7 @@ async function saveFile() {
     return
   }
 
-  saveToFile(filedata.content, filedata.name, filedata.ending)
+  emit('export', filedata)
 
   showSaved.value = true
   if (timeoutId !== undefined) {

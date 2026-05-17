@@ -12,3 +12,9 @@ export interface ExportResult {
   text: string
   svg?: Promise<string>
 }
+
+export interface ExportFileData {
+  content: string
+  name: string
+  ending: string
+}

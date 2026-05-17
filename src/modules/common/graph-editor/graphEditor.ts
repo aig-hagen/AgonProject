@@ -1,5 +1,6 @@
 import type { Component } from 'vue'
 
+import type { ExportFileData } from '@/modules/common/export'
 import type { UUID } from '@/modules/common/ids'
 import type { DocumentState } from '@/modules/common/state'
 
@@ -13,6 +14,7 @@ export type EditorComponent<DocumentT> = Component<
     state: DocumentState<DocumentT>
     canUndo: boolean
     canRedo: boolean
+    saveFileName: string
   },
   unknown,
   unknown,
@@ -24,6 +26,7 @@ export type EditorComponent<DocumentT> = Component<
     change: (state: DocumentState<DocumentT>) => void
     undo: () => void
     redo: () => void
+    export: (filedata: ExportFileData) => void
   }
 >
 

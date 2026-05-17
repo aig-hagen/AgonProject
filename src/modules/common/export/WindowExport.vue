@@ -9,12 +9,17 @@ import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
-import type { ExportConfig } from '.'
+import type { ExportConfig, ExportFileData } from '.'
 
 const open = defineModel<boolean>('open', { required: true })
-const { input, exportConfigs } = defineProps<{
+const { input, exportConfigs, saveFileName } = defineProps<{
   input: DocumentT
   exportConfigs: ExportConfig<DocumentT>[]
+  saveFileName: string
+}>()
+
+const emit = defineEmits<{
+  export: [filedata: ExportFileData]
 }>()
 
 const soureViewRef = useTemplateRef('soureView')
@@ -32,15 +37,13 @@ const exportResult = computed(() => {
   return selectedExportConfig.value.export(input)
 })
 
-const FILE_NAME = 'argumentation'
-
 const saveFiledataText = computed(() => {
   if (exportResult.value === undefined) {
     return
   }
   return {
     content: exportResult.value.text,
-    name: FILE_NAME,
+    name: saveFileName,
     ending: 'tex',
   }
 })
@@ -71,7 +74,7 @@ const saveFiledataSvg = computed(() => {
   }
   return {
     content: svgText.value,
-    name: FILE_NAME,
+    name: saveFileName,
     ending: 'svg',
   }
 })
@@ -149,6 +152,7 @@ watchEffect(() => {
               <ButtonSave
                 class="btn btn-sm btn-soft btn-neutral w-28 justify-start"
                 :filedata="saveFiledataText"
+                @export="emit('export', $event)"
               >
                 text
               </ButtonSave>
@@ -169,6 +173,7 @@ watchEffect(() => {
               <ButtonSave
                 class="btn btn-sm btn-soft btn-neutral w-28 justify-start"
                 :filedata="saveFiledataSvg"
+                @export="emit('export', $event)"
               >
                 SVG
               </ButtonSave>

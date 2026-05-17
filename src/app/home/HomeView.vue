@@ -13,6 +13,7 @@ import {
   useDocumentMetadata,
   useSelectedDocumentId,
 } from '@/modules/common/documents/useDocuments'
+import type { ExportFileData } from '@/modules/common/export'
 import { saveToFile } from '@/modules/common/export/saveFile'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
@@ -217,7 +218,11 @@ async function loadFromFileInput(inputEvent: Event) {
     }
   }
   if (result.data !== undefined) {
-    createDocumentWithContent(result.data, importModule.newNamePrefix)
+    let documentName = fileName
+    if (documentName.endsWith('.json')) {
+      documentName = documentName.slice(0, -5)
+    }
+    createDocumentWithContent(result.data, documentName)
     addSuccessNotification('Data loaded')
   }
 }
@@ -244,17 +249,35 @@ async function saveAsFile(documentId: number) {
   if (metadata === undefined) {
     return
   }
-  const nameEscaped = metadata.name.replace(/[^a-zA-Z0-9 ]/g, '')
-  let fileName = 'argumentation'
-  if (nameEscaped !== undefined) {
-    fileName += '_' + nameEscaped
-  }
   const [state, module] = await loadDocumentState(db, modules, documentId)
   if (state === undefined) {
     return
   }
+  const fileName = getFileName(metadata.name, module)
   const saveString = module.getSaveString(state.current.content)
   saveToFile(saveString, fileName, 'json')
+}
+
+async function exportAsFile(documentId: number, fileData: ExportFileData) {
+  const metadata = documents.value.find((document) => document.id === documentId)
+  if (metadata === undefined) {
+    return
+  }
+  const [_, module] = await loadDocumentState(db, modules, documentId)
+  if (module === undefined) {
+    return
+  }
+  const fileName = getFileName(metadata.name, module)
+  saveToFile(fileData.content, fileName, fileData.ending)
+}
+
+function getFileName(name: string, module: ModuleConfig<DocumentT>) {
+  const nameEscaped = name.replace(/[^a-zA-Z0-9 _\\-]/g, '')
+  let fileName = module.newNamePrefix
+  if (nameEscaped.trim() !== '') {
+    fileName = nameEscaped
+  }
+  return fileName
 }
 </script>
 
@@ -304,6 +327,7 @@ async function saveAsFile(documentId: number) {
           @redo="redo"
           :can-redo="canRedo"
           @save="saveAsFile(loadedDocument.id)"
+          @export="exportAsFile(loadedDocument.id, $event)"
         />
       </div>
     </main>
