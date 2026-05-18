@@ -2,8 +2,18 @@
 
 ## Quick Start
 
+### Cloning
+
+When cloning, also clone the used Git Submodules
+
 ```sh
-npm install
+git clone --recurse-submodules https://github.com/aig-hagen/aig-causal-knowledge-base-editor.git
+```
+
+### Install Dependencies
+
+```sh
+npm install-clean
 ```
 
 ### Compile and Hot-Reload for Development
@@ -30,29 +40,34 @@ npm run lint
 npm run test:unit
 ```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+### Running TweetyProject Web Server
+
+During development, the TweetyProject web server is expected to run locally on port 8080.
+This is configured in the [Vite config](/vite.config.ts) through the [`server.proxy`](https://vite.dev/config/server-options#server-proxy) option.
+
+If you do not need to make modifications to the web server, achieve this by running an already built [OCI image](/README.md#oci-image) as it bundles and exposes the endpoints of the TweetyProject web server.
 
 ```sh
-# Install browsers for the first run
-npx playwright install
-
-# When testing on CI, must build the project first
-npm run build
-
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
+docker run -p 8080:8080 ghcr.io/aig-hagen/argumentation-toolbox:latest
 ```
 
-## Recommended IDE Setup
+Else you have to build and run the [TweetyProject](https://github.com/TweetyProjectTeam/TweetyProject) from source.
+You can check out their [Developer Guide](https://tweetyproject.org/doc/dev-guide.html) and our [Dockerfile](/Dockerfile) on how to achieve this. For example, you can achieve this by running the following commands inside the TweetyProject: 
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+```sh
+mvn install -Dgpg.skip=true
+mvn spring-boot:run -pl org-tweetyproject-web
+```
+
+## Extending functionalities
+
+
+This tool was built with the mind of being [extended](./extending.md) in the future.
 
 ## Example Requests
 
 You can open the [example requests](./requests/) in [Bruno](https://www.usebruno.com/) to try out requests to the server without interacting with the frontend.
+
+## Recommended IDE Setup
+
+[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar)

@@ -23,15 +23,65 @@ import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
 import type { DeserializationResult } from '@/modules/common/save/load'
 
 export interface ModuleConfig<DocumentT extends Objectish> {
+  /**
+   * A name that is used when creating new documents for this module
+   * or saving documents that are unnamed.
+   */
   newNamePrefix: string
+  /**
+   * Name used when displaying this module to the user.
+   * For example, for creating new documents of this type.
+   */
   displayNameSingular: string
+  /**
+   * Check if any given model can be handled by this module.
+   * @param model model
+   */
   is(model: Objectish): model is DocumentT
+  /**
+   * Deserializes a serialized model.
+   * This is used for the internal serialization to IndexedDB.
+   * @param modelSerialized model to be deserialized
+   * @returns Returns the deserialized model, if it can be deserialized by this module
+   */
   deserialize(modelSerialized: Objectish): DocumentT | undefined
+  /**
+   * Serializes a model
+   * This is used for the internal serialization to IndexedDB.
+   * @param model model to be serilized
+   * @returns Returns the serialized model, if it can be serialized by this module
+   */
   serialize(model: Objectish): Objectish | undefined
+  /**
+   * Example model for this modules.
+   * The user can choose to open one of these examples.
+   */
   examples: Example<DocumentT>[]
+  /**
+   * The content used, when the user creates a new model.
+   */
   initialCotent: DocumentT
+  /**
+   * A Vue component that is used to
+   * work with models associated with this module.
+   */
   editorComponent: EditorComponent<DocumentT>
+  /**
+   * Check the loaded data object can be loaded to a model.
+   * This is user import data previously saved to disk.
+   * @param dataObject
+   */
   canLoadFromObject(dataObject: Record<string, unknown>): boolean
+  /**
+   * Load data string as model.
+   * This is user import data previously saved to disk.
+   * @param dataObject
+   */
   load(dataString: string, fileName: string): DeserializationResult<DocumentT>
+  /**
+   * Save model as data string.
+   * This is used to save data to disk and to be loaded later.
+   * @param dataObject
+   */
   getSaveString(document: DocumentT): string
 }
