@@ -35,11 +35,10 @@ import {
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state } = defineProps<{
+const { state, canUndo, canRedo } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
   canUndo: boolean
   canRedo: boolean
-  saveFileName: string
 }>()
 
 const emit = defineEmits<{
@@ -218,7 +217,6 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
         :open="isOpen"
         @update:open="onIsOpen"
         :export-configs="availableExports"
-        :save-file-name="saveFileName"
         @export="emit('export', $event)"
       />
     </template>

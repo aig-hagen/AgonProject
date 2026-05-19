@@ -39,7 +39,6 @@ const { state, canUndo, canRedo } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>
   canUndo: boolean
   canRedo: boolean
-  saveFileName: string
 }>()
 
 const evaluationInput = computed<Input<AbstractArgumentation<ArgumentData>>>(() => {
@@ -192,7 +191,6 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
         :open="isOpen"
         @update:open="onIsOpen"
         :export-configs="availableExports"
-        :save-file-name="saveFileName"
         @export="emit('export', $event)"
       />
     </template>

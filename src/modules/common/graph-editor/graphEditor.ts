@@ -32,7 +32,6 @@ export type EditorComponent<DocumentT> = Component<
     state: DocumentState<DocumentT>
     canUndo: boolean
     canRedo: boolean
-    saveFileName: string
   },
   unknown,
   unknown,

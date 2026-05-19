@@ -33,6 +33,5 @@ export interface ExportResult {
 
 export interface ExportFileData {
   content: string
-  name: string
   ending: string
 }

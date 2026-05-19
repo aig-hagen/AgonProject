@@ -30,10 +30,9 @@ import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { ExportConfig, ExportFileData } from '.'
 
 const open = defineModel<boolean>('open', { required: true })
-const { input, exportConfigs, saveFileName } = defineProps<{
+const { input, exportConfigs } = defineProps<{
   input: DocumentT
   exportConfigs: ExportConfig<DocumentT>[]
-  saveFileName: string
 }>()
 
 const emit = defineEmits<{
@@ -61,7 +60,6 @@ const saveFiledataText = computed(() => {
   }
   return {
     content: exportResult.value.text,
-    name: saveFileName,
     ending: 'tex',
   }
 })
@@ -92,7 +90,6 @@ const saveFiledataSvg = computed(() => {
   }
   return {
     content: svgText.value,
-    name: saveFileName,
     ending: 'svg',
   }
 })
