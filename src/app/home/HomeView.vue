@@ -33,13 +33,14 @@ import {
 } from '@/modules/common/documents/useDocuments'
 import type { ExportFileData } from '@/modules/common/export'
 import { saveToFile } from '@/modules/common/export/saveFile'
+import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 import {
-  canRedoContent,
-  canUndoContent,
   type DocumentState,
+  possibleRedos,
+  possibleUndos,
   redoContent,
   setNewContent,
   undoContent,
@@ -149,14 +150,6 @@ function undo() {
   }
 }
 
-const canUndo = computed(() => {
-  const currentState = documentState.value
-  if (currentState === undefined) {
-    return false
-  }
-  return canUndoContent(currentState)
-})
-
 function redo() {
   const currentState = documentState.value
   if (currentState === undefined) {
@@ -168,12 +161,25 @@ function redo() {
   }
 }
 
-const canRedo = computed(() => {
+const historyState = computed<HistoryState>(() => {
   const currentState = documentState.value
   if (currentState === undefined) {
-    return false
+    return {
+      canUndo: false,
+      possibleUndos: 0,
+      canRedo: false,
+      possibleRedos: 0,
+    }
   }
-  return canRedoContent(currentState)
+  const possibleUndosLocal = possibleUndos(currentState)
+  const possibleRedosLocal = possibleRedos(currentState)
+  return {
+    canUndo: possibleUndosLocal > 0,
+
+    possibleUndos: possibleUndosLocal,
+    canRedo: possibleRedosLocal > 0,
+    possibleRedos: possibleRedosLocal,
+  }
 })
 
 function hanleEditorShortcut(event: KeyboardEvent) {
@@ -312,6 +318,12 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
       :db="db"
       :modules="modules"
       @save="saveAsFile($event)"
+      :show-rename-hint="
+        !historyState.canRedo &&
+        !historyState.canUndo &&
+        !documentLoading &&
+        documentState !== undefined
+      "
     />
     <main class="border-t -mt-px border-base-300 editor flex-1">
       <div class="relative h-full w-full">
@@ -321,6 +333,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @open="createDocumentWithContent"
           @load="loadFile"
           @new="createAndSelectBlankDocument"
+          :show-load-hint="true"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
           v-if="!documentLoading && documentState === undefined"
@@ -328,8 +341,10 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @open="overrideWithContent"
           @load="loadFile"
           @new="createAndSelectBlankDocument"
+          :show-load-hint="false"
         ></BlankDocumentCanvas>
         <component
+          tabindex="0"
           v-for="loadedDocument of loadedDocuments"
           v-show="loadedDocument.id === selectedDocumentId"
           :key="loadedDocument.id"
@@ -338,12 +353,10 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @new="createAndSelectBlankDocument"
           @load="loadFile"
           :state="loadedDocument.state"
-          tabindex="0"
+          :history-state="historyState"
           @keydown="hanleEditorShortcut"
           @undo="undo"
-          :can-undo="canUndo"
           @redo="redo"
-          :can-redo="canRedo"
           @save="saveAsFile(loadedDocument.id)"
           @export="exportAsFile(loadedDocument.id, $event)"
         />

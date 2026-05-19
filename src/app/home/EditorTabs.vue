@@ -30,6 +30,7 @@ defineProps<{
   selected?: number
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<DocumentT>[]
+  showRenameHint: boolean
 }>()
 
 const emit = defineEmits<{
@@ -44,6 +45,7 @@ const emit = defineEmits<{
 <template>
   <div role="tablist" class="tabs bg-base-200 tabs-lift flex-nowrap overflow-x-auto">
     <EditorTab
+      ref="editorTab"
       v-for="datum in data"
       :key="datum.id"
       :value="datum.name"
@@ -55,6 +57,7 @@ const emit = defineEmits<{
       :db="db"
       :modules="modules"
       @save="emit('save', datum.id)"
+      :showRenameHint="showRenameHint && datum.id === selected"
     />
     <div role="tab" class="tab sticky right-0 bg-base-200">
       <button class="btn btn-square btn-xs btn-ghost" @click="emit('create')" title="Create">

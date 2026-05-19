@@ -55,6 +55,7 @@ import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleL
 import {
   type GraphEditorState,
   type Highlight,
+  type HistoryState,
   type LinkConfigs,
   LinkType,
   type NodeId,
@@ -63,11 +64,13 @@ import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
+import FloatingHintRight from '@/modules/common/hints/FloatingHintRight.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
+import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
@@ -75,15 +78,18 @@ import { getNextName } from '@/modules/common/nextName'
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
-const { state, linkConfigs, canUndo, canRedo } = defineProps<{
+const { state, linkConfigs, historyState } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
-  canUndo: boolean
-  canRedo: boolean
+  historyState: HistoryState
 }>()
 
 const linkNames = computed(() =>
   Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
+)
+const linkNamesEnumeration = computed(
+  () =>
+    linkNames.value.slice(0, -1).join(', ') + ' and ' + linkNames.value[linkNames.value.length - 1],
 )
 const isExtensionsOpened = ref<boolean>(false)
 const isExportOpened = ref<boolean>(false)
@@ -522,6 +528,11 @@ function doLayout(layout: Layout) {
   }
   emit('nodesMoved', newPositions)
 }
+
+const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
+const extensionsButtonRef = useTemplateRef('extensionsButton')
+const exportButtonRef = useTemplateRef('exportButton')
+const helpButtonRef = useTemplateRef('helpButton')
 </script>
 <template>
   <div class="h-full w-full">
@@ -569,14 +580,14 @@ function doLayout(layout: Layout) {
           :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
           @export="isExportOpened = !isExportOpened"
           @layout="doLayout($event)"
-          :show-undo="canUndo ? EntryState.ENABLE : EntryState.DISABLE"
+          :show-undo="historyState.canUndo ? EntryState.ENABLE : EntryState.DISABLE"
           @undo="emit('undo')"
-          :show-redo="canRedo ? EntryState.ENABLE : EntryState.DISABLE"
+          :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
           @redo="emit('redo')"
         />
 
         <div class="flex flex-1 justify-end flex-col gap-2">
-          <div class="join join-vertical mb-8" v-if="enableLinkSwitching">
+          <div ref="linkSwitchButton" class="join join-vertical mb-8" v-if="enableLinkSwitching">
             <label
               v-for="(linkConfig, linkKey) in linkConfigs"
               :key="linkKey"
@@ -592,6 +603,7 @@ function doLayout(layout: Layout) {
             </label>
           </div>
           <button
+            ref="extensionsButton"
             class="btn btn-square btn-sm"
             @click="isExtensionsOpened = !isExtensionsOpened"
             title="Evalution"
@@ -599,6 +611,7 @@ function doLayout(layout: Layout) {
             <VariableIcon class="size-6 opacity-70" />
           </button>
           <button
+            ref="exportButton"
             class="btn btn-square btn-sm"
             @click="isExportOpened = !isExportOpened"
             title="Export"
@@ -610,6 +623,7 @@ function doLayout(layout: Layout) {
       <div class="flex flex-1">
         <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
           <button
+            ref="helpButton"
             @click="isHelpOpened = !isHelpOpened"
             class="btn btn-square btn-sm pointer-events-auto"
             title="Help"
@@ -617,8 +631,72 @@ function doLayout(layout: Layout) {
             <QuestionMarkCircleIcon class="size-6 opacity-70" />
           </button>
         </div>
+        <template v-if="!historyState.canUndo && !historyState.canRedo">
+          <FloatingHintRight :reference="helpButtonRef" :offset-x="64" placement="right-end"
+            ><ul class="list-disc">
+              <li>
+                Create argument
+                <p class="mb-1"><kbd class="kbd kbd-sm">Left double-click</kbd> on canvas</p>
+              </li>
+              <li>
+                Create {{ linkNames.join('/') }} link
+                <p class="mb-1">
+                  <kbd class="kbd kbd-sm">Right-click</kbd> on an argument, hold and drag towards
+                  another argument
+                </p>
+              </li>
+              <li>
+                Switch between {{ linkNamesEnumeration }} for existing links
+                <p class="mb-1"><kbd class="kbd kbd-sm">Right-click</kbd> on link</p>
+              </li>
+              <li>Open help to see more controls</li>
+            </ul>
+          </FloatingHintRight>
+          <FloatingHintRight
+            v-if="linkSwitchButtonRef !== null"
+            :reference="linkSwitchButtonRef"
+            :offset-x="64"
+            placement="right-start"
+            >Switch between {{ linkNamesEnumeration }} for new links
+          </FloatingHintRight>
+          <FloatingHintRight :reference="extensionsButtonRef" :offset-x="64" placement="right-end"
+            >Evaluate semantics
+          </FloatingHintRight>
+          <FloatingHintRight :reference="exportButtonRef" :offset-x="64" placement="right-start"
+            >Create exports
+          </FloatingHintRight>
+        </template>
       </div>
     </div>
+    <template v-if="historyState.possibleUndos === 1 && !historyState.canRedo">
+      <FloatingHintRight :reference="helpButtonRef" :offset-x="64" placement="right-end">
+        <ul class="list-disc">
+          <li>
+            <div class="flex justify-between">
+              <div class="mr-2">Redo</div>
+              <div>
+                <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+                <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
+                <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
+                <kbd class="kbd kbd-sm">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="flex justify-between">
+              <div class="mr-2">Undo</div>
+              <div>
+                <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+                <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
+                <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
+                <kbd class="kbd kbd-sm">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
+              </div>
+            </div>
+          </li>
+          <li>Open help to see more controls</li>
+        </ul>
+      </FloatingHintRight>
+    </template>
     <slot
       name="evaluationExtensions"
       :isOpen="isExtensionsOpened"

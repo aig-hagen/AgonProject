@@ -26,15 +26,17 @@ import { useTemplateRef } from 'vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import { loadDocumentState } from '@/modules/common/documents/useDocuments'
+import FloatingHintBottom from '@/modules/common/hints/FloatingHintBottom.vue'
 
 const PLACEHOLDER = 'new argumentation'
 
-const { active, documentId, value, db, modules } = defineProps<{
+const { active, documentId, value, db, modules, showRenameHint } = defineProps<{
   active: boolean
   value: string
   documentId: number
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<DocumentT>[]
+  showRenameHint: boolean
 }>()
 
 const emit = defineEmits<{
@@ -71,9 +73,17 @@ async function doRequestClose() {
 
 const inputSizerRef = useTemplateRef('input-sizer')
 const closeModal = useTemplateRef('closeModal')
+
+const tabRef = useTemplateRef('tab')
 </script>
 <template>
-  <div @click="emit('select')" role="tab" class="tab shrink-0" :class="{ 'tab-active': active }">
+  <div
+    ref="tab"
+    @click="emit('select')"
+    role="tab"
+    class="tab shrink-0"
+    :class="{ 'tab-active': active }"
+  >
     <!--
       Input sizer to make input dynamically grow.
       See https://css-tricks.com/auto-growing-inputs-textareas/#aa-other-ideas
@@ -124,6 +134,14 @@ const closeModal = useTemplateRef('closeModal')
       <button>Dismiss</button>
     </form>
   </dialog>
+  <FloatingHintBottom
+    v-if="showRenameHint"
+    class="z-1"
+    :reference="tabRef"
+    :offset-y="64"
+    placement="bottom-start"
+    >Edit the argumentation name
+  </FloatingHintBottom>
 </template>
 
 <style scoped>

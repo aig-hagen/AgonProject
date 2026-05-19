@@ -27,11 +27,16 @@ export const LinkType = {
   DOUBLE: 'DOUBLE',
 } as const
 
+export interface HistoryState {
+  canUndo: boolean
+  possibleUndos: number
+  canRedo: boolean
+  possibleRedos: number
+}
 export type EditorComponent<DocumentT> = Component<
   {
     state: DocumentState<DocumentT>
-    canUndo: boolean
-    canRedo: boolean
+    historyState: HistoryState
   },
   unknown,
   unknown,

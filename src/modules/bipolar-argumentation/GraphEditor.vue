@@ -29,16 +29,16 @@ import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
+  type HistoryState,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state, canUndo, canRedo } = defineProps<{
+const { state, historyState } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
-  canUndo: boolean
-  canRedo: boolean
+  historyState: HistoryState
 }>()
 
 const emit = defineEmits<{
@@ -108,7 +108,7 @@ function transformToEditorState(
 
 const linkConfig = {
   SINGLE: {
-    displayName: 'attack',
+    displayName: 'Attack',
   },
   DOUBLE: {
     displayName: 'Support',
@@ -197,10 +197,9 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
+    :history-state="historyState"
     @undo="emit('undo')"
-    :can-undo="canUndo"
     @redo="emit('redo')"
-    :can-redo="canRedo"
     @save="emit('save')"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">

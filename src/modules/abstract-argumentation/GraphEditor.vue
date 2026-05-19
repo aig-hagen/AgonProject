@@ -29,16 +29,16 @@ import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
+  type HistoryState,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state, canUndo, canRedo } = defineProps<{
+const { state, historyState } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>
-  canUndo: boolean
-  canRedo: boolean
+  historyState: HistoryState
 }>()
 
 const evaluationInput = computed<Input<AbstractArgumentation<ArgumentData>>>(() => {
@@ -172,10 +172,9 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
     :link-configs="linkConfig"
     :state="editorState"
     @undo="emit('undo')"
-    :can-undo="canUndo"
     @redo="emit('redo')"
-    :can-redo="canRedo"
     @save="emit('save')"
+    :history-state="historyState"
   >
     <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
       <WindowExtensions

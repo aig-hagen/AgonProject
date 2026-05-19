@@ -69,16 +69,16 @@ export function setNewContent<DocumentT>(content: DocumentT): DocumentState<Docu
   }
 }
 
-export function canUndoContent<DocumentT extends Objectish>(
+export function possibleUndos<DocumentT extends Objectish>(
   state: DocumentState<DocumentT>,
-): boolean {
-  return state.current.changeIdx !== -1
+): number {
+  return state.current.changeIdx + 1
 }
 
 export function undoContent<DocumentT extends Objectish>(
   state: DocumentState<DocumentT>,
 ): DocumentState<DocumentT> | undefined {
-  if (!canUndoContent(state)) {
+  if (possibleUndos(state) < 1) {
     return undefined
   }
   const changeIdx = state.current.changeIdx
@@ -98,18 +98,16 @@ export function undoContent<DocumentT extends Objectish>(
   }
 }
 
-export function canRedoContent<DocumentT extends Objectish>(
+export function possibleRedos<DocumentT extends Objectish>(
   state: DocumentState<DocumentT>,
-): boolean {
-  const changeIdx = state.current.changeIdx
-  const nextChangeIdx = changeIdx + 1
-  return nextChangeIdx < state.changes.length
+): number {
+  return state.changes.length - state.current.changeIdx - 1
 }
 
 export function redoContent<DocumentT extends Objectish>(
   state: DocumentState<DocumentT>,
 ): DocumentState<DocumentT> | undefined {
-  if (!canRedoContent(state)) {
+  if (possibleRedos(state) < 1) {
     return undefined
   }
   const changeIdx = state.current.changeIdx
