@@ -645,7 +645,7 @@ const helpButtonRef = useTemplateRef('helpButton')
                   another argument
                 </p>
               </li>
-              <li>
+              <li v-if="enableLinkSwitching">
                 Switch between {{ linkNamesEnumeration }} for existing links
                 <p class="mb-1"><kbd class="kbd kbd-sm">Right-click</kbd> on link</p>
               </li>
