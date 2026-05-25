@@ -1,4 +1,0 @@
-- [ ] Clean up and write usefull qREADME.md
-- [ ] Rewrite custom help to talk about arguments and attacks
-- [ ] Show custom Help in Background that is also shown in Window
-- [ ] Document to use git submodules when checking out
