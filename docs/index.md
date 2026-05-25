@@ -1,5 +1,15 @@
 # Development Documentation
 
+## Required Tools
+
+- [Node.js](https://nodejs.org/en)
+  - Tested with with v24
+  - But other versions should also work fine
+- Optionally [Docker](https://www.docker.com/)
+  - can be used for building container images locally
+  - can be used for running TweetyProject Web Server
+  - other container runtimes like [Podman](https://podman.io/) should also work fine
+
 ## Quick Start
 
 ### Cloning
