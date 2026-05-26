@@ -606,7 +606,7 @@ const helpButtonRef = useTemplateRef('helpButton')
             ref="extensionsButton"
             class="btn btn-square btn-sm"
             @click="isExtensionsOpened = !isExtensionsOpened"
-            title="Evalution"
+            title="Evaluation"
           >
             <VariableIcon class="size-6 opacity-70" />
           </button>
