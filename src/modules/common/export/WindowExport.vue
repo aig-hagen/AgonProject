@@ -43,6 +43,15 @@ const soureViewRef = useTemplateRef('soureView')
 const editorView = shallowRef<EditorView | undefined>(undefined)
 
 const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exportConfigs[0])
+const selectedArgumentStyle = shallowRef<string>('colored')
+const selectedNameStyle = shallowRef<string>('math')
+const selectedAttackStyle = shallowRef<string>('standard')
+const selectedSupportStyle = shallowRef<string>('standard')
+
+const isBipolarDocument = computed(() => {
+  const maybeSupports = (input as unknown as { supports?: unknown }).supports
+  return typeof maybeSupports === 'function'
+})
 
 const exportResult = computed(() => {
   if (!open.value) {
@@ -51,16 +60,27 @@ const exportResult = computed(() => {
   if (selectedExportConfig.value === undefined) {
     return undefined
   }
-  return selectedExportConfig.value.export(input)
+  return selectedExportConfig.value.export(input, {
+    argumentStyle: selectedArgumentStyle.value,
+    nameStyle: selectedNameStyle.value,
+    attackStyle: selectedAttackStyle.value,
+    supportStyle: selectedSupportStyle.value,
+  })
 })
 
 const saveFiledataText = computed(() => {
   if (exportResult.value === undefined) {
     return
   }
+  let extension = 'tex'
+  if (selectedExportConfig.value?.name === 'ICCMA') {
+    extension = 'af'
+  } else if (selectedExportConfig.value?.name === 'TGF') {
+    extension = 'tgf'
+  }
   return {
     content: exportResult.value.text,
-    ending: 'tex',
+    ending: extension,
   }
 })
 
@@ -158,6 +178,55 @@ watchEffect(() => {
             </select>
           </label>
         </div>
+      </fieldset>
+      <fieldset v-if="selectedExportConfig?.name === 'LaTeX (argumentation)'" class="fieldset">
+        <details class="collapse collapse-arrow">
+          <summary class="collapse-title fieldset-legend ps-0 max-w-max">Style Parameters</summary>
+          <div class="collapse-content px-4 pb-4 pt-2">
+            <div class="flex gap-2 flex-wrap">
+              <label class="select select-sm w-66">
+                <span class="label">Argument Style</span>
+                <select v-model="selectedArgumentStyle">
+                  <option value="standard">standard</option>
+                  <option value="large">large</option>
+                  <option value="thick">thick</option>
+                  <option value="gray">gray</option>
+                  <option value="colored">colored</option>
+                  <option value="large">large</option>
+                </select>
+              </label>
+              <label class="select select-sm w-66">
+                <span class="label">Name Style</span>
+                <select v-model="selectedNameStyle">
+                  <option value="math">math</option>
+                  <option value="bold">bold</option>
+                  <option value="monospace">monospace</option>
+                  <option value="monoemph">monoemph</option>
+                  <option value="none">none</option>
+                </select>
+              </label>
+              <label class="select select-sm w-66">
+                <span class="label">Attack Style</span>
+                <select v-model="selectedAttackStyle">
+                  <option value="standard">standard</option>
+                  <option value="large">large</option>
+                  <option value="modern">modern</option>
+                </select>
+              </label>
+              <label
+                v-if="isBipolarDocument"
+                class="select select-sm w-66"
+              >
+                <span class="label">Support Style</span>
+                <select v-model="selectedSupportStyle">
+                  <option value="standard">standard</option>
+                  <option value="dashed">dashed</option>
+                  <option value="double">double</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </details>
       </fieldset>
       <div class="flex gap-2 flex-wrap">
         <div class="grow max-w-92">

@@ -20,7 +20,7 @@ import { type Extension } from '@codemirror/state'
 import { latex } from 'codemirror-lang-latex'
 
 import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from '@/modules/common/argumentation/model'
-import type { ExportResult } from '@/modules/common/export'
+import type { ExportResult, ExportStyleOptions } from '@/modules/common/export'
 import { renderSvg } from '@/modules/common/export/renderSvg'
 
 export function latexExportCommonConfig(): {
@@ -46,14 +46,19 @@ export function exportLatexArgumentationCommon(
   args: IterableIterator<[id: number, data: ArgumentData]>,
   attacks: IterableIterator<[attackerId: number, attackedId: number]>,
   supports: IterableIterator<[attackerId: number, attackedId: number]>,
+  styleOptions?: ExportStyleOptions,
 ): ExportResult {
   const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2
+  const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
+  const nameStyle = styleOptions?.nameStyle ?? 'math'
+  const attackStyle = styleOptions?.attackStyle ?? 'standard'
+  const supportStyle = styleOptions?.supportStyle ?? 'double'
   let text = ''
-  text += `\\begin{af}\r\n`
+  text += `\\begin{af}[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]\r\n`
   for (const [argumentId, argumentData] of args) {
     const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
-    const x = (argumentData.x / inverseScaleFactor).toFixed(2)
-    const y = ((argumentData.y / inverseScaleFactor) * -1).toFixed(2)
+    const x = (argumentData.x / inverseScaleFactor).toFixed(1)
+    const y = ((argumentData.y / inverseScaleFactor) * -1).toFixed(1)
     text += `  \\argument(a${argumentId}){${nameEscaped}} at (${x},${y})\r\n`
   }
   const processedLinks = processLinks(attacks, supports)

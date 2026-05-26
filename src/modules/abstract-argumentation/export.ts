@@ -22,7 +22,7 @@ import {
   latexExportCommonConfig,
 } from '@/modules/common/argumentation/export'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
-import type { ExportConfig } from '@/modules/common/export'
+import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import { IdMapping } from '@/modules/common/ids'
 
 // See https://argumentationcompetition.org/2025/rules.html
@@ -49,14 +49,40 @@ const exportICCMA: ExportConfig<AbstractArgumentation<ArgumentData>> = {
   },
 }
 
-const exportLatexAbsractArgumentation: ExportConfig<AbstractArgumentation<ArgumentData>> = {
-  ...latexExportCommonConfig(),
+const exportTGF: ExportConfig<AbstractArgumentation<ArgumentData>> = {
+  name: 'TGF',
   export(document) {
-    const args = document.arguments()
-    const attacks = document.attacks()
-    const supports = (function* () {})()
-    return exportLatexArgumentationCommon(args, attacks, supports)
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<ArgumentId, number>()
+    for (const [argumentId] of document.arguments()) {
+      idMapping.add(argumentId, ++numberOfArguments)
+    }
+
+    let text = ''
+    for (const [argumentId] of document.arguments()) {
+      text += `${idMapping.getOrFail(argumentId)}\r\n`
+    }
+    text += '#\r\n'
+    for (const [sourceId, targetId] of document.attacks()) {
+      const sourceNumberId = idMapping.getOrFail(sourceId)
+      const targetNumberId = idMapping.getOrFail(targetId)
+      text += `${sourceNumberId} ${targetNumberId}\r\n`
+    }
+    text = text.trimEnd()
+    return {
+      text,
+    }
   },
 }
 
-export const availableExports = [exportLatexAbsractArgumentation, exportICCMA]
+const exportLatexAbsractArgumentation: ExportConfig<AbstractArgumentation<ArgumentData>> = {
+  ...latexExportCommonConfig(),
+  export(document, styleOptions?: ExportStyleOptions) {
+    const args = document.arguments()
+    const attacks = document.attacks()
+    const supports = (function* () {})()
+    return exportLatexArgumentationCommon(args, attacks, supports, styleOptions)
+  },
+}
+
+export const availableExports = [exportLatexAbsractArgumentation, exportICCMA, exportTGF]

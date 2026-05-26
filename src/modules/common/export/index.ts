@@ -18,9 +18,16 @@
  */
 import { type Extension } from '@codemirror/state'
 
+export interface ExportStyleOptions {
+  argumentStyle?: string
+  nameStyle?: string
+  attackStyle?: string
+  supportStyle?: string
+}
+
 export interface ExportConfig<DocumentT> {
   name: string
-  export(document: DocumentT): ExportResult
+  export(document: DocumentT, styleOptions?: ExportStyleOptions): ExportResult
   codemirrorOptions?: {
     extensions: Extension[]
   }

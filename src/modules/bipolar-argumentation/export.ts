@@ -22,15 +22,15 @@ import {
   latexExportCommonConfig,
 } from '@/modules/common/argumentation/export'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
-import type { ExportConfig } from '@/modules/common/export'
+import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 
 const exportLatexBipolarArgumentation: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
   ...latexExportCommonConfig(),
-  export(document) {
+  export(document, styleOptions?: ExportStyleOptions) {
     const args = document.arguments()
     const attacks = document.attacks()
     const supports = document.supports()
-    return exportLatexArgumentationCommon(args, attacks, supports)
+    return exportLatexArgumentationCommon(args, attacks, supports, styleOptions)
   },
 }
 
