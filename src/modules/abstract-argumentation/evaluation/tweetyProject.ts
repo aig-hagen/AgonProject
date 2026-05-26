@@ -40,7 +40,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     semantics: [
       {
         key: 'cf',
-        displayName: 'Conflict-free',
+        displayName: 'Conflict-Free',
         info: {
           description:
             'A set of arguments $E$ is conflict-free iff for all arguments $a,b \\in E$ we have that $(a,b) \\notin R$.',
@@ -119,6 +119,14 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
       {
         key: 'sad',
         displayName: 'Strongly Admissible',
+        info: {
+          description:
+            'A set of arguments $E$ is strongly admissible iff $E=\\emptyset$ or each $a \\in E$ is defended by some strongly admissible $E\' \\subseteq E \\setminus \\{a\\}$.',
+          reference: {
+            name: 'Caminada, M. (2014). "Strong Admissibility Revisited". In: Computational Models of Argument - Proceedings of COMMA 2014. pp. 197 - 208',
+            url: 'https://doi.org/10.3233/978-1-61499-436-7-197',
+          }
+        },
       },
       {
         key: 'SST',
@@ -135,10 +143,26 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
       {
         key: 'id',
         displayName: 'Ideal',
+        info: {
+          description:
+            'The ideal extension is the $\\subseteq$-maximal admissible set in the intersection of all preferred extensions.',
+          reference: {
+            name: 'Dung, P.M., P. Mancarella and F. Toni. (2007). "Computing Ideal Sceptical Argumentation". Artificial Intelligence, Vol. 171, pp. 642 - 674',
+            url: 'https://doi.org/10.1016/j.artint.2007.05.003',
+          }
+        },
       },
       {
         key: 'ea',
         displayName: 'Eager',
+        info: {
+          description:
+            'The eager extension is the $\\subseteq$-maximal admissible set in the intersection of all semi-stable extensions.',
+          reference: {
+            name: 'Caminada, M. (2007). "Comparing two Unique Extension Semantics for Formal Argumentation: Ideal and Eager". In: Proceedings of the 19th Belgian-Durch Conference on Artificial Intelligence (BNACIC 2007), pp. 81 - 87',
+            url: 'http://www.martincaminada.net/publications/ideal-eager.pdf',
+          }
+        },
       },
       {
         key: 'in',
@@ -165,14 +189,50 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
       {
         key: 'na',
         displayName: 'Naive',
+        info: {
+          description:
+            'A set of arguments $E$ is naive iff $E$ is a $\\subseteq$-maximal conflict-free set.',
+          reference: {
+            name: '',
+            url: '',
+          }
+        },
       },
       {
         key: 'stage',
         displayName: 'Stage',
+        info: {
+          description:
+            'A set of arguments $E$ is a stage extension iff $E$ is conflict-free and $E \\cup E^+$ is $\\subseteq$-maximal.',
+          reference: {
+            name: 'Verheij, B. (1996). "Two approaches to dialectical argumentation: admissible sets and argumentation stages". In: Proc. NAIC 96.357-368',
+            url: 'https://www.ai.rug.nl/~verheij/publications/pdf/cd96.pdf',
+          }
+        },
       },
       {
         key: 'stage2',
         displayName: 'Stage2',
+        info: {
+          description:
+            'The stage2 extensions are defined via the SCC-recursive schema with the stage semantics as the base function.',
+          reference: {
+            name: 'Dvorák, W. and S.A. Gaggl (2016). "Stage Semantics and the SCC-Recursive Schema for Argumentation Semantics", J. Log. Comput. 26, pp. 1149 - 1202',
+            url: 'https://doi.org/10.1093/logcom/exu006',
+          }
+        },
+      },
+      {
+        key: 'cf2',
+        displayName: 'CF2',
+        info: {
+          description:
+            'The CF2-extensions are defined via the SCC-recursive schema with the naive semantics as the base function.',
+          reference: {
+            name: 'Baroni, P., M. Giacomin and G. Guida (2005). "SCC-recursiveness: a general schema for argumentation semantics", Artificial Intelligence 168, pp. 162 - 210',
+            url: 'https://doi.org/10.1016/j.artint.2005.05.006',
+          }
+        },
       },
     ],
   },
