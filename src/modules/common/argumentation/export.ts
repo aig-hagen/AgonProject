@@ -56,6 +56,21 @@ export function exportLatexArgumentationCommon(
   const snapToGrid = styleOptions?.snapToGrid ?? false
   const scaleFactor = 1
   const snapToGridValue = (value: number) => (Math.round(value / scaleFactor) * scaleFactor).toFixed(1)
+  const limitAxisDistances = (coordinate: 'x' | 'y') => {
+    const sortedNodes = [...nodeMap.entries()].sort(([, a], [, b]) => a[coordinate] - b[coordinate])
+    let previousValue: number | null = null
+    for (const [, node] of sortedNodes) {
+      if (previousValue === null) {
+        previousValue = node[coordinate]
+        continue
+      }
+      const delta = node[coordinate] - previousValue
+      if (Math.abs(delta) > 2) {
+        node[coordinate] = previousValue + Math.sign(delta) * 2
+      }
+      previousValue = node[coordinate]
+    }
+  }
   let text = ''
   text += `\\begin{af}[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]\r\n`
   // Step 1: Collect all nodes and their coordinates in a mapping
@@ -67,6 +82,9 @@ export function exportLatexArgumentationCommon(
     const rawY = (argumentData.y / inverseScaleFactor) * -1
     nodeMap.set(argumentId, { name: nameEscaped, x: rawX, y: rawY })
   }
+
+  limitAxisDistances('x')
+  limitAxisDistances('y')
 
   // Step 2: Process nodes for output
   if (snapToGrid) {
@@ -173,8 +191,8 @@ function processLinks(
             type: ProcessedLinkType.None,
             self: false,
             reverseType: linkType,
-            sourceId: sourceId,
-            targetId: targetId,
+            sourceId: targetId,
+            targetId: sourceId,
           }
         }
         linksProcessed.set(key, newLink)
