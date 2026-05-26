@@ -23,6 +23,7 @@ export interface ExportStyleOptions {
   nameStyle?: string
   attackStyle?: string
   supportStyle?: string
+  snapToGrid?: boolean
 }
 
 export interface ExportConfig<DocumentT> {

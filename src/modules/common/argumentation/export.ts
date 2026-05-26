@@ -53,13 +53,34 @@ export function exportLatexArgumentationCommon(
   const nameStyle = styleOptions?.nameStyle ?? 'math'
   const attackStyle = styleOptions?.attackStyle ?? 'standard'
   const supportStyle = styleOptions?.supportStyle ?? 'double'
+  const snapToGrid = styleOptions?.snapToGrid ?? false
+  const scaleFactor = 1
+  const snapToGridValue = (value: number) => (Math.round(value / scaleFactor) * scaleFactor).toFixed(1)
   let text = ''
   text += `\\begin{af}[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]\r\n`
+  // Step 1: Collect all nodes and their coordinates in a mapping
+  type NodeExportInfo = { name: string; x: number; y: number }
+  const nodeMap = new Map<number, NodeExportInfo>()
   for (const [argumentId, argumentData] of args) {
     const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
-    const x = (argumentData.x / inverseScaleFactor).toFixed(1)
-    const y = ((argumentData.y / inverseScaleFactor) * -1).toFixed(1)
-    text += `  \\argument(a${argumentId}){${nameEscaped}} at (${x},${y})\r\n`
+    const rawX = argumentData.x / inverseScaleFactor
+    const rawY = (argumentData.y / inverseScaleFactor) * -1
+    nodeMap.set(argumentId, { name: nameEscaped, x: rawX, y: rawY })
+  }
+
+  // Step 2: Process nodes for output
+  if (snapToGrid) {
+    for (const [argumentId, node] of nodeMap.entries()) {
+      const x = snapToGridValue(node.x)
+      const y = snapToGridValue(node.y)
+      text += `  \\argument(a${argumentId}){${node.name}} at (${x},${y})\r\n`
+    }
+  } else {
+    for (const [argumentId, node] of nodeMap.entries()) {
+      const x = node.x.toFixed(1)
+      const y = node.y.toFixed(1)
+      text += `  \\argument(a${argumentId}){${node.name}} at (${x},${y})\r\n`
+    }
   }
   const processedLinks = processLinks(attacks, supports)
   for (const { type, self, reverseType, sourceId, targetId } of processedLinks) {

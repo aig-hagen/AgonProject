@@ -47,6 +47,7 @@ const selectedArgumentStyle = shallowRef<string>('colored')
 const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
 const selectedSupportStyle = shallowRef<string>('standard')
+const selectedSnapToGrid = shallowRef<boolean>(false)
 
 const isBipolarDocument = computed(() => {
   const maybeSupports = (input as unknown as { supports?: unknown }).supports
@@ -65,6 +66,7 @@ const exportResult = computed(() => {
     nameStyle: selectedNameStyle.value,
     attackStyle: selectedAttackStyle.value,
     supportStyle: selectedSupportStyle.value,
+    snapToGrid: selectedSnapToGrid.value,
   })
 })
 
@@ -223,6 +225,16 @@ watchEffect(() => {
                   <option value="dashed">dashed</option>
                   <option value="double">double</option>
                 </select>
+              </label>
+            </div>
+            <div class="mt-4">
+              <label class="label cursor-pointer">
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm mr-2"
+                  v-model="selectedSnapToGrid"
+                />
+                <span>Snap to Grid</span>
               </label>
             </div>
           </div>
