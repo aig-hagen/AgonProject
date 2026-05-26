@@ -32,14 +32,14 @@ const ENDPOINT_ABSTRACT_ARGUMENTATION = '/dung'
 const TIMEOUT_IN_SECONDS = 300
 const TIMEOUT_UNIT_SECONDS = 's'
 
-export const KEY_DEFAULT_SEMANTIC = 'st'
+export const KEY_DEFAULT_SEMANTIC = 'ST'
 export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   {
     key: 'classical',
-    displayName: 'Classical',
+    displayName: 'Classical Semantics',
     semantics: [
       {
-        key: 'cf',
+        key: 'CF',
         displayName: 'Conflict-Free',
         info: {
           description:
@@ -51,7 +51,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'ad',
+        key: 'ADM',
         displayName: 'Admissible',
         info: {
           description:
@@ -63,7 +63,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'co',
+        key: 'CO',
         displayName: 'Complete',
         info: {
           description:
@@ -75,7 +75,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'gr',
+        key: 'GR',
         displayName: 'Grounded',
         info: {
           description:
@@ -87,7 +87,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'pr',
+        key: 'PR',
         displayName: 'Preferred',
         info: {
           description:
@@ -99,7 +99,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'st',
+        key: 'ST',
         displayName: 'Stable',
         info: {
           description:
@@ -114,10 +114,10 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   },
   {
     key: 'admissibility-based',
-    displayName: 'Admissibility-based',
+    displayName: 'Admissibility-based Semantics',
     semantics: [
       {
-        key: 'sad',
+        key: 'SAD',
         displayName: 'Strongly Admissible',
         info: {
           description:
@@ -141,7 +141,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'id',
+        key: 'ID',
         displayName: 'Ideal',
         info: {
           description:
@@ -153,7 +153,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'ea',
+        key: 'EA',
         displayName: 'Eager',
         info: {
           description:
@@ -165,7 +165,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'in',
+        key: 'IS',
         displayName: 'Initial',
         info: {
           description:
@@ -177,17 +177,25 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'soad',
-        displayName: 'Solid Admissible',
+        key: 'UC',
+        displayName: 'Unchallenged',
+        info: {
+          description:
+            'Unchallenged extensions are defined via serialisation by exhaustively selecting only unattacked and unchallenged initial sets.',
+          reference: {
+            name: 'Bengel, L. and M. Thimm (2022). "Serialisable Semantics for Abstract Argumentation". In: Computational Models of Argument - Proceedings of COMMA 2022, pp. 80 - 91',
+            url: 'https://doi.org/10.3233/FAIA220143',
+          },
+        },
       },
     ],
   },
   {
     key: 'non-admissible',
-    displayName: 'Non-admissible',
+    displayName: 'Non-admissible Semantics',
     semantics: [
       {
-        key: 'na',
+        key: 'NA',
         displayName: 'Naive',
         info: {
           description:
@@ -199,7 +207,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'stage',
+        key: 'STG',
         displayName: 'Stage',
         info: {
           description:
@@ -211,7 +219,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'stage2',
+        key: 'STG2',
         displayName: 'Stage2',
         info: {
           description:
@@ -223,7 +231,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
         },
       },
       {
-        key: 'cf2',
+        key: 'CF2',
         displayName: 'CF2',
         info: {
           description:
@@ -234,26 +242,50 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
           }
         },
       },
+      {
+        key: 'UD',
+        displayName: 'Undisputed',
+        info: {
+          description:
+            'A set of arguments $E$ is undisputed iff $E$ is conflict-free in $F$ and the reduct $F^E$ contains no non-empty admissible set.',
+          reference: {
+            name: 'Thimm, M. (2023). "On Undisputed Sets in Abstract Argumentation", In: Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2023), pp. 6550 - 6557',
+            url: 'https://doi.org/10.1609/aaai.v37i5.25805',
+          }
+        },
+      },
+      {
+        key: 'SUD',
+        displayName: 'Strongly Undisputed',
+        info: {
+          description:
+            'A set of arguments $E$ is strongly undisputed iff $E$ is conflict-free in $F$ and the reduct $F^E$ contains no non-empty undisputed set.',
+          reference: {
+            name: 'Thimm, M. (2023). "On Undisputed Sets in Abstract Argumentation", In: Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2023), pp. 6550 - 6557',
+            url: 'https://doi.org/10.1609/aaai.v37i5.25805',
+          }
+        },
+      },
     ],
   },
   {
     key: 'weak',
-    displayName: 'Weak',
+    displayName: 'Weak Semantics',
     semantics: [
       {
-        key: 'wad',
+        key: 'WAD',
         displayName: 'Weakly Admissible',
       },
       {
-        key: 'wco',
+        key: 'WCO',
         displayName: 'Weakly Complete',
       },
       {
-        key: 'wgr',
+        key: 'WGR',
         displayName: 'Weakly Grounded',
       },
       {
-        key: 'wpr',
+        key: 'WPR',
         displayName: 'Weakly Preferred',
       },
     ],
