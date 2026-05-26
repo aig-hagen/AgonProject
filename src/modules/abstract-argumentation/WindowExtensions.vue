@@ -210,12 +210,12 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">Results</legend>
+        <legend class="fieldset-legend">Extensions</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating extensions</span>
+          <span>Evaluating extensions...</span>
         </div>
         <template v-if="dataExtensionsFormatedAndSorted !== undefined">
           <div
@@ -226,23 +226,26 @@ watchEffect(() => {
             <span>No extensions exist.</span>
           </div>
           <div v-else class="extensions gap-2" ref="extensions">
-            <div
+            <label
               v-for="extension of dataExtensionsFormatedAndSorted.formatedAndSorted"
               :key="extension.key"
+              class="label grow-2"
+              ref="extension-itme"
             >
-              <label class="label grow-2" ref="extension-itme">
-                <input
-                  type="radio"
-                  class="radio radio-sm"
-                  :name="dataExtensionsFormatedAndSorted.stateId"
-                  :value="extension.key"
-                  v-model="selectedExtension"
-                />
+              <button
+                type="button"
+                class="btn btn-sm gap-2 justify-start outline-none focus:outline-none"
+                :class="{
+                  'btn-primary': selectedExtension === extension.key,
+                  'btn-ghost': selectedExtension !== extension.key,
+                }"
+                @click="selectedExtension = extension.key"
+              >
                 {{ '{' + extension.nameFormated + '}' }}
-              </label>
-            </div>
+              </button>
+            </label>
           </div>
-          <p class="label">The selected extension will be highlighted in the editor.</p>
+          <p class="label">Select extension to highlight.</p>
           <p v-if="dataExtensionsFormatedAndSorted.evaluationDurationInSeconds !== 0" class="label">
             Evaluation took
             {{ dataExtensionsFormatedAndSorted.evaluationDurationInSeconds }} seconds.
@@ -255,6 +258,7 @@ watchEffect(() => {
 <style style="scoped">
 .extensions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--extension-item-min-width), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--extension-item-min-width), auto));
+  justify-content: start;
 }
 </style>
