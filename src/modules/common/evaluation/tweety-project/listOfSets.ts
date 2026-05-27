@@ -77,3 +77,14 @@ export function parserListOfSets(answer: string): number[][] {
 
   return result
 }
+
+export function parserSet(answer: string): number[] {
+  const { tokens, errors: lexErrors } = lexer.tokenize(answer)
+  if (lexErrors.length > 0) throw new Error(`Parsing failed`)
+
+  parser.input = tokens
+  const result = parser.set()
+  if (parser.errors.length) throw new Error(`Parsing failed`)
+
+  return result
+}

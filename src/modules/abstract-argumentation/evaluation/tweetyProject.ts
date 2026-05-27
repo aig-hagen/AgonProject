@@ -23,7 +23,7 @@ import z from 'zod'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
-import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
+import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
 import { IdMapping, type UUID } from '@/modules/common/ids'
 
@@ -315,6 +315,92 @@ export interface Semantic {
   }
 }
 
+interface GetCredulousRequestBody {
+  email: string
+  cmd: 'get_credulous'
+  nr_of_arguments: number
+  attacks: number[][]
+  semantics: string
+  timeout: number
+  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+}
+
+const GetAcceptabilityResponseSchema = z.object({
+  time: z.number(),
+  answer: z.string(),
+})
+
+async function fetchCredulous(
+  numberOfArguments: number,
+  attacks: number[][],
+  semantics: string,
+): Promise<{
+  evaluationDurationInSeconds: number
+  arguments: number[]
+}> {
+  const body: GetCredulousRequestBody = {
+    email: USER_ID,
+    cmd: 'get_credulous',
+    nr_of_arguments: numberOfArguments,
+    attacks: attacks,
+    semantics: semantics,
+    timeout: TIMEOUT_IN_SECONDS,
+    unit_timeout: TIMEOUT_UNIT_SECONDS,
+  }
+
+  const credulousResponse = await fetchTyped(
+    ENDPOINT_ABSTRACT_ARGUMENTATION,
+    body,
+    GetAcceptabilityResponseSchema,
+  )
+  const accArguments = parserSet(credulousResponse.answer)
+  return {
+    evaluationDurationInSeconds: credulousResponse.time,
+    arguments: accArguments,
+  }
+}
+
+interface GetSkepticalRequestBody {
+  email: string
+  cmd: 'get_skeptical'
+  nr_of_arguments: number
+  attacks: number[][]
+  semantics: string
+  timeout: number
+  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+}
+
+async function fetchSkeptical(
+  numberOfArguments: number,
+  attacks: number[][],
+  semantics: string,
+): Promise<{
+  evaluationDurationInSeconds: number
+  arguments: number[]
+}> {
+  const body: GetSkepticalRequestBody = {
+    email: USER_ID,
+    cmd: 'get_skeptical',
+    nr_of_arguments: numberOfArguments,
+    attacks: attacks,
+    semantics: semantics,
+    timeout: TIMEOUT_IN_SECONDS,
+    unit_timeout: TIMEOUT_UNIT_SECONDS,
+  }
+
+  const skepticalResponse = await fetchTyped(
+    ENDPOINT_ABSTRACT_ARGUMENTATION,
+    body,
+    GetAcceptabilityResponseSchema,
+  )
+  const accArguments = parserSet(skepticalResponse.answer)
+  return {
+    evaluationDurationInSeconds: skepticalResponse.time,
+    arguments: accArguments,
+  }
+}
+
+// Stuff for requesting models from the Tweety server
 interface GetModelsRequestBody {
   email: string
   cmd: 'get_models'
@@ -374,6 +460,7 @@ export type Extension = {
 export function useExtensionEvaluationQuery(
   inputRef: MaybeRef<Input<AbstractArgumentation<ArgumentData>>>,
   semanticsRef: MaybeRef<string>,
+  modeRef: MaybeRef<string>,
   enabled: MaybeRef<boolean>,
 ) {
   const argumentData = computed(() => {
@@ -394,12 +481,47 @@ export function useExtensionEvaluationQuery(
     }
     return { numberOfArguments, attacks, semanticsRef: unref(semanticsRef), idMapping }
   })
-  const queryResult = useQuery({
-    queryKey: ['dung_get_models', semanticsRef, argumentData] as const,
-    queryFn: ({ queryKey: [_key, semantics, { attacks, numberOfArguments }] }) =>
-      fetchModels(numberOfArguments, attacks, semantics),
+  type EvaluationQueryResult =
+    | { evaluationDurationInSeconds: number; extensions: number[][] }
+    | { evaluationDurationInSeconds: number; arguments: number[] }
+
+  const isModelResult = (
+    data: EvaluationQueryResult,
+  ): data is { evaluationDurationInSeconds: number; extensions: number[][] } =>
+    'extensions' in data
+
+  const queryKey = computed(() => {
+    const mode = unref(modeRef)
+    if (mode === 'credulous') {
+      return ['dung_get_credulous', semanticsRef, modeRef, argumentData] as const
+    }
+    if (mode === 'skeptical') {
+      return ['dung_get_skeptical', semanticsRef, modeRef, argumentData] as const
+    }
+    return ['dung_get_models', semanticsRef, modeRef, argumentData] as const
+  })
+
+  const queryResult = useQuery<EvaluationQueryResult>({
+    queryKey: queryKey,
+    queryFn: ({ queryKey }) => {
+      const [, semantics, , { attacks, numberOfArguments }] = queryKey as [
+        string,
+        string,
+        string,
+        { attacks: number[][]; numberOfArguments: number },
+      ]
+      const mode = unref(modeRef)
+      if (mode === 'credulous') {
+        return fetchCredulous(numberOfArguments, attacks, semantics)
+      }
+      if (mode === 'skeptical') {
+        return fetchSkeptical(numberOfArguments, attacks, semantics)
+      }
+      return fetchModels(numberOfArguments, attacks, semantics)
+    },
     enabled: enabled,
   })
+
   const data = computed(() => {
     const originalData = queryResult.data.value
     if (originalData === undefined) {
@@ -408,27 +530,50 @@ export function useExtensionEvaluationQuery(
     const input = unref(inputRef)
     const content = input.content
     const argumentIdAndData = [...content.arguments()]
-    const extensions: Extension[] = originalData.extensions.map((extension) =>
-      extension.map((serverArgumentId) => {
-        // Tweety expects argument IDs to start with 1 and go up to n,
-        // where n is the number of arguments.
-        const idAndData = argumentIdAndData[serverArgumentId - 1]
-        if (idAndData === undefined) {
-          throw new Error('Server returned invalid argument.')
-        }
-        const [id, { name }] = idAndData
-        return {
-          id,
-          name,
-        }
-      }),
-    )
+
+    if (isModelResult(originalData)) {
+      const extensions: Extension[] = originalData.extensions.map((extension) =>
+        extension.map((serverArgumentId) => {
+          // Tweety expects argument IDs to start with 1 and go up to n,
+          // where n is the number of arguments.
+          const idAndData = argumentIdAndData[serverArgumentId - 1]
+          if (idAndData === undefined) {
+            throw new Error('Server returned invalid argument.')
+          }
+          const [id, { name }] = idAndData
+          return {
+            id,
+            name,
+          }
+        }),
+      )
+      return {
+        stateId: input.stateId,
+        evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+        extensions: extensions,
+      }
+    }
+
+    const accArguments: Extension = originalData.arguments.map((serverArgumentId: number) => {
+      // Tweety expects argument IDs to start with 1 and go up to n,
+      // where n is the number of arguments.
+      const idAndData = argumentIdAndData[serverArgumentId - 1]
+      if (idAndData === undefined) {
+        throw new Error('Server returned invalid argument.')
+      }
+      const [id, { name }] = idAndData
+      return {
+        id,
+        name,
+      }
+    })
     return {
       stateId: input.stateId,
       evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
-      extensions: extensions,
+      extensions: [accArguments],
     }
   })
+
   return {
     ...queryResult,
     data,

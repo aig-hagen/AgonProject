@@ -51,11 +51,13 @@ if (stableSemantic === undefined) {
   throw new Error('Default semantic does not exist.')
 }
 const selectedSemantic = shallowRef<Semantic>(stableSemantic)
+const selectedMode = shallowRef<string>('enumerate')
 const evaluateContiously = ref(false)
 const enabled = computed(() => evaluateContiously.value && open.value)
 const { data, status, refetch, isLoading, isPending, isError } = useExtensionEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
+  computed(() => selectedMode.value),
   enabled,
 )
 const userCanTriggerFetch = computed(
@@ -161,6 +163,14 @@ watchEffect(() => {
             <span class="label">Solver</span>
             <select disabled>
               <option selected>TweetyProject</option>
+            </select>
+          </label>
+          <label class="select select-sm w-52">
+            <span class="label">Mode</span>
+            <select v-model="selectedMode">
+              <option value="enumerate">Enumerate</option>
+              <option value="credulous">Credulous</option>
+              <option value="skeptical">Skeptical</option>
             </select>
           </label>
           <label class="select select-sm w-52">
