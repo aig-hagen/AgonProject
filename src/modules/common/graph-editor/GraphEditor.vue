@@ -484,27 +484,42 @@ watchEffect(() => {
   if (graphComponent === null) {
     return
   }
-  const nodes = highlightToShow.value?.nodes ?? new Set()
+  const highlightNodes = highlightToShow.value?.nodes ?? new Set()
 
-  const hightlightNodes = []
-  const restNodes = []
+  // Compute restNodes: nodes with incoming links from highlight nodes
+  const restNodes = new Set<NodeId>()
+  for (const link of state.links) {
+    if (highlightNodes.has(link.sourceId)) {
+      restNodes.add(link.targetId)
+    }
+  }
+
+  // Compute all nodes in internal representation
+  const highlightNodesInternal = []
+  const restNodesInternal = []
+  const defaultNodesInternal = []
   for (const { id } of state.nodes) {
     if (!idMapping.hasReverse(id)) {
       continue
     }
     const internalNodeId = idMapping.getOrFailReverse(id)
-    if (nodes.has(id)) {
-      hightlightNodes.push(internalNodeId)
+    if (highlightNodes.has(id)) {
+      highlightNodesInternal.push(internalNodeId)
+    } else if (restNodes.has(id)) {
+      restNodesInternal.push(internalNodeId)
     } else {
-      restNodes.push(internalNodeId)
+      defaultNodesInternal.push(internalNodeId)
     }
   }
+
+  // Apply coloring
   const highlightColor = highlightToShow.value?.color ?? undefined
   const restColor = highlightToShow.value?.restColor ?? ARGUMENT_COLOR
   if (highlightColor !== undefined) {
-    graphComponent.setColor(highlightColor, hightlightNodes)
+    graphComponent.setColor(highlightColor, highlightNodesInternal)
   }
-  graphComponent.setColor(restColor, restNodes)
+  graphComponent.setColor(restColor, restNodesInternal)
+  graphComponent.setColor(ARGUMENT_COLOR, defaultNodesInternal)
 })
 
 function doLayout(layout: Layout) {

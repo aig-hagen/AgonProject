@@ -63,6 +63,14 @@ const { data, status, refetch, isLoading, isPending, isError } = useExtensionEva
 const userCanTriggerFetch = computed(
   () => open.value && !evaluateContiously.value && status.value !== 'success',
 )
+const extensionsHeader = computed(() =>
+  selectedMode.value === 'enumerate' ? 'Extensions' : 'Acceptable Arguments',
+)
+const extensionSelectionLabel = computed(() =>
+  selectedMode.value === 'enumerate'
+    ? 'Select extension to highlight.'
+    : 'Select acceptable argument to highlight.',
+)
 const extensionsElementRef = useTemplateRef('extensions')
 const extensionsElementItemRefs = useTemplateRef('extension-itme')
 
@@ -103,15 +111,25 @@ const dataExtensionsFormatedAndSorted = computed(() => {
     return undefined
   }
 
-  const formated = data.value.extensions.map((extension) => {
-    const nameFormated = formatExtension(extension)
-    const extensionIdsSorted = extension.map((argument) => argument.id).sort()
-    return {
-      key: JSON.stringify(extensionIdsSorted),
-      extension: extension,
-      nameFormated: nameFormated,
-    }
-  })
+  const extensions = data.value.extensions
+  const formated =
+    selectedMode.value === 'enumerate'
+      ? extensions.map((extension) => {
+          const nameFormated = formatExtension(extension)
+          const extensionIdsSorted = extension.map((argument) => argument.id).sort()
+          return {
+            key: JSON.stringify(extensionIdsSorted),
+            extension: extension,
+            nameFormated: nameFormated,
+          }
+        })
+      : extensions.flatMap((extension) =>
+          extension.map((argument) => ({
+            key: String(argument.id),
+            extension: [argument],
+            nameFormated: argument.name,
+          })),
+        )
 
   formated.sort((a, b) => a.nameFormated.localeCompare(b.nameFormated))
 
@@ -220,7 +238,7 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">Extensions</legend>
+        <legend class="fieldset-legend">{{ extensionsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>
         </div>
@@ -251,11 +269,11 @@ watchEffect(() => {
                 }"
                 @click="selectedExtension = extension.key"
               >
-                {{ '{' + extension.nameFormated + '}' }}
+                {{ selectedMode === 'enumerate' ? '{' + extension.nameFormated + '}' : extension.nameFormated }}
               </button>
             </label>
           </div>
-          <p class="label">Select extension to highlight.</p>
+          <p class="label">{{ extensionSelectionLabel }}</p>
           <p v-if="dataExtensionsFormatedAndSorted.evaluationDurationInSeconds !== 0" class="label">
             Evaluation took
             {{ dataExtensionsFormatedAndSorted.evaluationDurationInSeconds }} seconds.
