@@ -202,7 +202,7 @@ async function fetchLicense(
   } else if (packageName === 'esrecurse@4.3.0') {
     url = `https://raw.githubusercontent.com/estools/esrecurse/refs/heads/master/LICENSE.md`
   } else if (packageName.startsWith('@humanfs/')) {
-    url = `https://raw.githubusercontent.com/humanwhocodes/humanfs/refs/heads/main/LICENSE`
+    return null
   } else if (packageName === 'html-parsed-element@0.4.1') {
     return null
   } else if (packageName.startsWith('imurmurhash@0.1.4')) {
