@@ -376,7 +376,36 @@ onMounted(() => {
 
 function toggleNodePhysics() {
   nodePhysicsEnabled.value = !nodePhysicsEnabled.value
-  graphComponentRef.value!.toggleNodePhysics(nodePhysicsEnabled.value)
+  const gc = graphComponentRef.value!
+  if (nodePhysicsEnabled.value) {
+    // Before enabling physics, center nodes at the SVG element's midpoint so the
+    // simulation's centering forces don't cause the cluster to drift on screen.
+    const el = gc.$el as HTMLElement
+    const graphHost = (el.querySelector('.graph-controller__graph-host') ?? el) as HTMLElement
+    const svgCenterX = graphHost.clientWidth / 2
+    const svgCenterY = graphHost.clientHeight / 2
+    let sumX = 0, sumY = 0, count = 0
+    for (const node of state.nodes) {
+      if (!idMapping.hasReverse(node.id)) continue
+      const pos = gc.getNodePosition(idMapping.getOrFailReverse(node.id))
+      sumX += pos.x
+      sumY += pos.y
+      count++
+    }
+    if (count > 0) {
+      const dx = svgCenterX - sumX / count
+      const dy = svgCenterY - sumY / count
+      for (const node of state.nodes) {
+        if (!idMapping.hasReverse(node.id)) continue
+        const internalId = idMapping.getOrFailReverse(node.id)
+        const pos = gc.getNodePosition(internalId)
+        gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
+      }
+    }
+  }
+  gc.toggleNodePhysics(nodePhysicsEnabled.value)
+  const margin = ARGUMENT_RADIUS_IN_PX * 2
+  gc.centerView({ top: margin, right: margin, bottom: margin, left: margin }, undefined, 1)
 }
 
 function toArrowType(linkType: LinkType): ArrowType {

@@ -48,7 +48,7 @@ export function exportLatexArgumentationCommon(
   supports: IterableIterator<[attackerId: number, attackedId: number]>,
   styleOptions?: ExportStyleOptions,
 ): ExportResult {
-  const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2
+  const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2.4
   const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
   const nameStyle = styleOptions?.nameStyle ?? 'math'
   const attackStyle = styleOptions?.attackStyle ?? 'standard'
@@ -56,21 +56,7 @@ export function exportLatexArgumentationCommon(
   const snapToGrid = styleOptions?.snapToGrid ?? false
   const scaleFactor = 1
   const snapToGridValue = (value: number) => (Math.round(value / scaleFactor) * scaleFactor).toFixed(1)
-  const limitAxisDistances = (coordinate: 'x' | 'y') => {
-    const sortedNodes = [...nodeMap.entries()].sort(([, a], [, b]) => a[coordinate] - b[coordinate])
-    let previousValue: number | null = null
-    for (const [, node] of sortedNodes) {
-      if (previousValue === null) {
-        previousValue = node[coordinate]
-        continue
-      }
-      const delta = node[coordinate] - previousValue
-      if (Math.abs(delta) > 2) {
-        node[coordinate] = previousValue + Math.sign(delta) * 2
-      }
-      previousValue = node[coordinate]
-    }
-  }
+
   let text = ''
   text += `\\begin{af}[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]\r\n`
   // Step 1: Collect all nodes and their coordinates in a mapping
@@ -83,8 +69,15 @@ export function exportLatexArgumentationCommon(
     nodeMap.set(argumentId, { name: nameEscaped, x: rawX, y: rawY })
   }
 
-  limitAxisDistances('x')
-  limitAxisDistances('y')
+  const firstNode = nodeMap.values().next().value
+  if (firstNode !== undefined) {
+    const offsetX = firstNode.x
+    const offsetY = firstNode.y
+    for (const node of nodeMap.values()) {
+      node.x -= offsetX
+      node.y -= offsetY
+    }
+  }
 
   // Step 2: Process nodes for output
   if (snapToGrid) {
