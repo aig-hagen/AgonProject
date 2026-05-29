@@ -17,8 +17,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import '@aig-hagen/graph-component/lib/graph-component.css'
-
 import {
   ArrowType,
   EVENT_CAUSE,
@@ -635,8 +633,7 @@ const helpButtonRef = useTemplateRef('helpButton')
           </button>
         </div>
       </div>
-      <div class="flex flex-1">
-        <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-end pointer-events-none">
+      <div class="flex flex-1 items-end pointer-events-none">
           <button
             ref="helpButton"
             @click="isHelpOpened = !isHelpOpened"
@@ -645,7 +642,6 @@ const helpButtonRef = useTemplateRef('helpButton')
           >
             <QuestionMarkCircleIcon class="size-6 opacity-70" />
           </button>
-        </div>
         <template v-if="!historyState.canUndo && !historyState.canRedo">
           <FloatingHintRight :reference="helpButtonRef" :offset-x="64" placement="right-end"
             ><ul class="list-disc">

@@ -20,3 +20,26 @@
 @plugin "daisyui" {
   themes: light --default;
 }
+
+.graph-controller__node {
+  stroke: #5a87a8;
+  stroke-width: 1.5px;
+}
+
+.graph-controller__label-input {
+  background-color: var(--color-base-100);
+  border: 1px solid color-mix(in oklab, var(--color-base-content) 20%, transparent);
+  border-radius: var(--radius-field);
+  padding: 1px 6px;
+  font-family: sans-serif;
+  font-size: 0.875rem;
+  color: var(--color-base-content);
+  outline: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  width: 100px;
+  margin-left: 40px;
+}
+
+.graph-controller__label-input:focus {
+  border-color: color-mix(in oklab, var(--color-base-content) 50%, transparent);
+}
