@@ -21,6 +21,16 @@
   themes: light --default;
 }
 
+.graph-controller__link {
+  stroke-width: 2.5px;
+}
+
+.graph-controller__arrow path {
+  transform: scaleY(0.65);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .graph-controller__node {
   stroke: #5a87a8;
   stroke-width: 1.5px;
