@@ -92,6 +92,7 @@ const linkNamesEnumeration = computed(
 const isExtensionsOpened = ref<boolean>(false)
 const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
+const nodePhysicsEnabled = ref<boolean>(false)
 
 const enableLinkSwitching = Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
@@ -373,6 +374,11 @@ onMounted(() => {
   renderNewState(state, true)
 })
 
+function toggleNodePhysics() {
+  nodePhysicsEnabled.value = !nodePhysicsEnabled.value
+  graphComponentRef.value!.toggleNodePhysics(nodePhysicsEnabled.value)
+}
+
 function toArrowType(linkType: LinkType): ArrowType {
   if (linkType === LinkType.SINGLE) {
     return ArrowType.SINGLE
@@ -597,6 +603,9 @@ const helpButtonRef = useTemplateRef('helpButton')
           @undo="emit('undo')"
           :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
           @redo="emit('redo')"
+          :show-physics="EntryState.ENABLE"
+          :physics-enabled="nodePhysicsEnabled"
+          @toggle-physics="toggleNodePhysics"
         />
 
         <div class="flex flex-1 justify-end flex-col gap-2">

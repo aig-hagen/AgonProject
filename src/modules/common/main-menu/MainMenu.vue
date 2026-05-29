@@ -22,6 +22,8 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   Bars3Icon,
+  BoltIcon,
+  CheckIcon,
   ChevronRightIcon,
   FolderOpenIcon,
   PhotoIcon,
@@ -41,6 +43,8 @@ const {
   showRedo = EntryState.HIDE,
   showExport = EntryState.HIDE,
   showEvaluate = EntryState.HIDE,
+  showPhysics = EntryState.HIDE,
+  physicsEnabled = false,
   layoutsToShow = [],
 } = defineProps<{
   showSave?: EntryState
@@ -48,6 +52,8 @@ const {
   showRedo?: EntryState
   showExport?: EntryState
   showEvaluate?: EntryState
+  showPhysics?: EntryState
+  physicsEnabled?: boolean
   layoutsToShow?: Layout[]
 }>()
 
@@ -60,6 +66,7 @@ const emit = defineEmits<{
   redo: []
   export: []
   evaluate: []
+  togglePhysics: []
 }>()
 
 function onClickLayout(layout: Layout) {
@@ -122,6 +129,23 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
               </ul>
             </div>
           </div>
+        </li>
+      </template>
+      <template v-if="showPhysics !== EntryState.HIDE">
+        <li class="disabled"><hr class="mt-2 border-base-300" /></li>
+        <li>
+          <a
+            :class="{
+              'opacity-50 pointer-events-none': showPhysics === EntryState.DISABLE,
+            }"
+            @click="emit('togglePhysics')"
+            class="flex justify-between gap-8"
+          >
+            <span class="flex items-center gap-2">
+              <BoltIcon class="size-5 opacity-70" />Node Physics
+            </span>
+            <CheckIcon v-if="physicsEnabled" class="size-4 opacity-70" />
+          </a>
         </li>
       </template>
       <template v-if="showUndo !== EntryState.HIDE || showRedo !== EntryState.HIDE">
