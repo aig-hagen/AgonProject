@@ -177,18 +177,10 @@ watchEffect(() => {
       <fieldset class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-52">
+          <label class="select select-sm w-52" hidden>
             <span class="label">Solver</span>
             <select disabled>
               <option selected>TweetyProject</option>
-            </select>
-          </label>
-          <label class="select select-sm w-52">
-            <span class="label">Mode</span>
-            <select v-model="selectedMode">
-              <option value="enumerate">Enumerate</option>
-              <option value="credulous">Credulous</option>
-              <option value="skeptical">Skeptical</option>
             </select>
           </label>
           <label class="select select-sm w-52">
@@ -199,6 +191,14 @@ watchEffect(() => {
                   {{ semantic.displayName }}
                 </option>
               </optgroup>
+            </select>
+          </label>
+          <label class="select select-sm w-52">
+            <span class="label">Mode</span>
+            <select v-model="selectedMode">
+              <option value="enumerate">Enumerate</option>
+              <option value="credulous">Credulous</option>
+              <option value="skeptical">Skeptical</option>
             </select>
           </label>
         </div>
