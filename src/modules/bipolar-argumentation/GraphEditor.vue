@@ -81,6 +81,7 @@ function transformToEditorState(
       label: data.name,
       x: data.x,
       y: data.y,
+
     }
   })
   const attackLinks: GraphEditorStateLink[] = [...argumentation.attacks()].map(

@@ -71,6 +71,7 @@ export default defineConfig({
     proxy: {
       '/dung': 'http://localhost:8080/',
       '/bipolar': 'http://localhost:8080/',
+      '/rankings': 'http://localhost:8080/',
     },
   },
 })
