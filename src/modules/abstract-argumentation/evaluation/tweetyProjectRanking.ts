@@ -38,27 +38,39 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'CAT',
     displayName: 'Categorizer',
-    info: {
-      description:
-        'The categorizer function assigns a value to each argument based on the sum of the values of its attackers. Arguments with no attackers receive the highest rank.',
-      reference: {
-        name: 'Besnard, P. and A. Hunter (2001). "A Logic-based Theory of Deductive Arguments". In: Artificial Intelligence, Vol. 128.1-2, pp. 203 - 235',
-        url: 'https://doi.org/10.1016/S0004-3702(01)00071-6',
-      },
-    },
   },
   {
-    key: 'BBS',
+    key: 'BB',
     displayName: 'Burden-based',
-    info: {
-      description:
-        'The burden-based semantics assigns a burden value to each argument based on the burdens of its attackers and defenders, ranking arguments by their accumulated burden.',
-      reference: {
-        name: 'Amgoud, L. and J. Ben-Naim (2016). "Ranking-based Semantics for Argumentation Frameworks". In: Scalable Uncertainty Management - Proceedings of SUM 2016, pp. 134 - 147',
-        url: 'https://doi.org/10.1007/978-3-319-45856-4_10',
-      },
-    },
   },
+  {
+    key: 'SER',
+    displayName: 'Serialised',
+  },
+  {
+    key: 'CO',
+    displayName: 'Counting',
+  },
+  {
+    key: 'DB',
+    displayName: 'Discussion-based',
+  },
+  {
+    key: 'IGD',
+    displayName: 'Iterated Graded Defense',
+  },
+  {
+    key: 'SAF',
+    displayName: 'Social Argumentation',
+  },
+  {
+    key: 'SB',
+    displayName: 'Strategy-based',
+  },
+  {
+    key: 'TU',
+    displayName: 'Tuples',
+  }
 ]
 
 export interface RankingSemantic {
