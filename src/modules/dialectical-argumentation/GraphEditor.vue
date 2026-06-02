@@ -20,6 +20,7 @@
 import { computed, ref, shallowRef, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
+import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
@@ -35,6 +36,7 @@ import { type FormulaNode,formulaToString } from '@/modules/dialectical-argument
 import ConditionEditorBar from '@/modules/dialectical-argumentation/ConditionEditorBar.vue'
 import { availableExports } from '@/modules/dialectical-argumentation/export'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import WindowInterpretations from '@/modules/dialectical-argumentation/WindowInterpretations.vue'
 
 const { state, historyState } = defineProps<{
   state: DocumentState<DialecticalArgumentation<AdfArgumentData>>
@@ -53,6 +55,11 @@ const emit = defineEmits<{
 
 const renderedState = shallowRef(state)
 const editorState = shallowRef(transformToEditorState(state, true))
+
+const evaluationInput = computed<Input<DialecticalArgumentation<AdfArgumentData>>>(() => ({
+  stateId: renderedState.value.stateId,
+  content: renderedState.value.current.content,
+}))
 
 watch(
   () => state,
@@ -224,7 +231,13 @@ function onConditionChanged(formula: FormulaNode) {
         </g>
       </template>
     </template>
-    <template #evaluationExtensions>
+    <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
+      <WindowInterpretations
+        :input="evaluationInput"
+        :open="isOpen"
+        @update:open="onIsOpen"
+        @highlight="onHighlight"
+      />
       <ConditionEditorBar
         v-if="selectedNodeId !== null"
         :argument-id="selectedNodeId"

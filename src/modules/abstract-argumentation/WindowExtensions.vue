@@ -264,7 +264,7 @@ watchEffect(() => {
                 type="button"
                 class="btn btn-sm gap-2 justify-start outline-none focus:outline-none"
                 :class="{
-                  'btn-primary': selectedExtension === extension.key,
+                  'btn-soft btn-neutral': selectedExtension === extension.key,
                   'btn-ghost': selectedExtension !== extension.key,
                 }"
                 @click="selectedExtension = extension.key"
