@@ -31,11 +31,12 @@ from __future__ import annotations
 
 import json
 import os
+import random
 import subprocess
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -59,12 +60,42 @@ class AlgorithmConfig:
     id: str
     description: str
     params_schema: list[ParamSchema] = field(default_factory=list)
+    # If set, called directly instead of spawning a subprocess binary.
+    handler: Callable[[dict[str, Any]], dict[str, Any]] | None = None
 
     @property
     def binary_path(self) -> Path:
         env_key = f"GRAPH_GEN_{self.id.upper().replace('-', '_')}_BINARY"
         default = Path(__file__).parent / self.id
         return Path(os.environ.get(env_key, str(default)))
+
+
+# ---------------------------------------------------------------------------
+# Native algorithm implementations
+# ---------------------------------------------------------------------------
+
+
+def _random_af(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["numArguments"]
+    p: float = params["attackProbability"]
+    allow_self_loops: bool = params.get("allowSelfLoops", False)
+    seed: int | None = params.get("seed", None)
+
+    if n < 0:
+        raise ValueError("numArguments must be non-negative")
+    if not (0.0 <= p <= 1.0):
+        raise ValueError("attackProbability must be between 0.0 and 1.0")
+
+    rng = random.Random(seed)
+    attacks: list[list[int]] = []
+    for i in range(1, n + 1):
+        for j in range(1, n + 1):
+            if i == j and not allow_self_loops:
+                continue
+            if rng.random() < p:
+                attacks.append([i, j])
+
+    return {"nr_of_arguments": n, "attacks": attacks}
 
 
 # Register generation algorithms here. Each entry maps an algorithm id to its
@@ -88,6 +119,17 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
             ParamSchema("m", "int", "Number of attacks to attach from each new node", required=True),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
+    ),
+    "random-af": AlgorithmConfig(
+        id="random-af",
+        description="Uniform random AF: each ordered pair of arguments is an attack independently with probability p",
+        params_schema=[
+            ParamSchema("numArguments", "int", "Number of arguments", required=True),
+            ParamSchema("attackProbability", "float", "Attack probability per ordered pair (0.0–1.0)", required=True),
+            ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
+            ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
+        ],
+        handler=_random_af,
     ),
 }
 
@@ -148,7 +190,7 @@ async def list_algorithms() -> list[AlgorithmInfo]:
                 )
                 for p in algo.params_schema
             ],
-            available=algo.binary_path.exists(),
+            available=algo.handler is not None or algo.binary_path.exists(),
         )
         for algo in _ALGORITHMS.values()
     ]
@@ -163,6 +205,19 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
             status_code=400,
             detail=f"Unknown algorithm: {req.algorithm!r}. "
                    f"Available: {list(_ALGORITHMS)}",
+        )
+
+    if algo.handler is not None:
+        t0 = time.monotonic()
+        try:
+            output = algo.handler(req.params)
+        except (KeyError, ValueError) as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        elapsed = time.monotonic() - t0
+        return GenerationResponse(
+            time=elapsed,
+            nr_of_arguments=output["nr_of_arguments"],
+            attacks=output["attacks"],
         )
 
     if not algo.binary_path.exists():
