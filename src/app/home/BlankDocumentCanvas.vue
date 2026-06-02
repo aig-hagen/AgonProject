@@ -52,36 +52,41 @@ function openContent(content: DocumentT, newNamePrefix: string) {
 const mainMenuRef = useTemplateRef('mainMenu')
 </script>
 <template>
-  <div class="h-full w-full">
-    <div class="max-w-7xl m-auto p-8">
-      <h2 class="text-4xl font-bold my-4">
+  <div class="h-full w-full flex items-center justify-center">
+    <div class="max-w-5xl w-full p-8">
+      <h2 class="text-4xl font-bold mb-2">
         Argumentation Toolbox
-        <div class="text-lg font-normal text-neutral-800">
+        <div class="text-lg font-normal text-base-content/70">
           Create and Inspect Argumentation Frameworks
         </div>
       </h2>
       <HelpLinks />
-      <div class="flex flex-row flex-wrap">
-        <div class="flex-1" v-for="(exampleGroup, index) in exampleGroups" :key="index">
-          <h3 class="text-xl font-bold mb-2">{{ exampleGroup.displayNameSingular }}</h3>
-          <h4
-            class="text-lg btn btn-link font-normal mb-2 p-1 px-1"
-            @click="openContent(exampleGroup.initialCotent, exampleGroup.newNamePrefix)"
-          >
-            Start new
-          </h4>
-          <template v-if="exampleGroup.examples.length !== 0">
-            <h4 class="text-lg p-1 px-1 mb-1">Open Example</h4>
-
+      <div class="divider"></div>
+      <div class="flex flex-row flex-wrap gap-4">
+        <div
+          class="card bg-base-200 shadow-sm flex-1 min-w-48"
+          v-for="(exampleGroup, index) in exampleGroups"
+          :key="index"
+        >
+          <div class="card-body">
+            <h3 class="card-title">{{ exampleGroup.displayNameSingular }}</h3>
             <button
-              v-for="(example, index) in exampleGroup.examples"
-              :key="index"
-              class="block btn btn-link p-1 px-2 h-8 font-normal"
-              @click="openExample(example, example.name)"
+              class="btn btn-sm btn-soft btn-neutral w-fit"
+              @click="openContent(exampleGroup.initialCotent, exampleGroup.newNamePrefix)"
             >
-              {{ example.name }}
+              Create new
             </button>
-          </template>
+            <template v-if="exampleGroup.examples.length !== 0">
+              <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
+                Open Example
+              </h4>
+              <ul class="menu menu-sm p-0 -mx-2">
+                <li v-for="(example, index) in exampleGroup.examples" :key="index">
+                  <a @click="openExample(example, example.name)">{{ example.name }}</a>
+                </li>
+              </ul>
+            </template>
+          </div>
         </div>
       </div>
     </div>
