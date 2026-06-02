@@ -18,6 +18,7 @@ FROM --platform=linux/amd64 caddy:latest AS caddy
 # runtime
 FROM --platform=linux/amd64 eclipse-temurin:25-jre
 WORKDIR /opt/app
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
 # Prepare server for static files and proxying to backend
 RUN mkdir -p /var/www && chown www-data:www-data /var/www
 COPY --from=caddy /usr/bin/caddy caddy
