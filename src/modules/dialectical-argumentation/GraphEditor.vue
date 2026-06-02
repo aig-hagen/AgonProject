@@ -19,11 +19,6 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, watch } from 'vue'
 
-import { availableExports } from '@/modules/dialectical-argumentation/export'
-import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
-import { formulaToString } from '@/modules/dialectical-argumentation/condition/formula'
-import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
-import WindowConditionEditor from '@/modules/dialectical-argumentation/WindowConditionEditor.vue'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -36,6 +31,10 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { type FormulaNode,formulaToString } from '@/modules/dialectical-argumentation/condition/formula'
+import ConditionEditorBar from '@/modules/dialectical-argumentation/ConditionEditorBar.vue'
+import { availableExports } from '@/modules/dialectical-argumentation/export'
+import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const { state, historyState } = defineProps<{
   state: DocumentState<DialecticalArgumentation<AdfArgumentData>>
@@ -139,7 +138,7 @@ function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
 
 // Condition editor
 const selectedNodeId = ref<NodeId | null>(null)
-const conditionEditorOpen = ref(false)
+const editorAnchor = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 
 const argNameMap = computed(() => {
   const map = new Map<number, string>()
@@ -154,9 +153,26 @@ function getConditionString(nodeId: NodeId): string {
   return formulaToString(condition, argNameMap.value)
 }
 
-function openConditionEditor(nodeId: NodeId) {
+let _canvasCtx: CanvasRenderingContext2D | null = null
+function getPillWidth(text: string): number {
+  if (!_canvasCtx) {
+    _canvasCtx = document.createElement('canvas').getContext('2d')
+  }
+  if (_canvasCtx) {
+    _canvasCtx.font = '13px monospace'
+    return Math.ceil(_canvasCtx.measureText(text).width) + 16
+  }
+  return text.length * 7.5 + 16
+}
+
+function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
   selectedNodeId.value = nodeId
-  conditionEditorOpen.value = true
+  const svgEl = (event.currentTarget as SVGElement).ownerSVGElement!
+  const rect = svgEl.getBoundingClientRect()
+  editorAnchor.value = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  }
 }
 
 function onConditionChanged(formula: FormulaNode) {
@@ -164,10 +180,6 @@ function onConditionChanged(formula: FormulaNode) {
   const id = selectedNodeId.value
   createNewState((draft) => draft.setCondition(id, formula), true)
 }
-
-watch(conditionEditorOpen, (open) => {
-  if (!open) selectedNodeId.value = null
-})
 </script>
 <template>
   <GraphEditor
@@ -189,24 +201,38 @@ watch(conditionEditorOpen, (open) => {
   >
     <template #nodeOverlay="{ nodes }">
       <template v-for="node in nodes" :key="node.id">
-        <text
-          :x="node.x + ARGUMENT_RADIUS_IN_PX + 8"
-          :y="node.y + 5"
-          font-size="13"
-          fill="#555"
+        <g
+          :transform="`translate(${node.x + ARGUMENT_RADIUS_IN_PX + 6}, ${node.y - ARGUMENT_RADIUS_IN_PX})`"
           pointer-events="auto"
           style="cursor: pointer; user-select: none"
-          @click.stop="openConditionEditor(node.id)"
-        >{{ getConditionString(node.id) }}</text>
+          @click.stop="openConditionEditor(node.id, $event)"
+        >
+          <rect
+            x="-6"
+            y="-11"
+            :width="getPillWidth(getConditionString(node.id))"
+            height="20"
+            rx="6"
+            :style="`fill: white; stroke: ${selectedNodeId === node.id ? 'oklch(var(--p))' : 'oklch(var(--b3))'}; stroke-width: 1`"
+          />
+          <text
+            x="0"
+            y="4"
+            font-size="13"
+            style="fill: oklch(var(--bc) / 0.65); font-family: monospace"
+          >{{ getConditionString(node.id) }}</text>
+        </g>
       </template>
     </template>
     <template #evaluationExtensions>
-      <WindowConditionEditor
+      <ConditionEditorBar
         v-if="selectedNodeId !== null"
         :argument-id="selectedNodeId"
         :adf="renderedState.current.content"
-        v-model:open="conditionEditorOpen"
+        :x="editorAnchor.x"
+        :y="editorAnchor.y"
         @update:formula="onConditionChanged"
+        @close="selectedNodeId = null"
       />
     </template>
     <template #export="{ isOpen, onIsOpen }">

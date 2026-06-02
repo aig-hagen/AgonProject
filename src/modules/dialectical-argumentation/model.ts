@@ -18,12 +18,12 @@
  */
 import { immerable } from 'immer'
 
+import { DirectedGraph } from '@/modules/common/graph/graph'
 import {
   cleanupAfterArgumentDeletion,
   type FormulaNode,
   getReferencedArgumentIds,
 } from '@/modules/dialectical-argumentation/condition/formula'
-import { DirectedGraph } from '@/modules/common/graph/graph'
 
 type ArgumentId = number
 
