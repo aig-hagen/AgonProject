@@ -79,11 +79,13 @@ import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
-const { state, linkConfigs, historyState, nodeWeights } = defineProps<{
+const { state, linkConfigs, historyState, nodeWeights, allowLinkCreation = true, allowLinkDeletion = true } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
   nodeWeights?: Map<NodeId, number>
+  allowLinkCreation?: boolean
+  allowLinkDeletion?: boolean
 }>()
 
 const linkNames = computed(() =>
@@ -369,11 +371,11 @@ onMounted(() => {
       fixedPosition: { x: false, y: false },
       deletable: true,
       labelEditable: true,
-      allowIncomingLinks: true,
-      allowOutgoingLinks: true,
+      allowIncomingLinks: allowLinkCreation,
+      allowOutgoingLinks: allowLinkCreation,
     },
     linkGUIEditability: {
-      deletable: true,
+      deletable: allowLinkDeletion,
       labelEditable: false,
     },
   })
@@ -598,7 +600,7 @@ const helpButtonRef = useTemplateRef('helpButton')
       ref="graph-component"
     />
     <svg
-      v-show="nodesWithWeights.length > 0"
+      v-show="nodesWithWeights.length > 0 || !!slots.nodeOverlay"
       class="absolute inset-0 w-full h-full pointer-events-none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -621,6 +623,7 @@ const helpButtonRef = useTemplateRef('helpButton')
             fill="#333"
           >{{ nodeWeights!.get(node.id)!.toFixed(2) }}</text>
         </g>
+        <slot name="nodeOverlay" :nodes="state.nodes" />
       </g>
     </svg>
     <div
