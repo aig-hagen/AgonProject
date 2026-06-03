@@ -20,6 +20,7 @@
 import { computed, ref, shallowRef, toRef, watchEffect } from 'vue'
 
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
@@ -85,6 +86,14 @@ const formattedData = computed(() => {
     })),
   }
 })
+
+const resultItems = computed(
+  () =>
+    formattedData.value?.items.map((i) => ({
+      key: i.key,
+      label: `{${i.formatted}}`,
+    })) ?? [],
+)
 
 const selectedKey = ref<string | undefined>(undefined)
 
@@ -153,31 +162,13 @@ watchEffect(() => {
           <span>Evaluating interpretations...</span>
         </div>
         <template v-if="formattedData !== undefined">
-          <div
-            v-if="formattedData.items.length === 0"
-            role="alert"
-            class="alert alert-info alert-soft"
-          >
-            <span>No interpretations exist.</span>
-          </div>
-          <div v-else class="flex flex-row flex-wrap gap-1">
-            <button
-              v-for="item of formattedData.items"
-              :key="item.key"
-              type="button"
-              class="btn btn-sm justify-start font-mono font-normal outline-none focus:outline-none"
-              :class="{
-                'btn-soft btn-neutral': selectedKey === item.key,
-                'btn-ghost': selectedKey !== item.key,
-              }"
-              @click="selectedKey = item.key"
-            >
-              {{ '{' + item.formatted + '}' }}
-            </button>
-          </div>
-          <p v-if="formattedData.evaluationDurationInSeconds !== 0" class="label mt-2">
-            Evaluation took {{ formattedData.evaluationDurationInSeconds }} seconds.
-          </p>
+          <EvaluationResultGrid
+            v-model:selected="selectedKey"
+            :items="resultItems"
+            empty-message="No interpretations exist."
+            selection-hint="Select interpretation to highlight."
+            :evaluation-duration-in-seconds="formattedData.evaluationDurationInSeconds"
+          />
         </template>
       </fieldset>
     </div>

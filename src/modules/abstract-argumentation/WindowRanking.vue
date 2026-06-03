@@ -127,12 +127,16 @@ watch(open, () => emitWeights(data.value))
           <span>Evaluating ranking...</span>
         </div>
         <template v-if="data !== undefined">
-          <p v-for="entry in data.ranking" :key="entry.id" class="label">
-            {{ entry.name }}: {{ entry.score }}
-          </p>
-          <p v-if="data.evaluationDurationInSeconds !== 0" class="label">
-            Evaluation took {{ data.evaluationDurationInSeconds }} seconds.
-          </p>
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="entry in data.ranking"
+              :key="entry.id"
+              class="btn btn-sm btn-ghost pointer-events-none"
+            >
+              {{ entry.name }}: {{ entry.score }}
+            </span>
+          </div>
+          <p class="label">{{ data.evaluationDurationInSeconds }}s</p>
         </template>
       </fieldset>
     </div>

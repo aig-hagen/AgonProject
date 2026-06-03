@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, nextTick, ref, shallowRef, toRef, useTemplateRef, watchEffect } from 'vue'
+import { computed, ref, shallowRef, toRef, watchEffect } from 'vue'
 
 import {
   type Extension,
@@ -29,6 +29,7 @@ import {
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
@@ -71,36 +72,6 @@ const extensionSelectionLabel = computed(() =>
     ? 'Select extension to highlight.'
     : 'Select acceptable argument to highlight.',
 )
-const extensionsElementRef = useTemplateRef('extensions')
-const extensionsElementItemRefs = useTemplateRef('extension-itme')
-
-const EXTENSIONS_FALLBACK_WIDTH = 192
-const EXTENSIONS_MIN_WIDTH_VAR = '--extension-item-min-width'
-
-watchEffect(async () => {
-  const extensionsElement = extensionsElementRef.value
-  if (extensionsElement === null) {
-    return
-  }
-  const extensionsElementItems = extensionsElementItemRefs.value
-  if (extensionsElementItems === null) {
-    return
-  }
-  const extensions = data.value?.extensions ?? []
-  if (extensions.length === 0) {
-    extensionsElement.style.setProperty(EXTENSIONS_MIN_WIDTH_VAR, `${EXTENSIONS_FALLBACK_WIDTH}px`)
-    return
-  }
-  extensionsElement.style.removeProperty(EXTENSIONS_MIN_WIDTH_VAR)
-  await nextTick() // wait to finish rendering
-  const maxWidht = recalcMaxWidthExtension(extensionsElementItems)
-  extensionsElement.style.setProperty(EXTENSIONS_MIN_WIDTH_VAR, `${maxWidht}px`)
-})
-
-function recalcMaxWidthExtension(extensionsElementItems: HTMLElement[]) {
-  return Math.max(...extensionsElementItems.map((element) => element.getBoundingClientRect().width))
-}
-
 function formatExtension(extension: Extension) {
   const namesSorted = extension.map((extension) => extension.name).sort()
   return `${namesSorted.join(', ')}`
@@ -139,6 +110,15 @@ const dataExtensionsFormatedAndSorted = computed(() => {
     evaluationDurationInSeconds: data.value.evaluationDurationInSeconds,
   }
 })
+
+const resultItems = computed(
+  () =>
+    dataExtensionsFormatedAndSorted.value?.formatedAndSorted.map((e) => ({
+      key: e.key,
+      label:
+        selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
+    })) ?? [],
+)
 
 const selectedExtension = ref<string | undefined>(undefined)
 watchEffect(() => {
@@ -246,47 +226,15 @@ watchEffect(() => {
           <span>Evaluating extensions...</span>
         </div>
         <template v-if="dataExtensionsFormatedAndSorted !== undefined">
-          <div
-            v-if="dataExtensionsFormatedAndSorted.formatedAndSorted.length === 0"
-            role="alert"
-            class="alert alert-info alert-soft"
-          >
-            <span>No extensions exist.</span>
-          </div>
-          <div v-else class="extensions gap-2" ref="extensions">
-            <label
-              v-for="extension of dataExtensionsFormatedAndSorted.formatedAndSorted"
-              :key="extension.key"
-              class="label grow-2"
-              ref="extension-itme"
-            >
-              <button
-                type="button"
-                class="btn btn-sm gap-2 justify-start outline-none focus:outline-none"
-                :class="{
-                  'btn-soft btn-neutral': selectedExtension === extension.key,
-                  'btn-ghost': selectedExtension !== extension.key,
-                }"
-                @click="selectedExtension = extension.key"
-              >
-                {{ selectedMode === 'enumerate' ? '{' + extension.nameFormated + '}' : extension.nameFormated }}
-              </button>
-            </label>
-          </div>
-          <p class="label">{{ extensionSelectionLabel }}</p>
-          <p v-if="dataExtensionsFormatedAndSorted.evaluationDurationInSeconds !== 0" class="label">
-            Evaluation took
-            {{ dataExtensionsFormatedAndSorted.evaluationDurationInSeconds }} seconds.
-          </p>
+          <EvaluationResultGrid
+            v-model:selected="selectedExtension"
+            :items="resultItems"
+            empty-message="No extensions exist."
+            :selection-hint="extensionSelectionLabel"
+            :evaluation-duration-in-seconds="dataExtensionsFormatedAndSorted.evaluationDurationInSeconds"
+          />
         </template>
       </fieldset>
     </div>
   </FloatingWindow>
 </template>
-<style style="scoped">
-.extensions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--extension-item-min-width), auto));
-  justify-content: start;
-}
-</style>
