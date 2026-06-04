@@ -20,7 +20,7 @@
 import { ArrowLeftIcon, BoltIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { ref, shallowRef } from 'vue'
+import { computed, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
@@ -33,6 +33,24 @@ import type { DocumentsDB } from '@/modules/common/documents/db'
 import { useDocumentMetadata } from '@/modules/common/documents/useDocuments'
 import { saveToFile } from '@/modules/common/export/saveFile'
 
+interface ParamSchema {
+  name: string
+  type: 'int' | 'float' | 'bool' | 'string'
+  description: string
+  required: boolean
+  default: unknown
+  min: number | null
+  max: number | null
+  step: number | null
+}
+
+interface AlgorithmInfo {
+  id: string
+  description: string
+  params: ParamSchema[]
+  available: boolean
+}
+
 // Both props are passed through attr fallthrough from App (same pattern as HomeView).
 // modules is declared to prevent Vue from warning about unrecognized attrs.
 const { db } = defineProps<{
@@ -41,14 +59,69 @@ const { db } = defineProps<{
 }>()
 
 const router = useRouter()
-const { createDocument } = useDocumentMetadata(db, [abstractArgumentationModule])
+const { documents, createDocument } = useDocumentMetadata(db, [abstractArgumentationModule])
+
+function getNextName(prefix: string): string {
+  const allNames = new Set(documents.value.map((d) => d.name))
+  if (!allNames.has(prefix)) return prefix
+  for (let i = 1; ; i++) {
+    const name = prefix + i.toString(10)
+    if (!allNames.has(name)) return name
+  }
+}
+
+// --- Algorithm list ---
+const algorithms = ref<AlgorithmInfo[]>([])
+const loadError = ref<string | null>(null)
+const selectedAlgorithmId = ref<string>('')
+
+const selectedAlgorithm = computed(
+  () => algorithms.value.find((a) => a.id === selectedAlgorithmId.value) ?? null,
+)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/graph-gen/algorithms')
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = (await res.json()) as AlgorithmInfo[]
+    algorithms.value = data.filter((a) => a.available)
+    const first = algorithms.value[0]
+    if (first !== undefined) {
+      selectedAlgorithmId.value = first.id
+    }
+  } catch (e) {
+    loadError.value = e instanceof Error ? e.message : 'Failed to load algorithms'
+  }
+})
 
 // --- Parameters ---
-const numArguments = ref(10)
-const attackProbability = ref(0.3)
-const allowSelfLoops = ref(false)
+const paramValues = reactive<Record<string, unknown>>({})
 const seedEnabled = ref(false)
-const seed = ref(42)
+const seedValue = ref(42)
+
+const nonSeedParams = computed(
+  () => selectedAlgorithm.value?.params.filter((p) => p.name !== 'seed') ?? [],
+)
+const hasSeed = computed(
+  () => selectedAlgorithm.value?.params.some((p) => p.name === 'seed') ?? false,
+)
+
+watch(selectedAlgorithm, (algo) => {
+  for (const key of Object.keys(paramValues)) delete paramValues[key]
+  if (!algo) return
+  for (const p of algo.params) {
+    if (p.name === 'seed') continue
+    paramValues[p.name] =
+      p.default !== null && p.default !== undefined
+        ? p.default
+        : p.type === 'bool'
+          ? false
+          : p.type === 'string'
+            ? ''
+            : 0
+  }
+  seedEnabled.value = false
+})
 
 // --- State ---
 const isLoading = ref(false)
@@ -62,20 +135,14 @@ async function generate() {
   generated.value = null
   stats.value = null
 
-  const params: Record<string, unknown> = {
-    numArguments: numArguments.value,
-    attackProbability: attackProbability.value,
-    allowSelfLoops: allowSelfLoops.value,
-  }
-  if (seedEnabled.value) {
-    params.seed = seed.value
-  }
+  const params: Record<string, unknown> = { ...paramValues }
+  if (seedEnabled.value) params.seed = seedValue.value
 
   try {
     const response = await fetch('/graph-gen/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ algorithm: 'random-af', params }),
+      body: JSON.stringify({ algorithm: selectedAlgorithmId.value, params }),
     })
     if (!response.ok) {
       const detail = await response.json().catch(() => ({}))
@@ -108,7 +175,7 @@ async function generate() {
 async function openInEditor() {
   const af = generated.value
   if (af === null) return
-  await createDocument('AF', af)
+  await createDocument(getNextName('AF'), af)
   await router.push('/')
 }
 
@@ -126,6 +193,30 @@ function downloadTGF() {
   if (af === null) return
   saveToFile(tgfExport.export(af).text, 'AF', 'tgf')
 }
+
+function formatAlgorithmName(id: string): string {
+  return id
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+function formatParamLabel(name: string): string {
+  return name
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (c) => c.toUpperCase())
+    .trim()
+}
+
+function formatParamValue(p: ParamSchema): string {
+  const val = paramValues[p.name]
+  if (typeof val !== 'number' || isNaN(val)) return String(val ?? '')
+  if (p.type === 'float') {
+    const decimals = p.step != null ? Math.max(0, -Math.floor(Math.log10(p.step))) : 2
+    return val.toFixed(decimals)
+  }
+  return String(val)
+}
 </script>
 
 <template>
@@ -140,57 +231,128 @@ function downloadTGF() {
 
       <h1 class="text-2xl font-bold mb-1">Generate Argumentation Framework</h1>
       <p class="text-base-content/60 mb-6 text-sm">
-        Randomly generate an abstract argumentation framework using the Erdős–Rényi model.
+        Randomly generate an abstract argumentation framework.
       </p>
 
-      <div class="card bg-base-200 shadow-sm">
+      <!-- Load error -->
+      <div v-if="loadError !== null" role="alert" class="alert alert-error mb-4">
+        <span>Could not load algorithms: {{ loadError }}</span>
+      </div>
+
+      <!-- Loading skeleton -->
+      <div v-else-if="algorithms.length === 0" class="card bg-base-200 shadow-sm">
+        <div class="card-body gap-4">
+          <div class="skeleton h-5 w-24"></div>
+          <div class="skeleton h-9 w-full"></div>
+          <div class="skeleton h-5 w-32"></div>
+          <div class="skeleton h-9 w-full"></div>
+          <div class="skeleton h-5 w-28"></div>
+          <div class="skeleton h-9 w-full"></div>
+          <div class="skeleton h-10 w-full mt-1"></div>
+        </div>
+      </div>
+
+      <div v-else class="card bg-base-200 shadow-sm">
         <div class="card-body gap-5">
-          <!-- Number of arguments -->
+          <!-- Algorithm selector -->
           <div>
-            <div class="flex justify-between mb-1">
-              <span class="text-sm font-medium">Number of Arguments</span>
-              <span class="text-sm font-mono">{{ numArguments }}</span>
-            </div>
-            <input
-              type="range"
-              class="range range-sm w-full"
-              min="1"
-              max="100"
-              step="1"
-              v-model.number="numArguments"
-            />
-            <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
-              <span>1</span><span>100</span>
-            </div>
+            <label class="text-sm font-medium block mb-1">Algorithm</label>
+            <select class="select select-sm w-full" v-model="selectedAlgorithmId">
+              <option v-for="algo in algorithms" :key="algo.id" :value="algo.id">
+                {{ formatAlgorithmName(algo.id) }}
+              </option>
+            </select>
+            <p v-if="selectedAlgorithm" class="text-xs text-base-content/50 mt-1">
+              {{ selectedAlgorithm.description }}
+            </p>
           </div>
 
-          <!-- Attack probability -->
-          <div>
-            <div class="flex justify-between mb-1">
-              <span class="text-sm font-medium">Attack Probability</span>
-              <span class="text-sm font-mono">{{ attackProbability.toFixed(2) }}</span>
-            </div>
-            <input
-              type="range"
-              class="range range-sm w-full"
-              min="0"
-              max="1"
-              step="0.01"
-              v-model.number="attackProbability"
-            />
-            <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
-              <span>0.00</span><span>1.00</span>
-            </div>
-          </div>
+          <!-- Dynamic parameters -->
+          <template v-for="p in nonSeedParams" :key="p.name">
+            <!-- Bool: toggle -->
+            <label v-if="p.type === 'bool'" class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                class="toggle toggle-sm"
+                :checked="Boolean(paramValues[p.name])"
+                @change="paramValues[p.name] = ($event.target as HTMLInputElement).checked"
+              />
+              <span class="text-sm tooltip tooltip-right cursor-help" :data-tip="p.description">
+                {{ p.description }}
+              </span>
+            </label>
 
-          <!-- Allow self-attacks -->
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" class="toggle toggle-sm" v-model="allowSelfLoops" />
-            <span class="text-sm">Allow self-attacks</span>
-          </label>
+            <!-- String: text input -->
+            <div v-else-if="p.type === 'string'">
+              <div class="flex justify-between mb-1">
+                <span
+                  class="text-sm font-medium tooltip tooltip-right cursor-help"
+                  :data-tip="p.description"
+                >{{ formatParamLabel(p.name) }}</span>
+              </div>
+              <input
+                type="text"
+                class="input input-sm w-full font-mono"
+                :placeholder="p.description"
+                :value="String(paramValues[p.name] ?? '')"
+                @input="paramValues[p.name] = ($event.target as HTMLInputElement).value"
+              />
+            </div>
+
+            <!-- Int / float with known range: slider -->
+            <div v-else-if="p.min !== null && p.max !== null">
+              <div class="flex justify-between mb-1">
+                <span
+                  class="text-sm font-medium tooltip tooltip-right cursor-help"
+                  :data-tip="p.description"
+                >{{ formatParamLabel(p.name) }}</span>
+                <span class="text-sm font-mono text-base-content/60">{{ formatParamValue(p) }}</span>
+              </div>
+              <input
+                type="range"
+                class="range range-sm w-full"
+                :min="p.min"
+                :max="p.max"
+                :step="p.step ?? (p.type === 'int' ? 1 : 0.01)"
+                :value="paramValues[p.name] as number"
+                @input="
+                  paramValues[p.name] =
+                    p.type === 'int'
+                      ? parseInt(($event.target as HTMLInputElement).value)
+                      : parseFloat(($event.target as HTMLInputElement).value)
+                "
+              />
+              <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
+                <span>{{ p.min }}</span><span>{{ p.max }}</span>
+              </div>
+            </div>
+
+            <!-- Int / float without range: plain number input -->
+            <div v-else>
+              <div class="flex justify-between mb-1">
+                <span
+                  class="text-sm font-medium tooltip tooltip-right cursor-help"
+                  :data-tip="p.description"
+                >{{ formatParamLabel(p.name) }}</span>
+              </div>
+              <input
+                type="number"
+                class="input input-sm w-full"
+                :step="p.step ?? (p.type === 'int' ? '1' : 'any')"
+                :value="paramValues[p.name] as number"
+                @input="
+                  paramValues[p.name] =
+                    p.type === 'int'
+                      ? parseInt(($event.target as HTMLInputElement).value)
+                      : parseFloat(($event.target as HTMLInputElement).value)
+                "
+              />
+              <p class="text-xs text-base-content/50 mt-0.5">{{ p.description }}</p>
+            </div>
+          </template>
 
           <!-- Seed -->
-          <div class="flex flex-col gap-2">
+          <div v-if="hasSeed" class="flex flex-col gap-2">
             <label class="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" class="toggle toggle-sm" v-model="seedEnabled" />
               <span class="text-sm">Fix random seed</span>
@@ -199,16 +361,13 @@ function downloadTGF() {
               v-if="seedEnabled"
               type="number"
               class="input input-sm w-32"
-              v-model.number="seed"
+              step="1"
+              v-model.number="seedValue"
               placeholder="Seed"
             />
           </div>
 
-          <button
-            class="btn btn-primary w-full mt-1"
-            :disabled="isLoading"
-            @click="generate"
-          >
+          <button class="btn btn-primary w-full mt-1" :disabled="isLoading" @click="generate">
             <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
             <BoltIcon v-else class="size-5" />
             {{ isLoading ? 'Generating…' : 'Generate' }}

@@ -8,6 +8,7 @@ import { type Attribution } from './src/modules/common/attributions/types.ts'
 
 const TWEETY_VERSION = getVersionFromGit('third-party/TweetyProjectTeam/TweetyProject')
 const XAI_CA_VERSION = await getVersionFromDirName('third-party/xai-ca/xray')
+const NETWORKX_VERSION = await getVersionFromDirName('third-party/networkx')
 
 const whitelistedLicenses = [
   'GPL-3.0',
@@ -66,6 +67,14 @@ async function attributionsForNonNpmPackages(): Promise<Attribution[]> {
       repository: 'https://github.com/xai-ca/xray',
       publisher: 'University of Illinois Urbana-Champaign',
       licenseText: await readFile(`third-party/xai-ca/xray/${XAI_CA_VERSION}/LICENSE`, 'utf8'),
+    },
+    {
+      name: 'NetworkX',
+      version: NETWORKX_VERSION,
+      license: 'BSD-3-Clause',
+      repository: 'https://github.com/networkx/networkx',
+      publisher: 'NetworkX Developers',
+      licenseText: await readFile(`third-party/networkx/${NETWORKX_VERSION}/LICENSE.txt`, 'utf8'),
     },
   ]
 }

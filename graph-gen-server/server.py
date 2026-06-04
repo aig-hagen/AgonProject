@@ -38,6 +38,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
+import networkx as nx
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
@@ -53,6 +54,9 @@ class ParamSchema:
     description: str
     required: bool
     default: Any = None
+    min: float | None = None
+    max: float | None = None
+    step: float | None = None
 
 
 @dataclass
@@ -75,26 +79,187 @@ class AlgorithmConfig:
 # ---------------------------------------------------------------------------
 
 
-def _random_af(params: dict[str, Any]) -> dict[str, Any]:
-    n: int = params["numArguments"]
-    p: float = params["attackProbability"]
+def _erdos_renyi(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["n"]
+    p: float = params["p"]
+    seed: int | None = params.get("seed", None)
+    allow_self_loops: bool = params.get("allowSelfLoops", False)
+
+    if n < 0:
+        raise ValueError("n must be non-negative")
+    if not (0.0 <= p <= 1.0):
+        raise ValueError("p must be between 0.0 and 1.0")
+
+    g = nx.gnp_random_graph(n, p, seed=seed, directed=True)
+    attacks = [[u + 1, v + 1] for u, v in g.edges()]
+    if allow_self_loops:
+        rng = random.Random(seed)
+        attacks += [[i + 1, i + 1] for i in range(n) if rng.random() < p]
+    return {"nr_of_arguments": n, "attacks": attacks}
+
+
+def _barabasi_albert(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["n"]
+    m: int = params["m"]
+    seed: int | None = params.get("seed", None)
+
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    if m < 1 or m >= n:
+        raise ValueError("m must satisfy 1 <= m < n")
+
+    g = nx.barabasi_albert_graph(n, m, seed=seed)
+    # Orient each undirected edge randomly using the same seed for reproducibility.
+    rng = random.Random(seed)
+    attacks = []
+    for u, v in g.edges():
+        if rng.random() < 0.5:
+            attacks.append([u + 1, v + 1])
+        else:
+            attacks.append([v + 1, u + 1])
+    return {"nr_of_arguments": n, "attacks": attacks}
+
+
+def _scale_free(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["n"]
+    alpha: float = params.get("alpha", 0.41)
+    beta: float = params.get("beta", 0.54)
+    gamma: float = params.get("gamma", 0.05)
     allow_self_loops: bool = params.get("allowSelfLoops", False)
     seed: int | None = params.get("seed", None)
 
-    if n < 0:
-        raise ValueError("numArguments must be non-negative")
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    if abs(alpha + beta + gamma - 1.0) > 1e-9:
+        raise ValueError("alpha + beta + gamma must equal 1.0")
+
+    g = nx.scale_free_graph(n, alpha=alpha, beta=beta, gamma=gamma, seed=seed)
+    seen: set[tuple[int, int]] = set()
+    attacks = []
+    for u, v in g.edges():
+        if u == v and not allow_self_loops:
+            continue
+        if (u, v) not in seen:
+            seen.add((u, v))
+            attacks.append([u + 1, v + 1])
+    return {"nr_of_arguments": n, "attacks": attacks}
+
+
+def _random_k_out(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["n"]
+    k: int = params["k"]
+    alpha: float = params["alpha"]
+    allow_self_loops: bool = params.get("allowSelfLoops", False)
+    seed: int | None = params.get("seed", None)
+
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    if k < 1:
+        raise ValueError("k must be at least 1")
+    if alpha <= 0:
+        raise ValueError("alpha must be positive")
+
+    g = nx.random_k_out_graph(n, k, alpha, self_loops=allow_self_loops, seed=seed)
+    seen: set[tuple[int, int]] = set()
+    attacks = []
+    for u, v in g.edges():
+        if (u, v) not in seen:
+            seen.add((u, v))
+            attacks.append([u + 1, v + 1])
+    return {"nr_of_arguments": n, "attacks": attacks}
+
+
+def _watts_strogatz(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["n"]
+    k: int = params["k"]
+    p: float = params["p"]
+    seed: int | None = params.get("seed", None)
+
+    if n < k:
+        raise ValueError("n must be at least k")
     if not (0.0 <= p <= 1.0):
-        raise ValueError("attackProbability must be between 0.0 and 1.0")
+        raise ValueError("p must be between 0.0 and 1.0")
 
+    g = nx.watts_strogatz_graph(n, k, p, seed=seed)
     rng = random.Random(seed)
-    attacks: list[list[int]] = []
-    for i in range(1, n + 1):
-        for j in range(1, n + 1):
-            if i == j and not allow_self_loops:
-                continue
-            if rng.random() < p:
-                attacks.append([i, j])
+    attacks = []
+    for u, v in g.edges():
+        if rng.random() < 0.5:
+            attacks.append([u + 1, v + 1])
+        else:
+            attacks.append([v + 1, u + 1])
+    return {"nr_of_arguments": n, "attacks": attacks}
 
+
+def _random_regular(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["n"]
+    d: int = params["d"]
+    seed: int | None = params.get("seed", None)
+
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    if d < 0 or d >= n:
+        raise ValueError("d must satisfy 0 <= d < n")
+    if (d * n) % 2 != 0:
+        raise ValueError("d * n must be even")
+
+    g = nx.random_regular_graph(d, n, seed=seed)
+    rng = random.Random(seed)
+    attacks = []
+    for u, v in g.edges():
+        if rng.random() < 0.5:
+            attacks.append([u + 1, v + 1])
+        else:
+            attacks.append([v + 1, u + 1])
+    return {"nr_of_arguments": n, "attacks": attacks}
+
+
+def _powerlaw_cluster(params: dict[str, Any]) -> dict[str, Any]:
+    n: int = params["n"]
+    m: int = params["m"]
+    p: float = params["p"]
+    seed: int | None = params.get("seed", None)
+
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    if m < 1:
+        raise ValueError("m must be at least 1")
+    if not (0.0 <= p <= 1.0):
+        raise ValueError("p must be between 0.0 and 1.0")
+
+    g = nx.powerlaw_cluster_graph(n, m, p, seed=seed)
+    rng = random.Random(seed)
+    attacks = []
+    for u, v in g.edges():
+        if rng.random() < 0.5:
+            attacks.append([u + 1, v + 1])
+        else:
+            attacks.append([v + 1, u + 1])
+    return {"nr_of_arguments": n, "attacks": attacks}
+
+
+def _stochastic_block_model(params: dict[str, Any]) -> dict[str, Any]:
+    sizes_str: str = params["sizes"]
+    intra_prob: float = params["intraProb"]
+    inter_prob: float = params["interProb"]
+    seed: int | None = params.get("seed", None)
+
+    try:
+        sizes = [int(s.strip()) for s in sizes_str.split(",")]
+    except ValueError:
+        raise ValueError("sizes must be a comma-separated list of positive integers, e.g. '10,10,10'")
+    if any(s < 1 for s in sizes):
+        raise ValueError("all community sizes must be at least 1")
+    if not (0.0 <= intra_prob <= 1.0):
+        raise ValueError("intraProb must be between 0.0 and 1.0")
+    if not (0.0 <= inter_prob <= 1.0):
+        raise ValueError("interProb must be between 0.0 and 1.0")
+
+    k = len(sizes)
+    p = [[intra_prob if i == j else inter_prob for j in range(k)] for i in range(k)]
+    g = nx.stochastic_block_model(sizes, p, seed=seed, directed=True, selfloops=False)
+    n = sum(sizes)
+    attacks = [[u + 1, v + 1] for u, v in g.edges()]
     return {"nr_of_arguments": n, "attacks": attacks}
 
 
@@ -106,30 +271,90 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="erdos-renyi",
         description="Erdős–Rényi random graph G(n, p): each possible attack exists independently with probability p",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True),
-            ParamSchema("p", "float", "Attack probability per ordered pair (0.0–1.0)", required=True),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("p", "float", "Attack probability per ordered pair", required=True, default=0.3, min=0.0, max=1.0, step=0.01),
+            ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
+        handler=_erdos_renyi,
     ),
     "barabasi-albert": AlgorithmConfig(
         id="barabasi-albert",
         description="Barabási–Albert preferential attachment: new nodes attach preferentially to high-degree nodes",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True),
-            ParamSchema("m", "int", "Number of attacks to attach from each new node", required=True),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=2, max=200, step=1),
+            ParamSchema("m", "int", "Number of attacks to attach from each new node", required=True, default=2, min=1, max=50, step=1),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
+        handler=_barabasi_albert,
     ),
-    "random-af": AlgorithmConfig(
-        id="random-af",
-        description="Uniform random AF: each ordered pair of arguments is an attack independently with probability p",
+    "scale-free": AlgorithmConfig(
+        id="scale-free",
+        description="Directed scale-free graph: power-law in/out-degree distribution controlled by α, β, γ (must sum to 1)",
         params_schema=[
-            ParamSchema("numArguments", "int", "Number of arguments", required=True),
-            ParamSchema("attackProbability", "float", "Attack probability per ordered pair (0.0–1.0)", required=True),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("alpha", "float", "Prob. of adding edge from new node to existing (α + β + γ = 1)", required=False, default=0.41),
+            ParamSchema("beta", "float", "Prob. of adding edge between two existing nodes (α + β + γ = 1)", required=False, default=0.54),
+            ParamSchema("gamma", "float", "Prob. of adding edge from existing node to new (α + β + γ = 1)", required=False, default=0.05),
             ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
-        handler=_random_af,
+        handler=_scale_free,
+    ),
+    "random-k-out": AlgorithmConfig(
+        id="random-k-out",
+        description="Random k-out graph: each argument attacks exactly k others chosen with preferential attachment",
+        params_schema=[
+            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("k", "int", "Number of out-attacks per argument", required=True, default=3, min=1, max=50, step=1),
+            ParamSchema("alpha", "float", "Preferential attachment concentration (higher = more uniform)", required=True, default=1.0),
+            ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
+            ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
+        ],
+        handler=_random_k_out,
+    ),
+    "watts-strogatz": AlgorithmConfig(
+        id="watts-strogatz",
+        description="Watts–Strogatz small-world graph: ring lattice with random edge rewiring; edges are randomly oriented",
+        params_schema=[
+            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("k", "int", "Each argument is initially connected to k nearest neighbours", required=True, default=4, min=2, max=50, step=1),
+            ParamSchema("p", "float", "Probability of rewiring each edge", required=True, default=0.1, min=0.0, max=1.0, step=0.01),
+            ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
+        ],
+        handler=_watts_strogatz,
+    ),
+    "random-regular": AlgorithmConfig(
+        id="random-regular",
+        description="Random d-regular graph: every argument has exactly degree d; edges are randomly oriented",
+        params_schema=[
+            ParamSchema("n", "int", "Number of arguments (n × d must be even)", required=True, default=20, min=2, max=200, step=1),
+            ParamSchema("d", "int", "Degree of each argument", required=True, default=3, min=1, max=50, step=1),
+            ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
+        ],
+        handler=_random_regular,
+    ),
+    "powerlaw-cluster": AlgorithmConfig(
+        id="powerlaw-cluster",
+        description="Holme–Kim power-law cluster graph: Barabási–Albert with additional triangle-closing step for higher clustering",
+        params_schema=[
+            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("m", "int", "Number of edges to attach from each new node", required=True, default=2, min=1, max=50, step=1),
+            ParamSchema("p", "float", "Probability of triangle formation after each edge addition", required=True, default=0.5, min=0.0, max=1.0, step=0.01),
+            ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
+        ],
+        handler=_powerlaw_cluster,
+    ),
+    "stochastic-block-model": AlgorithmConfig(
+        id="stochastic-block-model",
+        description="Stochastic block model: community-structured graph with configurable intra- and inter-community attack probabilities",
+        params_schema=[
+            ParamSchema("sizes", "string", "Comma-separated community sizes, e.g. '10,10,10'", required=True, default="10,10,10"),
+            ParamSchema("intraProb", "float", "Attack probability within a community", required=True, default=0.5, min=0.0, max=1.0, step=0.01),
+            ParamSchema("interProb", "float", "Attack probability between communities", required=True, default=0.1, min=0.0, max=1.0, step=0.01),
+            ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
+        ],
+        handler=_stochastic_block_model,
     ),
 }
 
@@ -157,6 +382,9 @@ class ParamSchemaOut(BaseModel):
     description: str
     required: bool
     default: Any
+    min: float | None = None
+    max: float | None = None
+    step: float | None = None
 
 
 class AlgorithmInfo(BaseModel):
@@ -187,6 +415,9 @@ async def list_algorithms() -> list[AlgorithmInfo]:
                     description=p.description,
                     required=p.required,
                     default=p.default,
+                    min=p.min,
+                    max=p.max,
+                    step=p.step,
                 )
                 for p in algo.params_schema
             ],
