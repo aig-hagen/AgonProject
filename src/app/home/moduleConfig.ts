@@ -84,4 +84,8 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * @param dataObject
    */
   getSaveString(document: DocumentT): string
+  /**
+   * Optional route href shown as a "Generate" link in the welcome screen.
+   */
+  generateHref?: string
 }

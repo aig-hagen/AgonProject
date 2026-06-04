@@ -94,4 +94,5 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
   getSaveString(document) {
     return saveAsString(document)
   },
+  generateHref: '/generate',
 }

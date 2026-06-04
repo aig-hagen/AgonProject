@@ -18,6 +18,7 @@
 -->
 <script setup lang="ts" generic="DocumentT">
 import { useTemplateRef } from 'vue'
+import { RouterLink } from 'vue-router'
 
 import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
@@ -29,6 +30,7 @@ export interface ExampleGroup<DocumentT> {
   displayNameSingular: string
   examples: Example<DocumentT>[]
   initialCotent: DocumentT
+  generateHref?: string
 }
 const { exampleGroups, showLoadHint } = defineProps<{
   exampleGroups: ExampleGroup<DocumentT>[]
@@ -85,6 +87,17 @@ const mainMenuRef = useTemplateRef('mainMenu')
                   <a @click="openExample(example, example.name)">{{ example.name }}</a>
                 </li>
               </ul>
+            </template>
+            <template v-if="exampleGroup.generateHref !== undefined">
+              <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
+                Generate
+              </h4>
+              <RouterLink
+                :to="exampleGroup.generateHref"
+                class="btn btn-sm btn-soft btn-neutral w-fit"
+              >
+                Generate random AF
+              </RouterLink>
             </template>
           </div>
         </div>

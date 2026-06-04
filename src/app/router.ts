@@ -18,6 +18,7 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
+import GenerateView from '@/app/generate/GenerateView.vue'
 import HomeView from '@/app/home/HomeView.vue'
 import ThirdPartyView from '@/app/third-party/ThirdPartyView.vue'
 
@@ -27,6 +28,10 @@ const router = createRouter({
     {
       path: '/',
       component: HomeView,
+    },
+    {
+      path: '/generate',
+      component: GenerateView,
     },
     {
       path: '/third-party',

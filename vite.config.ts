@@ -73,6 +73,10 @@ export default defineConfig({
       '/bipolar': 'http://localhost:8080/',
       '/rankings': 'http://localhost:8080/',
       '/adf': 'http://localhost:8080/',
+      '/graph-gen': {
+        target: 'http://localhost:8000',
+        rewrite: (path) => path.replace(/^\/graph-gen/, ''),
+      },
     },
   },
 })
