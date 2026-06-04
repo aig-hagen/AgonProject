@@ -21,6 +21,10 @@ import {
   ArrowLongLeftIcon,
   ArrowLongRightIcon,
   ArrowLongUpIcon,
+  ArrowPathIcon,
+  ArrowsPointingInIcon,
+  ArrowsPointingOutIcon,
+  SignalIcon,
 } from '@heroicons/vue/24/outline'
 import type { Component } from 'vue'
 
@@ -29,6 +33,10 @@ export const Layout = {
   BottomToTop: 'BottomToTop',
   LeftToRight: 'LeftToRight',
   RightToLeft: 'RightToLeft',
+  ForceDirected: 'ForceDirected',
+  Neato: 'Neato',
+  Circular: 'Circular',
+  Radial: 'Radial',
 } as const
 
 export type Layout = (typeof Layout)[keyof typeof Layout]
@@ -52,5 +60,21 @@ export const layoutDatas: Record<Layout, LayoutData> = {
   [Layout.RightToLeft]: {
     name: 'Right to left',
     icon: ArrowLongRightIcon,
+  },
+  [Layout.ForceDirected]: {
+    name: 'Force-directed',
+    icon: ArrowsPointingOutIcon,
+  },
+  [Layout.Neato]: {
+    name: 'Spring model',
+    icon: ArrowsPointingInIcon,
+  },
+  [Layout.Circular]: {
+    name: 'Circular',
+    icon: ArrowPathIcon,
+  },
+  [Layout.Radial]: {
+    name: 'Radial',
+    icon: SignalIcon,
   },
 }

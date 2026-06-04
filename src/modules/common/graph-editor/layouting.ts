@@ -38,13 +38,28 @@ interface Position {
   y: number
 }
 
+function renderWithEngine(dotSource: string, layout: Layout): string {
+  switch (layout) {
+    case Layout.ForceDirected:
+      return graphviz.fdp(dotSource, 'json')
+    case Layout.Neato:
+      return graphviz.neato(dotSource, 'json')
+    case Layout.Circular:
+      return graphviz.circo(dotSource, 'json')
+    case Layout.Radial:
+      return graphviz.twopi(dotSource, 'json')
+    default:
+      return graphviz.dot(dotSource, 'json')
+  }
+}
+
 export function getNodePositions(
   nodes: number[],
   links: [sourceId: number, targetId: number][],
   layout: Layout,
 ): Map<number, Position> {
   const dotSource = argumentationFrameworkToDotSource(nodes, links, layout)
-  const dotJsonString = graphviz.dot(dotSource, 'json')
+  const dotJsonString = renderWithEngine(dotSource, layout)
   const dotJson = JSON.parse(dotJsonString) as DotJson
 
   const nodePositions = new Map()
@@ -77,39 +92,6 @@ export function argumentationFrameworkToDotSource(
   links: [sourceId: number, targetId: number][],
   layout: Layout,
 ) {
-  let rankdir: string
-  switch (layout) {
-    case Layout.TopToBottom:
-      rankdir = 'TB'
-      break
-    case Layout.BottomToTop:
-      rankdir = 'BT'
-      break
-    case Layout.LeftToRight:
-      rankdir = 'LR'
-      break
-    case Layout.RightToLeft:
-      rankdir = 'RL'
-      break
-  }
-  // The final dot will look like:
-  //
-  // ```
-  // digraph {
-  //   rankdir="BT"
-  //   ranksep=1
-  //    node [shape=circle, fixedsize=true, width=1.72, height=0.56]
-  //
-  //     1[shape=circle, fixedsize=true, width=0.56, height=0.56]
-  //     2[shape=circle, fixedsize=true, width=0.56, height=0.56]
-  //     3[shape=circle, fixedsize=true, width=0.56, height=0.56]
-  //
-  //     2 -> 1
-  //     3 -> 1
-  //     3 -> 2
-  //     2 -> 3
-  // }
-  // ```
   // 72 is the default scale used by Graphviz.
   // See https://graphviz.org/doc/info/command.html#-s
   const PIXEL_PER_IN = 72
@@ -123,10 +105,37 @@ export function argumentationFrameworkToDotSource(
 
   const dotSourceLines = []
   dotSourceLines.push('digraph {')
-  // NOTE Can be made configurable in the future
-  dotSourceLines.push(`  rankdir="${rankdir}"`)
-  dotSourceLines.push('  ranksep=1')
-  dotSourceLines.push(`  nodesep=${MIN_HORIZONTAL_ARGUMENT_DISTANCE.toString()}`)
+  switch (layout) {
+    case Layout.TopToBottom:
+    case Layout.BottomToTop:
+    case Layout.LeftToRight:
+    case Layout.RightToLeft: {
+      const rankdirMap = {
+        [Layout.TopToBottom]: 'TB',
+        [Layout.BottomToTop]: 'BT',
+        [Layout.LeftToRight]: 'LR',
+        [Layout.RightToLeft]: 'RL',
+      }
+      dotSourceLines.push(`  rankdir="${rankdirMap[layout]}"`)
+      dotSourceLines.push('  ranksep=1')
+      dotSourceLines.push(`  nodesep=${MIN_HORIZONTAL_ARGUMENT_DISTANCE.toString()}`)
+      break
+    }
+    case Layout.ForceDirected:
+      dotSourceLines.push('  overlap=false')
+      dotSourceLines.push('  K=1.5')
+      dotSourceLines.push('  sep="+10"')
+      break
+    case Layout.Neato:
+      dotSourceLines.push('  overlap=false')
+      dotSourceLines.push('  sep="+30"')
+      break
+    case Layout.Circular:
+      break
+    case Layout.Radial:
+      dotSourceLines.push('  ranksep=2')
+      break
+  }
   dotSourceLines.push(`  node[fixedsize=true]`)
   dotSourceLines.push('')
   for (const nodeId of nodes) {

@@ -652,6 +652,10 @@ const helpButtonRef = useTemplateRef('helpButton')
             Layout.BottomToTop,
             Layout.LeftToRight,
             Layout.RightToLeft,
+            Layout.ForceDirected,
+            Layout.Neato,
+            Layout.Circular,
+            Layout.Radial,
           ]"
           @save="emit('save')"
           :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"
