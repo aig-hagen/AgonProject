@@ -16,6 +16,12 @@ http://:8080 {
 		reverse_proxy http://localhost:8081
 	}
 
+	@graph-gen path /graph-gen/*
+	handle @graph-gen {
+		uri strip_prefix /graph-gen
+		reverse_proxy http://localhost:8082
+	}
+
 	handle {
 		try_files {path} /index.html
 		file_server
