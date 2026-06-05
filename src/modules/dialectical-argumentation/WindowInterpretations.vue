@@ -120,7 +120,7 @@ watchEffect(() => {
 <template>
   <FloatingWindow
     v-model:open="open"
-    title="Interpretation evaluation"
+    title="Model Semantics"
     :initial-position="{ x: 128, y: 64 }"
     :intitalSize="{ width: 512, height: 400 }"
   >

@@ -70,7 +70,7 @@ watch(open, () => emitWeights(data.value))
 <template>
   <FloatingWindow
     v-model:open="open"
-    title="Ranking semantics"
+    title="Ranking Semantics"
     :initial-position="{ x: 192, y: 96 }"
     :intitalSize="{ width: 480, height: 320 }"
   >

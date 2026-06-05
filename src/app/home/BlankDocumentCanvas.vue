@@ -41,6 +41,7 @@ const emit = defineEmits<{
   open: [content: DocumentT, newNamePrefix: string]
   new: []
   load: []
+  generate: []
 }>()
 
 function openExample(example: Example<DocumentT>, newNamePrefix: string) {
@@ -105,7 +106,7 @@ const mainMenuRef = useTemplateRef('mainMenu')
     </div>
     <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-start pointer-events-none">
       <div ref="mainMenu">
-        <MainMenu @new="emit('new')" @load="emit('load')" />
+        <MainMenu @new="emit('new')" @load="emit('load')" @generate="emit('generate')" />
       </div>
     </div>
     <FloatingHintBottom

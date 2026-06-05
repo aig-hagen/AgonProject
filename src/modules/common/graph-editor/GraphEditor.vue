@@ -126,6 +126,7 @@ watch(
 const emit = defineEmits<{
   load: []
   new: []
+  generate: []
   nodeCreated: [
     data: {
       id: NodeId
@@ -579,6 +580,13 @@ function doLayout(layout: Layout) {
     })
   }
   emit('nodesMoved', newPositions)
+
+  const margin = ARGUMENT_RADIUS_IN_PX * 2
+  graphComponentRef.value.centerView(
+    { top: margin, right: margin, bottom: margin, left: margin },
+    undefined,
+    1,
+  )
 }
 
 const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
@@ -646,6 +654,7 @@ const helpButtonRef = useTemplateRef('helpButton')
         <MainMenu
           @new="emit('new')"
           @load="emit('load')"
+          @generate="emit('generate')"
           :show-save="EntryState.ENABLE"
           :layouts-to-show="[
             Layout.TopToBottom,
@@ -689,7 +698,7 @@ const helpButtonRef = useTemplateRef('helpButton')
             ref="extensionsButton"
             class="btn btn-square btn-sm"
             @click="isExtensionsOpened = !isExtensionsOpened"
-            title="Evaluation"
+            title="Extension Semantics"
           >
             <VariableIcon class="size-6 opacity-70" />
           </button>
@@ -697,7 +706,7 @@ const helpButtonRef = useTemplateRef('helpButton')
             v-if="hasRankingSlot"
             class="btn btn-square btn-sm"
             @click="isRankingOpened = !isRankingOpened"
-            title="Ranking semantics"
+            title="Ranking Semantics"
           >
             <BarsArrowUpIcon class="size-6 opacity-70" />
           </button>
@@ -749,7 +758,7 @@ const helpButtonRef = useTemplateRef('helpButton')
             >Switch between {{ linkNamesEnumeration }} for new links
           </FloatingHintRight>
           <FloatingHintRight :reference="extensionsButtonRef" :offset-x="64" placement="right-end"
-            >Evaluate semantics
+            >Extension Semantics
           </FloatingHintRight>
           <FloatingHintRight :reference="exportButtonRef" :offset-x="64" placement="right-start"
             >Create exports
