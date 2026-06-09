@@ -24,6 +24,7 @@ export interface ExportStyleOptions {
   attackStyle?: string
   supportStyle?: string
   snapToGrid?: boolean
+  coordinateNormalization?: 'clamp' | 'rank'
 }
 
 export interface ExportConfig<DocumentT> {

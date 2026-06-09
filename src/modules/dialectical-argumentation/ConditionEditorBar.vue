@@ -95,6 +95,9 @@ function onKeydown(e: KeyboardEvent) {
   } else if (e.key === '&') {
     e.preventDefault()
     insertAtCursor(' ∧ ')
+  } else if (e.key === '!') {
+    e.preventDefault()
+    insertAtCursor('¬')
   }
 }
 
