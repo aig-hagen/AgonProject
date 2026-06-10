@@ -30,7 +30,6 @@ import {
   ArrowLongRightIcon,
   BarsArrowUpIcon,
   PhotoIcon,
-  QuestionMarkCircleIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import {
@@ -627,7 +626,7 @@ function doLayout(layout: Layout) {
 const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
 const extensionsButtonRef = useTemplateRef('extensionsButton')
 const exportButtonRef = useTemplateRef('exportButton')
-const helpButtonRef = useTemplateRef('helpButton')
+const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
 </script>
 <template>
   <div class="h-full w-full" ref="container">
@@ -714,6 +713,7 @@ const helpButtonRef = useTemplateRef('helpButton')
           :show-physics="EntryState.ENABLE"
           :physics-enabled="nodePhysicsEnabled"
           @toggle-physics="toggleNodePhysics"
+          @help="isHelpOpened = !isHelpOpened"
         />
 
         <div class="flex flex-1 justify-end flex-col gap-2">
@@ -758,15 +758,7 @@ const helpButtonRef = useTemplateRef('helpButton')
           </button>
         </div>
       </div>
-      <div class="flex flex-1 items-end pointer-events-none">
-          <button
-            ref="helpButton"
-            @click="isHelpOpened = !isHelpOpened"
-            class="btn btn-square btn-sm pointer-events-auto"
-            title="Help"
-          >
-            <QuestionMarkCircleIcon class="size-6 opacity-70" />
-          </button>
+      <div ref="helpAnchor" class="flex flex-1 items-end pointer-events-none">
         <template v-if="!historyState.canUndo && !historyState.canRedo">
           <FloatingHintRight :reference="helpButtonRef" :offset-x="64" placement="right-end"
             ><ul class="list-disc">

@@ -29,6 +29,7 @@ import {
   FolderOpenIcon,
   PhotoIcon,
   PlusCircleIcon,
+  QuestionMarkCircleIcon,
   SparklesIcon,
   Squares2X2Icon,
   VariableIcon,
@@ -70,6 +71,7 @@ const emit = defineEmits<{
   evaluate: []
   generate: []
   togglePhysics: []
+  help: []
 }>()
 
 function onClickLayout(layout: Layout) {
@@ -264,6 +266,10 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
           >
         </li>
       </template>
+      <li class="disabled"><hr class="mt-2 border-base-300" /></li>
+      <li>
+        <a @click="emit('help')"><QuestionMarkCircleIcon class="size-5 opacity-70" />Help</a>
+      </li>
     </ul>
   </div>
 </template>
