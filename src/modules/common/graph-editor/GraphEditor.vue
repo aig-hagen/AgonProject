@@ -309,10 +309,11 @@ function onLinkCreated(
     targetId: publicTargetId,
     type: selectedLinkType.value,
   })
-  const arrowType = selectedLinkType.value === LinkType.SINGLE ? ArrowType.SINGLE : ArrowType.DOUBLE
   void nextTick(() => {
-    graphComponentRef.value!.setColor(ATTACK_COLOR, link.id)
-    graphComponentRef.value!.setLinkArrowType(arrowType, link.id)
+    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? ATTACK_COLOR
+    graphComponentRef.value!.setColor(linkColor, link.id)
+    graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
+    applyLinkDash(link.id, linkConfigs[selectedLinkType.value]?.dashArray)
   })
 }
 
@@ -434,13 +435,20 @@ function toggleNodePhysics() {
 }
 
 function toArrowType(linkType: LinkType): ArrowType {
-  if (linkType === LinkType.SINGLE) {
-    return ArrowType.SINGLE
-  }
-  if (linkType === LinkType.DOUBLE) {
-    return ArrowType.DOUBLE
-  }
+  const override = linkConfigs[linkType]?.arrowType
+  if (override !== undefined) return ArrowType[override]
+  if (linkType === LinkType.SINGLE) return ArrowType.SINGLE
+  if (linkType === LinkType.DOUBLE) return ArrowType.DOUBLE
   throw new Error('Encountered unsupported linkType')
+}
+
+function applyLinkDash(linkId: string, dashArray?: string): void {
+  const el = graphComponentRef.value?.$el?.querySelector(
+    `.graph-controller__link[id$="-link-${linkId}"]`,
+  )
+  if (el instanceof SVGPathElement) {
+    el.style.strokeDasharray = dashArray ?? ''
+  }
 }
 
 function setGraph(state: GraphEditorState, center: boolean): void {
@@ -460,7 +468,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   const links: jsonLink[] = state.links.map((link) => ({
     sourceId: link.sourceId,
     targetId: link.targetId,
-    color: ATTACK_COLOR,
+    color: linkConfigs[link.type]?.color ?? ATTACK_COLOR,
     arrowType: toArrowType(link.type),
   }))
 
@@ -478,6 +486,14 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     idGenerator.forward(importedNode.idImported)
     idMapping.add(importedNode.id, importedNode.idImported)
   }
+
+  void nextTick(() => {
+    for (const link of state.links) {
+      const internalSourceId = idMapping.getOrFail(link.sourceId)
+      const internalTargetId = idMapping.getOrFail(link.targetId)
+      applyLinkDash(`${internalSourceId}-${internalTargetId}`, linkConfigs[link.type]?.dashArray)
+    }
+  })
 
   if (center) {
     const margin = ARGUMENT_RADIUS_IN_PX * 2
@@ -501,7 +517,10 @@ function updateLinkType(linkId: string, linkType: LinkType) {
   const publicTargetId = idMapping.getOrFail(internalTargetId)
   emit('linkChanged', { sourceId: publicSourceId, targetId: publicTargetId, type: linkType })
   const arrowType = toArrowType(linkType)
+  const linkColor = linkConfigs[linkType]?.color ?? ATTACK_COLOR
+  graphComponentRef.value!.setColor(linkColor, linkId)
   graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
+  applyLinkDash(linkId, linkConfigs[linkType]?.dashArray)
 }
 
 function onLabelEdited(
@@ -717,20 +736,20 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
         />
 
         <div class="flex flex-1 justify-end flex-col gap-2">
+          <slot name="toolbar" />
           <div ref="linkSwitchButton" class="join join-vertical mb-8" v-if="enableLinkSwitching">
-            <label
+            <button
               v-for="(linkConfig, linkKey) in linkConfigs"
               :key="linkKey"
-              class="join-item btn btn-toggle btn-square btn-sm"
+              class="join-item btn btn-square btn-sm"
+              :class="{ 'btn-active': selectedLinkType === linkKey }"
               :title="linkConfig!.displayName"
+              @click="selectedLinkType = linkKey"
             >
-              <input v-model="selectedLinkType" :value="linkKey" type="radio" name="arrow" />
-              <ArrowLongRightIcon v-if="linkKey === LinkType.SINGLE" class="size-5 opacity-70" />
-              <ArrowDoubleLongRightIcon
-                v-if="linkKey === LinkType.DOUBLE"
-                class="size-5 opacity-70"
-              />
-            </label>
+              <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5 opacity-70" />
+              <ArrowLongRightIcon v-else-if="linkKey === LinkType.SINGLE" class="size-5 opacity-70" />
+              <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />
+            </button>
           </div>
           <button
             ref="extensionsButton"
@@ -836,33 +855,6 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
     <WindowHelp :link-names="linkNames" v-model:open="isHelpOpened" />
   </div>
 </template>
-<style scoped>
-/**
-Toggle button idea and implementation from https://github.com/saadeghi/daisyui/discussions/4249-
- */
-.btn-toggle {
-  position: relative;
-
-  & > input:is([type='checkbox'], [type='radio']) {
-    display: none;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    max-width: calc(100% - (var(--size) / 2));
-    width: 1rem;
-    height: 0.2rem;
-    background-color: color-mix(in oklab, var(--color-base-content) 30%, #ddd);
-    bottom: calc(var(--size) / 8);
-    border-radius: var(--radius-field);
-  }
-
-  &:has(input:checked)::after {
-    background: var(--color-base-content);
-  }
-}
-</style>
 <style>
 .graph-controller__controls-overview {
   display: none !important;

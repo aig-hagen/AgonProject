@@ -59,11 +59,12 @@ onClickOutside(floating, () => emit('close'), {
     <ul class="dropdown menu rounded-box bg-base-100 shadow-sm/30">
       <li v-for="(config, linkType) in linkConfigs" :key="linkType">
         <a @click="emit('update:arrowType', linkType)"
-          ><ArrowLongRightIcon v-if="linkType === LinkType.SINGLE" class="size-5 opacity-70" />
-          <ArrowDoubleLongRightIcon
-            v-if="linkType === LinkType.DOUBLE"
+          ><component :is="config!.icon" v-if="config!.icon" class="size-5 opacity-70" />
+          <ArrowLongRightIcon
+            v-else-if="linkType === LinkType.SINGLE"
             class="size-5 opacity-70"
-          />{{ config!.displayName }}</a
+          />
+          <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />{{ config!.displayName }}</a
         >
       </li>
     </ul>
