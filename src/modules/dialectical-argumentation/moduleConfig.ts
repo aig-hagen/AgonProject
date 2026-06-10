@@ -19,57 +19,54 @@
 import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
-import { datasets } from '@/modules/abstract-argumentation/examples'
-import GraphEditor from '@/modules/abstract-argumentation/GraphEditor.vue'
-import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import GraphEditor from '@/modules/dialectical-argumentation/GraphEditor.vue'
+import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import {
   canLoadFromObject,
   loadFromString,
   saveAsString,
-} from '@/modules/abstract-argumentation/save/saveFormat'
-import type { ArgumentData } from '@/modules/common/argumentation/model'
+} from '@/modules/dialectical-argumentation/save/saveFormat'
 import { DirectedGraph } from '@/modules/common/graph/graph'
 
-const initialAbstractArgumentation = new AbstractArgumentation<ArgumentData>()
-initialAbstractArgumentation.addArgument(0, {
-  name: 'a',
-  x: 0,
-  y: 0,
-})
-initialAbstractArgumentation.addArgument(1, {
-  name: 'b',
-  x: 0,
-  y: 200,
-})
-initialAbstractArgumentation.addArgument(2, {
-  name: 'c',
-  x: 100,
-  y: 100,
-})
-initialAbstractArgumentation.addAttack(0, 2)
-initialAbstractArgumentation.addAttack(1, 2)
-
+const DIALECTICAL_ARGUMENTATION_V1_TYPE = 'dialectical-argumentation-v1'
 const TYPE_KEY = 'type'
-const ABSTRACT_ARGUMENTATION_V1_TYPE = 'abstract-argumentation-v1'
-export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<ArgumentData>> = {
-  newNamePrefix: 'AF',
-  displayNameSingular: 'Abstract Argumentation',
+
+const initialDialecticalArgumentation = new DialecticalArgumentation<AdfArgumentData>()
+initialDialecticalArgumentation.addArgument(0, { name: 'a', x: 0, y: 0, condition: { type: 'tautology' } })
+initialDialecticalArgumentation.addArgument(1, { name: 'b', x: 0, y: 200, condition: { type: 'contradiction' } })
+initialDialecticalArgumentation.addArgument(2, {
+  name: 'c',
+  x: 150,
+  y: 100,
+  condition: { type: 'disjunction', children: [{ type: 'atom', argumentId: 0 }, { type: 'negation', child: { type: 'atom', argumentId: 1 } }] },
+})
+// Derive links from conditions
+initialDialecticalArgumentation.setCondition(0, initialDialecticalArgumentation.getArgument(0).condition)
+initialDialecticalArgumentation.setCondition(1, initialDialecticalArgumentation.getArgument(1).condition)
+initialDialecticalArgumentation.setCondition(2, initialDialecticalArgumentation.getArgument(2).condition)
+
+export const dialecticalArgumentationModule: ModuleConfig<
+  DialecticalArgumentation<AdfArgumentData>
+> = {
+  newNamePrefix: 'ADF',
+  displayNameSingular: 'Dialectical Argumentation',
   is(model: unknown) {
-    return model instanceof AbstractArgumentation
+    return model instanceof DialecticalArgumentation
   },
-  deserialize(modelSerialized: unknown): AbstractArgumentation<ArgumentData> | undefined {
+  deserialize(
+    modelSerialized: unknown,
+  ): DialecticalArgumentation<AdfArgumentData> | undefined {
     if (typeof modelSerialized !== 'object' || modelSerialized === null) {
       return undefined
     }
-    // @ts-expect-error TS7053: ignore because we deserilize
-    if (modelSerialized[TYPE_KEY] !== ABSTRACT_ARGUMENTATION_V1_TYPE) {
+    // @ts-expect-error TS7053: ignore because we deserialize
+    if (modelSerialized[TYPE_KEY] !== DIALECTICAL_ARGUMENTATION_V1_TYPE) {
       return undefined
     }
-    const content: AbstractArgumentation<ArgumentData> = new AbstractArgumentation(
-      // @ts-expect-error TS7053: ignore because we deserilize
+    const content = new DialecticalArgumentation<AdfArgumentData>(
+      // @ts-expect-error TS7053: intentional private access for deserialization
       new DirectedGraph(modelSerialized['g']['v'], modelSerialized['g']['e']),
     )
-
     return content
   },
   serialize(model: Objectish) {
@@ -77,13 +74,13 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
       return undefined
     }
     return {
-      [TYPE_KEY]: ABSTRACT_ARGUMENTATION_V1_TYPE,
+      [TYPE_KEY]: DIALECTICAL_ARGUMENTATION_V1_TYPE,
       // @ts-expect-error TS2341: intentional private access for serialization
       g: model.g,
     }
   },
-  examples: datasets,
-  initialCotent: initialAbstractArgumentation,
+  examples: [],
+  initialCotent: initialDialecticalArgumentation,
   editorComponent: GraphEditor,
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
@@ -94,5 +91,4 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
   getSaveString(document) {
     return saveAsString(document)
   },
-  generateHref: '/generate',
 }

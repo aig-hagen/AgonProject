@@ -10,10 +10,16 @@ http://:8080 {
 
 	root * ./dist
 
-	@backend path /dung /bipolar
+	@backend path /dung /bipolar /rankings /adf
 	handle @backend {
 		# log_append proxy_target http://localhost:8081
 		reverse_proxy http://localhost:8081
+	}
+
+	@graph-gen path /graph-gen/*
+	handle @graph-gen {
+		uri strip_prefix /graph-gen
+		reverse_proxy http://localhost:8082
 	}
 
 	handle {

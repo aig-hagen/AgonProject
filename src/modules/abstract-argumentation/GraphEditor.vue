@@ -22,7 +22,8 @@ import { computed, shallowRef, watch } from 'vue'
 import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
-import type { ArgumentData } from '@/modules/common/argumentation/model'
+import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
+import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -82,6 +83,7 @@ function transformToEditorState(
       label: data.name,
       x: data.x,
       y: data.y,
+
     }
   })
   const links: GraphEditorStateLink[] = [...argumentation.attacks()].map(([source, target]) => ({
@@ -128,6 +130,17 @@ function onNodeCreated(data: { id: NodeId; label: string; x: number; y: number }
   createNewState((draft) => draft.addArgument(data.id, argumentData))
 }
 
+const nodeWeights = shallowRef<Map<ArgumentId, number>>(new Map())
+
+function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
+  nodeWeights.value = new Map(weights.map(({ id, weight }) => [id, weight]))
+}
+
+function onRankingOpenChange(isOpen: boolean, onIsOpen: (v: boolean) => void) {
+  onIsOpen(isOpen)
+  if (!isOpen) nodeWeights.value = new Map()
+}
+
 function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   createNewState((draft) => {
     draft.getArgument(data.id).name = data.label
@@ -171,6 +184,7 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
+    :node-weights="nodeWeights"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
@@ -191,6 +205,14 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
         @update:open="onIsOpen"
         :export-configs="availableExports"
         @export="emit('export', $event)"
+      />
+    </template>
+    <template #evaluationRanking="{ isOpen, onIsOpen }">
+      <WindowRanking
+        :input="evaluationInput"
+        :open="isOpen"
+        @update:open="(v) => onRankingOpenChange(v, onIsOpen)"
+        @set-weights="onSetWeights"
       />
     </template>
   </GraphEditor>

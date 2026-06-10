@@ -18,6 +18,7 @@ FROM --platform=linux/amd64 caddy:latest AS caddy
 # runtime
 FROM --platform=linux/amd64 eclipse-temurin:25-jre
 WORKDIR /opt/app
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 python3 python3-pip python3-venv && rm -rf /var/lib/apt/lists/*
 # Prepare server for static files and proxying to backend
 RUN mkdir -p /var/www && chown www-data:www-data /var/www
 COPY --from=caddy /usr/bin/caddy caddy
@@ -29,6 +30,11 @@ COPY --chown=www-data:www-data /dist/ dist
 RUN mkdir -p /opt/app/logs && chown www-data:www-data /opt/app/logs
 COPY /deployment/logback.xml logback.xml
 COPY --from=build /build/org-tweetyproject-web/target/web-*.jar web.jar
+# Prepare graph-gen server
+RUN python3 -m venv /opt/graph-gen-venv
+COPY /graph-gen-server/requirements.txt /opt/graph-gen-server/requirements.txt
+RUN /opt/graph-gen-venv/bin/pip install --no-cache-dir -r /opt/graph-gen-server/requirements.txt
+COPY /graph-gen-server/server.py /opt/graph-gen-server/server.py
 COPY --chmod=755 /deployment/wrapper_script.sh wrapper_script.sh
 USER www-data
 ENTRYPOINT ["./wrapper_script.sh"]

@@ -16,28 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { createRouter, createWebHistory } from 'vue-router'
+import * as z from 'zod'
 
-import GenerateView from '@/app/generate/GenerateView.vue'
-import HomeView from '@/app/home/HomeView.vue'
-import ThirdPartyView from '@/app/third-party/ThirdPartyView.vue'
+import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
 
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/',
-      component: HomeView,
-    },
-    {
-      path: '/generate',
-      component: GenerateView,
-    },
-    {
-      path: '/third-party',
-      component: ThirdPartyView,
-    },
-  ],
-})
-
-export default router
+export const FormulaNodeSchema: z.ZodType<FormulaNode> = z.lazy(() =>
+  z.union([
+    z.object({ type: z.literal('tautology') }),
+    z.object({ type: z.literal('contradiction') }),
+    z.object({ type: z.literal('atom'), argumentId: z.number().int().nonnegative() }),
+    z.object({ type: z.literal('negation'), child: FormulaNodeSchema }),
+    z.object({ type: z.literal('conjunction'), children: z.array(FormulaNodeSchema).min(2) }),
+    z.object({ type: z.literal('disjunction'), children: z.array(FormulaNodeSchema).min(2) }),
+  ]),
+)

@@ -28,6 +28,7 @@ import {
 } from '@aig-hagen/graph-component/lib'
 import {
   ArrowLongRightIcon,
+  BarsArrowUpIcon,
   PhotoIcon,
   QuestionMarkCircleIcon,
   VariableIcon,
@@ -36,9 +37,11 @@ import {
   computed,
   nextTick,
   onMounted,
+  onUnmounted,
   ref,
   shallowRef,
   useId,
+  useSlots,
   useTemplateRef,
   watch,
   watchEffect,
@@ -76,10 +79,13 @@ import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
-const { state, linkConfigs, historyState } = defineProps<{
+const { state, linkConfigs, historyState, nodeWeights, allowLinkCreation = true, allowLinkDeletion = true } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
+  nodeWeights?: Map<NodeId, number>
+  allowLinkCreation?: boolean
+  allowLinkDeletion?: boolean
 }>()
 
 const linkNames = computed(() =>
@@ -90,9 +96,13 @@ const linkNamesEnumeration = computed(
     linkNames.value.slice(0, -1).join(', ') + ' and ' + linkNames.value[linkNames.value.length - 1],
 )
 const isExtensionsOpened = ref<boolean>(false)
+const isRankingOpened = ref<boolean>(false)
 const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
 const nodePhysicsEnabled = ref<boolean>(false)
+
+const slots = useSlots()
+const hasRankingSlot = computed(() => !!slots.evaluationRanking)
 
 const enableLinkSwitching = Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
@@ -117,6 +127,7 @@ watch(
 const emit = defineEmits<{
   load: []
   new: []
+  generate: []
   nodeCreated: [
     data: {
       id: NodeId
@@ -362,16 +373,31 @@ onMounted(() => {
       fixedPosition: { x: false, y: false },
       deletable: true,
       labelEditable: true,
-      allowIncomingLinks: true,
-      allowOutgoingLinks: true,
+      allowIncomingLinks: allowLinkCreation,
+      allowOutgoingLinks: allowLinkCreation,
     },
     linkGUIEditability: {
-      deletable: true,
+      deletable: allowLinkDeletion,
       labelEditable: false,
     },
   })
 
   renderNewState(state, true)
+
+  const zoomGroup = containerRef.value?.querySelector(
+    '.graph-controller__graph-canvas > g',
+  ) as SVGGElement | null
+  if (zoomGroup && overlayGroupRef.value) {
+    const syncTransform = () => {
+      const transform = zoomGroup.getAttribute('transform')
+      if (overlayGroupRef.value) {
+        overlayGroupRef.value.setAttribute('transform', transform ?? '')
+      }
+    }
+    syncTransform()
+    zoomObserver = new MutationObserver(syncTransform)
+    zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
+  }
 })
 
 function toggleNodePhysics() {
@@ -504,6 +530,20 @@ const arrowSwitcherTarget = shallowRef<
   | undefined
 >(undefined)
 
+const containerRef = useTemplateRef<HTMLDivElement>('container')
+const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
+const nodesWithWeights = computed(() =>
+  nodeWeights
+    ? state.nodes.filter((n) => nodeWeights.has(n.id))
+    : []
+)
+
+let zoomObserver: MutationObserver | undefined
+
+onUnmounted(() => {
+  zoomObserver?.disconnect()
+})
+
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
 const highlightToShow = computed(() => {
   if (!isExtensionsOpened.value) {
@@ -575,6 +615,13 @@ function doLayout(layout: Layout) {
     })
   }
   emit('nodesMoved', newPositions)
+
+  const margin = ARGUMENT_RADIUS_IN_PX * 2
+  graphComponentRef.value.centerView(
+    { top: margin, right: margin, bottom: margin, left: margin },
+    undefined,
+    1,
+  )
 }
 
 const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
@@ -583,7 +630,7 @@ const exportButtonRef = useTemplateRef('exportButton')
 const helpButtonRef = useTemplateRef('helpButton')
 </script>
 <template>
-  <div class="h-full w-full">
+  <div class="h-full w-full" ref="container">
     <GraphComponent
       @node-created="onNodeCreated"
       @node-deleted="onNodeDeleted"
@@ -595,6 +642,33 @@ const helpButtonRef = useTemplateRef('helpButton')
       :id="graphComponentId"
       ref="graph-component"
     />
+    <svg
+      v-show="nodesWithWeights.length > 0 || !!slots.nodeOverlay"
+      class="absolute inset-0 w-full h-full pointer-events-none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g ref="overlay-group">
+        <g v-for="node in nodesWithWeights" :key="node.id">
+          <circle
+            :cx="node.x + ARGUMENT_RADIUS_IN_PX * 0.7"
+            :cy="node.y - ARGUMENT_RADIUS_IN_PX * 0.7"
+            r="12"
+            fill="white"
+            :stroke="ARGUMENT_COLOR"
+            stroke-width="1.5"
+          />
+          <text
+            :x="node.x + ARGUMENT_RADIUS_IN_PX * 0.7"
+            :y="node.y - ARGUMENT_RADIUS_IN_PX * 0.7"
+            text-anchor="middle"
+            dominant-baseline="central"
+            font-size="8"
+            fill="#333"
+          >{{ nodeWeights!.get(node.id)!.toFixed(2) }}</text>
+        </g>
+        <slot name="nodeOverlay" :nodes="state.nodes" />
+      </g>
+    </svg>
     <div
       class="pointer-events-none w-full opacity-50 absolute inset-0 flex items-center"
       v-if="state.nodes.length === 0"
@@ -615,12 +689,17 @@ const helpButtonRef = useTemplateRef('helpButton')
         <MainMenu
           @new="emit('new')"
           @load="emit('load')"
+          @generate="emit('generate')"
           :show-save="EntryState.ENABLE"
           :layouts-to-show="[
             Layout.TopToBottom,
             Layout.BottomToTop,
             Layout.LeftToRight,
             Layout.RightToLeft,
+            Layout.ForceDirected,
+            Layout.Neato,
+            Layout.Circular,
+            Layout.Radial,
           ]"
           @save="emit('save')"
           :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"
@@ -657,9 +736,17 @@ const helpButtonRef = useTemplateRef('helpButton')
             ref="extensionsButton"
             class="btn btn-square btn-sm"
             @click="isExtensionsOpened = !isExtensionsOpened"
-            title="Evaluation"
+            title="Extension Semantics"
           >
             <VariableIcon class="size-6 opacity-70" />
+          </button>
+          <button
+            v-if="hasRankingSlot"
+            class="btn btn-square btn-sm"
+            @click="isRankingOpened = !isRankingOpened"
+            title="Ranking Semantics"
+          >
+            <BarsArrowUpIcon class="size-6 opacity-70" />
           </button>
           <button
             ref="exportButton"
@@ -709,7 +796,7 @@ const helpButtonRef = useTemplateRef('helpButton')
             >Switch between {{ linkNamesEnumeration }} for new links
           </FloatingHintRight>
           <FloatingHintRight :reference="extensionsButtonRef" :offset-x="64" placement="right-end"
-            >Evaluate semantics
+            >Extension Semantics
           </FloatingHintRight>
           <FloatingHintRight :reference="exportButtonRef" :offset-x="64" placement="right-start"
             >Create exports
@@ -753,6 +840,7 @@ const helpButtonRef = useTemplateRef('helpButton')
       @highlight="extensionHighlightRef = $event"
     ></slot>
     <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
+    <slot name="evaluationRanking" :isOpen="isRankingOpened" @isOpen="isRankingOpened = $event"></slot>
     <WindowHelp :link-names="linkNames" v-model:open="isHelpOpened" />
   </div>
 </template>

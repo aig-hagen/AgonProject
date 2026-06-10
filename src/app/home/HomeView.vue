@@ -20,6 +20,7 @@
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
 import { computed, shallowRef, useTemplateRef, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/home/EditorTabs.vue'
@@ -50,6 +51,8 @@ const { db, modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<DocumentT>[]
 }>()
+
+const router = useRouter()
 
 const { notifications, addSuccessNotification, addErrorNotification } = useNotifications()
 
@@ -333,6 +336,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @open="createDocumentWithContent"
           @load="loadFile"
           @new="createAndSelectBlankDocument"
+          @generate="router.push('/generate')"
           :show-load-hint="true"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
@@ -341,6 +345,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @open="overrideWithContent"
           @load="loadFile"
           @new="createAndSelectBlankDocument"
+          @generate="router.push('/generate')"
           :show-load-hint="false"
         ></BlankDocumentCanvas>
         <component
@@ -352,6 +357,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @change="updateDocument"
           @new="createAndSelectBlankDocument"
           @load="loadFile"
+          @generate="router.push('/generate')"
           :state="loadedDocument.state"
           :history-state="historyState"
           @keydown="hanleEditorShortcut"

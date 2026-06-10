@@ -86,6 +86,10 @@ export class DirectedGraph<NodeDataT, EdgeDataT> {
     )
   }
 
+  hasNode(nodeId: NodeId): boolean {
+    return this.v.has(nodeId)
+  }
+
   getNode(nodeId: NodeId): NodeDataT {
     if (this.v.has(nodeId)) {
       return this.v.get(nodeId)!

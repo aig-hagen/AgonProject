@@ -6,6 +6,8 @@
 !/deployment/logback.xml
 !/deployment/wrapper_script.sh
 !/dist
+!/graph-gen-server/requirements.txt
+!/graph-gen-server/server.py
 !/third-party/TweetyProjectTeam/TweetyProject/pom.xml
 !/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/src/**
 !/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/pom.xml

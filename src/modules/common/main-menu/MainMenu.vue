@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import {
   ArrowDownTrayIcon,
+  ArrowsUpDownIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   Bars3Icon,
@@ -29,6 +30,7 @@ import {
   PhotoIcon,
   PlusCircleIcon,
   SparklesIcon,
+  Squares2X2Icon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
@@ -66,6 +68,7 @@ const emit = defineEmits<{
   redo: []
   export: []
   evaluate: []
+  generate: []
   togglePhysics: []
 }>()
 
@@ -77,13 +80,30 @@ function onClickLayout(layout: Layout) {
   }
 }
 
-const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
-  const layoutDatasToShow: Record<Layout, LayoutData> = Object.create(null)
+const directedLayouts = new Set<Layout>([
+  Layout.TopToBottom,
+  Layout.BottomToTop,
+  Layout.LeftToRight,
+  Layout.RightToLeft,
+])
+
+const directedLayoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
+  const result: Record<Layout, LayoutData> = Object.create(null)
   for (const layout of layoutsToShow) {
-    layoutDatasToShow[layout] = layoutDatas[layout]
+    if (directedLayouts.has(layout)) result[layout] = layoutDatas[layout]
   }
-  return layoutDatasToShow
+  return result
 })
+
+const otherLayoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
+  const result: Record<Layout, LayoutData> = Object.create(null)
+  for (const layout of layoutsToShow) {
+    if (!directedLayouts.has(layout)) result[layout] = layoutDatas[layout]
+  }
+  return result
+})
+
+const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.value).length > 0)
 </script>
 <template>
   <div class="dropdown pointer-events-auto">
@@ -96,6 +116,9 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
       </li>
       <li>
         <a @click="emit('load')"><FolderOpenIcon class="size-5 opacity-70" />Open...</a>
+      </li>
+      <li>
+        <a @click="emit('generate')"><Squares2X2Icon class="size-5 opacity-70" />Generate...</a>
       </li>
       <li v-if="showSave !== EntryState.HIDE">
         <a
@@ -119,7 +142,29 @@ const layoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
             </a>
             <div tabindex="-1" class="dropdown-content p-0">
               <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
-                <li v-for="(layoutData, layoutType) in layoutDatasToShow" :key="layoutType">
+                <li v-if="hasDirectedLayouts">
+                  <div class="dropdown dropdown-hover dropdown-right">
+                    <a class="flex flex-row justify-between">
+                      <div>
+                        <ArrowsUpDownIcon class="inline size-5 opacity-70 mr-2" />
+                        <span>Directed</span>
+                      </div>
+                      <ChevronRightIcon class="size-5 opacity-40" />
+                    </a>
+                    <div tabindex="-1" class="dropdown-content p-0">
+                      <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
+                        <li v-for="(layoutData, layoutType) in directedLayoutDatasToShow" :key="layoutType">
+                          <a @click="onClickLayout(layoutType)"
+                            ><component :is="layoutData.icon" class="size-5 opacity-70" />{{
+                              layoutData.name
+                            }}</a
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+                <li v-for="(layoutData, layoutType) in otherLayoutDatasToShow" :key="layoutType">
                   <a @click="onClickLayout(layoutType)"
                     ><component :is="layoutData.icon" class="size-5 opacity-70" />{{
                       layoutData.name
