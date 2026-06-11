@@ -69,15 +69,9 @@ type GeneratedFramework =
   | BipoloarArgumentation<ArgumentData>
   | IncompleteArgumentation<IafArgumentData>
 
-const FRAMEWORK_TYPE_NAMES: Record<string, string> = {
-  abstract: 'Abstract Argumentation Framework',
-  bipolar: 'Bipolar Argumentation Framework',
-  incomplete: 'Incomplete Argumentation Framework',
-}
-
 // Both props are passed through attr fallthrough from App (same pattern as HomeView).
 // modules is declared to prevent Vue from warning about unrecognized attrs.
-const { db } = defineProps<{
+const { db, modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<Objectish>[]
 }>()
@@ -109,8 +103,14 @@ const frameworkTypeId = computed<string>(() => {
   return 'abstract'
 })
 
+// Resolve the matching module config via generateHref so names/abbreviations
+// come from a single source of truth (ModuleConfig.displayNameSingular / newNamePrefix).
+const activeModule = computed(
+  () => modules.find((m) => m.generateHref === `/generate?type=${frameworkTypeId.value}`) ?? null,
+)
+
 const pageTitle = computed(
-  () => FRAMEWORK_TYPE_NAMES[frameworkTypeId.value] ?? 'Argumentation Framework',
+  () => (activeModule.value?.displayNameSingular ?? 'Argumentation') + ' Framework',
 )
 
 // --- Algorithm list & framework type params ---
@@ -308,14 +308,11 @@ const tooManyEdgesForEditor = computed(() => totalEdges.value > MAX_EDGES_FOR_ED
 async function openInEditor() {
   const fw = generated.value
   if (fw === null) return
+  const prefix = activeModule.value?.newNamePrefix ?? 'AF'
   if (fw instanceof AbstractArgumentation) {
     layout(fw, Layout.ForceDirected)
-    await createDocument(getNextName('AF'), fw as Objectish)
-  } else if (fw instanceof BipoloarArgumentation) {
-    await createDocument(getNextName('BAF'), fw as Objectish)
-  } else if (fw instanceof IncompleteArgumentation) {
-    await createDocument(getNextName('IAF'), fw as Objectish)
   }
+  await createDocument(getNextName(prefix), fw as Objectish)
   await router.push('/')
 }
 
@@ -327,19 +324,20 @@ const incompleteTgfExport = incompleteExports.find((e) => e.name === 'TGF')!
 function downloadTGF() {
   const fw = generated.value
   if (fw === null) return
+  const prefix = activeModule.value?.newNamePrefix ?? 'AF'
   if (fw instanceof BipoloarArgumentation) {
-    saveToFile(bipolarTgfExport.export(fw).text, 'BAF', 'tgf')
+    saveToFile(bipolarTgfExport.export(fw).text, prefix, 'tgf')
   } else if (fw instanceof IncompleteArgumentation) {
-    saveToFile(incompleteTgfExport.export(fw).text, 'IAF', 'tgf')
+    saveToFile(incompleteTgfExport.export(fw).text, prefix, 'tgf')
   } else if (fw instanceof AbstractArgumentation) {
-    saveToFile(abstractTgfExport.export(fw).text, 'AF', 'tgf')
+    saveToFile(abstractTgfExport.export(fw).text, prefix, 'tgf')
   }
 }
 
 function downloadICCMA() {
   const fw = generated.value
   if (!(fw instanceof AbstractArgumentation)) return
-  saveToFile(abstractIccmaExport.export(fw).text, 'AF', 'af')
+  saveToFile(abstractIccmaExport.export(fw).text, activeModule.value?.newNamePrefix ?? 'AF', 'af')
 }
 
 function formatAlgorithmName(id: string): string {

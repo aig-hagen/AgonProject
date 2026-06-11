@@ -459,7 +459,7 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
     ),
     "bipolar": FrameworkTypeConfig(
         id="bipolar",
-        description="Bipolar argumentation framework: edges are either attacks or supports.",
+        description="Edges between arguments are either attacks or supports.",
         params_schema=[
             ParamSchema(
                 "supportPerc",
@@ -475,7 +475,7 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
     ),
     "incomplete": FrameworkTypeConfig(
         id="incomplete",
-        description="Incomplete argumentation framework: existence of arguments and attacks can be uncertain.",
+        description="Existence of arguments and attacks can be uncertain.",
         params_schema=[
             ParamSchema(
                 "uncertainArgPerc",
