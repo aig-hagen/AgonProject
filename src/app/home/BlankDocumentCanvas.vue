@@ -17,13 +17,10 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="DocumentT">
-import { useTemplateRef } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
-import FloatingHintBottom from '@/modules/common/hints/FloatingHintBottom.vue'
-import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 
 export interface ExampleGroup<DocumentT> {
   newNamePrefix: string
@@ -33,16 +30,12 @@ export interface ExampleGroup<DocumentT> {
   initialCotent: DocumentT
   generateHref?: string
 }
-const { exampleGroups, showLoadHint } = defineProps<{
+const { exampleGroups } = defineProps<{
   exampleGroups: ExampleGroup<DocumentT>[]
-  showLoadHint: boolean
 }>()
 
 const emit = defineEmits<{
   open: [content: DocumentT, newNamePrefix: string]
-  new: []
-  load: []
-  generate: []
 }>()
 
 function openExample(example: Example<DocumentT>, newNamePrefix: string) {
@@ -55,7 +48,6 @@ function openContent(content: DocumentT, newNamePrefix: string) {
   emit('open', content, newNamePrefix)
 }
 
-const mainMenuRef = useTemplateRef('mainMenu')
 </script>
 <template>
   <div class="h-full w-full flex items-center justify-center">
@@ -115,17 +107,5 @@ const mainMenuRef = useTemplateRef('mainMenu')
         </div>
       </div>
     </div>
-    <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-start pointer-events-none">
-      <div ref="mainMenu">
-        <MainMenu @new="emit('new')" @load="emit('load')" @generate="emit('generate')" />
-      </div>
-    </div>
-    <FloatingHintBottom
-      v-if="showLoadHint"
-      :reference="mainMenuRef"
-      :offset-y="64"
-      placement="bottom-start"
-      >Load saved argumentations
-    </FloatingHintBottom>
   </div>
 </template>

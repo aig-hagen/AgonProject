@@ -29,7 +29,7 @@ import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
 
-const TIMEOUT_IN_SECONDS = 300
+const TIMEOUT_IN_SECONDS = 10
 const TIMEOUT_UNIT_SECONDS = 's'
 
 export const KEY_DEFAULT_SEMANTIC = 'b-cf'

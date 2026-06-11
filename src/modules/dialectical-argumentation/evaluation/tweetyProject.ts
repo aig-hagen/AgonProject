@@ -27,7 +27,7 @@ import { type FormulaNode } from '@/modules/dialectical-argumentation/condition/
 import { type AdfArgumentData, type DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const ENDPOINT_ADF = '/adf'
-const TIMEOUT_IN_SECONDS = 300
+const TIMEOUT_IN_SECONDS = 10
 const TIMEOUT_UNIT_SECONDS = 's'
 
 // ── Semantics ─────────────────────────────────────────────────────────────────

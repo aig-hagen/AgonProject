@@ -35,7 +35,7 @@ export {
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
 
 const ENDPOINT_IAF = '/iaf'
-const TIMEOUT_IN_SECONDS = 300
+const TIMEOUT_IN_SECONDS = 10
 const TIMEOUT_UNIT_SECONDS = 's'
 
 type IafCommand =

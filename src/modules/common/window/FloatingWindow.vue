@@ -22,7 +22,7 @@ import '@interactjs/actions/drag'
 import '@interactjs/actions/resize'
 import '@interactjs/modifiers'
 
-import { MinusIcon } from '@heroicons/vue/24/solid'
+import { XMarkIcon } from '@heroicons/vue/24/solid'
 import interact from '@interactjs/interact'
 import { useEventListener } from '@vueuse/core'
 import { nextTick, onMounted, useTemplateRef, watchEffect } from 'vue'
@@ -175,7 +175,7 @@ watchEffect(async () => {
     >
       <div>{{ title }}</div>
       <button @click="open = false" class="btn btn-square btn-xs btn-ghost">
-        <MinusIcon class="size-4"></MinusIcon>
+        <XMarkIcon class="size-4"></XMarkIcon>
       </button>
     </div>
     <div ref="content" class="floating-window-content bg-base-100 overflow-x-auto flex-1">

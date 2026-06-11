@@ -64,6 +64,7 @@ const { selectedDocumentId, selectDocument } = useSelectedDocumentId(documents)
 const { documentId, documentState, updateDocument, documentModule, documentLoading } =
   useDocumentContent<DocumentT>(db, modules, selectedDocumentId)
 
+
 const loadedDocuments = shallowRef<
   {
     id: number
@@ -334,19 +335,11 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           v-if="selectedDocumentId === undefined"
           :example-groups="modules"
           @open="createDocumentWithContent"
-          @load="loadFile"
-          @new="createAndSelectBlankDocument"
-          @generate="router.push('/generate')"
-          :show-load-hint="true"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
           v-if="!documentLoading && documentState === undefined"
           :example-groups="modules"
           @open="overrideWithContent"
-          @load="loadFile"
-          @new="createAndSelectBlankDocument"
-          @generate="router.push('/generate')"
-          :show-load-hint="false"
         ></BlankDocumentCanvas>
         <component
           tabindex="0"
@@ -357,7 +350,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @change="updateDocument"
           @new="createAndSelectBlankDocument"
           @load="loadFile"
-          @generate="router.push('/generate')"
+          @generate="router.push(documentModule?.generateHref ?? '/generate')"
           :state="loadedDocument.state"
           :history-state="historyState"
           @keydown="hanleEditorShortcut"
