@@ -22,7 +22,7 @@ import z from 'zod'
 
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
-import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
+import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
 import { IdMapping, type UUID } from '@/modules/common/ids'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
@@ -38,9 +38,18 @@ const ENDPOINT_IAF = '/iaf'
 const TIMEOUT_IN_SECONDS = 300
 const TIMEOUT_UNIT_SECONDS = 's'
 
-type IafCommand = 'get_models_pos' | 'get_models_nec'
+type IafCommand =
+  | 'get_models_pos'
+  | 'get_models_nec'
+  | 'get_credulous_pos'
+  | 'get_credulous_nec'
+  | 'get_skeptical_pos'
+  | 'get_skeptical_nec'
 
-interface GetModelsRequestBody {
+export type IafType = 'pos' | 'nec'
+export type IafMode = 'enumerate' | 'credulous' | 'skeptical'
+
+interface IafRequestBody {
   email: string
   cmd: IafCommand
   nr_of_arguments: number
@@ -52,20 +61,20 @@ interface GetModelsRequestBody {
   unit_timeout: typeof TIMEOUT_UNIT_SECONDS
 }
 
-const GetModelsResponseSchema = z.object({
+const IafResponseSchema = z.object({
   time: z.number(),
   answer: z.string(),
 })
 
-async function fetchModels(
+function buildRequestBody(
   cmd: IafCommand,
   numberOfArguments: number,
   uncertainArgumentIds: number[],
   definiteAttacks: number[][],
   uncertainAttacks: number[][],
   semantics: string,
-): Promise<{ evaluationDurationInSeconds: number; extensions: number[][] }> {
-  const body: GetModelsRequestBody = {
+): IafRequestBody {
+  return {
     email: USER_ID,
     cmd,
     nr_of_arguments: numberOfArguments,
@@ -76,10 +85,52 @@ async function fetchModels(
     timeout: TIMEOUT_IN_SECONDS,
     unit_timeout: TIMEOUT_UNIT_SECONDS,
   }
-  const response = await fetchTyped(ENDPOINT_IAF, body, GetModelsResponseSchema)
+}
+
+async function fetchModels(
+  type: IafType,
+  numberOfArguments: number,
+  uncertainArgumentIds: number[],
+  definiteAttacks: number[][],
+  uncertainAttacks: number[][],
+  semantics: string,
+): Promise<{ evaluationDurationInSeconds: number; extensions: number[][] }> {
+  const body = buildRequestBody(
+    `get_models_${type}`,
+    numberOfArguments,
+    uncertainArgumentIds,
+    definiteAttacks,
+    uncertainAttacks,
+    semantics,
+  )
+  const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
   return {
     evaluationDurationInSeconds: response.time,
     extensions: parserListOfSets(response.answer),
+  }
+}
+
+async function fetchAcceptability(
+  mode: 'credulous' | 'skeptical',
+  type: IafType,
+  numberOfArguments: number,
+  uncertainArgumentIds: number[],
+  definiteAttacks: number[][],
+  uncertainAttacks: number[][],
+  semantics: string,
+): Promise<{ evaluationDurationInSeconds: number; arguments: number[] }> {
+  const body = buildRequestBody(
+    `get_${mode}_${type}`,
+    numberOfArguments,
+    uncertainArgumentIds,
+    definiteAttacks,
+    uncertainAttacks,
+    semantics,
+  )
+  const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
+  return {
+    evaluationDurationInSeconds: response.time,
+    arguments: parserSet(response.answer),
   }
 }
 
@@ -94,7 +145,8 @@ export type Extension = { id: ArgumentId; name: string }[]
 export function useExtensionEvaluationQuery(
   inputRef: MaybeRef<Input<IncompleteArgumentation<IafArgumentData>>>,
   semanticsRef: MaybeRef<string>,
-  modeRef: MaybeRef<'pos' | 'nec'>,
+  typeRef: MaybeRef<IafType>,
+  modeRef: MaybeRef<IafMode>,
   enabled: MaybeRef<boolean>,
 ) {
   const argumentData = computed(() => {
@@ -122,17 +174,32 @@ export function useExtensionEvaluationQuery(
     return { numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, idMapping }
   })
 
-  const queryResult = useQuery({
-    queryKey: ['iaf_get_models', semanticsRef, modeRef, argumentData] as const,
-    queryFn: ({ queryKey: [_key, semantics, mode, { numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks }] }) =>
-      fetchModels(
-        `get_models_${mode}` as IafCommand,
-        numberOfArguments,
-        uncertainArgumentIds,
-        definiteAttacks,
-        uncertainAttacks,
-        semantics,
-      ),
+  type EvaluationQueryResult =
+    | { evaluationDurationInSeconds: number; extensions: number[][] }
+    | { evaluationDurationInSeconds: number; arguments: number[] }
+
+  const isModelResult = (
+    result: EvaluationQueryResult,
+  ): result is { evaluationDurationInSeconds: number; extensions: number[][] } =>
+    'extensions' in result
+
+  const queryKey = computed(() => {
+    const mode = unref(modeRef)
+    const type = unref(typeRef)
+    return [`iaf_${mode}_${type}`, semanticsRef, typeRef, modeRef, argumentData] as const
+  })
+
+  type QueryKey = [string, string, IafType, IafMode, { numberOfArguments: number; uncertainArgumentIds: number[]; definiteAttacks: number[][]; uncertainAttacks: number[][] }]
+
+  const queryResult = useQuery<EvaluationQueryResult>({
+    queryKey,
+    queryFn: ({ queryKey }) => {
+      const [, semantics, type, mode, { numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks }] = queryKey as QueryKey
+      if (mode === 'credulous' || mode === 'skeptical') {
+        return fetchAcceptability(mode, type, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+      }
+      return fetchModels(type, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+    },
     enabled,
   })
 
@@ -144,22 +211,31 @@ export function useExtensionEvaluationQuery(
     const content = input.content
     const argumentIdAndData = [...content.arguments()]
 
-    const extensions: Extension[] = originalData.extensions.map((extension) =>
-      extension.map((serverArgumentId) => {
-        // Tweety expects argument IDs to start with 1 and go up to n,
-        // where n is the number of arguments.
-        const idAndData = argumentIdAndData[serverArgumentId - 1]
-        if (idAndData === undefined) {
-          throw new Error('Server returned invalid argument.')
-        }
-        const [id, { name }] = idAndData
-        return { id, name }
-      }),
+    function resolveArgument(serverArgumentId: number) {
+      const idAndData = argumentIdAndData[serverArgumentId - 1]
+      if (idAndData === undefined) throw new Error('Server returned invalid argument.')
+      const [id, { name }] = idAndData
+      return { id, name }
+    }
+
+    if (isModelResult(originalData)) {
+      const extensions: Extension[] = originalData.extensions.map((extension) =>
+        extension.map((serverArgumentId) => resolveArgument(serverArgumentId)),
+      )
+      return {
+        stateId: input.stateId,
+        evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+        extensions,
+      }
+    }
+
+    const accArguments: Extension = originalData.arguments.map((serverArgumentId) =>
+      resolveArgument(serverArgumentId),
     )
     return {
       stateId: input.stateId,
       evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
-      extensions,
+      extensions: [accArguments],
     }
   })
 

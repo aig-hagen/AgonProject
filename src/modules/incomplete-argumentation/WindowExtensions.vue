@@ -27,6 +27,8 @@ import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import {
   type Extension,
+  type IafMode,
+  type IafType,
   KEY_DEFAULT_SEMANTIC,
   KNOWN_SEMANTIC_GROUPS,
   type Semantic,
@@ -50,13 +52,15 @@ const defaultSemantic = allSemantics.find((s) => s.key === KEY_DEFAULT_SEMANTIC)
 if (defaultSemantic === undefined) throw new Error('Default semantic does not exist.')
 
 const selectedSemantic = shallowRef<Semantic>(defaultSemantic)
-const selectedMode = ref<'pos' | 'nec'>('pos')
+const selectedType = ref<IafType>('pos')
+const selectedMode = ref<IafMode>('enumerate')
 const evaluateContiously = ref(false)
 const enabled = computed(() => evaluateContiously.value && open.value)
 
 const { data, status, refetch, isLoading, isPending, isError } = useExtensionEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
+  selectedType,
   selectedMode,
   enabled,
 )
@@ -65,17 +69,36 @@ const userCanTriggerFetch = computed(
   () => open.value && !evaluateContiously.value && status.value !== 'success',
 )
 
+const resultsHeader = computed(() =>
+  selectedMode.value === 'enumerate' ? 'Extensions' : 'Acceptable Arguments',
+)
+const selectionHint = computed(() =>
+  selectedMode.value === 'enumerate'
+    ? 'Select extension to highlight.'
+    : 'Select acceptable argument to highlight.',
+)
+
 function formatExtension(extension: Extension) {
   return extension.map((e) => e.name).sort().join(', ')
 }
 
 const dataExtensionsFormatedAndSorted = computed(() => {
   if (data.value === undefined) return undefined
-  const formated = data.value.extensions.map((extension) => {
-    const nameFormated = formatExtension(extension)
-    const extensionIdsSorted = extension.map((a) => a.id).sort()
-    return { key: JSON.stringify(extensionIdsSorted), extension, nameFormated }
-  })
+  const extensions = data.value.extensions
+  const formated =
+    selectedMode.value === 'enumerate'
+      ? extensions.map((extension) => {
+          const nameFormated = formatExtension(extension)
+          const extensionIdsSorted = extension.map((a) => a.id).sort()
+          return { key: JSON.stringify(extensionIdsSorted), extension, nameFormated }
+        })
+      : extensions.flatMap((extension) =>
+          extension.map((argument) => ({
+            key: String(argument.id),
+            extension: [argument],
+            nameFormated: argument.name,
+          })),
+        )
   formated.sort((a, b) => a.nameFormated.localeCompare(b.nameFormated))
   return {
     stateId: data.value.stateId,
@@ -88,7 +111,7 @@ const resultItems = computed(
   () =>
     dataExtensionsFormatedAndSorted.value?.formatedAndSorted.map((e) => ({
       key: e.key,
-      label: `{${e.nameFormated}}`,
+      label: selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
     })) ?? [],
 )
 
@@ -123,10 +146,18 @@ watchEffect(() => {
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
           <label class="select select-sm w-54">
-            <span class="label min-w-24">Command</span>
+            <span class="label min-w-24">Type</span>
+            <select v-model="selectedType">
+              <option value="pos">Possible</option>
+              <option value="nec">Necessary</option>
+            </select>
+          </label>
+          <label class="select select-sm w-54">
+            <span class="label min-w-24">Mode</span>
             <select v-model="selectedMode">
-              <option value="pos">Possible Models</option>
-              <option value="nec">Necessary Models</option>
+              <option value="enumerate">Enumerate</option>
+              <option value="credulous">Credulous</option>
+              <option value="skeptical">Skeptical</option>
             </select>
           </label>
           <label class="select select-sm w-54">
@@ -184,7 +215,7 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">Results</legend>
+        <legend class="fieldset-legend">{{ resultsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>
         </div>
@@ -195,8 +226,8 @@ watchEffect(() => {
           <EvaluationResultGrid
             v-model:selected="selectedExtension"
             :items="resultItems"
-            empty-message="No extensions exist."
-            selection-hint="Select extension to highlight."
+            :empty-message="selectedMode === 'enumerate' ? 'No extensions exist.' : 'No acceptable arguments exist.'"
+            :selection-hint="selectionHint"
             :evaluation-duration-in-seconds="dataExtensionsFormatedAndSorted.evaluationDurationInSeconds"
           />
         </template>

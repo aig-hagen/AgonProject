@@ -397,6 +397,35 @@ onMounted(() => {
     syncTransform()
     zoomObserver = new MutationObserver(syncTransform)
     zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
+
+    const nodeIdPrefix = `${graphComponentId}-node-`
+    dragObserver = new MutationObserver((mutations) => {
+      const updated = new Map(liveNodePositions.value)
+      let changed = false
+      for (const mutation of mutations) {
+        if (mutation.attributeName !== 'transform') continue
+        const container = mutation.target as Element
+        if (!container.classList.contains('graph-controller__node-container')) continue
+        const circle = container.querySelector(`[id^="${nodeIdPrefix}"]`)
+        if (!circle) continue
+        const domId = circle.getAttribute('id')
+        if (!domId) continue
+        const internalId = parseInt(domId.slice(nodeIdPrefix.length))
+        if (!Number.isFinite(internalId) || !idMapping.has(internalId)) continue
+        const publicId = idMapping.getOrFail(internalId)
+        const transform = (container as SVGGElement).getAttribute('transform')
+        if (!transform) continue
+        const match = /translate\(([^,]+),([^)]+)\)/.exec(transform)
+        if (!match) continue
+        const x = parseFloat(match[1]!)
+        const y = parseFloat(match[2]!)
+        if (!Number.isFinite(x) || !Number.isFinite(y)) continue
+        updated.set(publicId, { x, y })
+        changed = true
+      }
+      if (changed) liveNodePositions.value = updated
+    })
+    dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
   }
 })
 
@@ -557,9 +586,24 @@ const nodesWithWeights = computed(() =>
 )
 
 let zoomObserver: MutationObserver | undefined
+let dragObserver: MutationObserver | undefined
+
+// Live node positions updated on every D3 tick during drag, so the overlay
+// doesn't lag behind until nodes-moved fires on mouseup.
+const liveNodePositions = shallowRef<Map<NodeId, { x: number; y: number }>>(new Map())
+
+const overlayNodes = computed(() => {
+  const live = liveNodePositions.value
+  if (live.size === 0) return state.nodes
+  return state.nodes.map((node) => {
+    const livePos = live.get(node.id)
+    return livePos !== undefined ? { ...node, ...livePos } : node
+  })
+})
 
 onUnmounted(() => {
   zoomObserver?.disconnect()
+  dragObserver?.disconnect()
 })
 
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
@@ -684,7 +728,7 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
             fill="#333"
           >{{ nodeWeights!.get(node.id)!.toFixed(2) }}</text>
         </g>
-        <slot name="nodeOverlay" :nodes="state.nodes" />
+        <slot name="nodeOverlay" :nodes="overlayNodes" />
       </g>
     </svg>
     <div
