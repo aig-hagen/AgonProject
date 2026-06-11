@@ -66,43 +66,46 @@ function openContent(content: DocumentT, newNamePrefix: string) {
           v-for="(exampleGroup, index) in exampleGroups"
           :key="index"
         >
-          <div class="card-body">
+          <div class="card-body flex flex-col">
             <h3 class="card-title">{{ exampleGroup.displayNameSingular }}</h3>
             <p v-if="exampleGroup.description" class="text-sm text-base-content/60">{{ exampleGroup.description }}</p>
-            <button
-              class="btn btn-sm btn-soft btn-neutral w-fit"
-              @click="openContent(exampleGroup.initialCotent, exampleGroup.newNamePrefix)"
-            >
-              Create new
-            </button>
-            <template v-if="exampleGroup.examples.length !== 0">
-              <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
-                Open Example
-              </h4>
-              <ul class="menu menu-sm p-0 -mx-2">
-                <li v-for="(example, index) in exampleGroup.examples" :key="index">
-                  <span
-                    v-if="example.description"
-                    class="tooltip tooltip-right"
-                    :data-tip="example.description"
-                  >
-                    <a @click="openExample(example, example.name)">{{ example.name }}</a>
-                  </span>
-                  <a v-else @click="openExample(example, example.name)">{{ example.name }}</a>
-                </li>
-              </ul>
-            </template>
-            <template v-if="exampleGroup.generateHref !== undefined">
-              <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
-                Generate
-              </h4>
+            <div class="flex-1">
+              <template v-if="exampleGroup.examples.length !== 0">
+                <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
+                  Open Example
+                </h4>
+                <ul class="menu menu-sm p-0 -mx-2">
+                  <li v-for="(example, index) in exampleGroup.examples" :key="index">
+                    <span
+                      v-if="example.description"
+                      class="tooltip tooltip-right"
+                      :data-tip="example.description"
+                    >
+                      <a @click="openExample(example, example.name)">{{ example.name }}</a>
+                    </span>
+                    <a v-else @click="openExample(example, example.name)">{{ example.name }}</a>
+                  </li>
+                </ul>
+              </template>
+            </div>
+            <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
+              New
+            </h4>
+            <div class="flex flex-row gap-2">
+              <button
+                class="btn btn-sm btn-soft btn-neutral w-fit"
+                @click="openContent(exampleGroup.initialCotent, exampleGroup.newNamePrefix)"
+              >
+                Create new
+              </button>
               <RouterLink
+                v-if="exampleGroup.generateHref !== undefined"
                 :to="exampleGroup.generateHref"
                 class="btn btn-sm btn-soft btn-neutral w-fit"
               >
                 Generate random {{ exampleGroup.newNamePrefix }}
               </RouterLink>
-            </template>
+            </div>
           </div>
         </div>
       </div>
