@@ -20,6 +20,7 @@ import { latexExportCommonConfig } from '@/modules/common/argumentation/export'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import { renderSvg } from '@/modules/common/export/renderSvg'
+import { IdMapping } from '@/modules/common/ids'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 
 type Certainty = 'definite' | 'uncertain' | 'none'
@@ -132,6 +133,36 @@ const exportLatexIncompleteArgumentation: ExportConfig<IncompleteArgumentation<I
   },
 }
 
+const exportTGFIncompleteArgumentation: ExportConfig<IncompleteArgumentation<IafArgumentData>> = {
+  name: 'TGF',
+  export(document) {
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<number, number>()
+    const uncertainArgumentIds = new Set<number>()
+
+    for (const [id, data] of document.arguments()) {
+      idMapping.add(id, ++numberOfArguments)
+      if (data.uncertain) uncertainArgumentIds.add(id)
+    }
+
+    let text = ''
+    for (const [id] of document.arguments()) {
+      const numberId = idMapping.getOrFail(id)
+      text += uncertainArgumentIds.has(id) ? `${numberId} u\r\n` : `${numberId}\r\n`
+    }
+    text += '#\r\n'
+    for (const [sourceId, targetId] of document.definiteAttacks()) {
+      text += `${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)}\r\n`
+    }
+    for (const [sourceId, targetId] of document.uncertainAttacks()) {
+      text += `${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)} u\r\n`
+    }
+    text = text.trimEnd()
+    return { text }
+  },
+}
+
 export const availableExports: ExportConfig<IncompleteArgumentation<IafArgumentData>>[] = [
   exportLatexIncompleteArgumentation,
+  exportTGFIncompleteArgumentation,
 ]

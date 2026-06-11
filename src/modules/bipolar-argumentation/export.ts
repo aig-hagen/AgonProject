@@ -21,8 +21,9 @@ import {
   exportLatexArgumentationCommon,
   latexExportCommonConfig,
 } from '@/modules/common/argumentation/export'
-import type { ArgumentData } from '@/modules/common/argumentation/model'
+import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
+import { IdMapping } from '@/modules/common/ids'
 
 const exportLatexBipolarArgumentation: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
   ...latexExportCommonConfig(),
@@ -34,4 +35,29 @@ const exportLatexBipolarArgumentation: ExportConfig<BipoloarArgumentation<Argume
   },
 }
 
-export const availableExports = [exportLatexBipolarArgumentation]
+const exportTGFBipolarArgumentation: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
+  name: 'TGF',
+  export(document) {
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<ArgumentId, number>()
+    for (const [id] of document.arguments()) {
+      idMapping.add(id, ++numberOfArguments)
+    }
+
+    let text = ''
+    for (const [id] of document.arguments()) {
+      text += `${idMapping.getOrFail(id)}\r\n`
+    }
+    text += '#\r\n'
+    for (const [sourceId, targetId] of document.attacks()) {
+      text += `${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)}\r\n`
+    }
+    for (const [sourceId, targetId] of document.supports()) {
+      text += `${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)} s\r\n`
+    }
+    text = text.trimEnd()
+    return { text }
+  },
+}
+
+export const availableExports = [exportLatexBipolarArgumentation, exportTGFBipolarArgumentation]
