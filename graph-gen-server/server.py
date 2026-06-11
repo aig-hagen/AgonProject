@@ -29,6 +29,8 @@ Binary convention:
 
 from __future__ import annotations
 
+import asyncio
+import concurrent.futures
 import json
 import os
 import random
@@ -271,7 +273,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="erdos-renyi",
         description="Erdős–Rényi random graph G(n, p): each possible attack exists independently with probability p",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("p", "float", "Attack probability per ordered pair", required=True, default=0.3, min=0.0, max=1.0, step=0.01),
             ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
@@ -282,7 +284,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="barabasi-albert",
         description="Barabási–Albert preferential attachment: new nodes attach preferentially to high-degree nodes",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=2, max=200, step=1),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=2, max=100, step=1),
             ParamSchema("m", "int", "Number of attacks to attach from each new node", required=True, default=2, min=1, max=50, step=1),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
@@ -292,7 +294,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="scale-free",
         description="Directed scale-free graph: power-law in/out-degree distribution controlled by α, β, γ (must sum to 1)",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("alpha", "float", "Prob. of adding edge from new node to existing (α + β + γ = 1)", required=False, default=0.41),
             ParamSchema("beta", "float", "Prob. of adding edge between two existing nodes (α + β + γ = 1)", required=False, default=0.54),
             ParamSchema("gamma", "float", "Prob. of adding edge from existing node to new (α + β + γ = 1)", required=False, default=0.05),
@@ -305,7 +307,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="random-k-out",
         description="Random k-out graph: each argument attacks exactly k others chosen with preferential attachment",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("k", "int", "Number of out-attacks per argument", required=True, default=3, min=1, max=50, step=1),
             ParamSchema("alpha", "float", "Preferential attachment concentration (higher = more uniform)", required=True, default=1.0),
             ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
@@ -317,7 +319,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="watts-strogatz",
         description="Watts–Strogatz small-world graph: ring lattice with random edge rewiring; edges are randomly oriented",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("k", "int", "Each argument is initially connected to k nearest neighbours", required=True, default=4, min=2, max=50, step=1),
             ParamSchema("p", "float", "Probability of rewiring each edge", required=True, default=0.1, min=0.0, max=1.0, step=0.01),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
@@ -328,7 +330,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="random-regular",
         description="Random d-regular graph: every argument has exactly degree d; edges are randomly oriented",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments (n × d must be even)", required=True, default=20, min=2, max=200, step=1),
+            ParamSchema("n", "int", "Number of arguments (n × d must be even)", required=True, default=10, min=2, max=100, step=1),
             ParamSchema("d", "int", "Degree of each argument", required=True, default=3, min=1, max=50, step=1),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
@@ -338,7 +340,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         id="powerlaw-cluster",
         description="Holme–Kim power-law cluster graph: Barabási–Albert with additional triangle-closing step for higher clustering",
         params_schema=[
-            ParamSchema("n", "int", "Number of arguments", required=True, default=20, min=1, max=200, step=1),
+            ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("m", "int", "Number of edges to attach from each new node", required=True, default=2, min=1, max=50, step=1),
             ParamSchema("p", "float", "Probability of triangle formation after each edge addition", required=True, default=0.5, min=0.0, max=1.0, step=0.01),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
@@ -399,6 +401,7 @@ class AlgorithmInfo(BaseModel):
 # ---------------------------------------------------------------------------
 
 app = FastAPI(title="Graph generation server")
+_executor = concurrent.futures.ThreadPoolExecutor()
 
 
 @app.get("/algorithms", response_model=list[AlgorithmInfo])
@@ -439,9 +442,15 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
         )
 
     if algo.handler is not None:
+        loop = asyncio.get_running_loop()
         t0 = time.monotonic()
         try:
-            output = algo.handler(req.params)
+            output = await asyncio.wait_for(
+                loop.run_in_executor(_executor, algo.handler, req.params),
+                timeout=req.timeout,
+            )
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=408, detail=f"Algorithm timed out after {req.timeout} s")
         except (KeyError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc))
         elapsed = time.monotonic() - t0

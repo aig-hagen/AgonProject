@@ -1,0 +1,13 @@
+{
+  "apiVersion": "argumentation-framework/v1",
+  "arguments": {
+    "0": { "name": "a", "x": 0, "y": 0 },
+    "1": { "name": "b", "x": 200, "y": 0 },
+    "2": { "name": "c", "x": 400, "y": 0 }
+  },
+  "attacks": [
+    [0, 1], [1, 0],
+    [1, 2],
+    [2, 2]
+  ]
+}

@@ -16,38 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { layout } from '@/modules/abstract-argumentation/layout'
-import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import { loadFromString } from '@/modules/abstract-argumentation/save/saveFormat'
+import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import { loadFromString } from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
+import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 
 import mealWineJson from './examples/meal_wine.json'
-import uniqueStableJson from './examples/unique_stable.json'
 
-const exampleSources: {
-  name: string
-  description: string
-  layoutType: Layout
-  json: unknown
-}[] = [
-  {
-    name: 'meal_wine',
-    description:
-      'A 5-argument framework about choosing a meal (Pasta, Fish, Meat) and wine (White, Red) with mutual attacks between competing options.',
-    layoutType: Layout.Circular,
-    json: mealWineJson,
-  },
-  {
-    name: 'unique_stable',
-    description: 'A minimal 3-argument framework (a, b, c) that has exactly one stable extension.',
-    layoutType: Layout.RightToLeft,
-    json: uniqueStableJson,
-  },
-]
+const exampleSources: { name: string; description: string; layoutType: Layout; json: unknown }[] =
+  [
+    {
+      name: 'meal_wine',
+      description:
+        'A bipolar version of the meal/wine example: meals attack each other, and each meal supports its matching wine.',
+      layoutType: Layout.Circular,
+      json: mealWineJson,
+    },
+  ]
 
-export const datasets: Example<AbstractArgumentation<ArgumentData>>[] = exampleSources.map(
+export const datasets: Example<BipoloarArgumentation<ArgumentData>>[] = exampleSources.map(
   ({ name, description, layoutType, json }) => ({
     name,
     description,
@@ -56,6 +45,15 @@ export const datasets: Example<AbstractArgumentation<ArgumentData>>[] = exampleS
       if (!result.success) throw new Error(`Failed to load example "${name}"`)
       return result.data
     },
-    applyLayout: (af) => layout(af, layoutType),
+    applyLayout: (af) => {
+      const nodes = [...af.arguments()].map(([id]) => id)
+      const links = [...af.attacks(), ...af.supports()]
+      const positions = getNodePositions(nodes, links, layoutType)
+      for (const [id, data] of af.arguments()) {
+        const pos = positions.get(id)!
+        data.x = pos.x
+        data.y = pos.y
+      }
+    },
   }),
 )

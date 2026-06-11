@@ -1,0 +1,54 @@
+{
+  "apiVersion": "dialectical-argumentation-framework/v1",
+  "arguments": {
+    "0": {
+      "name": "Pasta",
+      "x": 200, "y": 0,
+      "condition": {
+        "type": "conjunction",
+        "children": [
+          { "type": "negation", "child": { "type": "atom", "argumentId": 1 } },
+          { "type": "negation", "child": { "type": "atom", "argumentId": 2 } }
+        ]
+      }
+    },
+    "1": {
+      "name": "Fish",
+      "x": 0, "y": 200,
+      "condition": {
+        "type": "conjunction",
+        "children": [
+          { "type": "negation", "child": { "type": "atom", "argumentId": 0 } },
+          { "type": "negation", "child": { "type": "atom", "argumentId": 2 } }
+        ]
+      }
+    },
+    "2": {
+      "name": "Meat",
+      "x": 400, "y": 200,
+      "condition": {
+        "type": "conjunction",
+        "children": [
+          { "type": "negation", "child": { "type": "atom", "argumentId": 0 } },
+          { "type": "negation", "child": { "type": "atom", "argumentId": 1 } }
+        ]
+      }
+    },
+    "3": {
+      "name": "White",
+      "x": 100, "y": 400,
+      "condition": {
+        "type": "disjunction",
+        "children": [
+          { "type": "atom", "argumentId": 1 },
+          { "type": "atom", "argumentId": 0 }
+        ]
+      }
+    },
+    "4": {
+      "name": "Red",
+      "x": 350, "y": 400,
+      "condition": { "type": "atom", "argumentId": 2 }
+    }
+  }
+}

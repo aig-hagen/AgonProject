@@ -19,6 +19,7 @@
 import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
+import { datasets } from '@/modules/bipolar-argumentation/examples'
 import GraphEditor from '@/modules/bipolar-argumentation/GraphEditor.vue'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import {
@@ -83,7 +84,7 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
       g: model.g,
     }
   },
-  examples: [],
+  examples: datasets,
   initialCotent: initialBipolarArgumentation,
   editorComponent: GraphEditor,
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {

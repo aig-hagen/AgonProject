@@ -27,6 +27,7 @@ import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { availableExports } from '@/modules/abstract-argumentation/export'
 import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import { abstractArgumentationModule } from '@/modules/abstract-argumentation/moduleConfig'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { DocumentsDB } from '@/modules/common/documents/db'
@@ -70,6 +71,8 @@ function getNextName(prefix: string): string {
   }
 }
 
+const GENERATE_TIMEOUT_MS = 5_000
+
 // --- Algorithm list ---
 const algorithms = ref<AlgorithmInfo[]>([])
 const loadError = ref<string | null>(null)
@@ -81,7 +84,7 @@ const selectedAlgorithm = computed(
 
 onMounted(async () => {
   try {
-    const res = await fetch('/graph-gen/algorithms')
+    const res = await fetch('/graph-gen/algorithms', { signal: AbortSignal.timeout(5_000) })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = (await res.json()) as AlgorithmInfo[]
     algorithms.value = data.filter((a) => a.available)
@@ -142,7 +145,8 @@ async function generate() {
     const response = await fetch('/graph-gen/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ algorithm: selectedAlgorithmId.value, params }),
+      body: JSON.stringify({ algorithm: selectedAlgorithmId.value, params, timeout: GENERATE_TIMEOUT_MS / 1000 }),
+      signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
     })
     if (!response.ok) {
       const detail = await response.json().catch(() => ({}))
@@ -155,26 +159,43 @@ async function generate() {
     }
 
     const af = new AbstractArgumentation<ArgumentData>()
-    for (let i = 1; i <= data.nr_of_arguments; i++) {
-      af.addArgument(i - 1, { name: String(i), x: 0, y: 0 })
+    const n = data.nr_of_arguments
+    const radius = Math.max(200, n * 25)
+    for (let i = 0; i < n; i++) {
+      const angle = (2 * Math.PI * i) / n
+      af.addArgument(i, {
+        name: String(i + 1),
+        x: radius + radius * Math.cos(angle),
+        y: radius + radius * Math.sin(angle),
+      })
     }
     for (const [src, tgt] of data.attacks) {
       af.addAttack(src - 1, tgt - 1)
     }
-    layout(af)
 
     generated.value = af
     stats.value = { nArgs: data.nr_of_arguments, nAttacks: data.attacks.length }
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Generation failed'
+    error.value =
+      e instanceof DOMException && e.name === 'TimeoutError'
+        ? `Generation timed out after ${GENERATE_TIMEOUT_MS / 1000} s`
+        : e instanceof Error
+          ? e.message
+          : 'Generation failed'
   } finally {
     isLoading.value = false
   }
 }
 
+const MAX_ATTACKS_FOR_EDITOR = 100
+const tooManyAttacksForEditor = computed(
+  () => stats.value !== null && stats.value.nAttacks > MAX_ATTACKS_FOR_EDITOR,
+)
+
 async function openInEditor() {
   const af = generated.value
   if (af === null) return
+  layout(af, Layout.ForceDirected)
   await createDocument(getNextName('AF'), af)
   await router.push('/')
 }
@@ -392,7 +413,16 @@ function formatParamValue(p: ParamSchema): string {
             }}.
           </p>
           <div class="flex flex-wrap gap-2">
-            <button class="btn btn-sm btn-primary" @click="openInEditor">Open in Editor</button>
+            <span
+              class="tooltip tooltip-top"
+              :data-tip="tooManyAttacksForEditor ? `Too many attacks to open in editor (maximum is ${MAX_ATTACKS_FOR_EDITOR})` : undefined"
+            >
+              <button
+                class="btn btn-sm btn-primary"
+                :disabled="tooManyAttacksForEditor"
+                @click="openInEditor"
+              >Open in Editor</button>
+            </span>
             <button class="btn btn-sm btn-soft btn-neutral" @click="downloadICCMA">
               Download ICCMA
             </button>

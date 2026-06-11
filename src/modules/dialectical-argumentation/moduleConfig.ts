@@ -20,6 +20,7 @@ import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { datasets } from '@/modules/dialectical-argumentation/examples'
 import GraphEditor from '@/modules/dialectical-argumentation/GraphEditor.vue'
 import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import {
@@ -79,7 +80,7 @@ export const dialecticalArgumentationModule: ModuleConfig<
       g: model.g,
     }
   },
-  examples: [],
+  examples: datasets,
   initialCotent: initialDialecticalArgumentation,
   editorComponent: GraphEditor,
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {

@@ -21,10 +21,13 @@ import { type ArgumentData } from '@/modules/common/argumentation/model'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 
-export function layout(argumentation: AbstractArgumentation<ArgumentData>) {
+export function layout(
+  argumentation: AbstractArgumentation<ArgumentData>,
+  layoutType: Layout = Layout.BottomToTop,
+) {
   const nodes = [...argumentation.arguments()].map(([id]) => id)
   const links = [...argumentation.attacks()]
-  const nodePositions = getNodePositions(nodes, links, Layout.BottomToTop)
+  const nodePositions = getNodePositions(nodes, links, layoutType)
   for (const [argumentId, argumentData] of argumentation.arguments()) {
     const newPosition = nodePositions.get(argumentId)!
     argumentData.x = newPosition.x

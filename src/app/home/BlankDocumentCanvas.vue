@@ -46,7 +46,9 @@ const emit = defineEmits<{
 }>()
 
 function openExample(example: Example<DocumentT>, newNamePrefix: string) {
-  emit('open', example.load(), newNamePrefix)
+  const content = example.load()
+  example.applyLayout?.(content)
+  emit('open', content, newNamePrefix)
 }
 
 function openContent(content: DocumentT, newNamePrefix: string) {
@@ -61,7 +63,7 @@ const mainMenuRef = useTemplateRef('mainMenu')
       <h2 class="text-4xl font-bold mb-2">
         Argumentation Toolbox
         <div class="text-lg font-normal text-base-content/70">
-          Create and Inspect Argumentation Frameworks
+          Create, Analyse and Visualise Different Approaches to Formal Argumentation
         </div>
       </h2>
       <HelpLinks />
@@ -87,7 +89,14 @@ const mainMenuRef = useTemplateRef('mainMenu')
               </h4>
               <ul class="menu menu-sm p-0 -mx-2">
                 <li v-for="(example, index) in exampleGroup.examples" :key="index">
-                  <a @click="openExample(example, example.name)">{{ example.name }}</a>
+                  <span
+                    v-if="example.description"
+                    class="tooltip tooltip-right"
+                    :data-tip="example.description"
+                  >
+                    <a @click="openExample(example, example.name)">{{ example.name }}</a>
+                  </span>
+                  <a v-else @click="openExample(example, example.name)">{{ example.name }}</a>
                 </li>
               </ul>
             </template>

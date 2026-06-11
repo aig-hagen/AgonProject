@@ -28,7 +28,7 @@ import type { DocumentsDB } from '@/modules/common/documents/db'
 import { loadDocumentState } from '@/modules/common/documents/useDocuments'
 import FloatingHintBottom from '@/modules/common/hints/FloatingHintBottom.vue'
 
-const PLACEHOLDER = 'new argumentation'
+const PLACEHOLDER = 'new'
 
 const { active, documentId, value, db, modules, showRenameHint } = defineProps<{
   active: boolean
