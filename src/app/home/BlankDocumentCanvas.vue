@@ -28,6 +28,7 @@ import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 export interface ExampleGroup<DocumentT> {
   newNamePrefix: string
   displayNameSingular: string
+  description?: string
   examples: Example<DocumentT>[]
   initialCotent: DocumentT
   generateHref?: string
@@ -65,14 +66,15 @@ const mainMenuRef = useTemplateRef('mainMenu')
       </h2>
       <HelpLinks />
       <div class="divider"></div>
-      <div class="flex flex-row flex-wrap gap-4">
+      <div class="grid grid-cols-3 gap-4">
         <div
-          class="card bg-base-200 shadow-sm flex-1 min-w-48"
+          class="card bg-base-200 shadow-sm"
           v-for="(exampleGroup, index) in exampleGroups"
           :key="index"
         >
           <div class="card-body">
             <h3 class="card-title">{{ exampleGroup.displayNameSingular }}</h3>
+            <p v-if="exampleGroup.description" class="text-sm text-base-content/60">{{ exampleGroup.description }}</p>
             <button
               class="btn btn-sm btn-soft btn-neutral w-fit"
               @click="openContent(exampleGroup.initialCotent, exampleGroup.newNamePrefix)"

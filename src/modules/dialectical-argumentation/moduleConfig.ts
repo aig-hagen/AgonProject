@@ -19,6 +19,7 @@
 import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
+import { DirectedGraph } from '@/modules/common/graph/graph'
 import GraphEditor from '@/modules/dialectical-argumentation/GraphEditor.vue'
 import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import {
@@ -26,7 +27,6 @@ import {
   loadFromString,
   saveAsString,
 } from '@/modules/dialectical-argumentation/save/saveFormat'
-import { DirectedGraph } from '@/modules/common/graph/graph'
 
 const DIALECTICAL_ARGUMENTATION_V1_TYPE = 'dialectical-argumentation-v1'
 const TYPE_KEY = 'type'
@@ -91,4 +91,5 @@ export const dialecticalArgumentationModule: ModuleConfig<
   getSaveString(document) {
     return saveAsString(document)
   },
+  description: 'Relations between arguments are modelled via propositional acceptance conditions.',
 }

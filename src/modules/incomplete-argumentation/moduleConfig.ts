@@ -76,4 +76,5 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
     getSaveString(document) {
       return saveAsString(document)
     },
+    description: 'Distinguish between certain and uncertain arguments and attacks to represent incomplete information.',
   }

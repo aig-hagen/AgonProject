@@ -29,12 +29,13 @@ import { abstractArgumentationModule } from '@/modules/abstract-argumentation/mo
 import { bipoloarArgumentationModule } from '@/modules/bipolar-argumentation/moduleConfig'
 import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
+import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
 import { openDocumentsDB } from '@/modules/common/documents/db'
 
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)
 
-const modules = [abstractArgumentationModule, bipoloarArgumentationModule, dialecticalArgumentationModule, incompleteArgumentationModule] as const
+const modules = [abstractArgumentationModule, bipoloarArgumentationModule, dialecticalArgumentationModule, incompleteArgumentationModule, probabilisticArgumentationModule] as const
 
 const app = createApp(App, {
   db: markRaw(db),

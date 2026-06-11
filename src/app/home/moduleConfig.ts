@@ -88,4 +88,8 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * Optional route href shown as a "Generate" link in the welcome screen.
    */
   generateHref?: string
+  /**
+   * Brief description of this argumentation type shown on the welcome screen.
+   */
+  description?: string
 }

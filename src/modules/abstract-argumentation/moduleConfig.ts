@@ -95,4 +95,5 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
     return saveAsString(document)
   },
   generateHref: '/generate',
+  description: 'The foundational model for the formal representation of argumentation via arguments and directed attacks.',
 }
