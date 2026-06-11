@@ -21,18 +21,24 @@ import { ArrowLeftIcon, BoltIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
 import { computed, onMounted, reactive, ref, shallowRef, watch } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
-import { availableExports } from '@/modules/abstract-argumentation/export'
+import { availableExports as abstractExports } from '@/modules/abstract-argumentation/export'
 import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import { Layout } from '@/modules/common/main-menu/layouting'
 import { abstractArgumentationModule } from '@/modules/abstract-argumentation/moduleConfig'
+import { availableExports as bipolarExports } from '@/modules/bipolar-argumentation/export'
+import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import { bipoloarArgumentationModule } from '@/modules/bipolar-argumentation/moduleConfig'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import { useDocumentMetadata } from '@/modules/common/documents/useDocuments'
 import { saveToFile } from '@/modules/common/export/saveFile'
+import { Layout } from '@/modules/common/main-menu/layouting'
+import { availableExports as incompleteExports } from '@/modules/incomplete-argumentation/export'
+import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 
 interface ParamSchema {
   name: string
@@ -52,6 +58,23 @@ interface AlgorithmInfo {
   available: boolean
 }
 
+interface FrameworkTypeInfo {
+  id: string
+  description: string
+  params: ParamSchema[]
+}
+
+type GeneratedFramework =
+  | AbstractArgumentation<ArgumentData>
+  | BipoloarArgumentation<ArgumentData>
+  | IncompleteArgumentation<IafArgumentData>
+
+const FRAMEWORK_TYPE_NAMES: Record<string, string> = {
+  abstract: 'Abstract Argumentation Framework',
+  bipolar: 'Bipolar Argumentation Framework',
+  incomplete: 'Incomplete Argumentation Framework',
+}
+
 // Both props are passed through attr fallthrough from App (same pattern as HomeView).
 // modules is declared to prevent Vue from warning about unrecognized attrs.
 const { db } = defineProps<{
@@ -59,8 +82,14 @@ const { db } = defineProps<{
   modules: ModuleConfig<Objectish>[]
 }>()
 
+const route = useRoute()
 const router = useRouter()
-const { documents, createDocument } = useDocumentMetadata(db, [abstractArgumentationModule])
+
+const { documents, createDocument } = useDocumentMetadata(db, [
+  abstractArgumentationModule,
+  bipoloarArgumentationModule,
+  incompleteArgumentationModule,
+] as ModuleConfig<Objectish>[])
 
 function getNextName(prefix: string): string {
   const allNames = new Set(documents.value.map((d) => d.name))
@@ -73,8 +102,20 @@ function getNextName(prefix: string): string {
 
 const GENERATE_TIMEOUT_MS = 5_000
 
-// --- Algorithm list ---
+// --- Framework type from URL ---
+const frameworkTypeId = computed<string>(() => {
+  const t = route.query.type
+  if (t === 'bipolar' || t === 'incomplete') return t
+  return 'abstract'
+})
+
+const pageTitle = computed(
+  () => FRAMEWORK_TYPE_NAMES[frameworkTypeId.value] ?? 'Argumentation Framework',
+)
+
+// --- Algorithm list & framework type params ---
 const algorithms = ref<AlgorithmInfo[]>([])
+const frameworkTypes = ref<FrameworkTypeInfo[]>([])
 const loadError = ref<string | null>(null)
 const selectedAlgorithmId = ref<string>('')
 
@@ -82,22 +123,31 @@ const selectedAlgorithm = computed(
   () => algorithms.value.find((a) => a.id === selectedAlgorithmId.value) ?? null,
 )
 
+const selectedFrameworkType = computed(
+  () => frameworkTypes.value.find((ft) => ft.id === frameworkTypeId.value) ?? null,
+)
+
 onMounted(async () => {
   try {
-    const res = await fetch('/graph-gen/algorithms', { signal: AbortSignal.timeout(5_000) })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = (await res.json()) as AlgorithmInfo[]
-    algorithms.value = data.filter((a) => a.available)
+    const [algoRes, ftRes] = await Promise.all([
+      fetch('/graph-gen/algorithms', { signal: AbortSignal.timeout(5_000) }),
+      fetch('/graph-gen/framework-types', { signal: AbortSignal.timeout(5_000) }),
+    ])
+    if (!algoRes.ok) throw new Error(`HTTP ${algoRes.status}`)
+    if (!ftRes.ok) throw new Error(`HTTP ${ftRes.status}`)
+
+    const algoData = (await algoRes.json()) as AlgorithmInfo[]
+    algorithms.value = algoData.filter((a) => a.available)
     const first = algorithms.value[0]
-    if (first !== undefined) {
-      selectedAlgorithmId.value = first.id
-    }
+    if (first !== undefined) selectedAlgorithmId.value = first.id
+
+    frameworkTypes.value = (await ftRes.json()) as FrameworkTypeInfo[]
   } catch (e) {
     loadError.value = e instanceof Error ? e.message : 'Failed to load algorithms'
   }
 })
 
-// --- Parameters ---
+// --- Algorithm parameters ---
 const paramValues = reactive<Record<string, unknown>>({})
 const seedEnabled = ref(false)
 const seedValue = ref(42)
@@ -126,11 +176,35 @@ watch(selectedAlgorithm, (algo) => {
   seedEnabled.value = false
 })
 
-// --- State ---
+// --- Type-specific parameters ---
+const typeParamValues = reactive<Record<string, unknown>>({})
+
+watch(selectedFrameworkType, (ft) => {
+  for (const key of Object.keys(typeParamValues)) delete typeParamValues[key]
+  if (!ft) return
+  for (const p of ft.params) {
+    typeParamValues[p.name] =
+      p.default !== null && p.default !== undefined
+        ? p.default
+        : p.type === 'bool'
+          ? false
+          : p.type === 'string'
+            ? ''
+            : 0
+  }
+})
+
+// --- Generation state ---
 const isLoading = ref(false)
 const error = ref<string | null>(null)
-const generated = shallowRef<AbstractArgumentation<ArgumentData> | null>(null)
-const stats = ref<{ nArgs: number; nAttacks: number } | null>(null)
+const generated = shallowRef<GeneratedFramework | null>(null)
+const stats = ref<{
+  nArgs: number
+  nAttacks: number
+  nSupports?: number
+  nUncertainArgs?: number
+  nUncertainAttacks?: number
+} | null>(null)
 
 async function generate() {
   isLoading.value = true
@@ -138,14 +212,19 @@ async function generate() {
   generated.value = null
   stats.value = null
 
-  const params: Record<string, unknown> = { ...paramValues }
+  const params: Record<string, unknown> = { ...paramValues, ...typeParamValues }
   if (seedEnabled.value) params.seed = seedValue.value
 
   try {
     const response = await fetch('/graph-gen/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ algorithm: selectedAlgorithmId.value, params, timeout: GENERATE_TIMEOUT_MS / 1000 }),
+      body: JSON.stringify({
+        algorithm: selectedAlgorithmId.value,
+        params,
+        framework_type: frameworkTypeId.value,
+        timeout: GENERATE_TIMEOUT_MS / 1000,
+      }),
       signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
     })
     if (!response.ok) {
@@ -154,27 +233,55 @@ async function generate() {
     }
 
     const data = (await response.json()) as {
+      framework_type: string
       nr_of_arguments: number
       attacks: [number, number][]
+      supports: [number, number][]
+      uncertain_arguments: number[]
+      uncertain_attacks: [number, number][]
     }
 
-    const af = new AbstractArgumentation<ArgumentData>()
     const n = data.nr_of_arguments
     const radius = Math.max(200, n * 25)
-    for (let i = 0; i < n; i++) {
+
+    function circularPos(i: number) {
       const angle = (2 * Math.PI * i) / n
-      af.addArgument(i, {
-        name: String(i + 1),
-        x: radius + radius * Math.cos(angle),
-        y: radius + radius * Math.sin(angle),
-      })
-    }
-    for (const [src, tgt] of data.attacks) {
-      af.addAttack(src - 1, tgt - 1)
+      return { x: radius + radius * Math.cos(angle), y: radius + radius * Math.sin(angle) }
     }
 
-    generated.value = af
-    stats.value = { nArgs: data.nr_of_arguments, nAttacks: data.attacks.length }
+    if (data.framework_type === 'bipolar') {
+      const baf = new BipoloarArgumentation<ArgumentData>()
+      for (let i = 0; i < n; i++) baf.addArgument(i, { name: String(i + 1), ...circularPos(i) })
+      for (const [src, tgt] of data.attacks) baf.addAttack(src - 1, tgt - 1)
+      for (const [src, tgt] of data.supports) baf.addSupport(src - 1, tgt - 1)
+      generated.value = baf
+      stats.value = { nArgs: n, nAttacks: data.attacks.length, nSupports: data.supports.length }
+    } else if (data.framework_type === 'incomplete') {
+      const iaf = new IncompleteArgumentation<IafArgumentData>()
+      const uncertainArgSet = new Set(data.uncertain_arguments)
+      for (let i = 0; i < n; i++) {
+        iaf.addArgument(i, {
+          name: String(i + 1),
+          ...circularPos(i),
+          uncertain: uncertainArgSet.has(i + 1),
+        })
+      }
+      for (const [src, tgt] of data.attacks) iaf.addDefiniteAttack(src - 1, tgt - 1)
+      for (const [src, tgt] of data.uncertain_attacks) iaf.addUncertainAttack(src - 1, tgt - 1)
+      generated.value = iaf
+      stats.value = {
+        nArgs: n,
+        nAttacks: data.attacks.length,
+        nUncertainArgs: data.uncertain_arguments.length,
+        nUncertainAttacks: data.uncertain_attacks.length,
+      }
+    } else {
+      const af = new AbstractArgumentation<ArgumentData>()
+      for (let i = 0; i < n; i++) af.addArgument(i, { name: String(i + 1), ...circularPos(i) })
+      for (const [src, tgt] of data.attacks) af.addAttack(src - 1, tgt - 1)
+      generated.value = af
+      stats.value = { nArgs: n, nAttacks: data.attacks.length }
+    }
   } catch (e) {
     error.value =
       e instanceof DOMException && e.name === 'TimeoutError'
@@ -187,32 +294,52 @@ async function generate() {
   }
 }
 
-const MAX_ATTACKS_FOR_EDITOR = 100
-const tooManyAttacksForEditor = computed(
-  () => stats.value !== null && stats.value.nAttacks > MAX_ATTACKS_FOR_EDITOR,
-)
+const MAX_EDGES_FOR_EDITOR = 100
+const totalEdges = computed(() => {
+  if (stats.value === null) return 0
+  return (
+    stats.value.nAttacks +
+    (stats.value.nSupports ?? 0) +
+    (stats.value.nUncertainAttacks ?? 0)
+  )
+})
+const tooManyEdgesForEditor = computed(() => totalEdges.value > MAX_EDGES_FOR_EDITOR)
 
 async function openInEditor() {
-  const af = generated.value
-  if (af === null) return
-  layout(af, Layout.ForceDirected)
-  await createDocument(getNextName('AF'), af)
+  const fw = generated.value
+  if (fw === null) return
+  if (fw instanceof AbstractArgumentation) {
+    layout(fw, Layout.ForceDirected)
+    await createDocument(getNextName('AF'), fw as Objectish)
+  } else if (fw instanceof BipoloarArgumentation) {
+    await createDocument(getNextName('BAF'), fw as Objectish)
+  } else if (fw instanceof IncompleteArgumentation) {
+    await createDocument(getNextName('IAF'), fw as Objectish)
+  }
   await router.push('/')
 }
 
-const iccmaExport = availableExports.find((e) => e.name === 'ICCMA')!
-const tgfExport = availableExports.find((e) => e.name === 'TGF')!
-
-function downloadICCMA() {
-  const af = generated.value
-  if (af === null) return
-  saveToFile(iccmaExport.export(af).text, 'AF', 'af')
-}
+const abstractTgfExport = abstractExports.find((e) => e.name === 'TGF')!
+const abstractIccmaExport = abstractExports.find((e) => e.name === 'ICCMA')!
+const bipolarTgfExport = bipolarExports.find((e) => e.name === 'TGF')!
+const incompleteTgfExport = incompleteExports.find((e) => e.name === 'TGF')!
 
 function downloadTGF() {
-  const af = generated.value
-  if (af === null) return
-  saveToFile(tgfExport.export(af).text, 'AF', 'tgf')
+  const fw = generated.value
+  if (fw === null) return
+  if (fw instanceof BipoloarArgumentation) {
+    saveToFile(bipolarTgfExport.export(fw).text, 'BAF', 'tgf')
+  } else if (fw instanceof IncompleteArgumentation) {
+    saveToFile(incompleteTgfExport.export(fw).text, 'IAF', 'tgf')
+  } else if (fw instanceof AbstractArgumentation) {
+    saveToFile(abstractTgfExport.export(fw).text, 'AF', 'tgf')
+  }
+}
+
+function downloadICCMA() {
+  const fw = generated.value
+  if (!(fw instanceof AbstractArgumentation)) return
+  saveToFile(abstractIccmaExport.export(fw).text, 'AF', 'af')
 }
 
 function formatAlgorithmName(id: string): string {
@@ -229,8 +356,8 @@ function formatParamLabel(name: string): string {
     .trim()
 }
 
-function formatParamValue(p: ParamSchema): string {
-  const val = paramValues[p.name]
+function formatParamValue(p: ParamSchema, values: Record<string, unknown>): string {
+  const val = values[p.name]
   if (typeof val !== 'number' || isNaN(val)) return String(val ?? '')
   if (p.type === 'float') {
     const decimals = p.step != null ? Math.max(0, -Math.floor(Math.log10(p.step))) : 2
@@ -250,9 +377,9 @@ function formatParamValue(p: ParamSchema): string {
         </RouterLink>
       </div>
 
-      <h1 class="text-2xl font-bold mb-1">Generate Argumentation Framework</h1>
-      <p class="text-base-content/60 mb-6 text-sm">
-        Randomly generate an abstract argumentation framework.
+      <h1 class="text-2xl font-bold mb-1">Generate {{ pageTitle }}</h1>
+      <p v-if="selectedFrameworkType" class="text-base-content/60 mb-6 text-sm">
+        {{ selectedFrameworkType.description }}
       </p>
 
       <!-- Load error -->
@@ -275,6 +402,7 @@ function formatParamValue(p: ParamSchema): string {
 
       <div v-else class="card bg-base-200 shadow-sm">
         <div class="card-body gap-5">
+
           <!-- Algorithm selector -->
           <div>
             <label class="text-sm font-medium block mb-1">Algorithm</label>
@@ -288,9 +416,8 @@ function formatParamValue(p: ParamSchema): string {
             </p>
           </div>
 
-          <!-- Dynamic parameters -->
+          <!-- Dynamic algorithm parameters -->
           <template v-for="p in nonSeedParams" :key="p.name">
-            <!-- Bool: toggle -->
             <label v-if="p.type === 'bool'" class="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -303,7 +430,6 @@ function formatParamValue(p: ParamSchema): string {
               </span>
             </label>
 
-            <!-- String: text input -->
             <div v-else-if="p.type === 'string'">
               <div class="flex justify-between mb-1">
                 <span
@@ -320,14 +446,13 @@ function formatParamValue(p: ParamSchema): string {
               />
             </div>
 
-            <!-- Int / float with known range: slider -->
             <div v-else-if="p.min !== null && p.max !== null">
               <div class="flex justify-between mb-1">
                 <span
                   class="text-sm font-medium tooltip tooltip-right cursor-help"
                   :data-tip="p.description"
                 >{{ formatParamLabel(p.name) }}</span>
-                <span class="text-sm font-mono text-base-content/60">{{ formatParamValue(p) }}</span>
+                <span class="text-sm font-mono text-base-content/60">{{ formatParamValue(p, paramValues) }}</span>
               </div>
               <input
                 type="range"
@@ -348,7 +473,6 @@ function formatParamValue(p: ParamSchema): string {
               </div>
             </div>
 
-            <!-- Int / float without range: plain number input -->
             <div v-else>
               <div class="flex justify-between mb-1">
                 <span
@@ -370,6 +494,61 @@ function formatParamValue(p: ParamSchema): string {
               />
               <p class="text-xs text-base-content/50 mt-0.5">{{ p.description }}</p>
             </div>
+          </template>
+
+          <!-- Type-specific parameters -->
+          <template v-if="selectedFrameworkType && selectedFrameworkType.params.length > 0">
+            <div class="divider text-xs text-base-content/40 my-0">Type Options</div>
+            <template v-for="p in selectedFrameworkType.params" :key="p.name">
+              <div v-if="p.min !== null && p.max !== null">
+                <div class="flex justify-between mb-1">
+                  <span
+                    class="text-sm font-medium tooltip tooltip-right cursor-help"
+                    :data-tip="p.description"
+                  >{{ formatParamLabel(p.name) }}</span>
+                  <span class="text-sm font-mono text-base-content/60">{{ formatParamValue(p, typeParamValues) }}</span>
+                </div>
+                <input
+                  type="range"
+                  class="range range-sm w-full"
+                  :min="p.min"
+                  :max="p.max"
+                  :step="p.step ?? (p.type === 'int' ? 1 : 0.01)"
+                  :value="typeParamValues[p.name] as number"
+                  @input="
+                    typeParamValues[p.name] =
+                      p.type === 'int'
+                        ? parseInt(($event.target as HTMLInputElement).value)
+                        : parseFloat(($event.target as HTMLInputElement).value)
+                  "
+                />
+                <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
+                  <span>{{ p.min }}</span><span>{{ p.max }}</span>
+                </div>
+              </div>
+
+              <div v-else>
+                <div class="flex justify-between mb-1">
+                  <span
+                    class="text-sm font-medium tooltip tooltip-right cursor-help"
+                    :data-tip="p.description"
+                  >{{ formatParamLabel(p.name) }}</span>
+                </div>
+                <input
+                  type="number"
+                  class="input input-sm w-full"
+                  :step="p.step ?? (p.type === 'int' ? '1' : 'any')"
+                  :value="typeParamValues[p.name] as number"
+                  @input="
+                    typeParamValues[p.name] =
+                      p.type === 'int'
+                        ? parseInt(($event.target as HTMLInputElement).value)
+                        : parseFloat(($event.target as HTMLInputElement).value)
+                  "
+                />
+                <p class="text-xs text-base-content/50 mt-0.5">{{ p.description }}</p>
+              </div>
+            </template>
           </template>
 
           <!-- Seed -->
@@ -404,26 +583,37 @@ function formatParamValue(p: ParamSchema): string {
       <!-- Result -->
       <div v-if="stats !== null" class="card bg-base-200 shadow-sm mt-4">
         <div class="card-body gap-3">
-          <p class="text-sm text-base-content/70">
-            Generated <strong>{{ stats.nArgs }}</strong> argument{{
-              stats.nArgs === 1 ? '' : 's'
-            }}
-            with <strong>{{ stats.nAttacks }}</strong> attack{{
-              stats.nAttacks === 1 ? '' : 's'
-            }}.
+          <p v-if="frameworkTypeId === 'abstract'" class="text-sm text-base-content/70">
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            with <strong>{{ stats.nAttacks }}</strong> attack{{ stats.nAttacks === 1 ? '' : 's' }}.
+          </p>
+          <p v-else-if="frameworkTypeId === 'bipolar'" class="text-sm text-base-content/70">
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            with <strong>{{ stats.nAttacks }}</strong> attack{{ stats.nAttacks === 1 ? '' : 's' }}
+            and <strong>{{ stats.nSupports }}</strong> support{{ stats.nSupports === 1 ? '' : 's' }}.
+          </p>
+          <p v-else-if="frameworkTypeId === 'incomplete'" class="text-sm text-base-content/70">
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            (<strong>{{ stats.nUncertainArgs }}</strong> uncertain)
+            with <strong>{{ stats.nAttacks }}</strong> definite
+            and <strong>{{ stats.nUncertainAttacks }}</strong> uncertain attack{{ stats.nUncertainAttacks === 1 ? '' : 's' }}.
           </p>
           <div class="flex flex-wrap gap-2">
             <span
               class="tooltip tooltip-top"
-              :data-tip="tooManyAttacksForEditor ? `Too many attacks to open in editor (maximum is ${MAX_ATTACKS_FOR_EDITOR})` : undefined"
+              :data-tip="tooManyEdgesForEditor ? `Too many edges to open in editor (maximum is ${MAX_EDGES_FOR_EDITOR})` : undefined"
             >
               <button
                 class="btn btn-sm btn-primary"
-                :disabled="tooManyAttacksForEditor"
+                :disabled="tooManyEdgesForEditor"
                 @click="openInEditor"
               >Open in Editor</button>
             </span>
-            <button class="btn btn-sm btn-soft btn-neutral" @click="downloadICCMA">
+            <button
+              v-if="frameworkTypeId === 'abstract'"
+              class="btn btn-sm btn-soft btn-neutral"
+              @click="downloadICCMA"
+            >
               Download ICCMA
             </button>
             <button class="btn btn-sm btn-soft btn-neutral" @click="downloadTGF">

@@ -96,5 +96,6 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   getSaveString(document) {
     return saveAsString(document)
   },
+  generateHref: '/generate?type=bipolar',
   description: 'Relations between arguments can be either attacking or supporting.',
 }

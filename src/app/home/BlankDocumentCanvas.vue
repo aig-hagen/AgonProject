@@ -108,7 +108,7 @@ const mainMenuRef = useTemplateRef('mainMenu')
                 :to="exampleGroup.generateHref"
                 class="btn btn-sm btn-soft btn-neutral w-fit"
               >
-                Generate random AF
+                Generate random {{ exampleGroup.newNamePrefix }}
               </RouterLink>
             </template>
           </div>

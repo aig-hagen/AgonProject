@@ -3,17 +3,29 @@ Lightweight HTTP wrapper for graph generation algorithms.
 
 Accepts POST /generate with a JSON body:
   {
-    "algorithm": str,            # identifier from GET /algorithms
-    "params":    { ... },        # algorithm-specific key-value parameters
-    "timeout":   int             # seconds (default: 30)
+    "algorithm":      str,            # identifier from GET /algorithms
+    "params":         { ... },        # algorithm-specific and type-specific key-value parameters
+    "framework_type": str,            # "abstract" | "bipolar" | "incomplete"  (default: "abstract")
+    "timeout":        int             # seconds (default: 30)
   }
 
 Returns:
   {
-    "time":            float,              # wall-clock seconds
-    "nr_of_arguments": int,                # node count; nodes are 1-indexed (1..n)
-    "attacks":         [[int, int], ...]   # directed edges as [source, target] pairs
+    "time":                 float,
+    "framework_type":       str,
+    "nr_of_arguments":      int,                  # nodes are 1-indexed (1..n)
+    "attacks":              [[int, int], ...],     # definite attacks (or all attacks for abstract)
+    "supports":             [[int, int], ...],     # bipolar only
+    "uncertain_arguments":  [int, ...],            # incomplete only
+    "uncertain_attacks":    [[int, int], ...]      # incomplete only
   }
+
+Type-specific params (passed in the flat "params" dict):
+  bipolar:
+    supportPerc     float [0, 1]  fraction of attacks randomly converted to supports (default 0.3)
+  incomplete:
+    uncertainArgPerc     float [0, 1]  fraction of arguments marked uncertain (default 0.2)
+    uncertainAttackPerc  float [0, 1]  fraction of attacks marked uncertain    (default 0.2)
 
 Binary convention:
   Each algorithm is backed by a binary or script that receives its parameters as a
@@ -76,6 +88,13 @@ class AlgorithmConfig:
         return Path(os.environ.get(env_key, str(default)))
 
 
+@dataclass
+class FrameworkTypeConfig:
+    id: str
+    description: str
+    params_schema: list[ParamSchema] = field(default_factory=list)
+
+
 # ---------------------------------------------------------------------------
 # Native algorithm implementations
 # ---------------------------------------------------------------------------
@@ -111,7 +130,6 @@ def _barabasi_albert(params: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("m must satisfy 1 <= m < n")
 
     g = nx.barabasi_albert_graph(n, m, seed=seed)
-    # Orient each undirected edge randomly using the same seed for reproducibility.
     rng = random.Random(seed)
     attacks = []
     for u, v in g.edges():
@@ -362,6 +380,129 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
 
 
 # ---------------------------------------------------------------------------
+# Framework type post-processors
+# ---------------------------------------------------------------------------
+
+
+def _postprocess_seed(base_seed: int | None) -> int | None:
+    """Derive a reproducible post-processing seed from the base seed."""
+    if base_seed is None:
+        return None
+    return (base_seed ^ 0xDEADBEEF) & 0x7FFFFFFF
+
+
+def _apply_bipolar(
+    base: dict[str, Any],
+    params: dict[str, Any],
+    seed: int | None,
+) -> dict[str, Any]:
+    support_perc: float = params.get("supportPerc", 0.3)
+    if not (0.0 <= support_perc <= 1.0):
+        raise ValueError("supportPerc must be between 0.0 and 1.0")
+
+    rng = random.Random(seed)
+    attacks = []
+    supports = []
+    for edge in base["attacks"]:
+        if rng.random() < support_perc:
+            supports.append(edge)
+        else:
+            attacks.append(edge)
+
+    return {
+        "nr_of_arguments": base["nr_of_arguments"],
+        "attacks": attacks,
+        "supports": supports,
+        "uncertain_arguments": [],
+        "uncertain_attacks": [],
+    }
+
+
+def _apply_incomplete(
+    base: dict[str, Any],
+    params: dict[str, Any],
+    seed: int | None,
+) -> dict[str, Any]:
+    uncertain_arg_perc: float = params.get("uncertainArgPerc", 0.2)
+    uncertain_attack_perc: float = params.get("uncertainAttackPerc", 0.2)
+    if not (0.0 <= uncertain_arg_perc <= 1.0):
+        raise ValueError("uncertainArgPerc must be between 0.0 and 1.0")
+    if not (0.0 <= uncertain_attack_perc <= 1.0):
+        raise ValueError("uncertainAttackPerc must be between 0.0 and 1.0")
+
+    rng = random.Random(seed)
+    n = base["nr_of_arguments"]
+    uncertain_arguments = [i + 1 for i in range(n) if rng.random() < uncertain_arg_perc]
+
+    attacks = []
+    uncertain_attacks = []
+    for edge in base["attacks"]:
+        if rng.random() < uncertain_attack_perc:
+            uncertain_attacks.append(edge)
+        else:
+            attacks.append(edge)
+
+    return {
+        "nr_of_arguments": n,
+        "attacks": attacks,
+        "supports": [],
+        "uncertain_arguments": uncertain_arguments,
+        "uncertain_attacks": uncertain_attacks,
+    }
+
+
+_FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
+    "abstract": FrameworkTypeConfig(
+        id="abstract",
+        description="Standard abstract argumentation framework with directed attacks between arguments.",
+        params_schema=[],
+    ),
+    "bipolar": FrameworkTypeConfig(
+        id="bipolar",
+        description="Bipolar argumentation framework: edges are either attacks or supports.",
+        params_schema=[
+            ParamSchema(
+                "supportPerc",
+                "float",
+                "Fraction of attacks randomly converted to supports",
+                required=False,
+                default=0.3,
+                min=0.0,
+                max=1.0,
+                step=0.01,
+            ),
+        ],
+    ),
+    "incomplete": FrameworkTypeConfig(
+        id="incomplete",
+        description="Incomplete argumentation framework: existence of arguments and attacks can be uncertain.",
+        params_schema=[
+            ParamSchema(
+                "uncertainArgPerc",
+                "float",
+                "Fraction of arguments randomly marked as uncertain",
+                required=False,
+                default=0.2,
+                min=0.0,
+                max=1.0,
+                step=0.01,
+            ),
+            ParamSchema(
+                "uncertainAttackPerc",
+                "float",
+                "Fraction of attacks randomly marked as uncertain",
+                required=False,
+                default=0.2,
+                min=0.0,
+                max=1.0,
+                step=0.01,
+            ),
+        ],
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
 # Request / response models
 # ---------------------------------------------------------------------------
 
@@ -369,13 +510,18 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
 class GenerationRequest(BaseModel):
     algorithm: str
     params: dict[str, Any] = Field(default_factory=dict)
+    framework_type: str = "abstract"
     timeout: int = Field(default=30, ge=1)
 
 
 class GenerationResponse(BaseModel):
     time: float
+    framework_type: str
     nr_of_arguments: int
     attacks: list[list[int]]
+    supports: list[list[int]] = Field(default_factory=list)
+    uncertain_arguments: list[int] = Field(default_factory=list)
+    uncertain_attacks: list[list[int]] = Field(default_factory=list)
 
 
 class ParamSchemaOut(BaseModel):
@@ -394,6 +540,12 @@ class AlgorithmInfo(BaseModel):
     description: str
     params: list[ParamSchemaOut]
     available: bool  # False when the backing binary has not been installed yet
+
+
+class FrameworkTypeInfo(BaseModel):
+    id: str
+    description: str
+    params: list[ParamSchemaOut]
 
 
 # ---------------------------------------------------------------------------
@@ -430,6 +582,31 @@ async def list_algorithms() -> list[AlgorithmInfo]:
     ]
 
 
+@app.get("/framework-types", response_model=list[FrameworkTypeInfo])
+async def list_framework_types() -> list[FrameworkTypeInfo]:
+    """Return all supported framework types and their type-specific parameter schemas."""
+    return [
+        FrameworkTypeInfo(
+            id=ft.id,
+            description=ft.description,
+            params=[
+                ParamSchemaOut(
+                    name=p.name,
+                    type=p.type,
+                    description=p.description,
+                    required=p.required,
+                    default=p.default,
+                    min=p.min,
+                    max=p.max,
+                    step=p.step,
+                )
+                for p in ft.params_schema
+            ],
+        )
+        for ft in _FRAMEWORK_TYPES.values()
+    ]
+
+
 @app.post("/generate", response_model=GenerationResponse)
 async def generate(req: GenerationRequest) -> GenerationResponse:
     """Generate a graph using the requested algorithm and return its structure."""
@@ -441,11 +618,19 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
                    f"Available: {list(_ALGORITHMS)}",
         )
 
+    fw_type = _FRAMEWORK_TYPES.get(req.framework_type)
+    if fw_type is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown framework_type: {req.framework_type!r}. "
+                   f"Available: {list(_FRAMEWORK_TYPES)}",
+        )
+
     if algo.handler is not None:
         loop = asyncio.get_running_loop()
         t0 = time.monotonic()
         try:
-            output = await asyncio.wait_for(
+            base_output = await asyncio.wait_for(
                 loop.run_in_executor(_executor, algo.handler, req.params),
                 timeout=req.timeout,
             )
@@ -454,52 +639,69 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
         except (KeyError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc))
         elapsed = time.monotonic() - t0
-        return GenerationResponse(
-            time=elapsed,
-            nr_of_arguments=output["nr_of_arguments"],
-            attacks=output["attacks"],
-        )
+    else:
+        if not algo.binary_path.exists():
+            raise HTTPException(
+                status_code=503,
+                detail=f"Algorithm {req.algorithm!r} is not yet available "
+                       f"(binary not found at {algo.binary_path}).",
+            )
 
-    if not algo.binary_path.exists():
-        raise HTTPException(
-            status_code=503,
-            detail=f"Algorithm {req.algorithm!r} is not yet available "
-                   f"(binary not found at {algo.binary_path}).",
-        )
+        t0 = time.monotonic()
+        try:
+            result = subprocess.run(
+                [str(algo.binary_path)],
+                input=json.dumps(req.params),
+                capture_output=True,
+                text=True,
+                timeout=req.timeout,
+            )
+        except subprocess.TimeoutExpired:
+            raise HTTPException(status_code=408, detail="Algorithm timed out")
 
-    t0 = time.monotonic()
+        elapsed = time.monotonic() - t0
+
+        if result.returncode != 0:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Algorithm exited with code {result.returncode}.\n"
+                       f"stderr: {result.stderr.strip()}",
+            )
+
+        try:
+            base_output = json.loads(result.stdout)
+            _ = base_output["nr_of_arguments"]
+            _ = base_output["attacks"]
+        except (json.JSONDecodeError, KeyError, TypeError) as exc:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Algorithm produced unexpected output: {exc}",
+            )
+
+    # Apply framework-type post-processing
+    post_seed = _postprocess_seed(req.params.get("seed"))
     try:
-        result = subprocess.run(
-            [str(algo.binary_path)],
-            input=json.dumps(req.params),
-            capture_output=True,
-            text=True,
-            timeout=req.timeout,
-        )
-    except subprocess.TimeoutExpired:
-        raise HTTPException(status_code=408, detail="Algorithm timed out")
-
-    elapsed = time.monotonic() - t0
-
-    if result.returncode != 0:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Algorithm exited with code {result.returncode}.\n"
-                   f"stderr: {result.stderr.strip()}",
-        )
-
-    try:
-        output = json.loads(result.stdout)
-        nr_of_arguments: int = output["nr_of_arguments"]
-        attacks: list[list[int]] = output["attacks"]
-    except (json.JSONDecodeError, KeyError, TypeError) as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Algorithm produced unexpected output: {exc}",
-        )
+        if req.framework_type == "bipolar":
+            output = _apply_bipolar(base_output, req.params, post_seed)
+        elif req.framework_type == "incomplete":
+            output = _apply_incomplete(base_output, req.params, post_seed)
+        else:
+            output = {
+                "nr_of_arguments": base_output["nr_of_arguments"],
+                "attacks": base_output["attacks"],
+                "supports": [],
+                "uncertain_arguments": [],
+                "uncertain_attacks": [],
+            }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
     return GenerationResponse(
         time=elapsed,
-        nr_of_arguments=nr_of_arguments,
-        attacks=attacks,
+        framework_type=req.framework_type,
+        nr_of_arguments=output["nr_of_arguments"],
+        attacks=output["attacks"],
+        supports=output["supports"],
+        uncertain_arguments=output["uncertain_arguments"],
+        uncertain_attacks=output["uncertain_attacks"],
     )
