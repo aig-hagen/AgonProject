@@ -47,9 +47,10 @@ import {
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state, historyState } = defineProps<{
+const { state, historyState, documentId } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>
   historyState: HistoryState
+  documentId: number
 }>()
 
 const evaluationInput = computed<Input<AbstractArgumentation<ArgumentData>>>(() => {
@@ -179,11 +180,11 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
 // --- Multi-instance window management ---
 
 const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  'abstract-argumentation:extension-instances',
+  computed(() => `abstract-argumentation:${documentId}:extension-instances`),
   [],
 )
 const rankingInstances = useLocalStorage<RankingWindowInstanceState[]>(
-  'abstract-argumentation:ranking-instances',
+  computed(() => `abstract-argumentation:${documentId}:ranking-instances`),
   [],
 )
 

@@ -352,6 +352,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @load="loadFile"
           @generate="router.push(documentModule?.generateHref ?? '/generate')"
           :state="loadedDocument.state"
+          :document-id="loadedDocument.id"
           :history-state="historyState"
           @keydown="hanleEditorShortcut"
           @undo="undo"

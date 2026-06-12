@@ -44,9 +44,10 @@ import { availableExports } from '@/modules/dialectical-argumentation/export'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import WindowInterpretations from '@/modules/dialectical-argumentation/WindowInterpretations.vue'
 
-const { state, historyState } = defineProps<{
+const { state, historyState, documentId } = defineProps<{
   state: DocumentState<DialecticalArgumentation<AdfArgumentData>>
   historyState: HistoryState
+  documentId: number
 }>()
 
 const emit = defineEmits<{
@@ -197,7 +198,7 @@ function onConditionChanged(formula: FormulaNode) {
 // --- Multi-instance window management ---
 
 const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  'dialectical-argumentation:extension-instances',
+  computed(() => `dialectical-argumentation:${documentId}:extension-instances`),
   [],
 )
 

@@ -44,9 +44,10 @@ import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/prob
 import WindowEvaluation from '@/modules/probabilistic-argumentation/WindowEvaluation.vue'
 import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
 
-const { state, historyState } = defineProps<{
+const { state, historyState, documentId } = defineProps<{
   state: DocumentState<ProbabilisticArgumentation<PafArgumentData>>
   historyState: HistoryState
+  documentId: number
 }>()
 
 const emit = defineEmits<{
@@ -214,7 +215,7 @@ function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
 }
 
 const evaluationInstances = useLocalStorage<PafWindowInstanceState[]>(
-  'probabilistic-argumentation:evaluation-instances',
+  computed(() => `probabilistic-argumentation:${documentId}:evaluation-instances`),
   [],
 )
 

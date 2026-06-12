@@ -43,9 +43,10 @@ import { availableExports } from '@/modules/incomplete-argumentation/export'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import WindowExtensions from '@/modules/incomplete-argumentation/WindowExtensions.vue'
 
-const { state, historyState } = defineProps<{
+const { state, historyState, documentId } = defineProps<{
   state: DocumentState<IncompleteArgumentation<IafArgumentData>>
   historyState: HistoryState
+  documentId: number
 }>()
 
 const emit = defineEmits<{
@@ -177,7 +178,7 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
 // --- Multi-instance window management ---
 
 const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  'incomplete-argumentation:extension-instances',
+  computed(() => `incomplete-argumentation:${documentId}:extension-instances`),
   [],
 )
 

@@ -42,9 +42,10 @@ import {
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state, historyState } = defineProps<{
+const { state, historyState, documentId } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
   historyState: HistoryState
+  documentId: number
 }>()
 
 const emit = defineEmits<{
@@ -193,7 +194,7 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
 // --- Multi-instance window management ---
 
 const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  'bipolar-argumentation:extension-instances',
+  computed(() => `bipolar-argumentation:${documentId}:extension-instances`),
   [],
 )
 

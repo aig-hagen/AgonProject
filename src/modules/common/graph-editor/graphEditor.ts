@@ -37,6 +37,7 @@ export type EditorComponent<DocumentT> = Component<
   {
     state: DocumentState<DocumentT>
     historyState: HistoryState
+    documentId: number
   },
   unknown,
   unknown,
