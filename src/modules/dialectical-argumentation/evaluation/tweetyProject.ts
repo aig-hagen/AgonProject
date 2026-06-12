@@ -21,6 +21,7 @@ import { computed, type MaybeRef, unref } from 'vue'
 import z from 'zod'
 
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import { parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
 import { IdMapping, type UUID } from '@/modules/common/ids'
 import { type FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
@@ -168,6 +169,73 @@ async function fetchModels(
   }
 }
 
+interface GetCredulousRequestBody {
+  email: string
+  cmd: 'get_credulous'
+  nr_of_arguments: number
+  conditions: string[]
+  semantics: string
+  timeout: number
+  unit_timeout: typeof TIMEOUT_UNIT_MS
+}
+
+interface GetSkepticalRequestBody {
+  email: string
+  cmd: 'get_skeptical'
+  nr_of_arguments: number
+  conditions: string[]
+  semantics: string
+  timeout: number
+  unit_timeout: typeof TIMEOUT_UNIT_MS
+}
+
+const GetAcceptabilityResponseSchema = z.object({
+  time: z.number(),
+  answer: z.string(),
+})
+
+async function fetchCredulous(
+  numberOfArguments: number,
+  conditions: string[],
+  semantics: string,
+): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
+  const body: GetCredulousRequestBody = {
+    email: USER_ID,
+    cmd: 'get_credulous',
+    nr_of_arguments: numberOfArguments,
+    conditions,
+    semantics,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
+  }
+  const response = await fetchTyped(ENDPOINT_ADF, body, GetAcceptabilityResponseSchema)
+  return {
+    evaluationDurationInMs: response.time,
+    arguments: parserSet(response.answer),
+  }
+}
+
+async function fetchSkeptical(
+  numberOfArguments: number,
+  conditions: string[],
+  semantics: string,
+): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
+  const body: GetSkepticalRequestBody = {
+    email: USER_ID,
+    cmd: 'get_skeptical',
+    nr_of_arguments: numberOfArguments,
+    conditions,
+    semantics,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
+  }
+  const response = await fetchTyped(ENDPOINT_ADF, body, GetAcceptabilityResponseSchema)
+  return {
+    evaluationDurationInMs: response.time,
+    arguments: parserSet(response.answer),
+  }
+}
+
 // ── Public result types ───────────────────────────────────────────────────────
 
 export type ArgumentLabel = 'in' | 'out' | 'undec'
@@ -191,6 +259,7 @@ export interface InterpretationEvaluationResult {
 export function useInterpretationEvaluationQuery(
   inputRef: MaybeRef<Input<DialecticalArgumentation<AdfArgumentData>>>,
   semanticsRef: MaybeRef<string>,
+  modeRef: MaybeRef<string>,
   enabled: MaybeRef<boolean>,
 ) {
   const argumentData = computed(() => {
@@ -212,19 +281,34 @@ export function useInterpretationEvaluationQuery(
     return { numberOfArguments, conditions, idMapping }
   })
 
-  const queryKey = computed(() => ['adf_get_models', semanticsRef, argumentData] as const)
+  type EvaluationQueryResult =
+    | { evaluationDurationInMs: number; interpretations: ServerInterpretation[] }
+    | { evaluationDurationInMs: number; arguments: number[] }
 
-  const queryResult = useQuery<{
-    evaluationDurationInMs: number
-    interpretations: ServerInterpretation[]
-  }>({
+  const isModelsResult = (
+    data: EvaluationQueryResult,
+  ): data is { evaluationDurationInMs: number; interpretations: ServerInterpretation[] } =>
+    'interpretations' in data
+
+  const queryKey = computed(() => {
+    const mode = unref(modeRef)
+    if (mode === 'credulous') return ['adf_get_credulous', semanticsRef, modeRef, argumentData] as const
+    if (mode === 'skeptical') return ['adf_get_skeptical', semanticsRef, modeRef, argumentData] as const
+    return ['adf_get_models', semanticsRef, modeRef, argumentData] as const
+  })
+
+  const queryResult = useQuery<EvaluationQueryResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
-      const [, semantics, { numberOfArguments, conditions }] = queryKey as [
+      const [, semantics, , { numberOfArguments, conditions }] = queryKey as [
+        string,
         string,
         string,
         { numberOfArguments: number; conditions: string[]; idMapping: IdMapping<number, number> },
       ]
+      const mode = unref(modeRef)
+      if (mode === 'credulous') return fetchCredulous(numberOfArguments, conditions, semantics)
+      if (mode === 'skeptical') return fetchSkeptical(numberOfArguments, conditions, semantics)
       return fetchModels(numberOfArguments, conditions, semantics)
     },
     enabled,
@@ -237,23 +321,36 @@ export function useInterpretationEvaluationQuery(
     const input = unref(inputRef)
     const argumentIdAndData = [...input.content.arguments()]
 
-    const interpretations: Interpretation[] = originalData.interpretations.map((serverInterp) => {
-      const inSet = new Set(serverInterp.in)
-      const outSet = new Set(serverInterp.out)
-      return argumentIdAndData.map(([id, { name }], index) => {
-        const serverArgId = index + 1
-        let label: ArgumentLabel
-        if (inSet.has(serverArgId)) label = 'in'
-        else if (outSet.has(serverArgId)) label = 'out'
-        else label = 'undec'
-        return { id, name, label }
+    if (isModelsResult(originalData)) {
+      const interpretations: Interpretation[] = originalData.interpretations.map((serverInterp) => {
+        const inSet = new Set(serverInterp.in)
+        const outSet = new Set(serverInterp.out)
+        return argumentIdAndData.map(([id, { name }], index) => {
+          const serverArgId = index + 1
+          let label: ArgumentLabel
+          if (inSet.has(serverArgId)) label = 'in'
+          else if (outSet.has(serverArgId)) label = 'out'
+          else label = 'undec'
+          return { id, name, label }
+        })
       })
-    })
+      return {
+        stateId: input.stateId,
+        evaluationDurationInMs: originalData.evaluationDurationInMs,
+        interpretations,
+      }
+    }
 
+    const accSet = new Set(originalData.arguments)
+    const interpretation: Interpretation = argumentIdAndData.map(([id, { name }], index) => ({
+      id,
+      name,
+      label: accSet.has(index + 1) ? 'in' : ('undec' as ArgumentLabel),
+    }))
     return {
       stateId: input.stateId,
       evaluationDurationInMs: originalData.evaluationDurationInMs,
-      interpretations,
+      interpretations: [interpretation],
     }
   })
 

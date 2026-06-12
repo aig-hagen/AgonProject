@@ -56,12 +56,14 @@ function resolveSemanticFromKey(key: string): Semantic {
 }
 
 const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, evaluateContinuously], () => {
+watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantic.value.key,
+    mode: selectedMode.value,
     evaluateContinuously: evaluateContinuously.value,
   })
 })
@@ -71,6 +73,7 @@ const enabled = computed(() => evaluateContinuously.value)
 const { data, status, refetch, isLoading, isPending, isError } = useInterpretationEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
+  computed(() => selectedMode.value),
   enabled,
 )
 
@@ -92,8 +95,31 @@ function formatInterpretation(interp: Interpretation): string {
     .join(', ')
 }
 
+const resultsHeader = computed(() =>
+  selectedMode.value === 'enumerate' ? 'Models' : 'Acceptable Arguments',
+)
+const selectionHint = computed(() =>
+  selectedMode.value === 'enumerate'
+    ? 'Select model to highlight.'
+    : 'Select acceptable argument to highlight.',
+)
+
 const formattedData = computed(() => {
   if (data.value === undefined) return undefined
+
+  if (selectedMode.value !== 'enumerate') {
+    const accepted = (data.value.interpretations[0] ?? []).filter((a) => a.label === 'in')
+    return {
+      stateId: data.value.stateId,
+      evaluationDurationInMs: data.value.evaluationDurationInMs,
+      items: accepted.map((arg) => ({
+        key: String(arg.id),
+        interpretation: [arg] as Interpretation,
+        formatted: arg.name,
+      })),
+    }
+  }
+
   return {
     stateId: data.value.stateId,
     evaluationDurationInMs: data.value.evaluationDurationInMs,
@@ -109,11 +135,15 @@ const resultItems = computed(
   () =>
     formattedData.value?.items.map((i) => ({
       key: i.key,
-      label: `{${i.formatted}}`,
+      label: selectedMode.value === 'enumerate' ? `{${i.formatted}}` : i.formatted,
     })) ?? [],
 )
 
-const windowTitle = computed(() => selectedSemantic.value.displayName)
+const windowTitle = computed(() => {
+  const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
+    : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
+  return `Models: ${selectedSemantic.value.displayName} · ${modeLabel}`
+})
 
 const selectedKey = ref<string | undefined>(undefined)
 
@@ -159,6 +189,14 @@ watchEffect(() => {
             </optgroup>
           </select>
         </label>
+        <label class="select select-sm w-52">
+          <span class="label">Mode</span>
+          <select v-model="selectedMode">
+            <option value="enumerate">Enumerate</option>
+            <option value="credulous">Credulous</option>
+            <option value="skeptical">Skeptical</option>
+          </select>
+        </label>
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">
@@ -176,7 +214,7 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">Interpretations</legend>
+        <legend v-if="!compact" class="fieldset-legend">{{ resultsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating interpretations</span>
         </div>
@@ -188,7 +226,7 @@ watchEffect(() => {
             v-model:selected="selectedKey"
             :items="resultItems"
             empty-message="No interpretations exist."
-            selection-hint="Select interpretation to highlight."
+            :selection-hint="selectionHint"
             :evaluation-duration-in-ms="formattedData.evaluationDurationInMs"
           />
         </template>

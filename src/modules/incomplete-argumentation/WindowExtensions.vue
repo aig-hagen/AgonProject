@@ -137,7 +137,7 @@ const windowTitle = computed(() => {
   const typeLabel = selectedType.value === 'pos' ? 'Possible' : 'Necessary'
   const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
     : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
-  return `${selectedSemantic.value.displayName} · ${typeLabel} · ${modeLabel}`
+  return `Extensions: ${selectedSemantic.value.displayName} · ${typeLabel} · ${modeLabel}`
 })
 
 const selectedExtension = ref<string | undefined>(undefined)
@@ -242,7 +242,7 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">{{ resultsHeader }}</legend>
+        <legend v-if="!compact" class="fieldset-legend">{{ resultsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>
         </div>

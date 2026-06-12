@@ -87,13 +87,15 @@ const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceSta
 const selectedInterpretation = shallowRef<string>(
   resolveInterpretationForSemantic(instanceState.semanticKey, instanceState.interpretationKey),
 )
+const selectedMode = ref<string>(instanceState.mode)
 const evaluateContiously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, selectedInterpretation, evaluateContiously], () => {
+watch([selectedSemantic, selectedInterpretation, selectedMode, evaluateContiously], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantic.value.key,
     interpretationKey: selectedInterpretation.value,
+    mode: selectedMode.value,
     evaluateContinuously: evaluateContiously.value,
   })
 })
@@ -116,6 +118,7 @@ const enabled = computed(() => evaluateContiously.value)
 const { data, status, refetch, isLoading, isPending, isError } = useExtensionEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
+  computed(() => selectedMode.value),
   enabled,
 )
 const userCanTriggerFetch = computed(
@@ -127,20 +130,35 @@ function formatExtension(extension: Extension) {
   return `${namesSorted.join(', ')}`
 }
 
+const resultsHeader = computed(() =>
+  selectedMode.value === 'enumerate' ? 'Extensions' : 'Acceptable Arguments',
+)
+const selectionHint = computed(() =>
+  selectedMode.value === 'enumerate'
+    ? 'Select extension to highlight.'
+    : 'Select acceptable argument to highlight.',
+)
+
 const dataExtensionsFormatedAndSorted = computed(() => {
   if (data.value === undefined) {
     return undefined
   }
 
-  const formated = data.value.extensions.map((extension) => {
-    const nameFormated = formatExtension(extension)
-    const extensionIdsSorted = extension.map((argument) => argument.id).sort()
-    return {
-      key: JSON.stringify(extensionIdsSorted),
-      extension: extension,
-      nameFormated: nameFormated,
-    }
-  })
+  const extensions = data.value.extensions
+  const formated =
+    selectedMode.value === 'enumerate'
+      ? extensions.map((extension) => {
+          const nameFormated = formatExtension(extension)
+          const extensionIdsSorted = extension.map((argument) => argument.id).sort()
+          return { key: JSON.stringify(extensionIdsSorted), extension, nameFormated }
+        })
+      : extensions.flatMap((extension) =>
+          extension.map((argument) => ({
+            key: String(argument.id),
+            extension: [argument],
+            nameFormated: argument.name,
+          })),
+        )
 
   formated.sort((a, b) => a.nameFormated.localeCompare(b.nameFormated))
 
@@ -155,13 +173,15 @@ const resultItems = computed(
   () =>
     dataExtensionsFormatedAndSorted.value?.formatedAndSorted.map((e) => ({
       key: e.key,
-      label: `{${e.nameFormated}}`,
+      label: selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
     })) ?? [],
 )
 
-const windowTitle = computed(() =>
-  `${selectedInterpretation.value} · ${selectedSemantic.value.displayName}`,
-)
+const windowTitle = computed(() => {
+  const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
+    : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
+  return `Extensions: ${selectedInterpretation.value} · ${selectedSemantic.value.displayName} · ${modeLabel}`
+})
 
 const selectedExtension = ref<string | undefined>(undefined)
 watchEffect(() => {
@@ -226,6 +246,14 @@ watchEffect(() => {
               </option>
             </select>
           </label>
+          <label class="select select-sm w-54">
+            <span class="label min-w-24">Mode</span>
+            <select v-model="selectedMode">
+              <option value="enumerate">Enumerate</option>
+              <option value="credulous">Credulous</option>
+              <option value="skeptical">Skeptical</option>
+            </select>
+          </label>
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
@@ -263,7 +291,7 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">Results</legend>
+        <legend v-if="!compact" class="fieldset-legend">{{ resultsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>
         </div>
@@ -275,7 +303,7 @@ watchEffect(() => {
             v-model:selected="selectedExtension"
             :items="resultItems"
             empty-message="No extensions exist."
-            selection-hint="Select extension to highlight."
+            :selection-hint="selectionHint"
             :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
           />
         </template>

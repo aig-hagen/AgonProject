@@ -80,7 +80,7 @@ watch(data, emitWeights)
 <template>
   <FloatingWindow
     v-model:open="internalOpen"
-    :title="selectedSemantic.displayName"
+    :title="`Ranking: ${selectedSemantic.displayName}`"
     :initial-position="{ x: 192 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intitalSize="{ width: 480, height: 320 }"
     compactable
@@ -131,7 +131,7 @@ watch(data, emitWeights)
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">Ranking</legend>
+        <legend v-if="!compact" class="fieldset-legend">Ranking</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating ranking</span>
         </div>

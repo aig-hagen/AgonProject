@@ -139,7 +139,7 @@ const resultItems = computed(
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
     : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
-  return `${selectedSemantic.value.displayName} · ${modeLabel}`
+  return `Extensions: ${selectedSemantic.value.displayName} · ${modeLabel}`
 })
 
 const selectedExtension = ref<string | undefined>(undefined)
@@ -242,7 +242,7 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend class="fieldset-legend">{{ extensionsHeader }}</legend>
+        <legend v-if="!compact" class="fieldset-legend">{{ extensionsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>
         </div>

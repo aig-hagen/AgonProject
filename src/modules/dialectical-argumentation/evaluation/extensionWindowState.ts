@@ -21,6 +21,7 @@ import { KEY_DEFAULT_SEMANTIC } from '@/modules/dialectical-argumentation/evalua
 export interface ExtensionWindowInstanceState {
   id: string
   semanticKey: string
+  mode: string
   evaluateContinuously: boolean
 }
 
@@ -28,6 +29,7 @@ export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceS
   return {
     id: crypto.randomUUID(),
     semanticKey: KEY_DEFAULT_SEMANTIC,
+    mode: 'enumerate',
     evaluateContinuously: false,
   }
 }
