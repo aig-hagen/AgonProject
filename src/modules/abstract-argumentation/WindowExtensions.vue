@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
+import { computed, provide, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
 
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
 import {
@@ -26,6 +26,7 @@ import {
   type Semantic,
   useExtensionEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
@@ -33,7 +34,9 @@ import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGr
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
+import { POPOVER_REGISTRY_KEY } from '@/modules/common/popoverRegistry'
 import PublicationsPopover from '@/modules/common/PublicationsPopover.vue'
+import TermPopover from '@/modules/common/TermPopover.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
@@ -47,6 +50,8 @@ const emit = defineEmits<{
   highlight: [highlight?: Highlight]
   close: []
 }>()
+
+provide(POPOVER_REGISTRY_KEY, abstractArgumentationGlossary)
 
 const internalOpen = ref(true)
 watch(internalOpen, (v) => { if (!v) emit('close') })
@@ -208,6 +213,9 @@ watchEffect(() => {
           </label>
         </div>
       </fieldset>
+      <p class="text-sm">
+        <TermPopover id="stableSemantics">Test</TermPopover>
+      </p>
       <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
         <details class="collapse collapse-arrow">
           <summary class="collapse-title fieldset-legend ps-0 max-w-max">Definition</summary>
@@ -235,6 +243,7 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
+        Test
         <legend v-if="!compact" class="fieldset-legend">{{ extensionsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>
