@@ -21,6 +21,10 @@ import type { Objectish } from 'immer'
 import type { Example } from '@/modules/common/examples'
 import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
 import type { DeserializationResult } from '@/modules/common/save/load'
+export interface Publication {
+  label: string
+  href: string
+}
 
 export interface ModuleConfig<DocumentT extends Objectish> {
   /**
@@ -92,4 +96,8 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * Brief description of this argumentation type shown on the welcome screen.
    */
   description?: string
+  /**
+   * Relevant publications shown in a popover on the welcome screen card.
+   */
+  publications?: Publication[]
 }

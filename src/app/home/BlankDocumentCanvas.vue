@@ -20,7 +20,9 @@
 import { RouterLink } from 'vue-router'
 
 import type { Example } from '@/modules/common/examples'
+import type { Publication } from '@/app/home/moduleConfig'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
+import PublicationsPopover from '@/modules/common/PublicationsPopover.vue'
 
 export interface ModuleCard<DocumentT> {
   newNamePrefix: string
@@ -30,9 +32,10 @@ export interface ModuleCard<DocumentT> {
   initialCotent: DocumentT
   generateHref?: string
   underConstruction?: boolean
+  publications?: Publication[]
 }
-const { exampleGroups } = defineProps<{
-  exampleGroups: ModuleCard<DocumentT>[]
+const { moduleCards } = defineProps<{
+  moduleCards: ModuleCard<DocumentT>[]
 }>()
 
 const emit = defineEmits<{
@@ -49,6 +52,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
   emit('open', content, newNamePrefix)
 }
 
+
 </script>
 <template>
   <div class="h-full w-full flex items-center justify-center">
@@ -64,25 +68,31 @@ function openContent(content: DocumentT, newNamePrefix: string) {
       <div class="grid grid-cols-3 gap-4">
         <div
           class="card bg-base-200 shadow-sm"
-          :class="{ 'opacity-50': exampleGroup.underConstruction }"
-          v-for="(exampleGroup, index) in exampleGroups"
+          :class="{ 'opacity-50': moduleCard.underConstruction }"
+          v-for="(moduleCard, index) in moduleCards"
           :key="index"
         >
           <div class="card-body flex flex-col">
-            <h3 class="card-title">{{ exampleGroup.displayNameSingular }}</h3>
-            <p v-if="exampleGroup.description" class="text-sm text-base-content/60">{{ exampleGroup.description }}</p>
-            <template v-if="exampleGroup.underConstruction">
+            <div class="flex items-start justify-between gap-2">
+              <h3 class="card-title">{{ moduleCard.displayNameSingular }}</h3>
+              <PublicationsPopover
+                v-if="moduleCard.publications?.length"
+                :publications="moduleCard.publications"
+              />
+            </div>
+            <p v-if="moduleCard.description" class="text-sm text-base-content/60">{{ moduleCard.description }}</p>
+            <template v-if="moduleCard.underConstruction">
               <div class="flex-1"></div>
               <p class="text-sm text-base-content/50 italic">Under Construction</p>
             </template>
             <template v-else>
               <div class="flex-1">
-                <template v-if="exampleGroup.examples.length !== 0">
+                <template v-if="moduleCard.examples.length !== 0">
                   <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
                     Open Example
                   </h4>
                   <ul class="menu menu-sm p-0 -mx-2">
-                    <li v-for="(example, index) in exampleGroup.examples" :key="index">
+                    <li v-for="(example, index) in moduleCard.examples" :key="index">
                       <span
                         v-if="example.description"
                         class="tooltip tooltip-right"
@@ -101,16 +111,16 @@ function openContent(content: DocumentT, newNamePrefix: string) {
               <div class="flex flex-row gap-2">
                 <button
                   class="btn btn-sm btn-soft btn-neutral w-fit"
-                  @click="openContent(exampleGroup.initialCotent, exampleGroup.newNamePrefix)"
+                  @click="openContent(moduleCard.initialCotent, moduleCard.newNamePrefix)"
                 >
                   Create new
                 </button>
                 <RouterLink
-                  v-if="exampleGroup.generateHref !== undefined"
-                  :to="exampleGroup.generateHref"
+                  v-if="moduleCard.generateHref !== undefined"
+                  :to="moduleCard.generateHref"
                   class="btn btn-sm btn-soft btn-neutral w-fit"
                 >
-                  Generate random {{ exampleGroup.newNamePrefix }}
+                  Generate random {{ moduleCard.newNamePrefix }}
                 </RouterLink>
               </div>
             </template>

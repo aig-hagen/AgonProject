@@ -333,12 +333,12 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
       <div class="relative h-full w-full">
         <BlankDocumentCanvas
           v-if="selectedDocumentId === undefined"
-          :example-groups="modules"
+          :module-cards="modules"
           @open="createDocumentWithContent"
         ></BlankDocumentCanvas>
         <BlankDocumentCanvas
           v-if="!documentLoading && documentState === undefined"
-          :example-groups="modules"
+          :module-cards="modules"
           @open="overrideWithContent"
         ></BlankDocumentCanvas>
         <component
