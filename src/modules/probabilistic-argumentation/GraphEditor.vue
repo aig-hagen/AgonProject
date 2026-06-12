@@ -18,6 +18,7 @@
 -->
 <script setup lang="ts">
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
+import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
@@ -35,6 +36,11 @@ import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { availableExports } from '@/modules/probabilistic-argumentation/export'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import {
+  createDefaultPafWindowInstance,
+  type PafWindowInstanceState,
+} from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
+import WindowEvaluation from '@/modules/probabilistic-argumentation/WindowEvaluation.vue'
 import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
 
 const { state, historyState } = defineProps<{
@@ -197,6 +203,27 @@ function getProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityLabel[]
   return labels
 }
 
+// ── Evaluation window management ───────────────────────────────────────────
+
+const evaluationInstances = useLocalStorage<PafWindowInstanceState[]>(
+  'probabilistic-argumentation:evaluation-instances',
+  [],
+)
+
+function addEvaluationInstance() {
+  evaluationInstances.value = [...evaluationInstances.value, createDefaultPafWindowInstance()]
+}
+
+function removeEvaluationInstance(id: string) {
+  evaluationInstances.value = evaluationInstances.value.filter((i) => i.id !== id)
+}
+
+function updateEvaluationInstance(updated: PafWindowInstanceState) {
+  evaluationInstances.value = evaluationInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
+}
+
 // ── Inline editing popup ────────────────────────────────────────────────────
 
 const editingLabel = shallowRef<(ProbabilityLabel & { screenX: number; screenY: number }) | null>(null)
@@ -247,7 +274,20 @@ function onPopupKeydown(event: KeyboardEvent) {
       @undo="emit('undo')"
       @redo="emit('redo')"
       @save="emit('save')"
+      @open-extension-window="addEvaluationInstance()"
     >
+      <template #evaluationExtensions>
+        <WindowEvaluation
+          v-for="(instance, index) in evaluationInstances"
+          :key="instance.id"
+          :input="evaluationInput"
+          :instance-state="instance"
+          :instance-offset="index"
+          @update:instance-state="updateEvaluationInstance($event)"
+          @close="removeEvaluationInstance(instance.id)"
+        />
+      </template>
+
       <template #toolbar>
         <button
           class="btn btn-square btn-sm"
