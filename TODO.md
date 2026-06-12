@@ -1,0 +1,4 @@
+- Some bug regarding enabled physics simulation and switching tabs
+- for mutual attacks, the probabilities in PAFs are above each other and one is not visible at all because of that
+- Shorten Names in Latex output
+- reduce size of text to fit argument nodes

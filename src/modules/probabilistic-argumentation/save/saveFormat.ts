@@ -24,6 +24,7 @@ import {
   toFormatedJsonString,
 } from '@/modules/common/argumentation/save/saveFormat'
 import type { DeserializationResult } from '@/modules/common/save/load'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import {
   type PafArgumentData,
   ProbabilisticArgumentation,
@@ -123,6 +124,36 @@ export function loadFromString(
     }
     return argumentation
   })
+}
+
+export const ExampleSaveSchema = SaveSchema.extend({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
+})
+
+export function loadExampleFromJson(json: unknown): {
+  framework: ProbabilisticArgumentation<PafArgumentData>
+  name?: string
+  description?: string
+  layoutType?: Layout
+} {
+  const result = ExampleSaveSchema.safeParse(json)
+  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
+  const { name, description, layoutType, ...rest } = result.data
+  const framework = new ProbabilisticArgumentation<PafArgumentData>()
+  for (const [id, argumentData] of Object.entries(rest.arguments)) {
+    framework.addArgument(parseInt(id, 10), {
+      name: argumentData.name,
+      x: argumentData.x,
+      y: argumentData.y,
+      probability: argumentData.probability,
+    })
+  }
+  for (const [sourceId, targetId, prob] of rest.attacks) {
+    framework.addAttack(sourceId, targetId, prob)
+  }
+  return { framework, name, description, layoutType }
 }
 
 export function canLoadFromObject(dataObject: Record<string, unknown>): boolean {

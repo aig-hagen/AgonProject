@@ -41,7 +41,7 @@ initialIncompleteArgumentation.addUncertainAttack(1, 2)
 
 export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation<IafArgumentData>> =
   {
-    newNamePrefix: 'IAF',
+    newNamePrefix: 'iAF',
     displayNameSingular: 'Incomplete Argumentation',
     is(model: unknown) {
       return model instanceof IncompleteArgumentation

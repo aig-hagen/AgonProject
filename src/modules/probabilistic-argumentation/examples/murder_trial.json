@@ -1,0 +1,22 @@
+{
+  "apiVersion": "probabilistic-argumentation-framework/v1",
+  "name": "murder_trial",
+  "description": "Probabilistic version of the murder trial example where argument and attack probabilities reflect uncertainty about guilt, an alibi, and physical evidence.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": { "name": "Guilty",   "x": 200, "y": 0,   "probability": 0.4 },
+    "1": { "name": "Innocent", "x": 400, "y": 200, "probability": 0.7 },
+    "2": { "name": "Motive",   "x": 0,   "y": 200, "probability": 0.9 },
+    "3": { "name": "Alibi",    "x": 300, "y": 400, "probability": 0.5 },
+    "4": { "name": "Evidence", "x": 100, "y": 400, "probability": 0.6 }
+  },
+  "attacks": [
+    [0, 1, 1.0],
+    [1, 0, 1.0],
+    [2, 1, 0.8],
+    [3, 2, 0.7],
+    [3, 0, 0.7],
+    [4, 3, 0.6],
+    [2, 3, 0.5]
+  ]
+}

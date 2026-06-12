@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { DirectedGraph } from '@/modules/common/graph/graph'
 import GraphEditor from '@/modules/probabilistic-argumentation/GraphEditor.vue'
+import { datasets } from '@/modules/probabilistic-argumentation/examples'
 import {
   type PafArgumentData,
   ProbabilisticArgumentation,
@@ -70,7 +71,7 @@ export const probabilisticArgumentationModule: ModuleConfig<
       g: model.g,
     }
   },
-  examples: [],
+  examples: datasets,
   initialCotent: initialProbabilisticArgumentation,
   editorComponent: GraphEditor,
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
