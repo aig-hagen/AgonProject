@@ -213,9 +213,6 @@ watchEffect(() => {
           </label>
         </div>
       </fieldset>
-      <p class="text-sm">
-        <TermPopover id="stableSemantics">Test</TermPopover>
-      </p>
       <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
         <details class="collapse collapse-arrow">
           <summary class="collapse-title fieldset-legend ps-0 max-w-max">Definition</summary>
@@ -243,7 +240,6 @@ watchEffect(() => {
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        Test
         <legend v-if="!compact" class="fieldset-legend">{{ extensionsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Failed evaluating extensions</span>

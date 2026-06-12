@@ -87,7 +87,7 @@ provide(NESTING_DEPTH, depth + 1)
       v-show="isOpen"
       ref="panel"
       :style="[floatingStyles, { zIndex: 9000 + depth }]"
-      class="w-max max-w-sm rounded-box bg-base-100 border border-base-300 shadow-lg p-3 text-sm text-balance"
+      class="max-w-xs rounded-box bg-base-100 border border-base-300 shadow-lg p-3 text-sm"
       @mouseenter="onEnter"
       @mouseover="keepOpen"
       @mouseleave="scheduleClose"
