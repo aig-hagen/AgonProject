@@ -20,7 +20,6 @@
 import { useLocalStorage } from '@vueuse/core'
 import { computed, shallowRef, watch } from 'vue'
 
-import { availableExports } from '@/modules/abstract-argumentation/export'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
@@ -29,6 +28,7 @@ import {
   createDefaultRankingWindowInstance,
   type RankingWindowInstanceState,
 } from '@/modules/abstract-argumentation/evaluation/rankingWindowState'
+import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
@@ -39,8 +39,8 @@ import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
-  type HistoryState,
   type Highlight,
+  type HistoryState,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'

@@ -17,10 +17,10 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import type { SetAF,SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import type { ExportFileData } from '@/modules/common/export'
 import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
 import type { DocumentState } from '@/modules/common/state'
-import type { ExportFileData } from '@/modules/common/export'
-import type { SetAfArgumentData, SetAF } from '@/modules/collective-attacks-argumentation/model'
 
 defineProps<{
   state: DocumentState<SetAF<SetAfArgumentData>>

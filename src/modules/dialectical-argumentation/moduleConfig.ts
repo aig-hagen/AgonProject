@@ -93,4 +93,18 @@ export const dialecticalArgumentationModule: ModuleConfig<
     return saveAsString(document)
   },
   description: 'Relations between arguments are modelled via propositional acceptance conditions.',
+  publications: [
+    {
+      label: 'Brewka, G. & Woltran, S. (2010). Abstract Dialectical Frameworks. KR 2010, 2–12.',
+      href: 'https://aaai.org/papers/kp10-2-brewka-abstract-dialectical-frameworks',
+    },
+    {
+      label: 'Brewka, G., Ellmauthaler, S., Strass, H., Wallner, J.P. & Woltran, S. (2013). Abstract Dialectical Frameworks Revisited. IJCAI 2013.',
+      href: 'https://www.ijcai.org/proceedings/2013',
+    },
+    {
+      label: 'Brewka, G., Ellmauthaler, S., Strass, H., Wallner, J.P. & Woltran, S. (2018). Abstract Dialectical Frameworks. In: Handbook of Formal Argumentation, Vol. 1, Chapter 5. College Publications.',
+      href: 'https://www.collegepublications.co.uk/downloads/handbooks00003.pdf',
+    },
+  ],
 }

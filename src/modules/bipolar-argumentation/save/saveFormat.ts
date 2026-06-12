@@ -28,8 +28,8 @@ import {
   toFormatedJsonString,
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
-import { type DeserializationResult } from '@/modules/common/save/load'
 import { Layout } from '@/modules/common/main-menu/layouting'
+import { type DeserializationResult } from '@/modules/common/save/load'
 
 const API_VERSION = 'bipolar-argumentation-framework/v1' as const
 

@@ -19,6 +19,9 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, toRef, watch } from 'vue'
 
+import type { ArgumentId } from '@/modules/common/argumentation/model'
+import type { Input } from '@/modules/common/evaluation/types'
+import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { PafWindowInstanceState } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
@@ -26,9 +29,6 @@ import {
   usePafEvaluationQuery,
 } from '@/modules/probabilistic-argumentation/evaluation/tweetyProject'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
-import type { ArgumentId } from '@/modules/common/argumentation/model'
-import type { Input } from '@/modules/common/evaluation/types'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>

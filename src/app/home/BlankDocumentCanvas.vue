@@ -19,8 +19,8 @@
 <script setup lang="ts" generic="DocumentT">
 import { RouterLink } from 'vue-router'
 
-import type { Example } from '@/modules/common/examples'
 import type { Publication } from '@/app/home/moduleConfig'
+import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
 import PublicationsPopover from '@/modules/common/PublicationsPopover.vue'
 

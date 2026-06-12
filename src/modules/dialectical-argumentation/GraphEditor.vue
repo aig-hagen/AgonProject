@@ -27,8 +27,8 @@ import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
-  type HistoryState,
   type Highlight,
+  type HistoryState,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'

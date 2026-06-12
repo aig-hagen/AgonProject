@@ -28,12 +28,12 @@ import {
   toFormatedJsonString,
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import {
   type DeserializationResult,
   JsonSyntaxError,
   ValidationError,
 } from '@/modules/common/save/load'
-import { Layout } from '@/modules/common/main-menu/layouting'
 
 const API_VERSION = 'argumentation-framework/v1' as const
 

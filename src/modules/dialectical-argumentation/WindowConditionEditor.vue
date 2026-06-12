@@ -19,14 +19,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import FormulaEditor from '@/modules/dialectical-argumentation/condition/FormulaEditor.vue'
-import {
-  formulaToString,
-  type FormulaNode,
-} from '@/modules/dialectical-argumentation/condition/formula'
-import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import type { NodeId } from '@/modules/common/graph-editor/graphEditor'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import {
+  type FormulaNode,
+  formulaToString,
+} from '@/modules/dialectical-argumentation/condition/formula'
+import FormulaEditor from '@/modules/dialectical-argumentation/condition/FormulaEditor.vue'
+import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const props = defineProps<{
   argumentId: NodeId

@@ -19,13 +19,13 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
 
+import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import {
   type Extension,
   KNOWN_SEMANTIC_GROUPS,
   type Semantic,
   useExtensionEvaluationQuery,
 } from '@/modules/bipolar-argumentation/evaluation/tweetyProject'
-import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'

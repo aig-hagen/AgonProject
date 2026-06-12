@@ -18,13 +18,13 @@
  */
 import * as z from 'zod'
 
+import { SetAF,type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
   ArgumentIdSaveSchema,
   loadFromStringWithSchema,
   toFormatedJsonString,
 } from '@/modules/common/argumentation/save/saveFormat'
 import type { DeserializationResult } from '@/modules/common/save/load'
-import { type SetAfArgumentData, SetAF } from '@/modules/collective-attacks-argumentation/model'
 
 const API_VERSION = 'set-af/v1' as const
 

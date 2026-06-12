@@ -20,6 +20,7 @@ import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { datasets } from '@/modules/incomplete-argumentation/examples'
 import GraphEditor from '@/modules/incomplete-argumentation/GraphEditor.vue'
 import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import {
@@ -27,7 +28,6 @@ import {
   loadFromString,
   saveAsString,
 } from '@/modules/incomplete-argumentation/save/saveFormat'
-import { datasets } from '@/modules/incomplete-argumentation/examples'
 
 const IAF_V1_TYPE = 'incomplete-argumentation-v1'
 const TYPE_KEY = 'type'
@@ -79,4 +79,14 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
     },
     generateHref: '/generate?type=incomplete',
   description: 'Distinguish between certain and uncertain arguments and attacks to represent incomplete information.',
+  publications: [
+    {
+      label: 'Coste-Marquis, S., Devred, C., Konieczny, S., Lagasquie-Schiex, M.-C. & Marquis, P. (2007). On the Merging of Dung\'s Argumentation Systems. Artificial Intelligence, 171(10–15), 730–753.',
+      href: 'https://doi.org/10.1016/j.artint.2007.04.012',
+    },
+    {
+      label: 'Baumeister, D., Järvisalo, M., Neugebauer, D., Niskanen, A. & Rothe, J. (2021). Acceptance in Incomplete Argumentation Frameworks. Artificial Intelligence, 295, 103470.',
+      href: 'https://doi.org/10.1016/j.artint.2021.103470',
+    },
+  ],
   }

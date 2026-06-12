@@ -21,25 +21,25 @@ import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
-import ArrowLongRightDashedIcon from '@/modules/common/graph-editor/ArrowLongRightDashedIcon.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
+import ArrowLongRightDashedIcon from '@/modules/common/graph-editor/ArrowLongRightDashedIcon.vue'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
-  type HistoryState,
   type Highlight,
+  type HistoryState,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
-import { availableExports } from '@/modules/incomplete-argumentation/export'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
 } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
+import { availableExports } from '@/modules/incomplete-argumentation/export'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import WindowExtensions from '@/modules/incomplete-argumentation/WindowExtensions.vue'
 

@@ -28,10 +28,10 @@ import router from '@/app/router'
 import { abstractArgumentationModule } from '@/modules/abstract-argumentation/moduleConfig'
 import { bipoloarArgumentationModule } from '@/modules/bipolar-argumentation/moduleConfig'
 import { collectiveAttacksArgumentationModule } from '@/modules/collective-attacks-argumentation/moduleConfig'
+import { openDocumentsDB } from '@/modules/common/documents/db'
 import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
-import { openDocumentsDB } from '@/modules/common/documents/db'
 
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)

@@ -101,5 +101,9 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
       label: 'Dung, P.M. (1995). On the Acceptability of Arguments and its Fundamental Role in Nonmonotonic Reasoning, Logic Programming and n-Person Games. Artificial Intelligence, 77(2), 321–357.',
       href: 'https://doi.org/10.1016/0004-3702(94)00041-X',
     },
+    {
+      label: 'Baroni, P., Caminada, M. & Giacomin, M. (2018). Abstract Argumentation Frameworks and Their Semantics. In: Handbook of Formal Argumentation, Vol. 1, Chapter 4. College Publications.',
+      href: 'https://www.collegepublications.co.uk/downloads/handbooks00003.pdf',
+    },
   ],
 }

@@ -18,16 +18,16 @@
  */
 import * as z from 'zod'
 
-import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
-import { FormulaNodeSchema } from '@/modules/dialectical-argumentation/condition/formulaSchema'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import {
   ArgumentIdSaveSchema,
   loadFromStringWithSchema,
   toFormatedJsonString,
 } from '@/modules/common/argumentation/save/saveFormat'
-import { type DeserializationResult } from '@/modules/common/save/load'
 import { Layout } from '@/modules/common/main-menu/layouting'
+import { type DeserializationResult } from '@/modules/common/save/load'
+import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
+import { FormulaNodeSchema } from '@/modules/dialectical-argumentation/condition/formulaSchema'
+import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const API_VERSION = 'dialectical-argumentation-framework/v1' as const
 

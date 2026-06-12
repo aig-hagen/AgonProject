@@ -21,8 +21,8 @@ import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
 import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
 
-import { ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
+import { ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -35,12 +35,12 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
-import { availableExports } from '@/modules/probabilistic-argumentation/export'
-import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 import {
   createDefaultPafWindowInstance,
   type PafWindowInstanceState,
 } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
+import { availableExports } from '@/modules/probabilistic-argumentation/export'
+import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 import WindowEvaluation from '@/modules/probabilistic-argumentation/WindowEvaluation.vue'
 import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
 

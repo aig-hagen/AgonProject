@@ -18,7 +18,6 @@
  */
 import * as z from 'zod'
 
-import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import {
   ArgumentIdSaveSchema,
   type LinksSave,
@@ -27,8 +26,9 @@ import {
   toFormatedJsonString,
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
-import type { DeserializationResult } from '@/modules/common/save/load'
 import { Layout } from '@/modules/common/main-menu/layouting'
+import type { DeserializationResult } from '@/modules/common/save/load'
+import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 
 const API_VERSION = 'incomplete-argumentation-framework/v1' as const
 

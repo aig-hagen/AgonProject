@@ -21,7 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/collective-attacks-argumentation/examples'
 import GraphEditor from '@/modules/collective-attacks-argumentation/GraphEditor.vue'
-import { type SetAfArgumentData, SetAF } from '@/modules/collective-attacks-argumentation/model'
+import { SetAF,type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
   canLoadFromObject,
   loadFromString,
@@ -87,5 +87,15 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
     return saveAsString(document)
   },
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
+  publications: [
+    {
+      label: 'Nielsen, S.H. & Parsons, S. (2006). A Generalization of Dung\'s Abstract Framework for Argumentation: Arguing with Sets of Attacking Arguments. ArgMAS 2006, LNCS 4766, 54–73.',
+      href: 'https://doi.org/10.1007/978-3-540-75526-5_4',
+    },
+    {
+      label: 'Bikakis, A., Cohen, A., Dvořák, W., Flouris, G. & Parsons, S. (2021). Joint Attacks and Accrual in Argumentation Frameworks. In: Handbook of Formal Argumentation, Vol. 2, Chapter 2. College Publications.',
+      href: 'https://www.collegepublications.co.uk/downloads/handbooks00006.pdf',
+    },
+  ],
   underConstruction: true,
 }

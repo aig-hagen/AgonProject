@@ -20,11 +20,11 @@
 import { useLocalStorage } from '@vueuse/core'
 import { computed, shallowRef, watch } from 'vue'
 
-import { availableExports } from '@/modules/bipolar-argumentation/export'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
 } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
+import { availableExports } from '@/modules/bipolar-argumentation/export'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
@@ -34,8 +34,8 @@ import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
-  type HistoryState,
   type Highlight,
+  type HistoryState,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import type { SetAF,SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import type { Example } from '@/modules/common/examples'
-import type { SetAfArgumentData, SetAF } from '@/modules/collective-attacks-argumentation/model'
 
 export const datasets: Example<SetAF<SetAfArgumentData>>[] = []

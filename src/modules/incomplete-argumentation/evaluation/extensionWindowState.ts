@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { KEY_DEFAULT_SEMANTIC } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
 import type { IafMode, IafType } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
+import { KEY_DEFAULT_SEMANTIC } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
 
 export interface ExtensionWindowInstanceState {
   id: string

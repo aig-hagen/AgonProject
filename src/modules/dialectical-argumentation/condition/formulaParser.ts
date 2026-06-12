@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { FormulaNode } from './formula'
+import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
 
 type Token =
   | { kind: 'taut' }

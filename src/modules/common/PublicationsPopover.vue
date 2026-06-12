@@ -17,8 +17,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ref } from 'vue'
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
+import { ref } from 'vue'
 
 import type { Publication } from '@/app/home/moduleConfig'
 

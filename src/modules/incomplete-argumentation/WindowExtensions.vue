@@ -25,6 +25,7 @@ import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import type { ExtensionWindowInstanceState } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import {
   type Extension,
   type IafMode,
@@ -33,7 +34,6 @@ import {
   type Semantic,
   useExtensionEvaluationQuery,
 } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
-import type { ExtensionWindowInstanceState } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{

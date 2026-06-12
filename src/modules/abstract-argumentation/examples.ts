@@ -16,14 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import mealWineJson from '@/modules/abstract-argumentation/examples/meal_wine.json'
+import uniqueStableJson from '@/modules/abstract-argumentation/examples/unique_stable.json'
 import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { loadExampleFromJson } from '@/modules/abstract-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
-
-import mealWineJson from './examples/meal_wine.json'
-import uniqueStableJson from './examples/unique_stable.json'
 
 const exampleJsons: unknown[] = [mealWineJson, uniqueStableJson]
 

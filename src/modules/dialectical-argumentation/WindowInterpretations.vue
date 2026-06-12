@@ -24,13 +24,13 @@ import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGr
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import type { ExtensionWindowInstanceState } from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import {
   type Interpretation,
   KNOWN_SEMANTIC_GROUPS,
   type Semantic,
   useInterpretationEvaluationQuery,
 } from '@/modules/dialectical-argumentation/evaluation/tweetyProject'
-import type { ExtensionWindowInstanceState } from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{

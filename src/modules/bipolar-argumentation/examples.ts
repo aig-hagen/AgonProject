@@ -16,16 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import mealWineJson from '@/modules/bipolar-argumentation/examples/meal_wine.json'
+import murderTrialJson from '@/modules/bipolar-argumentation/examples/murder_trial.json'
+import vacationPlanningJson from '@/modules/bipolar-argumentation/examples/vacation_planning.json'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import { loadExampleFromJson } from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
-
-import mealWineJson from './examples/meal_wine.json'
-import murderTrialJson from './examples/murder_trial.json'
-import vacationPlanningJson from './examples/vacation_planning.json'
 
 const exampleJsons: unknown[] = [mealWineJson, vacationPlanningJson, murderTrialJson]
 

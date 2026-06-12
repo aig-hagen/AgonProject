@@ -23,8 +23,8 @@ import {
   loadFromStringWithSchema,
   toFormatedJsonString,
 } from '@/modules/common/argumentation/save/saveFormat'
-import type { DeserializationResult } from '@/modules/common/save/load'
 import { Layout } from '@/modules/common/main-menu/layouting'
+import type { DeserializationResult } from '@/modules/common/save/load'
 import {
   type PafArgumentData,
   ProbabilisticArgumentation,
