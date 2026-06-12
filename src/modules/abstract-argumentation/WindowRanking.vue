@@ -19,8 +19,8 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef, toRef, watch } from 'vue'
 
+import type { RankingWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/rankingWindowState'
 import {
-  KEY_DEFAULT_RANKING_SEMANTIC,
   KNOWN_RANKING_SEMANTICS,
   type RankingSemantic,
   useRankingEvaluationQuery,
@@ -31,21 +31,33 @@ import type { Input } from '@/modules/common/evaluation/types'
 import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
-const open = defineModel<boolean>('open', { required: true })
-const { input } = defineProps<{
+const { input, instanceState, instanceOffset = 0 } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
+  instanceState: RankingWindowInstanceState
+  instanceOffset?: number
 }>()
 
 const emit = defineEmits<{
+  'update:instanceState': [state: RankingWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
+  close: []
 }>()
 
-const defaultSemantic = KNOWN_RANKING_SEMANTICS.find((s) => s.key === KEY_DEFAULT_RANKING_SEMANTIC)
-if (defaultSemantic === undefined) {
-  throw new Error('Default ranking semantic does not exist.')
+const internalOpen = ref(true)
+watch(internalOpen, (v) => { if (!v) emit('close') })
+
+function resolveSemanticFromKey(key: string): RankingSemantic {
+  return KNOWN_RANKING_SEMANTICS.find((s) => s.key === key) ?? KNOWN_RANKING_SEMANTICS[0]!
 }
 
-const selectedSemantic = shallowRef<RankingSemantic>(defaultSemantic)
+const selectedSemantic = shallowRef<RankingSemantic>(resolveSemanticFromKey(instanceState.semanticKey))
+
+watch(selectedSemantic, () => {
+  emit('update:instanceState', {
+    id: instanceState.id,
+    semanticKey: selectedSemantic.value.key,
+  })
+})
 
 const { data, status, refetch, isLoading, isPending, isError } = useRankingEvaluationQuery(
   toRef(() => input),
@@ -53,10 +65,9 @@ const { data, status, refetch, isLoading, isPending, isError } = useRankingEvalu
   ref(false),
 )
 
-const userCanTriggerFetch = computed(() => open.value && status.value !== 'success')
+const userCanTriggerFetch = computed(() => status.value !== 'success')
 
 function emitWeights(ranking: typeof data.value) {
-  if (!open.value) return
   if (ranking === undefined) {
     emit('setWeights', [])
     return
@@ -65,17 +76,18 @@ function emitWeights(ranking: typeof data.value) {
 }
 
 watch(data, emitWeights)
-watch(open, () => emitWeights(data.value))
 </script>
 <template>
   <FloatingWindow
-    v-model:open="open"
-    title="Ranking Semantics"
-    :initial-position="{ x: 192, y: 96 }"
+    v-model:open="internalOpen"
+    :title="selectedSemantic.displayName"
+    :initial-position="{ x: 192 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intitalSize="{ width: 480, height: 320 }"
+    compactable
   >
+    <template #default="{ compact }">
     <div class="p-4">
-      <fieldset class="fieldset">
+      <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
           <label class="select select-sm w-52">
@@ -88,7 +100,7 @@ watch(open, () => emitWeights(data.value))
           </label>
         </div>
       </fieldset>
-      <fieldset class="fieldset" v-if="selectedSemantic.info !== undefined">
+      <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
         <details class="collapse collapse-arrow">
           <summary class="collapse-title fieldset-legend ps-0 max-w-max">Definition</summary>
           <div class="collapse-content text-sm p-0">
@@ -107,7 +119,7 @@ watch(open, () => emitWeights(data.value))
           </div>
         </details>
       </fieldset>
-      <fieldset class="fieldset">
+      <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">
           <button
             class="btn btn-sm btn-soft btn-neutral mt-2"
@@ -136,9 +148,10 @@ watch(open, () => emitWeights(data.value))
               {{ entry.name }}: {{ entry.score }}
             </span>
           </div>
-          <p class="label">{{ data.evaluationDurationInSeconds }}s</p>
+          <p class="label">{{ data.evaluationDurationInMs }}ms</p>
         </template>
       </fieldset>
     </div>
+    </template>
   </FloatingWindow>
 </template>

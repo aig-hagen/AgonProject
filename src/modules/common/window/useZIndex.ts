@@ -53,7 +53,7 @@ export function useZIndex() {
     updateAllRefs()
   }
 
-  onUnmounted(() => {})
+  onUnmounted(() => { remove(zIndexRef) })
   return {
     zIndex: zIndexRef,
     focusIn,

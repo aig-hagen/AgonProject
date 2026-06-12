@@ -29,8 +29,8 @@ import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
 
-const TIMEOUT_IN_SECONDS = 10
-const TIMEOUT_UNIT_SECONDS = 's'
+const TIMEOUT_IN_MS = 10000
+const TIMEOUT_UNIT_MS = 'ms'
 
 export const KEY_DEFAULT_SEMANTIC = 'b-cf'
 export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
@@ -156,7 +156,7 @@ interface GetModelsRequestBody {
   supports: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+  unit_timeout: typeof TIMEOUT_UNIT_MS
 }
 
 const GetModelsResponseSchema = z.object({
@@ -170,7 +170,7 @@ async function fetchModels(
   supports: number[][],
   semantics: string,
 ): Promise<{
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   extensions: number[][]
 }> {
   const body: GetModelsRequestBody = {
@@ -180,8 +180,8 @@ async function fetchModels(
     attacks: attacks,
     supports: supports,
     semantics: semantics,
-    timeout: TIMEOUT_IN_SECONDS,
-    unit_timeout: TIMEOUT_UNIT_SECONDS,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
   }
 
   const modelsResponse = await fetchTyped(
@@ -191,14 +191,14 @@ async function fetchModels(
   )
   const extensions = parserListOfSets(modelsResponse.answer)
   return {
-    evaluationDurationInSeconds: modelsResponse.time,
+    evaluationDurationInMs: modelsResponse.time,
     extensions,
   }
 }
 
 export interface ExtensionEvaluationResult {
   stateId: UUID
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   extensions: string[][]
 }
 
@@ -267,7 +267,7 @@ export function useExtensionEvaluationQuery(
     )
     return {
       stateId: input.stateId,
-      evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+      evaluationDurationInMs: originalData.evaluationDurationInMs,
       extensions: extensions,
     }
   })

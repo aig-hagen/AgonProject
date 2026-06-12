@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watchEffect } from 'vue'
+import { computed, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
 
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
@@ -26,29 +26,47 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import {
   type Interpretation,
-  KEY_DEFAULT_SEMANTIC,
   KNOWN_SEMANTIC_GROUPS,
   type Semantic,
   useInterpretationEvaluationQuery,
 } from '@/modules/dialectical-argumentation/evaluation/tweetyProject'
+import type { ExtensionWindowInstanceState } from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
-const open = defineModel<boolean>('open', { required: true })
-const { input } = defineProps<{
+const { input, instanceState, instanceOffset = 0 } = defineProps<{
   input: Input<DialecticalArgumentation<AdfArgumentData>>
+  instanceState: ExtensionWindowInstanceState
+  instanceOffset?: number
 }>()
 
 const emit = defineEmits<{
+  'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
+  close: []
 }>()
 
-const semanticGroups = KNOWN_SEMANTIC_GROUPS
-const defaultSemantic = semanticGroups.flatMap((g) => g.semantics).find((s) => s.key === KEY_DEFAULT_SEMANTIC)
-if (defaultSemantic === undefined) throw new Error('Default semantic does not exist.')
-const selectedSemantic = shallowRef<Semantic>(defaultSemantic)
+const internalOpen = ref(true)
+watch(internalOpen, (v) => { if (!v) emit('close') })
 
-const evaluateContinuously = ref(false)
-const enabled = computed(() => evaluateContinuously.value && open.value)
+const semanticGroups = KNOWN_SEMANTIC_GROUPS
+const allSemantics = semanticGroups.flatMap((g) => g.semantics)
+
+function resolveSemanticFromKey(key: string): Semantic {
+  return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
+}
+
+const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const evaluateContinuously = ref(instanceState.evaluateContinuously)
+
+watch([selectedSemantic, evaluateContinuously], () => {
+  emit('update:instanceState', {
+    id: instanceState.id,
+    semanticKey: selectedSemantic.value.key,
+    evaluateContinuously: evaluateContinuously.value,
+  })
+})
+
+const enabled = computed(() => evaluateContinuously.value)
 
 const { data, status, refetch, isLoading, isPending, isError } = useInterpretationEvaluationQuery(
   toRef(() => input),
@@ -57,7 +75,7 @@ const { data, status, refetch, isLoading, isPending, isError } = useInterpretati
 )
 
 const userCanTriggerFetch = computed(
-  () => open.value && !evaluateContinuously.value && status.value !== 'success',
+  () => !evaluateContinuously.value && status.value !== 'success',
 )
 
 function interpretationKey(interp: Interpretation): string {
@@ -78,7 +96,7 @@ const formattedData = computed(() => {
   if (data.value === undefined) return undefined
   return {
     stateId: data.value.stateId,
-    evaluationDurationInSeconds: data.value.evaluationDurationInSeconds,
+    evaluationDurationInMs: data.value.evaluationDurationInMs,
     items: data.value.interpretations.map((interp) => ({
       key: interpretationKey(interp),
       interpretation: interp,
@@ -94,6 +112,8 @@ const resultItems = computed(
       label: `{${i.formatted}}`,
     })) ?? [],
 )
+
+const windowTitle = computed(() => selectedSemantic.value.displayName)
 
 const selectedKey = ref<string | undefined>(undefined)
 
@@ -119,13 +139,15 @@ watchEffect(() => {
 
 <template>
   <FloatingWindow
-    v-model:open="open"
-    title="Model Semantics"
-    :initial-position="{ x: 128, y: 64 }"
+    v-model:open="internalOpen"
+    :title="windowTitle"
+    :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
     :intitalSize="{ width: 512, height: 400 }"
+    compactable
   >
+    <template #default="{ compact }">
     <div class="p-4">
-      <fieldset class="fieldset">
+      <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <label class="select select-sm w-52">
           <span class="label">Semantics</span>
@@ -138,7 +160,7 @@ watchEffect(() => {
           </select>
         </label>
       </fieldset>
-      <fieldset class="fieldset">
+      <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">
           <button
             class="btn btn-sm btn-soft btn-neutral mt-2"
@@ -167,10 +189,11 @@ watchEffect(() => {
             :items="resultItems"
             empty-message="No interpretations exist."
             selection-hint="Select interpretation to highlight."
-            :evaluation-duration-in-seconds="formattedData.evaluationDurationInSeconds"
+            :evaluation-duration-in-ms="formattedData.evaluationDurationInMs"
           />
         </template>
       </fieldset>
     </div>
+    </template>
   </FloatingWindow>
 </template>

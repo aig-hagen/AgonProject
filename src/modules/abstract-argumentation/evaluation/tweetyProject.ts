@@ -29,8 +29,8 @@ import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_ABSTRACT_ARGUMENTATION = '/dung'
 
-const TIMEOUT_IN_SECONDS = 10
-const TIMEOUT_UNIT_SECONDS = 's'
+const TIMEOUT_IN_MS = 10000
+const TIMEOUT_UNIT_MS = 'ms'
 
 export const KEY_DEFAULT_SEMANTIC = 'ST'
 export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
@@ -322,7 +322,7 @@ interface GetCredulousRequestBody {
   attacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+  unit_timeout: typeof TIMEOUT_UNIT_MS
 }
 
 const GetAcceptabilityResponseSchema = z.object({
@@ -335,7 +335,7 @@ async function fetchCredulous(
   attacks: number[][],
   semantics: string,
 ): Promise<{
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   arguments: number[]
 }> {
   const body: GetCredulousRequestBody = {
@@ -344,8 +344,8 @@ async function fetchCredulous(
     nr_of_arguments: numberOfArguments,
     attacks: attacks,
     semantics: semantics,
-    timeout: TIMEOUT_IN_SECONDS,
-    unit_timeout: TIMEOUT_UNIT_SECONDS,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
   }
 
   const credulousResponse = await fetchTyped(
@@ -355,7 +355,7 @@ async function fetchCredulous(
   )
   const accArguments = parserSet(credulousResponse.answer)
   return {
-    evaluationDurationInSeconds: credulousResponse.time,
+    evaluationDurationInMs: credulousResponse.time,
     arguments: accArguments,
   }
 }
@@ -367,7 +367,7 @@ interface GetSkepticalRequestBody {
   attacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+  unit_timeout: typeof TIMEOUT_UNIT_MS
 }
 
 async function fetchSkeptical(
@@ -375,7 +375,7 @@ async function fetchSkeptical(
   attacks: number[][],
   semantics: string,
 ): Promise<{
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   arguments: number[]
 }> {
   const body: GetSkepticalRequestBody = {
@@ -384,8 +384,8 @@ async function fetchSkeptical(
     nr_of_arguments: numberOfArguments,
     attacks: attacks,
     semantics: semantics,
-    timeout: TIMEOUT_IN_SECONDS,
-    unit_timeout: TIMEOUT_UNIT_SECONDS,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
   }
 
   const skepticalResponse = await fetchTyped(
@@ -395,7 +395,7 @@ async function fetchSkeptical(
   )
   const accArguments = parserSet(skepticalResponse.answer)
   return {
-    evaluationDurationInSeconds: skepticalResponse.time,
+    evaluationDurationInMs: skepticalResponse.time,
     arguments: accArguments,
   }
 }
@@ -408,7 +408,7 @@ interface GetModelsRequestBody {
   attacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+  unit_timeout: typeof TIMEOUT_UNIT_MS
 }
 
 const GetModelsResponseSchema = z.object({
@@ -421,7 +421,7 @@ async function fetchModels(
   attacks: number[][],
   semantics: string,
 ): Promise<{
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   extensions: number[][]
 }> {
   const body: GetModelsRequestBody = {
@@ -430,8 +430,8 @@ async function fetchModels(
     nr_of_arguments: numberOfArguments,
     attacks: attacks,
     semantics: semantics,
-    timeout: TIMEOUT_IN_SECONDS,
-    unit_timeout: TIMEOUT_UNIT_SECONDS,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
   }
 
   const modelsResponse = await fetchTyped(
@@ -441,14 +441,14 @@ async function fetchModels(
   )
   const extensions = parserListOfSets(modelsResponse.answer)
   return {
-    evaluationDurationInSeconds: modelsResponse.time,
+    evaluationDurationInMs: modelsResponse.time,
     extensions,
   }
 }
 
 export interface ExtensionEvaluationResult {
   stateId: UUID
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   extensions: string[][]
 }
 
@@ -482,12 +482,12 @@ export function useExtensionEvaluationQuery(
     return { numberOfArguments, attacks, semanticsRef: unref(semanticsRef), idMapping }
   })
   type EvaluationQueryResult =
-    | { evaluationDurationInSeconds: number; extensions: number[][] }
-    | { evaluationDurationInSeconds: number; arguments: number[] }
+    | { evaluationDurationInMs: number; extensions: number[][] }
+    | { evaluationDurationInMs: number; arguments: number[] }
 
   const isModelResult = (
     data: EvaluationQueryResult,
-  ): data is { evaluationDurationInSeconds: number; extensions: number[][] } =>
+  ): data is { evaluationDurationInMs: number; extensions: number[][] } =>
     'extensions' in data
 
   const queryKey = computed(() => {
@@ -549,7 +549,7 @@ export function useExtensionEvaluationQuery(
       )
       return {
         stateId: input.stateId,
-        evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+        evaluationDurationInMs: originalData.evaluationDurationInMs,
         extensions: extensions,
       }
     }
@@ -569,7 +569,7 @@ export function useExtensionEvaluationQuery(
     })
     return {
       stateId: input.stateId,
-      evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+      evaluationDurationInMs: originalData.evaluationDurationInMs,
       extensions: [accArguments],
     }
   })

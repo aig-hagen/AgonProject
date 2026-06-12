@@ -35,8 +35,8 @@ export {
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
 
 const ENDPOINT_IAF = '/iaf'
-const TIMEOUT_IN_SECONDS = 10
-const TIMEOUT_UNIT_SECONDS = 's'
+const TIMEOUT_IN_MS = 10000
+const TIMEOUT_UNIT_MS = 'ms'
 
 type IafCommand =
   | 'get_models_pos'
@@ -58,7 +58,7 @@ interface IafRequestBody {
   uncertainAttacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+  unit_timeout: typeof TIMEOUT_UNIT_MS
 }
 
 const IafResponseSchema = z.object({
@@ -82,8 +82,8 @@ function buildRequestBody(
     definiteAttacks,
     uncertainAttacks,
     semantics,
-    timeout: TIMEOUT_IN_SECONDS,
-    unit_timeout: TIMEOUT_UNIT_SECONDS,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
   }
 }
 
@@ -94,7 +94,7 @@ async function fetchModels(
   definiteAttacks: number[][],
   uncertainAttacks: number[][],
   semantics: string,
-): Promise<{ evaluationDurationInSeconds: number; extensions: number[][] }> {
+): Promise<{ evaluationDurationInMs: number; extensions: number[][] }> {
   const body = buildRequestBody(
     `get_models_${type}`,
     numberOfArguments,
@@ -105,7 +105,7 @@ async function fetchModels(
   )
   const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
   return {
-    evaluationDurationInSeconds: response.time,
+    evaluationDurationInMs: response.time,
     extensions: parserListOfSets(response.answer),
   }
 }
@@ -118,7 +118,7 @@ async function fetchAcceptability(
   definiteAttacks: number[][],
   uncertainAttacks: number[][],
   semantics: string,
-): Promise<{ evaluationDurationInSeconds: number; arguments: number[] }> {
+): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
   const body = buildRequestBody(
     `get_${mode}_${type}`,
     numberOfArguments,
@@ -129,14 +129,14 @@ async function fetchAcceptability(
   )
   const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
   return {
-    evaluationDurationInSeconds: response.time,
+    evaluationDurationInMs: response.time,
     arguments: parserSet(response.answer),
   }
 }
 
 export interface ExtensionEvaluationResult {
   stateId: UUID
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   extensions: string[][]
 }
 
@@ -175,12 +175,12 @@ export function useExtensionEvaluationQuery(
   })
 
   type EvaluationQueryResult =
-    | { evaluationDurationInSeconds: number; extensions: number[][] }
-    | { evaluationDurationInSeconds: number; arguments: number[] }
+    | { evaluationDurationInMs: number; extensions: number[][] }
+    | { evaluationDurationInMs: number; arguments: number[] }
 
   const isModelResult = (
     result: EvaluationQueryResult,
-  ): result is { evaluationDurationInSeconds: number; extensions: number[][] } =>
+  ): result is { evaluationDurationInMs: number; extensions: number[][] } =>
     'extensions' in result
 
   const queryKey = computed(() => {
@@ -224,7 +224,7 @@ export function useExtensionEvaluationQuery(
       )
       return {
         stateId: input.stateId,
-        evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+        evaluationDurationInMs: originalData.evaluationDurationInMs,
         extensions,
       }
     }
@@ -234,7 +234,7 @@ export function useExtensionEvaluationQuery(
     )
     return {
       stateId: input.stateId,
-      evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+      evaluationDurationInMs: originalData.evaluationDurationInMs,
       extensions: [accArguments],
     }
   })

@@ -27,8 +27,8 @@ import { type FormulaNode } from '@/modules/dialectical-argumentation/condition/
 import { type AdfArgumentData, type DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const ENDPOINT_ADF = '/adf'
-const TIMEOUT_IN_SECONDS = 10
-const TIMEOUT_UNIT_SECONDS = 's'
+const TIMEOUT_IN_MS = 10000
+const TIMEOUT_UNIT_MS = 'ms'
 
 // ── Semantics ─────────────────────────────────────────────────────────────────
 
@@ -139,7 +139,7 @@ interface GetModelsRequestBody {
   conditions: string[]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+  unit_timeout: typeof TIMEOUT_UNIT_MS
 }
 
 const GetModelsResponseSchema = z.object({
@@ -151,19 +151,19 @@ async function fetchModels(
   numberOfArguments: number,
   conditions: string[],
   semantics: string,
-): Promise<{ evaluationDurationInSeconds: number; interpretations: ServerInterpretation[] }> {
+): Promise<{ evaluationDurationInMs: number; interpretations: ServerInterpretation[] }> {
   const body: GetModelsRequestBody = {
     email: USER_ID,
     cmd: 'get_models',
     nr_of_arguments: numberOfArguments,
     conditions,
     semantics,
-    timeout: TIMEOUT_IN_SECONDS,
-    unit_timeout: TIMEOUT_UNIT_SECONDS,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_ADF, body, GetModelsResponseSchema)
   return {
-    evaluationDurationInSeconds: response.time,
+    evaluationDurationInMs: response.time,
     interpretations: parseInterpretations(response.answer),
   }
 }
@@ -182,7 +182,7 @@ export type Interpretation = InterpretationArgument[]
 
 export interface InterpretationEvaluationResult {
   stateId: UUID
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   interpretations: Interpretation[]
 }
 
@@ -215,7 +215,7 @@ export function useInterpretationEvaluationQuery(
   const queryKey = computed(() => ['adf_get_models', semanticsRef, argumentData] as const)
 
   const queryResult = useQuery<{
-    evaluationDurationInSeconds: number
+    evaluationDurationInMs: number
     interpretations: ServerInterpretation[]
   }>({
     queryKey,
@@ -252,7 +252,7 @@ export function useInterpretationEvaluationQuery(
 
     return {
       stateId: input.stateId,
-      evaluationDurationInSeconds: originalData.evaluationDurationInSeconds,
+      evaluationDurationInMs: originalData.evaluationDurationInMs,
       interpretations,
     }
   })

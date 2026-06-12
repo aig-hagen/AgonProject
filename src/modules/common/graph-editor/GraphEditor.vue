@@ -94,8 +94,6 @@ const linkNamesEnumeration = computed(
   () =>
     linkNames.value.slice(0, -1).join(', ') + ' and ' + linkNames.value[linkNames.value.length - 1],
 )
-const isExtensionsOpened = ref<boolean>(false)
-const isRankingOpened = ref<boolean>(false)
 const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
 const nodePhysicsEnabled = ref<boolean>(false)
@@ -176,6 +174,8 @@ const emit = defineEmits<{
   undo: []
   redo: []
   save: []
+  'open-extension-window': []
+  'open-ranking-window': []
 }>()
 
 let idGenerator = new IdGenerator()
@@ -607,12 +607,7 @@ onUnmounted(() => {
 })
 
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
-const highlightToShow = computed(() => {
-  if (!isExtensionsOpened.value) {
-    return undefined
-  }
-  return extensionHighlightRef.value
-})
+const highlightToShow = computed(() => extensionHighlightRef.value)
 
 watchEffect(() => {
   const graphComponent = graphComponentRef.value
@@ -764,8 +759,8 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
             Layout.Radial,
           ]"
           @save="emit('save')"
-          :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"
-          @evaluate="isExtensionsOpened = !isExtensionsOpened"
+          :show-evaluate="EntryState.ENABLE"
+          @evaluate="emit('open-extension-window')"
           :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
           @export="isExportOpened = !isExportOpened"
           @layout="doLayout($event)"
@@ -798,7 +793,7 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
           <button
             ref="extensionsButton"
             class="btn btn-square btn-sm"
-            @click="isExtensionsOpened = !isExtensionsOpened"
+            @click="emit('open-extension-window')"
             title="Extension Semantics"
           >
             <VariableIcon class="size-6 opacity-70" />
@@ -806,7 +801,7 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
           <button
             v-if="hasRankingSlot"
             class="btn btn-square btn-sm"
-            @click="isRankingOpened = !isRankingOpened"
+            @click="emit('open-ranking-window')"
             title="Ranking Semantics"
           >
             <BarsArrowUpIcon class="size-6 opacity-70" />
@@ -890,12 +885,10 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
     </template>
     <slot
       name="evaluationExtensions"
-      :isOpen="isExtensionsOpened"
-      @isOpen="isExtensionsOpened = $event"
-      @highlight="extensionHighlightRef = $event"
+      :on-highlight="(h: Highlight | undefined) => { extensionHighlightRef = h }"
     ></slot>
     <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
-    <slot name="evaluationRanking" :isOpen="isRankingOpened" @isOpen="isRankingOpened = $event"></slot>
+    <slot name="evaluationRanking"></slot>
     <WindowHelp :link-names="linkNames" v-model:open="isHelpOpened" />
   </div>
 </template>

@@ -17,9 +17,14 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { useLocalStorage } from '@vueuse/core'
 import { computed, shallowRef, watch } from 'vue'
 
 import { availableExports } from '@/modules/bipolar-argumentation/export'
+import {
+  createDefaultExtensionWindowInstance,
+  type ExtensionWindowInstanceState,
+} from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
@@ -30,6 +35,7 @@ import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
   type HistoryState,
+  type Highlight,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
@@ -183,6 +189,28 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     createNewState((draft) => draft.addSupport(data.sourceId, data.targetId))
   }
 }
+
+// --- Multi-instance window management ---
+
+const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
+  'bipolar-argumentation:extension-instances',
+  [],
+)
+
+function addExtensionInstance() {
+  extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
+}
+
+function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
+  if (extensionInstances.value.length === 1) onHighlight(undefined)
+  extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
+}
+
+function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
+  extensionInstances.value = extensionInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
+}
 </script>
 <template>
   <GraphEditor
@@ -202,13 +230,18 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
+    @open-extension-window="addExtensionInstance()"
   >
-    <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
+    <template #evaluationExtensions="{ onHighlight }">
       <WindowExtensions
+        v-for="(instance, index) in extensionInstances"
+        :key="instance.id"
         :input="evaluationInput"
-        :open="isOpen"
-        @update:open="onIsOpen"
+        :instance-state="instance"
+        :instance-offset="index"
+        @update:instance-state="updateExtensionInstance($event)"
         @highlight="onHighlight"
+        @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>
     <template #export="{ isOpen, onIsOpen }">

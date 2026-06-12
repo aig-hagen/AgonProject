@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watchEffect } from 'vue'
+import { computed, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
 
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
@@ -29,33 +29,51 @@ import {
   type Extension,
   type IafMode,
   type IafType,
-  KEY_DEFAULT_SEMANTIC,
   KNOWN_SEMANTIC_GROUPS,
   type Semantic,
   useExtensionEvaluationQuery,
 } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
+import type { ExtensionWindowInstanceState } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 
-const open = defineModel<boolean>('open', { required: true })
-const { input } = defineProps<{
+const { input, instanceState, instanceOffset = 0 } = defineProps<{
   input: Input<IncompleteArgumentation<IafArgumentData>>
+  instanceState: ExtensionWindowInstanceState
+  instanceOffset?: number
 }>()
 
 const emit = defineEmits<{
+  'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
+  close: []
 }>()
+
+const internalOpen = ref(true)
+watch(internalOpen, (v) => { if (!v) emit('close') })
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
 
-const defaultSemantic = allSemantics.find((s) => s.key === KEY_DEFAULT_SEMANTIC)
-if (defaultSemantic === undefined) throw new Error('Default semantic does not exist.')
+function resolveSemanticFromKey(key: string): Semantic {
+  return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
+}
 
-const selectedSemantic = shallowRef<Semantic>(defaultSemantic)
-const selectedType = ref<IafType>('pos')
-const selectedMode = ref<IafMode>('enumerate')
-const evaluateContiously = ref(false)
-const enabled = computed(() => evaluateContiously.value && open.value)
+const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedType = ref<IafType>(instanceState.type)
+const selectedMode = ref<IafMode>(instanceState.mode)
+const evaluateContiously = ref(instanceState.evaluateContinuously)
+
+watch([selectedSemantic, selectedType, selectedMode, evaluateContiously], () => {
+  emit('update:instanceState', {
+    id: instanceState.id,
+    semanticKey: selectedSemantic.value.key,
+    type: selectedType.value,
+    mode: selectedMode.value,
+    evaluateContinuously: evaluateContiously.value,
+  })
+})
+
+const enabled = computed(() => evaluateContiously.value)
 
 const { data, status, refetch, isLoading, isPending, isError } = useExtensionEvaluationQuery(
   toRef(() => input),
@@ -66,7 +84,7 @@ const { data, status, refetch, isLoading, isPending, isError } = useExtensionEva
 )
 
 const userCanTriggerFetch = computed(
-  () => open.value && !evaluateContiously.value && status.value !== 'success',
+  () => !evaluateContiously.value && status.value !== 'success',
 )
 
 const resultsHeader = computed(() =>
@@ -103,7 +121,7 @@ const dataExtensionsFormatedAndSorted = computed(() => {
   return {
     stateId: data.value.stateId,
     formatedAndSorted: formated,
-    evaluationDurationInSeconds: data.value.evaluationDurationInSeconds,
+    evaluationDurationInMs: data.value.evaluationDurationInMs,
   }
 })
 
@@ -114,6 +132,13 @@ const resultItems = computed(
       label: selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
     })) ?? [],
 )
+
+const windowTitle = computed(() => {
+  const typeLabel = selectedType.value === 'pos' ? 'Possible' : 'Necessary'
+  const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
+    : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
+  return `${selectedSemantic.value.displayName} · ${typeLabel} · ${modeLabel}`
+})
 
 const selectedExtension = ref<string | undefined>(undefined)
 watchEffect(() => {
@@ -136,13 +161,15 @@ watchEffect(() => {
 
 <template>
   <FloatingWindow
-    v-model:open="open"
-    title="Extension Semantics"
-    :initial-position="{ x: 128, y: 64 }"
+    v-model:open="internalOpen"
+    :title="windowTitle"
+    :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
     :intitalSize="{ width: 576, height: 448 }"
+    compactable
   >
+    <template #default="{ compact }">
     <div class="p-4">
-      <fieldset class="fieldset">
+      <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
           <label class="select select-sm w-54">
@@ -180,7 +207,7 @@ watchEffect(() => {
           </label>
         </div>
       </fieldset>
-      <fieldset class="fieldset" v-if="selectedSemantic.info !== undefined">
+      <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
         <details class="collapse collapse-arrow">
           <summary class="collapse-title fieldset-legend ps-0 max-w-max">Definition</summary>
           <div class="collapse-content text-sm p-0">
@@ -199,7 +226,7 @@ watchEffect(() => {
           </div>
         </details>
       </fieldset>
-      <fieldset class="fieldset">
+      <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">
           <button
             class="btn btn-sm btn-soft btn-neutral mt-2"
@@ -228,10 +255,11 @@ watchEffect(() => {
             :items="resultItems"
             :empty-message="selectedMode === 'enumerate' ? 'No extensions exist.' : 'No acceptable arguments exist.'"
             :selection-hint="selectionHint"
-            :evaluation-duration-in-seconds="dataExtensionsFormatedAndSorted.evaluationDurationInSeconds"
+            :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
           />
         </template>
       </fieldset>
     </div>
+    </template>
   </FloatingWindow>
 </template>

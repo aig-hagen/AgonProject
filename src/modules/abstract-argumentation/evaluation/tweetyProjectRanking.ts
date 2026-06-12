@@ -29,8 +29,8 @@ import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_ABSTRACT_ARGUMENTATION = '/rankings'
 
-const TIMEOUT_IN_SECONDS = 10
-const TIMEOUT_UNIT_SECONDS = 's'
+const TIMEOUT_IN_MS = 10000
+const TIMEOUT_UNIT_MS = 'ms'
 
 export const KEY_DEFAULT_RANKING_SEMANTIC = 'CAT'
 
@@ -92,7 +92,7 @@ export type Ranking = RankingEntry[]
 
 export interface RankingEvaluationResult {
   stateId: UUID
-  evaluationDurationInSeconds: number
+  evaluationDurationInMs: number
   ranking: Ranking
 }
 
@@ -103,7 +103,7 @@ interface GetRankingRequestBody {
   attacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_SECONDS
+  unit_timeout: typeof TIMEOUT_UNIT_MS
 }
 
 const GetRankingResponseSchema = z.object({
@@ -115,20 +115,20 @@ async function fetchRanking(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
-): Promise<{ evaluationDurationInSeconds: number; scores: Array<{ argumentId: number; score: number }> }> {
+): Promise<{ evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }> }> {
   const body: GetRankingRequestBody = {
     email: USER_ID,
     cmd: 'get_model',
     nr_of_arguments: numberOfArguments,
     attacks,
     semantics,
-    timeout: TIMEOUT_IN_SECONDS,
-    unit_timeout: TIMEOUT_UNIT_SECONDS,
+    timeout: TIMEOUT_IN_MS,
+    unit_timeout: TIMEOUT_UNIT_MS,
   }
 
   const response = await fetchTyped(ENDPOINT_ABSTRACT_ARGUMENTATION, body, GetRankingResponseSchema)
   return {
-    evaluationDurationInSeconds: response.time,
+    evaluationDurationInMs: response.time,
     scores: parserScores(response.answer),
   }
 }
@@ -157,7 +157,7 @@ export function useRankingEvaluationQuery(
     () => ['rankings_get_model', semanticsRef, argumentData] as const,
   )
 
-  type RawResult = { evaluationDurationInSeconds: number; scores: Array<{ argumentId: number; score: number }> }
+  type RawResult = { evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }> }
   const queryResult = useQuery<RawResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
@@ -188,7 +188,7 @@ export function useRankingEvaluationQuery(
 
     return {
       stateId: input.stateId,
-      evaluationDurationInSeconds: raw.evaluationDurationInSeconds,
+      evaluationDurationInMs: raw.evaluationDurationInMs,
       ranking,
     }
   })

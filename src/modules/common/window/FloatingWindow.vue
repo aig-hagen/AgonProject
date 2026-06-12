@@ -22,10 +22,10 @@ import '@interactjs/actions/drag'
 import '@interactjs/actions/resize'
 import '@interactjs/modifiers'
 
-import { XMarkIcon } from '@heroicons/vue/24/solid'
+import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/vue/24/solid'
 import interact from '@interactjs/interact'
 import { useEventListener } from '@vueuse/core'
-import { nextTick, onMounted, useTemplateRef, watchEffect } from 'vue'
+import { nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 
 import { POINTER_SHIELD_Z_INDEX, useZIndex } from '@/modules/common/window/useZIndex'
 
@@ -34,13 +34,46 @@ const content = useTemplateRef('content')
 const header = useTemplateRef('header')
 const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
-const { title, initialPosition, intitalSize } = defineProps<{
+const { title, initialPosition, intitalSize, compactable = false } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
   intitalSize: { width: number; height: number }
+  compactable?: boolean
 }>()
 
 const position = { ...initialPosition }
+const minimized = ref(false)
+const compact = ref(false)
+let savedMinimizeHeight = ''
+let savedCompactHeight = ''
+let interactable: ReturnType<typeof interact> | null = null
+
+function toggleMinimize() {
+  if (!minimized.value) {
+    savedMinimizeHeight = floating.value!.style.height
+    floating.value!.style.height = ''
+    minimized.value = true
+    interactable?.resizable({ enabled: false })
+  } else {
+    floating.value!.style.height = savedMinimizeHeight
+    minimized.value = false
+    interactable?.resizable({ enabled: true })
+  }
+}
+
+function toggleCompact() {
+  if (!compact.value) {
+    savedCompactHeight = floating.value!.style.height
+    compact.value = true
+    nextTick(() => {
+      floating.value!.style.height = ''
+      floating.value!.style.height = floating.value!.offsetHeight + 'px'
+    })
+  } else {
+    compact.value = false
+    floating.value!.style.height = savedCompactHeight
+  }
+}
 
 function startDragOrResize() {
   // Avoid pointer being captured by content on any other element during resizing.
@@ -68,7 +101,7 @@ onMounted(() => {
   floating.value.style.width = intitalSize.width + 'px'
   floating.value.style.height = intitalSize.height + 'px'
   pointerShield.value!.style.display = 'none'
-  interact(floating.value)
+  interactable = interact(floating.value)
     .draggable({
       modifiers: [
         interact.modifiers.restrict({
@@ -171,15 +204,31 @@ watchEffect(async () => {
   >
     <div
       ref="header"
-      class="floating-window-header bg-base-200 border-b border-base-300 flex justify-between py-1 pl-4 pr-2"
+      class="floating-window-header bg-base-200 flex justify-between py-1 pl-4 pr-2"
+      :class="{ 'border-b border-base-300': !minimized }"
     >
-      <div>{{ title }}</div>
-      <button @click="open = false" class="btn btn-square btn-xs btn-ghost">
-        <XMarkIcon class="size-4"></XMarkIcon>
-      </button>
+      <div class="flex-1 truncate mr-2 self-center">{{ title }}</div>
+      <div class="flex gap-0.5">
+        <button
+          v-if="compactable"
+          @click="toggleCompact"
+          class="btn btn-square btn-xs btn-ghost"
+          :class="{ 'opacity-40': compact }"
+          :title="compact ? 'Show parameters' : 'Hide parameters'"
+        >
+          <AdjustmentsHorizontalIcon class="size-4" />
+        </button>
+        <button @click="toggleMinimize" class="btn btn-square btn-xs btn-ghost">
+          <ChevronUpIcon v-if="minimized" class="size-4" />
+          <ChevronDownIcon v-else class="size-4" />
+        </button>
+        <button @click="open = false" class="btn btn-square btn-xs btn-ghost">
+          <XMarkIcon class="size-4" />
+        </button>
+      </div>
     </div>
-    <div ref="content" class="floating-window-content bg-base-100 overflow-x-auto flex-1">
-      <slot> </slot>
+    <div v-show="!minimized" ref="content" class="floating-window-content bg-base-100 overflow-x-auto flex-1">
+      <slot :compact="compact" />
     </div>
   </div>
   <div

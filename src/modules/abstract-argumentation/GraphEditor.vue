@@ -17,9 +17,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { useLocalStorage } from '@vueuse/core'
 import { computed, shallowRef, watch } from 'vue'
 
 import { availableExports } from '@/modules/abstract-argumentation/export'
+import {
+  createDefaultExtensionWindowInstance,
+  type ExtensionWindowInstanceState,
+} from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
+import {
+  createDefaultRankingWindowInstance,
+  type RankingWindowInstanceState,
+} from '@/modules/abstract-argumentation/evaluation/rankingWindowState'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
@@ -31,6 +40,7 @@ import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
   type HistoryState,
+  type Highlight,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
@@ -136,11 +146,6 @@ function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
   nodeWeights.value = new Map(weights.map(({ id, weight }) => [id, weight]))
 }
 
-function onRankingOpenChange(isOpen: boolean, onIsOpen: (v: boolean) => void) {
-  onIsOpen(isOpen)
-  if (!isOpen) nodeWeights.value = new Map()
-}
-
 function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   createNewState((draft) => {
     draft.getArgument(data.id).name = data.label
@@ -170,6 +175,47 @@ function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
 function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
   createNewState((draft) => draft.deleteAttack(data.sourceId, data.targetId))
 }
+
+// --- Multi-instance window management ---
+
+const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
+  'abstract-argumentation:extension-instances',
+  [],
+)
+const rankingInstances = useLocalStorage<RankingWindowInstanceState[]>(
+  'abstract-argumentation:ranking-instances',
+  [],
+)
+
+function addExtensionInstance() {
+  extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
+}
+
+function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
+  if (extensionInstances.value.length === 1) onHighlight(undefined)
+  extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
+}
+
+function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
+  extensionInstances.value = extensionInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
+}
+
+function addRankingInstance() {
+  rankingInstances.value = [...rankingInstances.value, createDefaultRankingWindowInstance()]
+}
+
+function removeRankingInstance(id: string) {
+  if (rankingInstances.value.length === 1) nodeWeights.value = new Map()
+  rankingInstances.value = rankingInstances.value.filter((i) => i.id !== id)
+}
+
+function updateRankingInstance(updated: RankingWindowInstanceState) {
+  rankingInstances.value = rankingInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
+}
 </script>
 <template>
   <GraphEditor
@@ -189,13 +235,19 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
     @redo="emit('redo')"
     @save="emit('save')"
     :history-state="historyState"
+    @open-extension-window="addExtensionInstance()"
+    @open-ranking-window="addRankingInstance()"
   >
-    <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
+    <template #evaluationExtensions="{ onHighlight }">
       <WindowExtensions
+        v-for="(instance, index) in extensionInstances"
+        :key="instance.id"
         :input="evaluationInput"
-        :open="isOpen"
-        @update:open="onIsOpen"
+        :instance-state="instance"
+        :instance-offset="index"
+        @update:instance-state="updateExtensionInstance($event)"
         @highlight="onHighlight"
+        @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>
     <template #export="{ isOpen, onIsOpen }">
@@ -207,12 +259,16 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
         @export="emit('export', $event)"
       />
     </template>
-    <template #evaluationRanking="{ isOpen, onIsOpen }">
+    <template #evaluationRanking>
       <WindowRanking
+        v-for="(instance, index) in rankingInstances"
+        :key="instance.id"
         :input="evaluationInput"
-        :open="isOpen"
-        @update:open="(v) => onRankingOpenChange(v, onIsOpen)"
+        :instance-state="instance"
+        :instance-offset="index"
+        @update:instance-state="updateRankingInstance($event)"
         @set-weights="onSetWeights"
+        @close="removeRankingInstance(instance.id)"
       />
     </template>
   </GraphEditor>

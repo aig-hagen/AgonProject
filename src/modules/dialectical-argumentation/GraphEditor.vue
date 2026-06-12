@@ -17,6 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
@@ -27,6 +28,7 @@ import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
   type HistoryState,
+  type Highlight,
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
@@ -34,6 +36,10 @@ import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { type FormulaNode,formulaToString } from '@/modules/dialectical-argumentation/condition/formula'
 import ConditionEditorBar from '@/modules/dialectical-argumentation/ConditionEditorBar.vue'
+import {
+  createDefaultExtensionWindowInstance,
+  type ExtensionWindowInstanceState,
+} from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/dialectical-argumentation/export'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import WindowInterpretations from '@/modules/dialectical-argumentation/WindowInterpretations.vue'
@@ -187,6 +193,28 @@ function onConditionChanged(formula: FormulaNode) {
   const id = selectedNodeId.value
   createNewState((draft) => draft.setCondition(id, formula), true)
 }
+
+// --- Multi-instance window management ---
+
+const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
+  'dialectical-argumentation:extension-instances',
+  [],
+)
+
+function addExtensionInstance() {
+  extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
+}
+
+function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
+  if (extensionInstances.value.length === 1) onHighlight(undefined)
+  extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
+}
+
+function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
+  extensionInstances.value = extensionInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
+}
 </script>
 <template>
   <GraphEditor
@@ -205,6 +233,7 @@ function onConditionChanged(formula: FormulaNode) {
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
+    @open-extension-window="addExtensionInstance()"
   >
     <template #nodeOverlay="{ nodes }">
       <template v-for="node in nodes" :key="node.id">
@@ -231,12 +260,16 @@ function onConditionChanged(formula: FormulaNode) {
         </g>
       </template>
     </template>
-    <template #evaluationExtensions="{ isOpen, onIsOpen, onHighlight }">
+    <template #evaluationExtensions="{ onHighlight }">
       <WindowInterpretations
+        v-for="(instance, index) in extensionInstances"
+        :key="instance.id"
         :input="evaluationInput"
-        :open="isOpen"
-        @update:open="onIsOpen"
+        :instance-state="instance"
+        :instance-offset="index"
+        @update:instance-state="updateExtensionInstance($event)"
         @highlight="onHighlight"
+        @close="removeExtensionInstance(instance.id, onHighlight)"
       />
       <ConditionEditorBar
         v-if="selectedNodeId !== null"
