@@ -87,7 +87,7 @@ const { documents, createDocument } = useDocumentMetadata(db, [
   bipoloarArgumentationModule,
   incompleteArgumentationModule,
   probabilisticArgumentationModule,
-] as ModuleConfig<Objectish>[])
+] as unknown as ModuleConfig<Objectish>[])
 
 function getNextName(prefix: string): string {
   const allNames = new Set(documents.value.map((d) => d.name))
