@@ -81,7 +81,7 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
   description: 'Distinguish between certain and uncertain arguments and attacks to represent incomplete information.',
   publications: [
     {
-      label: 'Coste-Marquis, S., Devred, C., Konieczny, S., Lagasquie-Schiex, M.-C. & Marquis, P. (2007). On the Merging of Dung\'s Argumentation Systems. Artificial Intelligence, 171(10–15), 730–753.',
+      label: 'Coste-Marquis, S., Devred, C., Konieczny, S., Lagasquie-Schiex, M.-C. & Marquis, P. (2007). On the Merging of Dung\'s Argumentation Systems. Artificial Intelligence, 171(10-15).',
       href: 'https://doi.org/10.1016/j.artint.2007.04.012',
     },
     {

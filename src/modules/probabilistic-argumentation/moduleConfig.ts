@@ -88,11 +88,11 @@ export const probabilisticArgumentationModule: ModuleConfig<
   publications: [
     {
       label: 'Li, H., Oren, N. & Norman, T.J. (2011). Probabilistic Argumentation Frameworks. TAFA 2011, LNAI 7132.',
-      href: 'https://doi.org/10.1007/978-3-642-29184-5_2',
+      href: 'https://link.springer.com/chapter/10.1007/978-3-642-29184-5_1',
     },
     {
-      label: 'Hunter, A. (2014). Probabilistic Qualification of Attack in Abstract Argumentation. International Journal of Approximate Reasoning, 55(2), 607–638.',
-      href: 'https://doi.org/10.1016/j.ijar.2013.10.003',
+      label: 'Hunter, A. (2014). Probabilistic Qualification of Attack in Abstract Argumentation. International Journal of Approximate Reasoning, 55(2).',
+      href: 'https://doi.org/10.1016/j.ijar.2013.09.002',
     },
     {
       label: 'Hunter, A., Polberg, S., Potyka, N., Rienstra, T. & Thimm, M. (2021). Probabilistic Argumentation: A Survey. In: Handbook of Formal Argumentation, Vol. 2, Chapter 7. College Publications.',

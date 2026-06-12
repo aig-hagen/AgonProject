@@ -100,11 +100,11 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   description: 'Relations between arguments can be either attacking or supporting.',
   publications: [
     {
-      label: 'Cayrol, C. & Lagasquie-Schiex, M.-C. (2005). On the Acceptability of Arguments in Bipolar Argumentation Frameworks. ECSQARU 2005, LNCS 3571, 378–389.',
+      label: 'Cayrol, C. & Lagasquie-Schiex, M.-C. (2005). On the Acceptability of Arguments in Bipolar Argumentation Frameworks. ECSQARU 2005, LNCS 3571.',
       href: 'https://doi.org/10.1007/11518655_33',
     },
     {
-      label: 'Cayrol, C. & Lagasquie-Schiex, M.-C. (2010). Coalitions of Arguments: A Tool for Handling Bipolar Argumentation Frameworks. International Journal of Intelligent Systems, 25(1), 83–109.',
+      label: 'Cayrol, C. & Lagasquie-Schiex, M.-C. (2010). Coalitions of Arguments: A Tool for Handling Bipolar Argumentation Frameworks. International Journal of Intelligent Systems, 25(1).',
       href: 'https://doi.org/10.1002/int.20403',
     },
     {

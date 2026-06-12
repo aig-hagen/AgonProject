@@ -25,6 +25,7 @@ import type { DocumentState } from '@/modules/common/state'
 defineProps<{
   state: DocumentState<SetAF<SetAfArgumentData>>
   historyState: HistoryState
+  documentId: number
 }>()
 
 defineEmits<{

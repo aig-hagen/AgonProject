@@ -89,7 +89,7 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
   publications: [
     {
-      label: 'Nielsen, S.H. & Parsons, S. (2006). A Generalization of Dung\'s Abstract Framework for Argumentation: Arguing with Sets of Attacking Arguments. ArgMAS 2006, LNCS 4766, 54–73.',
+      label: 'Nielsen, S.H. & Parsons, S. (2006). A Generalization of Dung\'s Abstract Framework for Argumentation: Arguing with Sets of Attacking Arguments. ArgMAS 2006, LNCS 4766.',
       href: 'https://doi.org/10.1007/978-3-540-75526-5_4',
     },
     {
