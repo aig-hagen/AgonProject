@@ -27,6 +27,7 @@ import App from '@/app/App.vue'
 import router from '@/app/router'
 import { abstractArgumentationModule } from '@/modules/abstract-argumentation/moduleConfig'
 import { bipoloarArgumentationModule } from '@/modules/bipolar-argumentation/moduleConfig'
+import { collectiveAttacksArgumentationModule } from '@/modules/collective-attacks-argumentation/moduleConfig'
 import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
@@ -35,7 +36,7 @@ import { openDocumentsDB } from '@/modules/common/documents/db'
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)
 
-const modules = [abstractArgumentationModule, bipoloarArgumentationModule, dialecticalArgumentationModule, incompleteArgumentationModule, probabilisticArgumentationModule] as const
+const modules = [abstractArgumentationModule, bipoloarArgumentationModule, dialecticalArgumentationModule, incompleteArgumentationModule, probabilisticArgumentationModule, collectiveAttacksArgumentationModule] as const
 
 const app = createApp(App, {
   db: markRaw(db),
