@@ -451,6 +451,41 @@ def _apply_incomplete(
     }
 
 
+def _apply_probabilistic(
+    base: dict[str, Any],
+    params: dict[str, Any],
+    seed: int | None,
+) -> dict[str, Any]:
+    certain_arg_frac: float = params.get("certainArgFrac", 0.5)
+    certain_attack_frac: float = params.get("certainAttackFrac", 0.5)
+    if not (0.0 <= certain_arg_frac <= 1.0):
+        raise ValueError("certainArgFrac must be between 0.0 and 1.0")
+    if not (0.0 <= certain_attack_frac <= 1.0):
+        raise ValueError("certainAttackFrac must be between 0.0 and 1.0")
+
+    rng = random.Random(seed)
+    n = base["nr_of_arguments"]
+
+    argument_probabilities = [
+        1.0 if rng.random() < certain_arg_frac else round(rng.random(), 2)
+        for _ in range(n)
+    ]
+    attack_probabilities = [
+        1.0 if rng.random() < certain_attack_frac else round(rng.random(), 2)
+        for _ in base["attacks"]
+    ]
+
+    return {
+        "nr_of_arguments": n,
+        "attacks": base["attacks"],
+        "argument_probabilities": argument_probabilities,
+        "attack_probabilities": attack_probabilities,
+        "supports": [],
+        "uncertain_arguments": [],
+        "uncertain_attacks": [],
+    }
+
+
 _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
     "abstract": FrameworkTypeConfig(
         id="abstract",
@@ -499,6 +534,32 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
             ),
         ],
     ),
+    "probabilistic": FrameworkTypeConfig(
+        id="probabilistic",
+        description="Arguments and attacks are assigned a probability value between 0 and 1.",
+        params_schema=[
+            ParamSchema(
+                "certainArgFrac",
+                "float",
+                "Fraction of arguments assigned probability 1.0 (rest get a random probability)",
+                required=False,
+                default=0.5,
+                min=0.0,
+                max=1.0,
+                step=0.01,
+            ),
+            ParamSchema(
+                "certainAttackFrac",
+                "float",
+                "Fraction of attacks assigned probability 1.0 (rest get a random probability)",
+                required=False,
+                default=0.5,
+                min=0.0,
+                max=1.0,
+                step=0.01,
+            ),
+        ],
+    ),
 }
 
 
@@ -522,6 +583,8 @@ class GenerationResponse(BaseModel):
     supports: list[list[int]] = Field(default_factory=list)
     uncertain_arguments: list[int] = Field(default_factory=list)
     uncertain_attacks: list[list[int]] = Field(default_factory=list)
+    argument_probabilities: list[float] = Field(default_factory=list)
+    attack_probabilities: list[float] = Field(default_factory=list)
 
 
 class ParamSchemaOut(BaseModel):
@@ -685,6 +748,8 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
             output = _apply_bipolar(base_output, req.params, post_seed)
         elif req.framework_type == "incomplete":
             output = _apply_incomplete(base_output, req.params, post_seed)
+        elif req.framework_type == "probabilistic":
+            output = _apply_probabilistic(base_output, req.params, post_seed)
         else:
             output = {
                 "nr_of_arguments": base_output["nr_of_arguments"],
@@ -704,4 +769,6 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
         supports=output["supports"],
         uncertain_arguments=output["uncertain_arguments"],
         uncertain_attacks=output["uncertain_attacks"],
+        argument_probabilities=output.get("argument_probabilities", []),
+        attack_probabilities=output.get("attack_probabilities", []),
     )

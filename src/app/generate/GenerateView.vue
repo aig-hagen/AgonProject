@@ -39,6 +39,8 @@ import { Layout } from '@/modules/common/main-menu/layouting'
 import { availableExports as incompleteExports } from '@/modules/incomplete-argumentation/export'
 import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
+import { type PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
 
 interface ParamSchema {
   name: string
@@ -68,6 +70,7 @@ type GeneratedFramework =
   | AbstractArgumentation<ArgumentData>
   | BipoloarArgumentation<ArgumentData>
   | IncompleteArgumentation<IafArgumentData>
+  | ProbabilisticArgumentation<PafArgumentData>
 
 // Both props are passed through attr fallthrough from App (same pattern as HomeView).
 // modules is declared to prevent Vue from warning about unrecognized attrs.
@@ -83,6 +86,7 @@ const { documents, createDocument } = useDocumentMetadata(db, [
   abstractArgumentationModule,
   bipoloarArgumentationModule,
   incompleteArgumentationModule,
+  probabilisticArgumentationModule,
 ] as ModuleConfig<Objectish>[])
 
 function getNextName(prefix: string): string {
@@ -99,7 +103,7 @@ const GENERATE_TIMEOUT_MS = 5_000
 // --- Framework type from URL ---
 const frameworkTypeId = computed<string>(() => {
   const t = route.query.type
-  if (t === 'bipolar' || t === 'incomplete') return t
+  if (t === 'bipolar' || t === 'incomplete' || t === 'probabilistic') return t
   return 'abstract'
 })
 
@@ -239,6 +243,8 @@ async function generate() {
       supports: [number, number][]
       uncertain_arguments: number[]
       uncertain_attacks: [number, number][]
+      argument_probabilities: number[]
+      attack_probabilities: number[]
     }
 
     const n = data.nr_of_arguments
@@ -275,6 +281,20 @@ async function generate() {
         nUncertainArgs: data.uncertain_arguments.length,
         nUncertainAttacks: data.uncertain_attacks.length,
       }
+    } else if (data.framework_type === 'probabilistic') {
+      const paf = new ProbabilisticArgumentation<PafArgumentData>()
+      for (let i = 0; i < n; i++) {
+        paf.addArgument(i, {
+          name: String(i + 1),
+          ...circularPos(i),
+          probability: data.argument_probabilities[i] ?? 1,
+        })
+      }
+      data.attacks.forEach(([src, tgt], j) => {
+        paf.addAttack(src - 1, tgt - 1, data.attack_probabilities[j] ?? 1)
+      })
+      generated.value = paf
+      stats.value = { nArgs: n, nAttacks: data.attacks.length }
     } else {
       const af = new AbstractArgumentation<ArgumentData>()
       for (let i = 0; i < n; i++) af.addArgument(i, { name: String(i + 1), ...circularPos(i) })
@@ -595,6 +615,10 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
             (<strong>{{ stats.nUncertainArgs }}</strong> uncertain)
             with <strong>{{ stats.nAttacks }}</strong> definite
             and <strong>{{ stats.nUncertainAttacks }}</strong> uncertain attack{{ stats.nUncertainAttacks === 1 ? '' : 's' }}.
+          </p>
+          <p v-else-if="frameworkTypeId === 'probabilistic'" class="text-sm text-base-content/70">
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            with <strong>{{ stats.nAttacks }}</strong> attack{{ stats.nAttacks === 1 ? '' : 's' }}.
           </p>
           <div class="flex flex-wrap gap-2">
             <span

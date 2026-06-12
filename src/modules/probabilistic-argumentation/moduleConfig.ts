@@ -83,5 +83,6 @@ export const probabilisticArgumentationModule: ModuleConfig<
   getSaveString(document) {
     return saveAsString(document)
   },
+  generateHref: '/generate?type=probabilistic',
   description: 'Arguments and attacks can be assigned a probability value between 0 and 1 to quantify uncertainty.',
 }

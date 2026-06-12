@@ -51,6 +51,7 @@ const { state, historyState } = defineProps<{
 const emit = defineEmits<{
   load: []
   new: []
+  generate: []
   change: [state: DocumentState<ProbabilisticArgumentation<PafArgumentData>>]
   undo: []
   redo: []
@@ -262,6 +263,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       v-if="editorState"
       @new="emit('new')"
       @load="emit('load')"
+      @generate="emit('generate')"
       @node-created="onNodeCreated"
       @node-deleted="onNodeDeleted"
       @node-label-edited="onNodeLabelEdited"
