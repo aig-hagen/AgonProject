@@ -37,19 +37,20 @@
 }
 
 .graph-controller__label-input {
-  background-color: var(--color-base-100);
-  border: 1px solid color-mix(in oklab, var(--color-base-content) 20%, transparent);
-  border-radius: var(--radius-field);
-  padding: 1px 6px;
-  font-family: sans-serif;
+  background-color: #99b7d5;
+  border: 1.5px solid #5a87a8;
+  border-radius: 50vh;
+  padding: 1px 8px;
   font-size: 0.875rem;
   color: var(--color-base-content);
   outline: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
-  width: 100px;
-  margin-left: 40px;
+  box-shadow: none;
+  width: 80px;
+  margin-left: 50px;
+  text-align: center;
 }
 
 .graph-controller__label-input:focus {
-  border-color: color-mix(in oklab, var(--color-base-content) 50%, transparent);
+  box-shadow: 0 0 0 3px rgba(90, 135, 168, 0.35);
 }
+

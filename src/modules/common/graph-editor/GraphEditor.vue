@@ -181,6 +181,27 @@ const emit = defineEmits<{
 let idGenerator = new IdGenerator()
 let idMapping = new IdMapping<number, number>()
 
+function computeLabelFontSize(label: string): string {
+  const len = label.length
+  if (len <= 3) return '1rem'
+  if (len <= 5) return '0.8rem'
+  if (len <= 8) return '0.65rem'
+  if (len <= 12) return '0.55rem'
+  return '0.45rem'
+}
+
+function adjustNodeLabelFontSize(internalId: number, label: string) {
+  const el = graphComponentRef.value?.$el as Element | undefined
+  if (!el) return
+  const nodeEl = el.querySelector(`#${CSS.escape(`${graphComponentId}-node-${internalId}`)}`)
+  const labelDiv = nodeEl
+    ?.closest('.graph-controller__node-container')
+    ?.querySelector<HTMLElement>('.graph-controller__node-label, .graph-controller__node-label-placeholder')
+  if (labelDiv) {
+    labelDiv.style.fontSize = computeLabelFontSize(label)
+  }
+}
+
 function* argumentNames() {
   for (const { label } of state.nodes) {
     yield label
@@ -252,6 +273,7 @@ function onNodeCreated(
   nextTick(() => {
     graphComponentRef.value!.setLabel(name, node.id)
     graphComponentRef.value!.setColor(ARGUMENT_COLOR, node.id)
+    adjustNodeLabelFontSize(node.id, name)
   })
 }
 function onNodeDeleted(
@@ -522,6 +544,10 @@ function setGraph(state: GraphEditorState, center: boolean): void {
       const internalTargetId = idMapping.getOrFail(link.targetId)
       applyLinkDash(`${internalSourceId}-${internalTargetId}`, linkConfigs[link.type]?.dashArray)
     }
+    for (const importedNode of importedNodes) {
+      const node = state.nodes.find((n) => n.id === importedNode.idImported)
+      if (node?.label) adjustNodeLabelFontSize(importedNode.id, node.label)
+    }
   })
 
   if (center) {
@@ -567,6 +593,7 @@ function onLabelEdited(
   }
   const publicId = idMapping.getOrFail(privateId)
   emit('nodeLabelEdited', { id: publicId, label: label })
+  nextTick(() => adjustNodeLabelFontSize(privateId, label))
 }
 
 const arrowSwitcherTarget = shallowRef<

@@ -26,6 +26,7 @@ import {
   usePafEvaluationQuery,
 } from '@/modules/probabilistic-argumentation/evaluation/tweetyProject'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
@@ -37,6 +38,7 @@ const { input, instanceState, instanceOffset = 0 } = defineProps<{
 
 const emit = defineEmits<{
   'update:instanceState': [state: PafWindowInstanceState]
+  setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
   close: []
 }>()
 
@@ -74,6 +76,14 @@ const { data, status, refetch, isLoading, isPending, isError } = usePafEvaluatio
 )
 
 const userCanTriggerFetch = computed(() => !evaluateContinuously.value && status.value !== 'success')
+
+watch(data, (d) => {
+  if (d === undefined) {
+    emit('setWeights', [])
+    return
+  }
+  emit('setWeights', d.entries.map((e) => ({ id: e.id, weight: e.probability })))
+})
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'

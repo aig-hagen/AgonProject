@@ -22,6 +22,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
+import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -206,6 +207,12 @@ function getProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityLabel[]
 
 // ── Evaluation window management ───────────────────────────────────────────
 
+const nodeWeights = shallowRef<Map<ArgumentId, number>>(new Map())
+
+function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
+  nodeWeights.value = new Map(weights.map(({ id, weight }) => [id, weight]))
+}
+
 const evaluationInstances = useLocalStorage<PafWindowInstanceState[]>(
   'probabilistic-argumentation:evaluation-instances',
   [],
@@ -216,6 +223,7 @@ function addEvaluationInstance() {
 }
 
 function removeEvaluationInstance(id: string) {
+  if (evaluationInstances.value.length === 1) nodeWeights.value = new Map()
   evaluationInstances.value = evaluationInstances.value.filter((i) => i.id !== id)
 }
 
@@ -272,6 +280,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       @link-deleted="onLinkDeleted"
       :link-configs="linkConfig"
       :state="editorState"
+      :node-weights="nodeWeights"
       :history-state="historyState"
       @undo="emit('undo')"
       @redo="emit('redo')"
@@ -286,6 +295,7 @@ function onPopupKeydown(event: KeyboardEvent) {
           :instance-state="instance"
           :instance-offset="index"
           @update:instance-state="updateEvaluationInstance($event)"
+          @set-weights="onSetWeights"
           @close="removeEvaluationInstance(instance.id)"
         />
       </template>
