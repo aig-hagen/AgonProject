@@ -33,6 +33,7 @@ import {
   JsonSyntaxError,
   ValidationError,
 } from '@/modules/common/save/load'
+import { Layout } from '@/modules/common/main-menu/layouting'
 
 const API_VERSION = 'argumentation-framework/v1' as const
 
@@ -110,6 +111,35 @@ export function loadFromString(
     success: true,
     data: argumentation,
   }
+}
+
+export const ExampleSaveSchema = SaveSchema.extend({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
+})
+
+export function loadExampleFromJson(json: unknown): {
+  framework: AbstractArgumentation<ArgumentData>
+  name?: string
+  description?: string
+  layoutType?: Layout
+} {
+  const result = ExampleSaveSchema.safeParse(json)
+  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
+  const { name, description, layoutType, ...rest } = result.data
+  const framework = new AbstractArgumentation<ArgumentData>()
+  for (const [id, argumentData] of Object.entries(rest.arguments)) {
+    framework.addArgument(parseInt(id, 10), {
+      name: argumentData.name,
+      x: argumentData.x,
+      y: argumentData.y,
+    })
+  }
+  for (const [attackerId, attackedId] of rest.attacks) {
+    framework.addAttack(attackerId, attackedId)
+  }
+  return { framework, name, description, layoutType }
 }
 
 export function canLoadFromObject(dataObject: Record<string, unknown>) {

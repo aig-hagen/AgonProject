@@ -17,43 +17,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
-import { loadFromString } from '@/modules/bipolar-argumentation/save/saveFormat'
+import { loadExampleFromJson } from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 
 import mealWineJson from './examples/meal_wine.json'
+import murderTrialJson from './examples/murder_trial.json'
+import vacationPlanningJson from './examples/vacation_planning.json'
 
-const exampleSources: { name: string; description: string; layoutType: Layout; json: unknown }[] =
-  [
-    {
-      name: 'meal_wine',
-      description:
-        'A bipolar version of the meal/wine example: meals attack each other, and each meal supports its matching wine.',
-      layoutType: Layout.Circular,
-      json: mealWineJson,
-    },
-  ]
+const exampleJsons: unknown[] = [mealWineJson, vacationPlanningJson, murderTrialJson]
 
-export const datasets: Example<BipoloarArgumentation<ArgumentData>>[] = exampleSources.map(
-  ({ name, description, layoutType, json }) => ({
-    name,
+export const datasets: Example<BipoloarArgumentation<ArgumentData>>[] = exampleJsons.map((json) => {
+  const { framework: _, name, description, layoutType } = loadExampleFromJson(json)
+  return {
+    name: name ?? 'unknown',
     description,
-    load: () => {
-      const result = loadFromString(JSON.stringify(json), name)
-      if (!result.success) throw new Error(`Failed to load example "${name}"`)
-      return result.data
-    },
+    load: () => loadExampleFromJson(json).framework,
     applyLayout: (af) => {
+      const layout = layoutType ?? Layout.Circular
       const nodes = [...af.arguments()].map(([id]) => id)
       const links = [...af.attacks(), ...af.supports()]
-      const positions = getNodePositions(nodes, links, layoutType)
+      const positions = getNodePositions(nodes, links, layout)
       for (const [id, data] of af.arguments()) {
         const pos = positions.get(id)!
         data.x = pos.x
         data.y = pos.y
       }
     },
-  }),
-)
+  }
+})

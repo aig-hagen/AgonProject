@@ -19,27 +19,25 @@
 import type { Example } from '@/modules/common/examples'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
-import { loadExampleFromJson } from '@/modules/dialectical-argumentation/save/saveFormat'
+import murderTrialJson from '@/modules/incomplete-argumentation/examples/murder_trial.json'
+import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import { loadExampleFromJson } from '@/modules/incomplete-argumentation/save/saveFormat'
 
-import mealWineJson from './examples/meal_wine.json'
-import murderTrialJson from './examples/murder_trial.json'
+const exampleJsons: unknown[] = [murderTrialJson]
 
-const exampleJsons: unknown[] = [mealWineJson, murderTrialJson]
-
-export const datasets: Example<DialecticalArgumentation<AdfArgumentData>>[] = exampleJsons.map(
+export const datasets: Example<IncompleteArgumentation<IafArgumentData>>[] = exampleJsons.map(
   (json) => {
     const { framework: _, name, description, layoutType } = loadExampleFromJson(json)
     return {
       name: name ?? 'unknown',
       description,
       load: () => loadExampleFromJson(json).framework,
-      applyLayout: (adf) => {
+      applyLayout: (af) => {
         const layout = layoutType ?? Layout.Circular
-        const nodes = [...adf.arguments()].map(([id]) => id)
-        const links = [...adf.links()]
+        const nodes = [...af.arguments()].map(([id]) => id)
+        const links = [...af.definiteAttacks(), ...af.uncertainAttacks()]
         const positions = getNodePositions(nodes, links, layout)
-        for (const [id, data] of adf.arguments()) {
+        for (const [id, data] of af.arguments()) {
           const pos = positions.get(id)!
           data.x = pos.x
           data.y = pos.y

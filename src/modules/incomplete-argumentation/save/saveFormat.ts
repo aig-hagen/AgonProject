@@ -28,6 +28,7 @@ import {
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
 import type { DeserializationResult } from '@/modules/common/save/load'
+import { Layout } from '@/modules/common/main-menu/layouting'
 
 const API_VERSION = 'incomplete-argumentation-framework/v1' as const
 
@@ -104,6 +105,39 @@ export function loadFromString(
     }
     return argumentation
   })
+}
+
+export const ExampleSaveSchema = SaveSchema.extend({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
+})
+
+export function loadExampleFromJson(json: unknown): {
+  framework: IncompleteArgumentation<IafArgumentData>
+  name?: string
+  description?: string
+  layoutType?: Layout
+} {
+  const result = ExampleSaveSchema.safeParse(json)
+  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
+  const { name, description, layoutType, ...rest } = result.data
+  const framework = new IncompleteArgumentation<IafArgumentData>()
+  for (const [id, argumentData] of Object.entries(rest.arguments)) {
+    framework.addArgument(parseInt(id, 10), {
+      name: argumentData.name,
+      x: argumentData.x,
+      y: argumentData.y,
+      uncertain: argumentData.uncertain,
+    })
+  }
+  for (const [sourceId, targetId] of rest.definiteAttacks) {
+    framework.addDefiniteAttack(sourceId, targetId)
+  }
+  for (const [sourceId, targetId] of rest.uncertainAttacks) {
+    framework.addUncertainAttack(sourceId, targetId)
+  }
+  return { framework, name, description, layoutType }
 }
 
 export function canLoadFromObject(dataObject: Record<string, unknown>): boolean {

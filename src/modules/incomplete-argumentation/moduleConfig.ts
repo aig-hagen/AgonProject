@@ -27,6 +27,7 @@ import {
   loadFromString,
   saveAsString,
 } from '@/modules/incomplete-argumentation/save/saveFormat'
+import { datasets } from '@/modules/incomplete-argumentation/examples'
 
 const IAF_V1_TYPE = 'incomplete-argumentation-v1'
 const TYPE_KEY = 'type'
@@ -64,7 +65,7 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
         g: model.g,
       }
     },
-    examples: [],
+    examples: datasets,
     initialCotent: initialIncompleteArgumentation,
     editorComponent: GraphEditor,
     canLoadFromObject(dataObject: Record<string, unknown>): boolean {

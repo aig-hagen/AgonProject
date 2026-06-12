@@ -1,5 +1,8 @@
 {
   "apiVersion": "argumentation-framework/v1",
+  "name": "unique_stable",
+  "description": "A minimal 3-argument framework (a, b, c) that has exactly one stable extension.",
+  "layoutType": "RightToLeft",
   "arguments": {
     "0": { "name": "a", "x": 0, "y": 0 },
     "1": { "name": "b", "x": 200, "y": 0 },

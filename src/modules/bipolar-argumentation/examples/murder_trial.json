@@ -1,0 +1,23 @@
+{
+  "apiVersion": "bipolar-argumentation-framework/v1",
+  "name": "murder_trial",
+  "description": "The classical courtroom scenario: The suspect is either Guilty or Innocent, statements about Motive, Evidence and Alibi support or attack these claims.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": { "name": "Guilty", "x": 200, "y": 0 },
+    "1": { "name": "Innocent", "x": 400, "y": 200 },
+    "2": { "name": "Motive", "x": 0, "y": 200 },
+    "3": { "name": "Alibi", "x": 300, "y": 400 },
+    "4": { "name": "Evidence", "x": 100, "y": 400 }
+  },
+  "attacks": [
+    [0, 1], [1, 0],
+    [3, 4], [4, 3],
+    [3, 0]
+  ],
+  "supports": [
+    [2, 0],
+    [3, 1],
+    [4, 0]
+  ]
+}

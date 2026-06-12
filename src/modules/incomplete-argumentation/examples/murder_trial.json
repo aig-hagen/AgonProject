@@ -1,0 +1,22 @@
+{
+  "apiVersion": "incomplete-argumentation-framework/v1",
+  "name": "murder_trial",
+  "description": "Incomplete version of the murder trial example that includes uncertainty about the Alibi and Evidence arguments and their attacks.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": { "name": "Guilty", "x": 200, "y": 0, "uncertain": false },
+    "1": { "name": "Innocent", "x": 400, "y": 200, "uncertain": false },
+    "2": { "name": "Motive", "x": 0, "y": 200, "uncertain": false },
+    "3": { "name": "Alibi", "x": 300, "y": 400, "uncertain": true },
+    "4": { "name": "Evidence", "x": 100, "y": 400, "uncertain": true }
+  },
+  "definiteAttacks": [
+    [0, 1], [1, 0],
+    [2, 1], [3, 2],
+    [3, 0]
+  ],
+  "uncertainAttacks": [
+    [4, 3],
+    [2, 3]
+  ]
+}

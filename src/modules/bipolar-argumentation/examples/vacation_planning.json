@@ -1,0 +1,26 @@
+{
+  "apiVersion": "bipolar-argumentation-framework/v1",
+  "name": "vacation_planning",
+  "description": "Vacation destinations attack each other as alternatives, while transport options conflict and support their natural destination pairings.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": { "name": "Beach", "x": 0, "y": 0 },
+    "1": { "name": "Mountains", "x": 400, "y": 0 },
+    "2": { "name": "City", "x": 200, "y": 200 },
+    "3": { "name": "Flight", "x": 0, "y": 400 },
+    "4": { "name": "Roadtrip", "x": 200, "y": 400 },
+    "5": { "name": "Train", "x": 400, "y": 400 }
+  },
+  "attacks": [
+    [0, 1], [1, 0],
+    [0, 2], [2, 0],
+    [3, 4], [4, 3],
+    [3, 5], [5, 3]
+  ],
+  "supports": [
+    [0, 3],
+    [1, 5],
+    [2, 3],
+    [4, 1]
+  ]
+}

@@ -27,6 +27,7 @@ import {
   toFormatedJsonString,
 } from '@/modules/common/argumentation/save/saveFormat'
 import { type DeserializationResult } from '@/modules/common/save/load'
+import { Layout } from '@/modules/common/main-menu/layouting'
 
 const API_VERSION = 'dialectical-argumentation-framework/v1' as const
 
@@ -95,6 +96,41 @@ export function loadFromString(
 
     return adf
   })
+}
+
+export const ExampleSaveSchema = SaveSchema.extend({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
+})
+
+export function loadExampleFromJson(json: unknown): {
+  framework: DialecticalArgumentation<AdfArgumentData>
+  name?: string
+  description?: string
+  layoutType?: Layout
+} {
+  const result = ExampleSaveSchema.safeParse(json)
+  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
+  const { name, description, layoutType, ...rest } = result.data
+  const adf = new DialecticalArgumentation<AdfArgumentData>()
+  for (const [id, argumentData] of Object.entries(rest.arguments)) {
+    const numericId = parseInt(id, 10)
+    const conditionResult = FormulaNodeSchema.safeParse(argumentData.condition)
+    const condition: FormulaNode = conditionResult.success
+      ? conditionResult.data
+      : { type: 'tautology' }
+    adf.addArgument(numericId, {
+      name: argumentData.name,
+      x: argumentData.x,
+      y: argumentData.y,
+      condition,
+    })
+  }
+  for (const [id] of adf.arguments()) {
+    adf.setCondition(id, adf.getArgument(id).condition)
+  }
+  return { framework: adf, name, description, layoutType }
 }
 
 export function canLoadFromObject(dataObject: Record<string, unknown>) {

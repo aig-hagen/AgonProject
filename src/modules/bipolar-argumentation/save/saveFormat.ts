@@ -29,6 +29,7 @@ import {
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
 import { type DeserializationResult } from '@/modules/common/save/load'
+import { Layout } from '@/modules/common/main-menu/layouting'
 
 const API_VERSION = 'bipolar-argumentation-framework/v1' as const
 
@@ -42,6 +43,12 @@ export const SaveSchema = z
   .superRefine((argumentation, ctx) => {
     validateLinks(ctx, argumentation.arguments, argumentation.attacks, argumentation.supports)
   })
+
+export const ExampleSaveSchema = SaveSchema.extend({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
+})
 
 export type Save = z.infer<typeof SaveSchema>
 
@@ -94,6 +101,32 @@ export function loadFromString(
     }
     return argumentation
   })
+}
+
+export function loadExampleFromJson(json: unknown): {
+  framework: BipoloarArgumentation<ArgumentData>
+  name?: string
+  description?: string
+  layoutType?: Layout
+} {
+  const result = ExampleSaveSchema.safeParse(json)
+  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
+  const { name, description, layoutType, ...rest } = result.data
+  const framework = new BipoloarArgumentation<ArgumentData>()
+  for (const [id, argumentData] of Object.entries(rest.arguments)) {
+    framework.addArgument(parseInt(id, 10), {
+      name: argumentData.name,
+      x: argumentData.x,
+      y: argumentData.y,
+    })
+  }
+  for (const [attackerId, attackedId] of rest.attacks) {
+    framework.addAttack(attackerId, attackedId)
+  }
+  for (const [supporterId, supportedId] of rest.supports) {
+    framework.addSupport(supporterId, supportedId)
+  }
+  return { framework, name, description, layoutType }
 }
 
 export function canLoadFromObject(dataObject: Record<string, unknown>) {

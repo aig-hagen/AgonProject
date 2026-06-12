@@ -1,5 +1,8 @@
 {
   "apiVersion": "dialectical-argumentation-framework/v1",
+  "name": "meal_wine",
+  "description": "An ADF version of the meal/wine example: meals conflict via acceptance conditions, White is accepted when Fish or Pasta is chosen, Red when Meat is chosen.",
+  "layoutType": "Circular",
   "arguments": {
     "0": {
       "name": "Pasta",

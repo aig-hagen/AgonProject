@@ -18,44 +18,21 @@
  */
 import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import { loadFromString } from '@/modules/abstract-argumentation/save/saveFormat'
+import { loadExampleFromJson } from '@/modules/abstract-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
-import { Layout } from '@/modules/common/main-menu/layouting'
 
 import mealWineJson from './examples/meal_wine.json'
 import uniqueStableJson from './examples/unique_stable.json'
 
-const exampleSources: {
-  name: string
-  description: string
-  layoutType: Layout
-  json: unknown
-}[] = [
-  {
-    name: 'meal_wine',
-    description:
-      'A 5-argument framework about choosing a meal (Pasta, Fish, Meat) and wine (White, Red) with mutual attacks between competing options.',
-    layoutType: Layout.Circular,
-    json: mealWineJson,
-  },
-  {
-    name: 'unique_stable',
-    description: 'A minimal 3-argument framework (a, b, c) that has exactly one stable extension.',
-    layoutType: Layout.RightToLeft,
-    json: uniqueStableJson,
-  },
-]
+const exampleJsons: unknown[] = [mealWineJson, uniqueStableJson]
 
-export const datasets: Example<AbstractArgumentation<ArgumentData>>[] = exampleSources.map(
-  ({ name, description, layoutType, json }) => ({
-    name,
+export const datasets: Example<AbstractArgumentation<ArgumentData>>[] = exampleJsons.map((json) => {
+  const { framework: _, name, description, layoutType } = loadExampleFromJson(json)
+  return {
+    name: name ?? 'unknown',
     description,
-    load: () => {
-      const result = loadFromString(JSON.stringify(json), name)
-      if (!result.success) throw new Error(`Failed to load example "${name}"`)
-      return result.data
-    },
+    load: () => loadExampleFromJson(json).framework,
     applyLayout: (af) => layout(af, layoutType),
-  }),
-)
+  }
+})

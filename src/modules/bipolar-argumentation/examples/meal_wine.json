@@ -1,5 +1,8 @@
 {
   "apiVersion": "bipolar-argumentation-framework/v1",
+  "name": "meal_wine",
+  "description": "A bipolar version of the meal/wine example: meals attack each other, and each meal supports its matching wine.",
+  "layoutType": "Circular",
   "arguments": {
     "0": { "name": "Pasta", "x": 200, "y": 0 },
     "1": { "name": "Fish", "x": 0, "y": 200 },

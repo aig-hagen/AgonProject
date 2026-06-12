@@ -1,5 +1,8 @@
 {
   "apiVersion": "argumentation-framework/v1",
+  "name": "meal_wine",
+  "description": "A 5-argument framework about choosing a meal (Pasta, Fish, Meat) and wine (White, Red) with mutual attacks between competing options.",
+  "layoutType": "Circular",
   "arguments": {
     "0": { "name": "Pasta", "x": 200, "y": 0 },
     "1": { "name": "Fish", "x": 0, "y": 200 },
