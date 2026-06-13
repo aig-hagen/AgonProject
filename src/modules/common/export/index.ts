@@ -25,6 +25,7 @@ export interface ExportStyleOptions {
   supportStyle?: string
   snapToGrid?: boolean
   coordinateNormalization?: 'clamp' | 'rank'
+  shortenNames?: boolean
 }
 
 export interface ExportConfig<DocumentT> {

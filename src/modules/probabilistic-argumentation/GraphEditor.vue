@@ -170,9 +170,16 @@ interface ProbabilityLabel {
   targetId?: number
 }
 
+const MUTUAL_ATTACK_LABEL_OFFSET = 12
+
 function getProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityLabel[] {
   const positions = new Map(nodes.map((n) => [n.id, { x: n.x, y: n.y }]))
   const labels: ProbabilityLabel[] = []
+
+  const attackSet = new Set<string>()
+  for (const [sourceId, targetId] of renderedState.value.current.content.attacks()) {
+    attackSet.add(`${sourceId}-${targetId}`)
+  }
 
   for (const [id, data] of renderedState.value.current.content.arguments()) {
     const pos = positions.get(id)
@@ -192,10 +199,28 @@ function getProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityLabel[]
     const source = positions.get(sourceId)
     const target = positions.get(targetId)
     if (source === undefined || target === undefined) continue
+
+    let offsetX = 0
+    let offsetY = 0
+
+    if (attackSet.has(`${targetId}-${sourceId}`)) {
+      const [canonSrcId, canonTgtId] = sourceId < targetId ? [sourceId, targetId] : [targetId, sourceId]
+      const canonSrc = positions.get(canonSrcId)!
+      const canonTgt = positions.get(canonTgtId)!
+      const dx = canonTgt.x - canonSrc.x
+      const dy = canonTgt.y - canonSrc.y
+      const len = Math.sqrt(dx * dx + dy * dy)
+      if (len > 0) {
+        const sign = sourceId < targetId ? 1 : -1
+        offsetX = (-dy / len) * MUTUAL_ATTACK_LABEL_OFFSET * sign
+        offsetY = (dx / len) * MUTUAL_ATTACK_LABEL_OFFSET * sign
+      }
+    }
+
     labels.push({
       key: `atk-${sourceId}-${targetId}`,
-      x: (source.x + target.x) / 2,
-      y: (source.y + target.y) / 2,
+      x: (source.x + target.x) / 2 + offsetX,
+      y: (source.y + target.y) / 2 + offsetY,
       value: prob,
       type: 'attack',
       sourceId,
@@ -249,11 +274,12 @@ function applyEdit(value: number) {
   const clamped = Math.max(0, Math.min(1, value))
   editingValue.value = clamped
   const lbl = editingLabel.value
-  if (lbl === undefined || lbl === null) return
-  if (lbl.type === 'argument' && lbl.id !== undefined) {
-    onChangeArgumentProbability(lbl.id, clamped)
-  } else if (lbl.type === 'attack' && lbl.sourceId !== undefined && lbl.targetId !== undefined) {
-    onChangeAttackProbability(lbl.sourceId, lbl.targetId, clamped)
+  if (lbl === null) return
+  if (lbl.type === 'argument') {
+    if (lbl.id !== undefined) onChangeArgumentProbability(lbl.id, clamped)
+  } else {
+    if (lbl.sourceId !== undefined && lbl.targetId !== undefined)
+      onChangeAttackProbability(lbl.sourceId, lbl.targetId, clamped)
   }
 }
 
@@ -279,6 +305,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       @nodes-moved="onNodesMoved"
       @link-created="onLinkCreated"
       @link-deleted="onLinkDeleted"
+
       :link-configs="linkConfig"
       :state="editorState"
       :node-weights="nodeWeights"
@@ -313,30 +340,21 @@ function onPopupKeydown(event: KeyboardEvent) {
       </template>
 
       <template #nodeOverlay="{ nodes }">
-        <g
+        <text
           v-for="label in getProbabilityLabels(nodes)"
           :key="label.key"
+          :x="label.x"
+          :y="label.y"
+          text-anchor="middle"
+          dominant-baseline="central"
+          font-size="9"
+          font-family="monospace"
+          stroke="white"
+          stroke-width="3"
+          paint-order="stroke fill"
           style="pointer-events: all; cursor: pointer"
           @click="openEditor($event, label)"
-        >
-          <rect
-            :x="label.x - 13"
-            :y="label.y - 7"
-            width="26"
-            height="14"
-            rx="7"
-            fill="white"
-          />
-          <text
-            :x="label.x"
-            :y="label.y"
-            text-anchor="middle"
-            dominant-baseline="central"
-            font-size="9"
-            font-family="monospace"
-            :fill="ATTACK_COLOR"
-          >{{ label.value.toFixed(2) }}</text>
-        </g>
+        >{{ label.value.toFixed(2) }}</text>
       </template>
 
       <template #export="{ isOpen, onIsOpen }">

@@ -294,15 +294,10 @@ function onNodeDeleted(
 }
 
 function openLinkTypeSwitch(
-  link: {
-    id: string
-    label?: string
-  },
+  link: { id: string; label?: string },
   event: PointerEvent,
 ) {
-  if (event.button !== 0) {
-    return
-  }
+  if (event.button !== 0) return
   arrowSwitcherTarget.value = {
     linkId: link.id,
     targetElement: event.currentTarget as SVGElement,

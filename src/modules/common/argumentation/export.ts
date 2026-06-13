@@ -174,6 +174,11 @@ function relativePlacementGenerator(): ArgumentPlacementGenerator {
   }
 }
 
+function shortenNameToLetter(name: string): string {
+  const match = name.match(/[a-zA-Z0-9]/)
+  return match ? match[0] : name
+}
+
 export function exportLatexArgumentationCommon(
   args: IterableIterator<[id: number, data: ArgumentData]>,
   attacks: IterableIterator<[attackerId: number, attackedId: number]>,
@@ -187,6 +192,7 @@ export function exportLatexArgumentationCommon(
   const attackStyle = styleOptions?.attackStyle ?? 'standard'
   const supportStyle = styleOptions?.supportStyle ?? 'double'
   const snapToGrid = styleOptions?.snapToGrid ?? false
+  const shortenNames = styleOptions?.shortenNames ?? true
   const coordinateNormalization = styleOptions?.coordinateNormalization ?? 'clamp'
   const normalizer: CoordinateNormalizer =
     coordinateNormalization === 'rank' ? rankCompressionNormalizer() : clampDistancesNormalizer()
@@ -199,9 +205,10 @@ export function exportLatexArgumentationCommon(
   const nodeMap = new Map<number, NodeExportInfo>()
   for (const [argumentId, argumentData] of args) {
     const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
+    const displayName = shortenNames ? shortenNameToLetter(nameEscaped) : nameEscaped
     const rawX = argumentData.x / inverseScaleFactor
     const rawY = (argumentData.y / inverseScaleFactor) * -1
-    nodeMap.set(argumentId, { name: nameEscaped, x: rawX, y: rawY })
+    nodeMap.set(argumentId, { name: displayName, x: rawX, y: rawY })
   }
 
   // Step 2: Normalize coordinates to fit within LaTeX's limitations and optionally snap to grid

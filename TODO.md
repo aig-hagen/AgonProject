@@ -1,5 +1,3 @@
 - Some bug regarding enabled physics simulation and switching tabs
-- for mutual attacks, the probabilities in PAFs are above each other and one is not visible at all because of that
-- Shorten Names in Latex output
 - sometimes the prob values or acc conditions stick to a position even if nodes are moved
 - weight badges smear behind

@@ -167,17 +167,6 @@ function getConditionString(nodeId: NodeId): string {
   return formulaToString(condition, argNameMap.value)
 }
 
-let _canvasCtx: CanvasRenderingContext2D | null = null
-function getPillWidth(text: string): number {
-  if (!_canvasCtx) {
-    _canvasCtx = document.createElement('canvas').getContext('2d')
-  }
-  if (_canvasCtx) {
-    _canvasCtx.font = '13px monospace'
-    return Math.ceil(_canvasCtx.measureText(text).width) + 16
-  }
-  return text.length * 7.5 + 16
-}
 
 function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
   selectedNodeId.value = nodeId
@@ -238,27 +227,18 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   >
     <template #nodeOverlay="{ nodes }">
       <template v-for="node in nodes" :key="node.id">
-        <g
-          :transform="`translate(${node.x + ARGUMENT_RADIUS_IN_PX + 6}, ${node.y - ARGUMENT_RADIUS_IN_PX})`"
+        <text
+          :x="node.x + ARGUMENT_RADIUS_IN_PX + 6"
+          :y="node.y - ARGUMENT_RADIUS_IN_PX + 9"
+          font-size="13"
+          font-family="monospace"
+          stroke="white"
+          stroke-width="3"
+          paint-order="stroke fill"
           pointer-events="auto"
           style="cursor: pointer; user-select: none"
           @click.stop="openConditionEditor(node.id, $event)"
-        >
-          <rect
-            x="-6"
-            y="-11"
-            :width="getPillWidth(getConditionString(node.id))"
-            height="20"
-            rx="6"
-            :style="`fill: white; stroke: ${selectedNodeId === node.id ? 'oklch(var(--p))' : 'oklch(var(--b3))'}; stroke-width: 1`"
-          />
-          <text
-            x="0"
-            y="4"
-            font-size="13"
-            style="fill: oklch(var(--bc) / 0.65); font-family: monospace"
-          >{{ getConditionString(node.id) }}</text>
-        </g>
+        >{{ getConditionString(node.id) }}</text>
       </template>
     </template>
     <template #evaluationExtensions="{ onHighlight }">

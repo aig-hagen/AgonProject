@@ -48,7 +48,7 @@ const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exp
 const selectedArgumentStyle = shallowRef<string>('colored')
 const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
-const selectedSupportStyle = shallowRef<string>('standard')
+const selectedSupportStyle = shallowRef<string>('double')
 const selectedSnapToGrid = shallowRef<boolean>(false)
 
 const isBipolarDocument = computed(() => {

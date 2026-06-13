@@ -43,7 +43,7 @@ function getAttributionId(attribution: Attribution) {
   <div class="m-auto flex flex-nowrap justify-center my-4 gap-4">
     <aside class="w-3xs">
       <ul class="menu">
-        <h2 class="menu-title">Third-Party Libraries and Project</h2>
+        <h2 class="menu-title">Third-Party Libraries and Projects</h2>
         <li>
           <a href="tex-packages">TeX packages</a>
           <ul>
@@ -65,7 +65,7 @@ function getAttributionId(attribution: Attribution) {
       </ul>
     </aside>
     <main class="max-w-3xl">
-      <h1 class="m-1 font-bold text-xl">Third-Party Libraries and Project</h1>
+      <h1 class="m-1 font-bold text-xl">Third-Party Libraries and Projects</h1>
       <p class="m-1 mb-4">
         This application makes use of open-source software components. We gratefully acknowledge the
         developers and contributors of these projects. The following attributions are provided to

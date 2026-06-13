@@ -46,17 +46,21 @@ const { title, initialPosition, intitalSize, compactable = false } = defineProps
 const position = { ...initialPosition }
 const minimized = ref(false)
 let savedMinimizeHeight = ''
+let savedMinimizeWidth = ''
 let savedCompactHeight = ''
 let interactable: ReturnType<typeof interact> | null = null
 
 function toggleMinimize() {
   if (!minimized.value) {
     savedMinimizeHeight = floating.value!.style.height
+    savedMinimizeWidth = floating.value!.style.width
     floating.value!.style.height = ''
+    floating.value!.style.width = 'fit-content'
     minimized.value = true
     interactable?.resizable({ enabled: false })
   } else {
     floating.value!.style.height = savedMinimizeHeight
+    floating.value!.style.width = savedMinimizeWidth
     minimized.value = false
     interactable?.resizable({ enabled: true })
   }
@@ -209,7 +213,7 @@ watchEffect(async () => {
       class="floating-window-header bg-base-200 flex justify-between py-1 pl-4 pr-2"
       :class="{ 'border-b border-base-300': !minimized }"
     >
-      <div class="flex-1 truncate mr-2 self-center">{{ title }}</div>
+      <div class="flex-1 mr-2 self-center" :class="{ truncate: !minimized }">{{ title }}</div>
       <div class="flex gap-0.5">
         <button
           v-if="compactable"
