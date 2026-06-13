@@ -32,7 +32,6 @@ import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
-import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
@@ -220,8 +219,8 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
       <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-54">
-            <span class="label min-w-24">Interpretation</span>
+          <label class="select select-sm w-fit">
+            <span class="label">Interpretation</span>
             <select v-model="selectedInterpretation">
               <option
                 v-for="interpretation in Object.keys(byInterpretationSemantics)"
@@ -232,8 +231,8 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
               </option>
             </select>
           </label>
-          <label class="select select-sm w-54">
-            <span class="label min-w-24">Semantics</span>
+          <label class="select select-sm w-fit">
+            <span class="label">Semantics</span>
             <select v-model="selectedSemantic">
               <option
                 v-for="semantic in byInterpretationSemantics[selectedInterpretation]"
@@ -244,8 +243,8 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
               </option>
             </select>
           </label>
-          <label class="select select-sm w-54">
-            <span class="label min-w-24">Mode</span>
+          <label class="select select-sm w-fit">
+            <span class="label">Mode</span>
             <select v-model="selectedMode">
               <option value="enumerate">Enumerate</option>
               <option value="credulous">Credulous</option>
@@ -254,25 +253,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
           </label>
         </div>
       </fieldset>
-      <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
-        <details class="collapse collapse-arrow">
-          <summary class="collapse-title fieldset-legend ps-0 max-w-max">Definition</summary>
-          <div class="collapse-content text-sm p-0">
-            <p class="mb-1">
-              <KatexInlineElement :text="selectedSemantic.info.description" /><sup
-                :title="selectedSemantic.info.reference.name"
-                ><a
-                  class="link link-primary"
-                  :href="selectedSemantic.info.reference.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >[1] ↗</a
-                ></sup
-              >
-            </p>
-          </div>
-        </details>
-      </fieldset>
+
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">
           <button
@@ -291,10 +272,10 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">{{ resultsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Failed evaluating extensions</span>
+          <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating extensions</span>
+          <span>Evaluating...</span>
         </div>
         <template v-if="dataExtensionsFormatedAndSorted !== undefined">
           <EvaluationResultGrid

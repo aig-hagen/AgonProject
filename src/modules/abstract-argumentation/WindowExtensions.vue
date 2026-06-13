@@ -184,14 +184,14 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
       <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-52" hidden>
+          <label class="select select-sm w-fit" hidden>
             <span class="label">Solver</span>
             <select disabled>
               <option selected>TweetyProject</option>
             </select>
           </label>
           <div class="flex items-center gap-1">
-            <label class="select select-sm w-52">
+            <label class="select select-sm w-fit">
               <span class="label">Semantics</span>
               <select v-model="selectedSemantic">
                 <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
@@ -205,7 +205,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
               <InformationCircleIcon class="size-4 text-base-content/40 hover:text-base-content/70 cursor-help" />
             </TermTooltip>
           </div>
-          <label class="select select-sm w-52">
+          <label class="select select-sm w-fit">
             <span class="label">Mode</span>
             <select v-model="selectedMode">
               <option value="enumerate">Enumerate</option>
@@ -233,10 +233,10 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">{{ extensionsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Failed evaluating extensions</span>
+          <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating extensions...</span>
+          <span>Evaluating...</span>
         </div>
         <template v-if="dataExtensionsFormatedAndSorted !== undefined">
           <EvaluationResultGrid

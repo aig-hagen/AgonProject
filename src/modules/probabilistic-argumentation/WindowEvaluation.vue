@@ -107,7 +107,7 @@ const windowTitle = computed(() => {
       <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-52">
+          <label class="select select-sm w-fit">
             <span class="label">Semantics</span>
             <select v-model="selectedSemantic">
               <optgroup v-for="group in KNOWN_SEMANTIC_GROUPS" :key="group.key" :label="group.displayName">
@@ -117,14 +117,14 @@ const windowTitle = computed(() => {
               </optgroup>
             </select>
           </label>
-          <label class="select select-sm w-36">
+          <label class="select select-sm w-fit">
             <span class="label">Mode</span>
             <select v-model="selectedMode">
               <option value="credulous">Credulous</option>
               <option value="skeptical">Skeptical</option>
             </select>
           </label>
-          <label class="select select-sm w-40">
+          <label class="select select-sm w-fit">
             <span class="label">Solver</span>
             <select v-model="selectedSolver">
               <option value="simple">Exact</option>
@@ -151,7 +151,7 @@ const windowTitle = computed(() => {
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">Acceptance Probabilities</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Failed evaluating</span>
+          <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
           <span>Evaluating...</span>

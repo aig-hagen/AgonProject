@@ -179,24 +179,26 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
     <div class="p-4">
       <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
-        <label class="select select-sm w-52">
-          <span class="label">Semantics</span>
-          <select v-model="selectedSemantic">
-            <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-              <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
-                {{ semantic.displayName }}
-              </option>
-            </optgroup>
-          </select>
-        </label>
-        <label class="select select-sm w-52">
-          <span class="label">Mode</span>
-          <select v-model="selectedMode">
-            <option value="enumerate">Enumerate</option>
-            <option value="credulous">Credulous</option>
-            <option value="skeptical">Skeptical</option>
-          </select>
-        </label>
+        <div class="flex gap-2 flex-wrap">
+          <label class="select select-sm w-fit">
+            <span class="label">Semantics</span>
+            <select v-model="selectedSemantic">
+              <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
+                <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
+                  {{ semantic.displayName }}
+                </option>
+              </optgroup>
+            </select>
+          </label>
+          <label class="select select-sm w-fit">
+            <span class="label">Mode</span>
+            <select v-model="selectedMode">
+              <option value="enumerate">Enumerate</option>
+              <option value="credulous">Credulous</option>
+              <option value="skeptical">Skeptical</option>
+            </select>
+          </label>
+        </div>
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">
@@ -216,10 +218,10 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">{{ resultsHeader }}</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Failed evaluating interpretations</span>
+          <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating interpretations...</span>
+          <span>Evaluating...</span>
         </div>
         <template v-if="formattedData !== undefined">
           <EvaluationResultGrid

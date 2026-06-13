@@ -104,7 +104,7 @@ watch(data, emitWeights)
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
           <div class="flex items-center gap-1">
-            <label class="select select-sm w-52">
+            <label class="select select-sm w-fit">
               <span class="label">Semantics</span>
               <select v-model="selectedSemantic">
                 <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
@@ -127,19 +127,19 @@ watch(data, emitWeights)
           >
             Evaluate
           </button>
+          <label class="label mt-2">
+            <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
+            Evaluate continuously
+          </label>
         </div>
-        <label class="label mt-2">
-          <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
-          Evaluate continuously
-        </label>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">Ranking</legend>
         <div v-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Failed evaluating ranking</span>
+          <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating ranking...</span>
+          <span>Evaluating...</span>
         </div>
         <template v-if="data !== undefined">
           <div class="flex flex-wrap gap-2">
