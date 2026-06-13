@@ -55,6 +55,8 @@ const selectedSemantic = shallowRef<PafSemantic>(resolveSemanticFromKey(instance
 const selectedMode = ref(instanceState.mode)
 const selectedSolver = ref(instanceState.solver)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
+const isCompact = ref(false)
+watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
 
 watch([selectedSemantic, selectedMode, selectedSolver, evaluateContinuously], () => {
   emit('update:instanceState', {
@@ -94,6 +96,7 @@ const windowTitle = computed(() => {
 <template>
   <FloatingWindow
     v-model:open="internalOpen"
+    v-model:compact="isCompact"
     :title="windowTitle"
     :initial-position="{ x: 192 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intitalSize="{ width: 480, height: 320 }"

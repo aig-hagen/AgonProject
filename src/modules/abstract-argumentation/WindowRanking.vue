@@ -52,21 +52,28 @@ function resolveSemanticFromKey(key: string): RankingSemantic {
 }
 
 const selectedSemantic = shallowRef<RankingSemantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const evaluateContinuously = ref(instanceState.evaluateContinuously)
+const isCompact = ref(false)
+watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
 
-watch(selectedSemantic, () => {
+watch([selectedSemantic, evaluateContinuously], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantic.value.key,
+    evaluateContinuously: evaluateContinuously.value,
   })
 })
 
+const enabled = computed(() => evaluateContinuously.value)
 const { data, status, refetch, isLoading, isPending, isError } = useRankingEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
-  ref(false),
+  enabled,
 )
 
-const userCanTriggerFetch = computed(() => status.value !== 'success')
+const userCanTriggerFetch = computed(
+  () => !evaluateContinuously.value && status.value !== 'success',
+)
 
 function emitWeights(ranking: typeof data.value) {
   if (ranking === undefined) {
@@ -81,6 +88,7 @@ watch(data, emitWeights)
 <template>
   <FloatingWindow
     v-model:open="internalOpen"
+    v-model:compact="isCompact"
     :title="`Ranking: ${selectedSemantic.displayName}`"
     :initial-position="{ x: 192 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intitalSize="{ width: 480, height: 320 }"
@@ -122,6 +130,10 @@ watch(data, emitWeights)
             Evaluate
           </button>
         </div>
+        <label class="label mt-2">
+          <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
+          Evaluate continuously
+        </label>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">Ranking</legend>

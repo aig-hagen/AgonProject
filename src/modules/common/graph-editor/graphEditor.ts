@@ -92,7 +92,6 @@ export interface GraphEditorState {
 
 export interface Highlight {
   stateId: UUID
-  nodes: Set<NodeId>
-  color: string
-  restColor: string
+  groups: ReadonlyArray<{ nodes: ReadonlySet<NodeId>; color: string }>
+  attackedByFirst?: string
 }

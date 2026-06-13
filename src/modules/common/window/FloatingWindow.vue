@@ -34,6 +34,8 @@ const content = useTemplateRef('content')
 const header = useTemplateRef('header')
 const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
+const compact = defineModel('compact', { default: false })
+const emit = defineEmits<{ focus: [] }>()
 const { title, initialPosition, intitalSize, compactable = false } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
@@ -43,7 +45,6 @@ const { title, initialPosition, intitalSize, compactable = false } = defineProps
 
 const position = { ...initialPosition }
 const minimized = ref(false)
-const compact = ref(false)
 let savedMinimizeHeight = ''
 let savedCompactHeight = ''
 let interactable: ReturnType<typeof interact> | null = null
@@ -163,6 +164,7 @@ useEventListener(floating, 'focus', () => {
     return
   }
   focusIn()
+  emit('focus')
 })
 
 useEventListener(floating, 'focusout', (event) => {

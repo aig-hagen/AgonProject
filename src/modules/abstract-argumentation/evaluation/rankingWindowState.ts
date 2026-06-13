@@ -21,11 +21,13 @@ import { KEY_DEFAULT_RANKING_SEMANTIC } from '@/modules/abstract-argumentation/e
 export interface RankingWindowInstanceState {
   id: string
   semanticKey: string
+  evaluateContinuously: boolean
 }
 
 export function createDefaultRankingWindowInstance(): RankingWindowInstanceState {
   return {
     id: crypto.randomUUID(),
     semanticKey: KEY_DEFAULT_RANKING_SEMANTIC,
+    evaluateContinuously: false,
   }
 }

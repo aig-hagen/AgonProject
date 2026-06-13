@@ -24,6 +24,7 @@ export const NODE_BLUE = '#99b7d5'
 export const NODE_ORANGE = '#e4bf97'
 export const NODE_GREEN = '#99ff99'
 export const NODE_RED = '#ff9999'
+export const NODE_YELLOW = '#ffff99'
 
 export const LINK_BLACK = '#000000'
 export const LINK_BLUE = 'DarkBlue'

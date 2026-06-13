@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, provide, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
+import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
 import {
@@ -66,6 +66,8 @@ function resolveSemanticFromKey(key: string): Semantic {
 const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContiously = ref(instanceState.evaluateContinuously)
+const isCompact = ref(false)
+watch(isCompact, (v) => { if (v) evaluateContiously.value = true })
 
 watch([selectedSemantic, selectedMode, evaluateContiously], () => {
   emit('update:instanceState', {
@@ -149,38 +151,34 @@ const windowTitle = computed(() => {
 })
 
 const selectedExtension = ref<string | undefined>(undefined)
-watchEffect(() => {
-  if (selectedExtension.value === undefined) {
-    return
-  }
-  if (dataExtensionsFormatedAndSorted.value === undefined) {
-    emit('highlight', undefined)
-    return
+const currentHighlight = computed<Highlight | undefined>(() => {
+  if (selectedExtension.value === undefined || dataExtensionsFormatedAndSorted.value === undefined) {
+    return undefined
   }
   for (const extension of dataExtensionsFormatedAndSorted.value.formatedAndSorted) {
     if (extension.key === selectedExtension.value) {
-      const stateId = dataExtensionsFormatedAndSorted.value.stateId
-      const nodeIds = new Set(extension.extension.map((argument) => argument.id))
-      emit('highlight', {
-        stateId: stateId,
-        nodes: nodeIds,
-        color: NODE_GREEN,
-        restColor: NODE_RED,
-      })
-      return
+      return {
+        stateId: dataExtensionsFormatedAndSorted.value.stateId,
+        groups: [{ nodes: new Set(extension.extension.map((a) => a.id)), color: NODE_GREEN }],
+        attackedByFirst: NODE_RED,
+      }
     }
   }
-  emit('highlight', undefined)
+  return undefined
 })
+watch(currentHighlight, (h) => emit('highlight', h))
+function onWindowFocus() { emit('highlight', currentHighlight.value) }
 </script>
 
 <template>
   <FloatingWindow
     v-model:open="internalOpen"
+    v-model:compact="isCompact"
     :title="windowTitle"
     :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
     :intitalSize="{ width: 576, height: 448 }"
     compactable
+    @focus="onWindowFocus"
   >
     <template #default="{ compact }">
     <div class="p-4">

@@ -17,9 +17,9 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
+import { computed, ref, shallowRef, toRef, watch } from 'vue'
 
-import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import { NODE_BLUE, NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
@@ -58,6 +58,8 @@ function resolveSemanticFromKey(key: string): Semantic {
 const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
+const isCompact = ref(false)
+watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
 
 watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
@@ -146,34 +148,32 @@ const windowTitle = computed(() => {
 })
 
 const selectedKey = ref<string | undefined>(undefined)
-
-watchEffect(() => {
-  if (selectedKey.value === undefined || formattedData.value === undefined) {
-    emit('highlight', undefined)
-    return
-  }
+const currentHighlight = computed<Highlight | undefined>(() => {
+  if (selectedKey.value === undefined || formattedData.value === undefined) return undefined
   const item = formattedData.value.items.find((i) => i.key === selectedKey.value)
-  if (item === undefined) {
-    emit('highlight', undefined)
-    return
-  }
-  const inNodes = new Set(item.interpretation.filter((a) => a.label === 'in').map((a) => a.id))
-  emit('highlight', {
+  if (item === undefined) return undefined
+  return {
     stateId: formattedData.value.stateId,
-    nodes: inNodes,
-    color: NODE_GREEN,
-    restColor: NODE_RED,
-  })
+    groups: [
+      { nodes: new Set(item.interpretation.filter((a) => a.label === 'in').map((a) => a.id)), color: NODE_GREEN },
+      { nodes: new Set(item.interpretation.filter((a) => a.label === 'out').map((a) => a.id)), color: NODE_RED },
+      { nodes: new Set(item.interpretation.filter((a) => a.label === 'undec').map((a) => a.id)), color: NODE_BLUE },
+    ],
+  }
 })
+watch(currentHighlight, (h) => emit('highlight', h))
+function onWindowFocus() { emit('highlight', currentHighlight.value) }
 </script>
 
 <template>
   <FloatingWindow
     v-model:open="internalOpen"
+    v-model:compact="isCompact"
     :title="windowTitle"
     :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
     :intitalSize="{ width: 512, height: 400 }"
     compactable
+    @focus="onWindowFocus"
   >
     <template #default="{ compact }">
     <div class="p-4">

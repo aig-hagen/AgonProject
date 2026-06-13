@@ -641,42 +641,56 @@ watchEffect(() => {
   if (graphComponent === null) {
     return
   }
-  const highlightNodes = highlightToShow.value?.nodes ?? new Set()
 
-  // Compute restNodes: nodes with incoming links from highlight nodes
-  const restNodes = new Set<NodeId>()
-  for (const link of state.links) {
-    if (highlightNodes.has(link.sourceId)) {
-      restNodes.add(link.targetId)
+  const highlight = highlightToShow.value
+  const groups = highlight?.groups ?? []
+
+  // Collect all nodes explicitly covered by a group
+  const coveredNodes = new Set<NodeId>()
+  for (const group of groups) {
+    for (const id of group.nodes) coveredNodes.add(id)
+  }
+
+  // Compute nodes attacked by the first group (if requested)
+  const attackedNodes = new Set<NodeId>()
+  if (highlight?.attackedByFirst !== undefined && groups.length > 0) {
+    const firstNodes = groups[0]!.nodes
+    for (const link of state.links) {
+      if (firstNodes.has(link.sourceId) && !coveredNodes.has(link.targetId)) {
+        attackedNodes.add(link.targetId)
+      }
     }
   }
 
-  // Compute all nodes in internal representation
-  const highlightNodesInternal = []
-  const restNodesInternal = []
-  const defaultNodesInternal = []
+  // Categorize all graph nodes into their output buckets
+  const groupBuckets: number[][] = groups.map(() => [])
+  const attackedBucket: number[] = []
+  const defaultBucket: number[] = []
   for (const { id } of state.nodes) {
-    if (!idMapping.hasReverse(id)) {
-      continue
+    if (!idMapping.hasReverse(id)) continue
+    const internalId = idMapping.getOrFailReverse(id)
+    let placed = false
+    for (let i = 0; i < groups.length; i++) {
+      if (groups[i]!.nodes.has(id)) {
+        groupBuckets[i]!.push(internalId)
+        placed = true
+        break
+      }
     }
-    const internalNodeId = idMapping.getOrFailReverse(id)
-    if (highlightNodes.has(id)) {
-      highlightNodesInternal.push(internalNodeId)
-    } else if (restNodes.has(id)) {
-      restNodesInternal.push(internalNodeId)
-    } else {
-      defaultNodesInternal.push(internalNodeId)
+    if (!placed) {
+      if (attackedNodes.has(id)) attackedBucket.push(internalId)
+      else defaultBucket.push(internalId)
     }
   }
 
-  // Apply coloring
-  const highlightColor = highlightToShow.value?.color ?? undefined
-  const restColor = highlightToShow.value?.restColor ?? ARGUMENT_COLOR
-  if (highlightColor !== undefined) {
-    graphComponent.setColor(highlightColor, highlightNodesInternal)
+  // Apply colors
+  for (let i = 0; i < groups.length; i++) {
+    graphComponent.setColor(groups[i]!.color, groupBuckets[i]!)
   }
-  graphComponent.setColor(restColor, restNodesInternal)
-  graphComponent.setColor(ARGUMENT_COLOR, defaultNodesInternal)
+  if (highlight?.attackedByFirst !== undefined) {
+    graphComponent.setColor(highlight.attackedByFirst, attackedBucket)
+  }
+  graphComponent.setColor(ARGUMENT_COLOR, defaultBucket)
 })
 
 function doLayout(layout: Layout) {
