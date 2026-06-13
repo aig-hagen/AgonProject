@@ -93,6 +93,7 @@ export const dialecticalArgumentationModule: ModuleConfig<
   getSaveString(document) {
     return saveAsString(document)
   },
+  generateHref: '/generate?type=adf',
   description: 'Relations between arguments are modelled via propositional acceptance conditions.',
   publications: [BW10, BESWW13, BESWW18],
 }

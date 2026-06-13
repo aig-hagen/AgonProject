@@ -391,6 +391,61 @@ def _postprocess_seed(base_seed: int | None) -> int | None:
     return (base_seed ^ 0xDEADBEEF) & 0x7FFFFFFF
 
 
+def _combine_nodes(nodes: list[dict], rng: random.Random) -> dict:
+    if len(nodes) == 1:
+        return nodes[0]
+    op = rng.choice(["conjunction", "disjunction"])
+    if len(nodes) == 2 or rng.random() < 0.5:
+        return {"type": op, "children": nodes}
+    mid = rng.randint(1, len(nodes) - 1)
+    left = _combine_nodes(nodes[:mid], rng)
+    right = _combine_nodes(nodes[mid:], rng)
+    return {"type": op, "children": [left, right]}
+
+
+def _apply_adf(
+    base: dict[str, Any],
+    params: dict[str, Any],
+    seed: int | None,
+) -> dict[str, Any]:
+    negation_prob: float = params.get("negationProb", 0.3)
+    if not (0.0 <= negation_prob <= 1.0):
+        raise ValueError("negationProb must be between 0.0 and 1.0")
+
+    rng = random.Random(seed)
+    n = base["nr_of_arguments"]
+
+    # Build in-neighbor lists (1-indexed server IDs)
+    in_neighbors: dict[int, list[int]] = {v: [] for v in range(1, n + 1)}
+    for src, tgt in base["attacks"]:
+        in_neighbors[tgt].append(src)
+
+    conditions: list[dict] = []
+    for v in range(1, n + 1):
+        neighbors = list(in_neighbors[v])
+        if not neighbors:
+            conditions.append({"type": rng.choice(["tautology", "contradiction"])})
+        else:
+            rng.shuffle(neighbors)
+            # Every in-neighbor must appear; convert to 0-indexed for the frontend
+            leaves: list[dict] = []
+            for u in neighbors:
+                node: dict = {"type": "atom", "argumentId": u - 1}
+                if rng.random() < negation_prob:
+                    node = {"type": "negation", "child": node}
+                leaves.append(node)
+            conditions.append(_combine_nodes(leaves, rng))
+
+    return {
+        "nr_of_arguments": n,
+        "attacks": base["attacks"],   # kept so the frontend can report link count
+        "conditions": conditions,
+        "supports": [],
+        "uncertain_arguments": [],
+        "uncertain_attacks": [],
+    }
+
+
 def _apply_bipolar(
     base: dict[str, Any],
     params: dict[str, Any],
@@ -560,6 +615,22 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
             ),
         ],
     ),
+    "adf": FrameworkTypeConfig(
+        id="adf",
+        description="Abstract Dialectical Framework: each argument gets a random propositional acceptance condition over its parents.",
+        params_schema=[
+            ParamSchema(
+                "negationProb",
+                "float",
+                "Probability of negating each atom in the acceptance condition",
+                required=False,
+                default=0.3,
+                min=0.0,
+                max=1.0,
+                step=0.01,
+            ),
+        ],
+    ),
 }
 
 
@@ -585,6 +656,7 @@ class GenerationResponse(BaseModel):
     uncertain_attacks: list[list[int]] = Field(default_factory=list)
     argument_probabilities: list[float] = Field(default_factory=list)
     attack_probabilities: list[float] = Field(default_factory=list)
+    conditions: list[dict] = Field(default_factory=list)
 
 
 class ParamSchemaOut(BaseModel):
@@ -750,6 +822,8 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
             output = _apply_incomplete(base_output, req.params, post_seed)
         elif req.framework_type == "probabilistic":
             output = _apply_probabilistic(base_output, req.params, post_seed)
+        elif req.framework_type == "adf":
+            output = _apply_adf(base_output, req.params, post_seed)
         else:
             output = {
                 "nr_of_arguments": base_output["nr_of_arguments"],
@@ -766,9 +840,10 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
         framework_type=req.framework_type,
         nr_of_arguments=output["nr_of_arguments"],
         attacks=output["attacks"],
-        supports=output["supports"],
-        uncertain_arguments=output["uncertain_arguments"],
-        uncertain_attacks=output["uncertain_attacks"],
+        supports=output.get("supports", []),
+        uncertain_arguments=output.get("uncertain_arguments", []),
+        uncertain_attacks=output.get("uncertain_attacks", []),
         argument_probabilities=output.get("argument_probabilities", []),
         attack_probabilities=output.get("attack_probabilities", []),
+        conditions=output.get("conditions", []),
     )

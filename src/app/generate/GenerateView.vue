@@ -41,6 +41,9 @@ import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incompl
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 import { type PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
+import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
+import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 
 interface ParamSchema {
   name: string
@@ -71,6 +74,7 @@ type GeneratedFramework =
   | BipoloarArgumentation<ArgumentData>
   | IncompleteArgumentation<IafArgumentData>
   | ProbabilisticArgumentation<PafArgumentData>
+  | DialecticalArgumentation<AdfArgumentData>
 
 // Both props are passed through attr fallthrough from App (same pattern as HomeView).
 // modules is declared to prevent Vue from warning about unrecognized attrs.
@@ -87,6 +91,7 @@ const { documents, createDocument } = useDocumentMetadata(db, [
   bipoloarArgumentationModule,
   incompleteArgumentationModule,
   probabilisticArgumentationModule,
+  dialecticalArgumentationModule,
 ] as unknown as ModuleConfig<Objectish>[])
 
 function getNextName(prefix: string): string {
@@ -103,7 +108,7 @@ const GENERATE_TIMEOUT_MS = 5_000
 // --- Framework type from URL ---
 const frameworkTypeId = computed<string>(() => {
   const t = route.query.type
-  if (t === 'bipolar' || t === 'incomplete' || t === 'probabilistic') return t
+  if (t === 'bipolar' || t === 'incomplete' || t === 'probabilistic' || t === 'adf') return t
   return 'abstract'
 })
 
@@ -245,6 +250,7 @@ async function generate() {
       uncertain_attacks: [number, number][]
       argument_probabilities: number[]
       attack_probabilities: number[]
+      conditions: FormulaNode[]
     }
 
     const n = data.nr_of_arguments
@@ -294,6 +300,16 @@ async function generate() {
         paf.addAttack(src - 1, tgt - 1, data.attack_probabilities[j] ?? 1)
       })
       generated.value = paf
+      stats.value = { nArgs: n, nAttacks: data.attacks.length }
+    } else if (data.framework_type === 'adf') {
+      const adf = new DialecticalArgumentation<AdfArgumentData>()
+      for (let i = 0; i < n; i++) {
+        adf.addArgument(i, { name: String(i + 1), ...circularPos(i), condition: { type: 'tautology' } })
+      }
+      for (let i = 0; i < n; i++) {
+        adf.setCondition(i, data.conditions[i] ?? { type: 'tautology' })
+      }
+      generated.value = adf
       stats.value = { nArgs: n, nAttacks: data.attacks.length }
     } else {
       const af = new AbstractArgumentation<ArgumentData>()
@@ -620,6 +636,10 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
             Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
             with <strong>{{ stats.nAttacks }}</strong> attack{{ stats.nAttacks === 1 ? '' : 's' }}.
           </p>
+          <p v-else-if="frameworkTypeId === 'adf'" class="text-sm text-base-content/70">
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            with <strong>{{ stats.nAttacks }}</strong> link{{ stats.nAttacks === 1 ? '' : 's' }}.
+          </p>
           <div class="flex flex-wrap gap-2">
             <span
               class="tooltip tooltip-top"
@@ -638,7 +658,11 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
             >
               Download ICCMA
             </button>
-            <button class="btn btn-sm btn-soft btn-neutral" @click="downloadTGF">
+            <button
+              v-if="frameworkTypeId !== 'adf'"
+              class="btn btn-sm btn-soft btn-neutral"
+              @click="downloadTGF"
+            >
               Download TGF
             </button>
           </div>
