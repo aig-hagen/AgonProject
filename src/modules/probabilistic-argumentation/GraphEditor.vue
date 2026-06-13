@@ -41,8 +41,8 @@ import {
 } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/probabilistic-argumentation/export'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
-import WindowEvaluation from '@/modules/probabilistic-argumentation/WindowEvaluation.vue'
 import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
+import ProbabilityEditor from '@/modules/probabilistic-argumentation/ProbabilityEditor.vue'
 
 const { state, historyState, documentId } = defineProps<{
   state: DocumentState<ProbabilisticArgumentation<PafArgumentData>>
@@ -316,7 +316,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       @open-extension-window="addEvaluationInstance()"
     >
       <template #evaluationExtensions>
-        <WindowEvaluation
+        <WindowExtensions
           v-for="(instance, index) in evaluationInstances"
           :key="instance.id"
           :input="evaluationInput"
@@ -368,7 +368,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       </template>
     </GraphEditor>
 
-    <WindowExtensions
+    <ProbabilityEditor
       v-model:open="isProbabilitiesOpen"
       :input="evaluationInput"
       @change-argument-probability="onChangeArgumentProbability"
