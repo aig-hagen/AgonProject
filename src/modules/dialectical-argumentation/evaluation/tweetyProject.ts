@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
 import z from 'zod'
 
+import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -138,7 +139,8 @@ interface GetModelsRequestBody {
 
 const GetModelsResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchModels(
@@ -156,9 +158,10 @@ async function fetchModels(
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_ADF, body, GetModelsResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    interpretations: parseInterpretations(response.answer),
+    interpretations: parseInterpretations(response.answer!),
   }
 }
 
@@ -184,7 +187,8 @@ interface GetSkepticalRequestBody {
 
 const GetAcceptabilityResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchCredulous(
@@ -202,9 +206,10 @@ async function fetchCredulous(
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_ADF, body, GetAcceptabilityResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer),
+    arguments: parserSet(response.answer!),
   }
 }
 
@@ -223,9 +228,10 @@ async function fetchSkeptical(
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_ADF, body, GetAcceptabilityResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer),
+    arguments: parserSet(response.answer!),
   }
 }
 

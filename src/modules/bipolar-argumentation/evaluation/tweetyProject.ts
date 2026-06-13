@@ -22,6 +22,7 @@ import z from 'zod'
 
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -155,7 +156,8 @@ interface GetModelsRequestBody {
 
 const GetModelsResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchModels(
@@ -183,7 +185,8 @@ async function fetchModels(
     body,
     GetModelsResponseSchema,
   )
-  const extensions = parserListOfSets(modelsResponse.answer)
+  throwIfTimeout(modelsResponse.answer, modelsResponse.status)
+  const extensions = parserListOfSets(modelsResponse.answer!)
   return {
     evaluationDurationInMs: modelsResponse.time,
     extensions,
@@ -214,7 +217,8 @@ interface GetSkepticalRequestBody {
 
 const GetAcceptabilityResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchCredulous(
@@ -234,9 +238,10 @@ async function fetchCredulous(
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_BIPOLAR_ARGUMENTATION, body, GetAcceptabilityResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer),
+    arguments: parserSet(response.answer!),
   }
 }
 
@@ -257,9 +262,10 @@ async function fetchSkeptical(
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_BIPOLAR_ARGUMENTATION, body, GetAcceptabilityResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer),
+    arguments: parserSet(response.answer!),
   }
 }
 

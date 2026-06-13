@@ -69,7 +69,7 @@ watch([selectedSemantic, selectedMode, selectedSolver, evaluateContinuously], ()
 })
 
 const enabled = computed(() => evaluateContinuously.value)
-const { data, status, refetch, isLoading, isPending, isError } = usePafEvaluationQuery(
+const { data, status, refetch, isLoading, isPending, isError, error } = usePafEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   computed(() => selectedMode.value),
@@ -77,6 +77,7 @@ const { data, status, refetch, isLoading, isPending, isError } = usePafEvaluatio
   enabled,
 )
 
+const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
 const userCanTriggerFetch = computed(() => !evaluateContinuously.value && status.value !== 'success')
 
 watch(data, (d) => {
@@ -150,7 +151,10 @@ const windowTitle = computed(() => {
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">Acceptance Probabilities</legend>
-        <div v-if="isError" role="alert" class="alert alert-error alert-soft">
+        <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
+          <span>Evaluation timed out</span>
+        </div>
+        <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">

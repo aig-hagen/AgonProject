@@ -21,6 +21,7 @@ import { computed, type MaybeRef, unref } from 'vue'
 import z from 'zod'
 
 import type { ArgumentId } from '@/modules/common/argumentation/model'
+import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -63,7 +64,8 @@ interface IafRequestBody {
 
 const IafResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 function buildRequestBody(
@@ -104,9 +106,10 @@ async function fetchModels(
     semantics,
   )
   const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    extensions: parserListOfSets(response.answer),
+    extensions: parserListOfSets(response.answer!),
   }
 }
 
@@ -128,9 +131,10 @@ async function fetchAcceptability(
     semantics,
   )
   const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer),
+    arguments: parserSet(response.answer!),
   }
 }
 

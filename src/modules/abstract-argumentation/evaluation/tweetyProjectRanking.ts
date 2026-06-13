@@ -22,6 +22,7 @@ import z from 'zod'
 
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserScores } from '@/modules/common/evaluation/tweety-project/rankingScore'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -101,7 +102,8 @@ interface GetRankingRequestBody {
 
 const GetRankingResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchRanking(
@@ -120,9 +122,10 @@ async function fetchRanking(
   }
 
   const response = await fetchTyped(ENDPOINT_ABSTRACT_ARGUMENTATION, body, GetRankingResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    scores: parserScores(response.answer),
+    scores: parserScores(response.answer!),
   }
 }
 

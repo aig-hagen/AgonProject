@@ -16,33 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type z from 'zod'
 
-import { EvaluationTimeoutError } from '@/modules/common/evaluation/tweety-project/errors'
-
-const sourceTree = import.meta.env.VITE_APP_SOURCE_TREE
-
-export const USER_ID = `argumentation-toolbox.aig.fernuni-hagen.de/${sourceTree}`
-
-const HTTP_TIMEOUT_STATUSES = new Set([408, 504, 524])
-
-export async function fetchTyped<T extends z.ZodTypeAny>(
-  url: string,
-  body: unknown & {
-    email: string
-  },
-  schema: T,
-): Promise<z.infer<T>> {
-  const response = await fetch(url, {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-  if (!response.ok) {
-    if (HTTP_TIMEOUT_STATUSES.has(response.status)) throw new EvaluationTimeoutError()
-    throw new Error('HTTP response status: ' + response.status)
+export class EvaluationTimeoutError extends Error {
+  constructor() {
+    super('Evaluation timed out')
+    this.name = 'EvaluationTimeoutError'
   }
-  return schema.parse(await response.json())
+}
+
+export function throwIfTimeout(answer: string | null, status?: string | null): void {
+  if (answer === null || status === 'TIMEOUT') throw new EvaluationTimeoutError()
 }

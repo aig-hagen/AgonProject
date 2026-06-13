@@ -78,12 +78,13 @@ watch([selectedSemantic, selectedMode, evaluateContiously], () => {
 })
 
 const enabled = computed(() => evaluateContiously.value)
-const { data, status, refetch, isLoading, isPending, isError } = useExtensionEvaluationQuery(
+const { data, status, refetch, isLoading, isPending, isError, error } = useExtensionEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   computed(() => selectedMode.value),
   enabled,
 )
+const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
 const userCanTriggerFetch = computed(
   () => !evaluateContiously.value && status.value !== 'success',
 )
@@ -232,7 +233,10 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">{{ extensionsHeader }}</legend>
-        <div v-if="isError" role="alert" class="alert alert-error alert-soft">
+        <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
+          <span>Evaluation timed out</span>
+        </div>
+        <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">

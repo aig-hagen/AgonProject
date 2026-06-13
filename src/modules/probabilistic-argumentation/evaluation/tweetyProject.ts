@@ -21,6 +21,7 @@ import { computed, type MaybeRef, unref } from 'vue'
 import z from 'zod'
 
 import type { ArgumentId } from '@/modules/common/argumentation/model'
+import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserScores } from '@/modules/common/evaluation/tweety-project/rankingScore'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -104,7 +105,8 @@ interface PafRequestBody {
 
 const PafResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchPaf(
@@ -129,9 +131,10 @@ async function fetchPaf(
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT, body, PafResponseSchema)
+  throwIfTimeout(response.answer, response.status)
   return {
     evaluationDurationInMs: response.time,
-    scores: parserScores(response.answer),
+    scores: parserScores(response.answer!),
   }
 }
 

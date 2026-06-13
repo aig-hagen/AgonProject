@@ -140,7 +140,6 @@ onMounted(() => {
         }),
       ],
       allowFrom: floating.value!,
-      ignoreFrom: header.value!,
       invert: 'none',
       edges: { top: false, left: true, bottom: true, right: true },
       listeners: {

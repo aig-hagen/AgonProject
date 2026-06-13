@@ -69,12 +69,13 @@ watch([selectedSemantic, evaluateContinuously], () => {
 })
 
 const enabled = computed(() => evaluateContinuously.value)
-const { data, status, refetch, isLoading, isPending, isError } = useRankingEvaluationQuery(
+const { data, status, refetch, isLoading, isPending, isError, error } = useRankingEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   enabled,
 )
 
+const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
 const userCanTriggerFetch = computed(
   () => !evaluateContinuously.value && status.value !== 'success',
 )
@@ -135,7 +136,10 @@ watch(data, emitWeights)
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
         <legend v-if="!compact" class="fieldset-legend">Ranking</legend>
-        <div v-if="isError" role="alert" class="alert alert-error alert-soft">
+        <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
+          <span>Evaluation timed out</span>
+        </div>
+        <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
           <span>Evaluation failed</span>
         </div>
         <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">

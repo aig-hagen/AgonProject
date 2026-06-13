@@ -22,6 +22,7 @@ import z from 'zod'
 
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -110,7 +111,8 @@ interface GetCredulousRequestBody {
 
 const GetAcceptabilityResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchCredulous(
@@ -136,7 +138,8 @@ async function fetchCredulous(
     body,
     GetAcceptabilityResponseSchema,
   )
-  const accArguments = parserSet(credulousResponse.answer)
+  throwIfTimeout(credulousResponse.answer, credulousResponse.status)
+  const accArguments = parserSet(credulousResponse.answer!)
   return {
     evaluationDurationInMs: credulousResponse.time,
     arguments: accArguments,
@@ -176,6 +179,7 @@ async function fetchSkeptical(
     body,
     GetAcceptabilityResponseSchema,
   )
+  throwIfTimeout(skepticalResponse.answer, skepticalResponse.status)
   const accArguments = parserSet(skepticalResponse.answer)
   return {
     evaluationDurationInMs: skepticalResponse.time,
@@ -196,7 +200,8 @@ interface GetModelsRequestBody {
 
 const GetModelsResponseSchema = z.object({
   time: z.number(),
-  answer: z.string(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
 })
 
 async function fetchModels(
@@ -222,7 +227,8 @@ async function fetchModels(
     body,
     GetModelsResponseSchema,
   )
-  const extensions = parserListOfSets(modelsResponse.answer)
+  throwIfTimeout(modelsResponse.answer, modelsResponse.status)
+  const extensions = parserListOfSets(modelsResponse.answer!)
   return {
     evaluationDurationInMs: modelsResponse.time,
     extensions,
