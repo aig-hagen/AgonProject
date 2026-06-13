@@ -106,6 +106,7 @@ const otherLayoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
 })
 
 const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.value).length > 0)
+
 </script>
 <template>
   <div class="dropdown pointer-events-auto">

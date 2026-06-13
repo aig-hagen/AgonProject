@@ -64,6 +64,7 @@ import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
+import FloatingHintBottom from '@/modules/common/hints/FloatingHintBottom.vue'
 import FloatingHintRight from '@/modules/common/hints/FloatingHintRight.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
@@ -726,9 +727,9 @@ function doLayout(layout: Layout) {
 }
 
 const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
-const extensionsButtonRef = useTemplateRef('extensionsButton')
+const evaluationButtonsRef = useTemplateRef<HTMLDivElement>('evaluationButtons')
 const exportButtonRef = useTemplateRef('exportButton')
-const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
+const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
 </script>
 <template>
   <div class="h-full w-full" ref="container">
@@ -787,8 +788,9 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
     />
     <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
       <div class="flex flex-1 flex-col justify-between">
-        <MainMenu
-          @new="emit('new')"
+        <div class="w-fit">
+          <MainMenu
+            @new="emit('new')"
           @load="emit('load')"
           @generate="emit('generate')"
           :show-save="EntryState.ENABLE"
@@ -816,7 +818,9 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
           :physics-enabled="nodePhysicsEnabled"
           @toggle-physics="toggleNodePhysics"
           @help="isHelpOpened = !isHelpOpened"
-        />
+          />
+          <div ref="mainMenuBottom" class="h-0"></div>
+        </div>
 
         <div class="flex flex-1 justify-end flex-col gap-2">
           <slot name="toolbar" />
@@ -834,22 +838,23 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
               <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />
             </button>
           </div>
-          <button
-            ref="extensionsButton"
-            class="btn btn-square btn-sm"
-            @click="emit('open-extension-window')"
-            title="Extension Semantics"
-          >
-            <VariableIcon class="size-6 opacity-70" />
-          </button>
-          <button
-            v-if="hasRankingSlot"
-            class="btn btn-square btn-sm"
-            @click="emit('open-ranking-window')"
-            title="Ranking Semantics"
-          >
-            <BarsArrowUpIcon class="size-6 opacity-70" />
-          </button>
+          <div ref="evaluationButtons" class="flex flex-col gap-2">
+            <button
+              class="btn btn-square btn-sm"
+              @click="emit('open-extension-window')"
+              title="Extension Semantics"
+            >
+              <VariableIcon class="size-6 opacity-70" />
+            </button>
+            <button
+              v-if="hasRankingSlot"
+              class="btn btn-square btn-sm"
+              @click="emit('open-ranking-window')"
+              title="Ranking Semantics"
+            >
+              <BarsArrowUpIcon class="size-6 opacity-70" />
+            </button>
+          </div>
           <button
             ref="exportButton"
             class="btn btn-square btn-sm"
@@ -860,46 +865,43 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
           </button>
         </div>
       </div>
-      <div ref="helpAnchor" class="flex flex-1 items-end pointer-events-none">
+      <div class="flex flex-1 items-end pointer-events-none">
         <template v-if="!historyState.canUndo && !historyState.canRedo">
-          <FloatingHintRight :reference="helpButtonRef" :offset-x="64" placement="right-end"
+          <FloatingHintBottom :reference="mainMenuBottomRef" :offset-y="48" placement="bottom-start"
             ><ul class="list-disc">
               <li>
-                Create argument
-                <p class="mb-1"><kbd class="kbd kbd-sm">Left double-click</kbd> on canvas</p>
+                <p class="mb-1">Use <kbd class="kbd kbd-sm">Left double-click</kbd> to create a new argument</p>
               </li>
               <li>
-                Create {{ linkNames.join('/') }} link
-                <p class="mb-1">
-                  <kbd class="kbd kbd-sm">Right-click</kbd> on an argument, hold and drag towards
-                  another argument
+                <p class="mb-1"> Press <kbd class="kbd kbd-sm">Right-click</kbd> on an argument, hold and drag towards
+                  another argument to create an {{ linkNames.join('/') }} edge
                 </p>
               </li>
               <li v-if="enableLinkSwitching">
                 Switch between {{ linkNamesEnumeration }} for existing links
                 <p class="mb-1"><kbd class="kbd kbd-sm">Right-click</kbd> on link</p>
               </li>
-              <li>Open help to see more controls</li>
+              <li>Open menu to show more actions</li>
             </ul>
-          </FloatingHintRight>
-          <FloatingHintRight
-            v-if="linkSwitchButtonRef !== null"
-            :reference="linkSwitchButtonRef"
-            :offset-x="64"
-            placement="right-start"
-            >Switch between {{ linkNamesEnumeration }} for new links
-          </FloatingHintRight>
-          <FloatingHintRight :reference="extensionsButtonRef" :offset-x="64" placement="right-end"
-            >Extension Semantics
+          </FloatingHintBottom>
+          <FloatingHintRight :reference="evaluationButtonsRef" :offset-x="64" placement="right-start"
+            >Semantical Evaluation
           </FloatingHintRight>
           <FloatingHintRight :reference="exportButtonRef" :offset-x="64" placement="right-start"
-            >Create exports
+            >Export AF to LaTeX/TikZ or as image
           </FloatingHintRight>
         </template>
       </div>
     </div>
     <template v-if="historyState.possibleUndos === 1 && !historyState.canRedo">
-      <FloatingHintRight :reference="helpButtonRef" :offset-x="64" placement="right-end">
+      <FloatingHintRight
+        v-if="linkSwitchButtonRef !== null && enableLinkSwitching"
+        :reference="linkSwitchButtonRef"
+        :offset-x="64"
+        placement="right-start"
+        >Switch between {{ linkNamesEnumeration }} for new links
+      </FloatingHintRight>
+      <FloatingHintBottom :reference="mainMenuBottomRef" :offset-y="48" placement="bottom-start">
         <ul class="list-disc">
           <li>
             <div class="flex justify-between">
@@ -925,7 +927,7 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
           </li>
           <li>Open help to see more controls</li>
         </ul>
-      </FloatingHintRight>
+      </FloatingHintBottom>
     </template>
     <slot
       name="evaluationExtensions"

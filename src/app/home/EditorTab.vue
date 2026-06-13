@@ -140,7 +140,7 @@ const tabRef = useTemplateRef('tab')
     :reference="tabRef"
     :offset-y="64"
     placement="bottom-start"
-    >Edit the argumentation name
+    >Edit name
   </FloatingHintBottom>
 </template>
 
