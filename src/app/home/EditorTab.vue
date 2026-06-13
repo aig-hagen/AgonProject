@@ -138,7 +138,7 @@ const tabRef = useTemplateRef('tab')
     v-if="showRenameHint"
     class="z-1"
     :reference="tabRef"
-    :offset-y="64"
+    :offset-y="44"
     placement="bottom-start"
     >Edit name
   </FloatingHintBottom>

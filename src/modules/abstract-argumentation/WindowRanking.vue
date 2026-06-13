@@ -85,6 +85,28 @@ const rankGroups = computed(() => {
     }))
 })
 
+const numericalDisplayData = computed(() => {
+  if (data.value === undefined || data.value.rankingType !== 'numerical') return undefined
+  const scores = data.value.ranking.map((e) => e.score)
+  const minScore = Math.min(...scores)
+  const maxScore = Math.max(...scores)
+  const range = maxScore - minScore
+  return data.value.ranking.map((entry) => {
+    const t = range === 0 ? 0.5 : (entry.score - minScore) / range
+    const hue = Math.round(30 + t * 90)
+    return {
+      ...entry,
+      bgColor: `hsl(${hue}, 55%, 90%)`,
+      borderColor: `hsl(${hue}, 55%, 62%)`,
+    }
+  })
+})
+
+function formatScore(score: number): string {
+  if (Number.isInteger(score)) return String(score)
+  return String(parseFloat(score.toPrecision(4)))
+}
+
 function computeWeights() {
   const d = data.value
   return d === undefined ? [] : d.ranking.map((e) => ({
@@ -134,14 +156,16 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
           </div>
         </template>
         <template v-else>
-          <div class="flex flex-wrap gap-x-2 gap-y-1">
-            <span
-              v-for="entry in data.ranking"
+          <div class="flex flex-wrap gap-2">
+            <div
+              v-for="entry in numericalDisplayData"
               :key="entry.id"
-              class="text-base"
+              class="flex items-center gap-2 rounded-lg px-3 py-1.5 border text-sm"
+              :style="{ backgroundColor: entry.bgColor, borderColor: entry.borderColor }"
             >
-              {{ entry.name }}: {{ entry.score }}
-            </span>
+              <span class="font-medium">{{ entry.name }}</span>
+              <span class="font-mono text-xs tabular-nums opacity-60">{{ formatScore(entry.score) }}</span>
+            </div>
           </div>
         </template>
         <p class="label">
