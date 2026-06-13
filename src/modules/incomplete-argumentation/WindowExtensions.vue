@@ -20,16 +20,15 @@
 import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
-import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
+import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { ExtensionWindowInstanceState } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import {
-  type Extension,
   type IafMode,
   type IafType,
   KNOWN_SEMANTIC_GROUPS,
@@ -52,9 +51,6 @@ const emit = defineEmits<{
 
 provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
-const internalOpen = ref(true)
-watch(internalOpen, (v) => { if (!v) emit('close') })
-
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
 
@@ -65,80 +61,38 @@ function resolveSemanticFromKey(key: string): Semantic {
 const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedType = ref<IafType>(instanceState.type)
 const selectedMode = ref<IafMode>(instanceState.mode)
-const evaluateContiously = ref(instanceState.evaluateContinuously)
-const isCompact = ref(false)
-watch(isCompact, (v) => { if (v) evaluateContiously.value = true })
+const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, selectedType, selectedMode, evaluateContiously], () => {
+watch([selectedSemantic, selectedType, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantic.value.key,
     type: selectedType.value,
     mode: selectedMode.value,
-    evaluateContinuously: evaluateContiously.value,
+    evaluateContinuously: evaluateContinuously.value,
   })
 })
 
-const enabled = computed(() => evaluateContiously.value)
-
-const { data, status, refetch, isLoading, isPending, isError, error } = useExtensionEvaluationQuery(
+const query = useExtensionEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   selectedType,
   selectedMode,
-  enabled,
+  evaluateContinuously,
 )
 
-const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
-const userCanTriggerFetch = computed(
-  () => !evaluateContiously.value && status.value !== 'success',
-)
+const {
+  selectedExtension,
+  resultsHeader,
+  selectionHint,
+  emptyMessage,
+  dataExtensionsFormatedAndSorted,
+  resultItems,
+  currentHighlight,
+} = useExtensionWindowBase(selectedMode, query)
 
-const resultsHeader = computed(() =>
-  selectedMode.value === 'enumerate' ? 'Extensions' : 'Acceptable Arguments',
-)
-const selectionHint = computed(() =>
-  selectedMode.value === 'enumerate'
-    ? 'Select extension to highlight.'
-    : 'Select acceptable argument to highlight.',
-)
-
-function formatExtension(extension: Extension) {
-  return extension.map((e) => e.name).sort().join(', ')
-}
-
-const dataExtensionsFormatedAndSorted = computed(() => {
-  if (data.value === undefined) return undefined
-  const extensions = data.value.extensions
-  const formated =
-    selectedMode.value === 'enumerate'
-      ? extensions.map((extension) => {
-          const nameFormated = formatExtension(extension)
-          const extensionIdsSorted = extension.map((a) => a.id).sort()
-          return { key: JSON.stringify(extensionIdsSorted), extension, nameFormated }
-        })
-      : extensions.flatMap((extension) =>
-          extension.map((argument) => ({
-            key: String(argument.id),
-            extension: [argument],
-            nameFormated: argument.name,
-          })),
-        )
-  formated.sort((a, b) => a.nameFormated.localeCompare(b.nameFormated))
-  return {
-    stateId: data.value.stateId,
-    formatedAndSorted: formated,
-    evaluationDurationInMs: data.value.evaluationDurationInMs,
-  }
-})
-
-const resultItems = computed(
-  () =>
-    dataExtensionsFormatedAndSorted.value?.formatedAndSorted.map((e) => ({
-      key: e.key,
-      label: selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
-    })) ?? [],
-)
+watch(currentHighlight, (h) => emit('highlight', h))
+function onWindowFocus() { emit('highlight', currentHighlight.value) }
 
 const windowTitle = computed(() => {
   const typeLabel = selectedType.value === 'pos' ? 'Possible' : 'Necessary'
@@ -146,116 +100,58 @@ const windowTitle = computed(() => {
     : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
   return `Extensions: ${selectedSemantic.value.displayName} · ${typeLabel} · ${modeLabel}`
 })
-
-const selectedExtension = ref<string | undefined>(undefined)
-const currentHighlight = computed<Highlight | undefined>(() => {
-  if (selectedExtension.value === undefined || dataExtensionsFormatedAndSorted.value === undefined) {
-    return undefined
-  }
-  for (const extension of dataExtensionsFormatedAndSorted.value.formatedAndSorted) {
-    if (extension.key === selectedExtension.value) {
-      return {
-        stateId: dataExtensionsFormatedAndSorted.value.stateId,
-        groups: [{ nodes: new Set(extension.extension.map((a) => a.id)), color: NODE_GREEN }],
-        attackedByFirst: NODE_RED,
-      }
-    }
-  }
-  return undefined
-})
-watch(currentHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('highlight', currentHighlight.value) }
 </script>
 
 <template>
-  <FloatingWindow
-    v-model:open="internalOpen"
-    v-model:compact="isCompact"
+  <BaseEvaluationWindow
+    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
-    :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
-    :intitalSize="{ width: 576, height: 448 }"
-    compactable
+    :instance-offset="instanceOffset"
+    :query="query"
+    :results-header="resultsHeader"
+    @close="emit('close')"
     @focus="onWindowFocus"
   >
-    <template #default="{ compact }">
-    <div class="p-4">
-      <fieldset v-if="!compact" class="fieldset">
-        <legend class="fieldset-legend">Parameters</legend>
-        <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-fit">
-            <span class="label">Type</span>
-            <select v-model="selectedType">
-              <option value="pos">Possible</option>
-              <option value="nec">Necessary</option>
-            </select>
-          </label>
-          <label class="select select-sm w-fit">
-            <span class="label">Semantics</span>
-            <select v-model="selectedSemantic">
-              <optgroup
-                v-for="group in semanticGroups"
-                :key="group.key"
-                :label="group.displayName"
-              >
-                <option
-                  v-for="semantic in group.semantics"
-                  :key="semantic.key"
-                  :value="semantic"
-                >
-                  {{ semantic.displayName }}
-                </option>
-              </optgroup>
-            </select>
-          </label>
-          <label class="select select-sm w-fit">
-            <span class="label">Mode</span>
-            <select v-model="selectedMode">
-              <option value="enumerate">Enumerate</option>
-              <option value="credulous">Credulous</option>
-              <option value="skeptical">Skeptical</option>
-            </select>
-          </label>
-        </div>
-        <TermDefinitionBlock :id="selectedSemantic.key" />
-      </fieldset>
-
-      <fieldset v-if="!compact" class="fieldset">
-        <div class="flex gap-2 flex-wrap">
-          <button
-            class="btn btn-sm btn-soft btn-neutral mt-2"
-            :disabled="!userCanTriggerFetch"
-            @click="() => refetch()"
-          >
-            Evaluate
-          </button>
-          <label class="label mt-2">
-            <input type="checkbox" v-model="evaluateContiously" class="checkbox checkbox-sm" />
-            Evaluate continuously
-          </label>
-        </div>
-      </fieldset>
-      <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend v-if="!compact" class="fieldset-legend">{{ resultsHeader }}</legend>
-        <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
-          <span>Evaluation timed out</span>
-        </div>
-        <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Evaluation failed</span>
-        </div>
-        <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating...</span>
-        </div>
-        <template v-if="dataExtensionsFormatedAndSorted !== undefined">
-          <EvaluationResultGrid
-            v-model:selected="selectedExtension"
-            :items="resultItems"
-            :empty-message="selectedMode === 'enumerate' ? 'No extensions exist.' : 'No acceptable arguments exist.'"
-            :selection-hint="selectionHint"
-            :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
-          />
-        </template>
-      </fieldset>
-    </div>
+    <template #parameters>
+      <label class="select select-sm w-fit">
+        <span class="label">Type</span>
+        <select v-model="selectedType">
+          <option value="pos">Possible</option>
+          <option value="nec">Necessary</option>
+        </select>
+      </label>
+      <label class="select select-sm w-fit">
+        <span class="label">Semantics</span>
+        <select v-model="selectedSemantic">
+          <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
+            <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
+              {{ semantic.displayName }}
+            </option>
+          </optgroup>
+        </select>
+      </label>
+      <label class="select select-sm w-fit">
+        <span class="label">Mode</span>
+        <select v-model="selectedMode">
+          <option value="enumerate">Enumerate</option>
+          <option value="credulous">Credulous</option>
+          <option value="skeptical">Skeptical</option>
+        </select>
+      </label>
     </template>
-  </FloatingWindow>
+    <template #parameters-footer>
+      <TermDefinitionBlock :id="selectedSemantic.key" />
+    </template>
+    <template #results>
+      <template v-if="dataExtensionsFormatedAndSorted !== undefined">
+        <EvaluationResultGrid
+          v-model:selected="selectedExtension"
+          :items="resultItems"
+          :empty-message="emptyMessage"
+          :selection-hint="selectionHint"
+          :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
+        />
+      </template>
+    </template>
+  </BaseEvaluationWindow>
 </template>

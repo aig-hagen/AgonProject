@@ -607,6 +607,14 @@ const nodesWithWeights = computed(() =>
     : []
 )
 
+function formatWeight(w: number): string {
+  return Number.isInteger(w) ? String(w) : w.toFixed(2)
+}
+
+function formatWeightFontSize(w: number): number {
+  return Number.isInteger(w) ? 10 : 8
+}
+
 let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
 
@@ -755,9 +763,9 @@ const helpButtonRef = useTemplateRef<HTMLDivElement>('helpAnchor')
             :y="node.y - ARGUMENT_RADIUS_IN_PX * 0.7"
             text-anchor="middle"
             dominant-baseline="central"
-            font-size="8"
+            :font-size="formatWeightFontSize(nodeWeights!.get(node.id)!)"
             fill="#333"
-          >{{ nodeWeights!.get(node.id)!.toFixed(2) }}</text>
+          >{{ formatWeight(nodeWeights!.get(node.id)!) }}</text>
         </g>
         <slot name="nodeOverlay" :nodes="overlayNodes" />
       </g>

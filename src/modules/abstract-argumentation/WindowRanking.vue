@@ -28,10 +28,10 @@ import {
 import { abstractArgumentationGlossary, abstractArgumentationRankingGlossary } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary })
 
@@ -47,17 +47,12 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const internalOpen = ref(true)
-watch(internalOpen, (v) => { if (!v) emit('close') })
-
 function resolveSemanticFromKey(key: string): RankingSemantic {
   return KNOWN_RANKING_SEMANTICS.find((s) => s.key === key) ?? KNOWN_RANKING_SEMANTICS[0]!
 }
 
 const selectedSemantic = shallowRef<RankingSemantic>(resolveSemanticFromKey(instanceState.semanticKey))
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
-const isCompact = ref(false)
-watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
 
 watch([selectedSemantic, evaluateContinuously], () => {
   emit('update:instanceState', {
@@ -67,93 +62,93 @@ watch([selectedSemantic, evaluateContinuously], () => {
   })
 })
 
-const enabled = computed(() => evaluateContinuously.value)
-const { data, status, refetch, isLoading, isPending, isError, error } = useRankingEvaluationQuery(
+const query = useRankingEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
-  enabled,
+  evaluateContinuously,
 )
 
-const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
-const userCanTriggerFetch = computed(
-  () => !evaluateContinuously.value && status.value !== 'success',
-)
+const { data } = query
 
-function emitWeights(ranking: typeof data.value) {
-  if (ranking === undefined) {
-    emit('setWeights', [])
-    return
+const rankGroups = computed(() => {
+  if (data.value === undefined || data.value.rankingType !== 'lattice') return undefined
+  const byScore = new Map<number, typeof data.value.ranking>()
+  for (const entry of data.value.ranking) {
+    const group = byScore.get(entry.score)
+    if (group) group.push(entry)
+    else byScore.set(entry.score, [entry])
   }
-  emit('setWeights', ranking.ranking.map((entry) => ({ id: entry.id, weight: entry.score })))
+  return [...byScore.entries()]
+    .sort(([a], [b]) => b - a)
+    .map(([, entries]) => ({
+      entries: [...entries].sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+})
+
+function computeWeights() {
+  const d = data.value
+  return d === undefined ? [] : d.ranking.map((e) => ({
+    id: e.id,
+    weight: d.rankingType === 'lattice' ? Math.round(e.score) : e.score,
+  }))
 }
 
-watch(data, emitWeights)
+watch(data, () => emit('setWeights', computeWeights()), { immediate: true })
+
+function onWindowFocus() { emit('setWeights', computeWeights()) }
 </script>
+
 <template>
-  <FloatingWindow
-    v-model:open="internalOpen"
-    v-model:compact="isCompact"
+  <BaseEvaluationWindow
+    v-model:evaluate-continuously="evaluateContinuously"
     :title="`Ranking: ${selectedSemantic.displayName}`"
-    :initial-position="{ x: 192 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
-    :intitalSize="{ width: 480, height: 320 }"
-    compactable
+    :instance-offset="instanceOffset"
+    :initial-position-base="{ x: 192, y: 96 }"
+    :initial-size="{ width: 480, height: 320 }"
+    :query="query"
+    results-header="Ranking"
+    @close="emit('close')"
+    @focus="onWindowFocus"
   >
-    <template #default="{ compact }">
-    <div class="p-4">
-      <fieldset v-if="!compact" class="fieldset">
-        <legend class="fieldset-legend">Parameters</legend>
-        <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-fit">
-            <span class="label">Semantics</span>
-            <select v-model="selectedSemantic">
-              <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
-                {{ s.displayName }}
-              </option>
-            </select>
-          </label>
-        </div>
-        <TermDefinitionBlock :id="selectedSemantic.key" />
-      </fieldset>
-      <fieldset v-if="!compact" class="fieldset">
-        <div class="flex gap-2 flex-wrap">
-          <button
-            class="btn btn-sm btn-soft btn-neutral mt-2"
-            :disabled="!userCanTriggerFetch"
-            @click="() => refetch()"
-          >
-            Evaluate
-          </button>
-          <label class="label mt-2">
-            <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
-            Evaluate continuously
-          </label>
-        </div>
-      </fieldset>
-      <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend v-if="!compact" class="fieldset-legend">Ranking</legend>
-        <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
-          <span>Evaluation timed out</span>
-        </div>
-        <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Evaluation failed</span>
-        </div>
-        <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating...</span>
-        </div>
-        <template v-if="data !== undefined">
-          <div class="flex flex-wrap gap-2">
+    <template #parameters>
+      <label class="select select-sm w-fit">
+        <span class="label">Semantics</span>
+        <select v-model="selectedSemantic">
+          <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
+            {{ s.displayName }}
+          </option>
+        </select>
+      </label>
+    </template>
+    <template #parameters-footer>
+      <TermDefinitionBlock :id="selectedSemantic.key" />
+    </template>
+    <template #results>
+      <template v-if="data !== undefined">
+        <template v-if="data.rankingType === 'lattice'">
+          <div class="flex flex-wrap items-center gap-x-1 gap-y-1">
+            <template v-for="(group, index) in rankGroups" :key="index">
+              <span v-if="index > 0" class="text-sm select-none">&#x227B;</span>
+              <span class="text-sm">{{ group.entries.map((e) => e.name).join(', ') }}</span>
+            </template>
+          </div>
+        </template>
+        <template v-else>
+          <div class="flex flex-wrap gap-x-2 gap-y-1">
             <span
               v-for="entry in data.ranking"
               :key="entry.id"
-              class="btn btn-sm btn-ghost pointer-events-none"
+              class="text-sm"
             >
               {{ entry.name }}: {{ entry.score }}
             </span>
           </div>
-          <p class="label">{{ data.evaluationDurationInMs }}ms</p>
         </template>
-      </fieldset>
-    </div>
+        <p class="label">
+          {{ data.rankingType === 'lattice' ? 'Node labels show the ranking level.' : 'Node labels show ranking scores.' }}
+          · {{ data.evaluationDurationInMs }}ms
+        </p>
+      </template>
     </template>
-  </FloatingWindow>
+  </BaseEvaluationWindow>
 </template>

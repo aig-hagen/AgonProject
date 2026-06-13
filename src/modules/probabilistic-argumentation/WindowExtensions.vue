@@ -21,10 +21,10 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
+import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { PafWindowInstanceState } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
@@ -47,9 +47,6 @@ const emit = defineEmits<{
 
 provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
-const internalOpen = ref(true)
-watch(internalOpen, (v) => { if (!v) emit('close') })
-
 const allSemantics = KNOWN_SEMANTIC_GROUPS.flatMap((g) => g.semantics)
 
 function resolveSemanticFromKey(key: string): PafSemantic {
@@ -60,8 +57,6 @@ const selectedSemantic = shallowRef<PafSemantic>(resolveSemanticFromKey(instance
 const selectedMode = ref(instanceState.mode)
 const selectedSolver = ref(instanceState.solver)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
-const isCompact = ref(false)
-watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
 
 watch([selectedSemantic, selectedMode, selectedSolver, evaluateContinuously], () => {
   emit('update:instanceState', {
@@ -73,24 +68,18 @@ watch([selectedSemantic, selectedMode, selectedSolver, evaluateContinuously], ()
   })
 })
 
-const enabled = computed(() => evaluateContinuously.value)
-const { data, status, refetch, isLoading, isPending, isError, error } = usePafEvaluationQuery(
+const query = usePafEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   computed(() => selectedMode.value),
   computed(() => selectedSolver.value),
-  enabled,
+  evaluateContinuously,
 )
 
-const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
-const userCanTriggerFetch = computed(() => !evaluateContinuously.value && status.value !== 'success')
+const { data } = query
 
 watch(data, (d) => {
-  if (d === undefined) {
-    emit('setWeights', [])
-    return
-  }
-  emit('setWeights', d.entries.map((e) => ({ id: e.id, weight: e.probability })))
+  emit('setWeights', d === undefined ? [] : d.entries.map((e) => ({ id: e.id, weight: e.probability })))
 })
 
 const windowTitle = computed(() => {
@@ -100,86 +89,58 @@ const windowTitle = computed(() => {
 </script>
 
 <template>
-  <FloatingWindow
-    v-model:open="internalOpen"
-    v-model:compact="isCompact"
+  <BaseEvaluationWindow
+    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
-    :initial-position="{ x: 192 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
-    :intitalSize="{ width: 480, height: 320 }"
-    compactable
+    :instance-offset="instanceOffset"
+    :initial-position-base="{ x: 192, y: 96 }"
+    :initial-size="{ width: 480, height: 320 }"
+    :query="query"
+    results-header="Acceptance Probabilities"
+    @close="emit('close')"
   >
-    <template #default="{ compact }">
-    <div class="p-4">
-      <fieldset v-if="!compact" class="fieldset">
-        <legend class="fieldset-legend">Parameters</legend>
-        <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-fit">
-            <span class="label">Semantics</span>
-            <select v-model="selectedSemantic">
-              <optgroup v-for="group in KNOWN_SEMANTIC_GROUPS" :key="group.key" :label="group.displayName">
-                <option v-for="s in group.semantics" :key="s.key" :value="s">
-                  {{ s.displayName }}
-                </option>
-              </optgroup>
-            </select>
-          </label>
-          <label class="select select-sm w-fit">
-            <span class="label">Mode</span>
-            <select v-model="selectedMode">
-              <option value="credulous">Credulous</option>
-              <option value="skeptical">Skeptical</option>
-            </select>
-          </label>
-          <label class="select select-sm w-fit">
-            <span class="label">Solver</span>
-            <select v-model="selectedSolver">
-              <option value="simple">Exact</option>
-              <option value="montecarlo">Approximate</option>
-            </select>
-          </label>
-        </div>
-        <TermDefinitionBlock :id="selectedSemantic.key" />
-      </fieldset>
-      <fieldset v-if="!compact" class="fieldset">
-        <div class="flex gap-2 flex-wrap">
-          <button
-            class="btn btn-sm btn-soft btn-neutral mt-2"
-            :disabled="!userCanTriggerFetch"
-            @click="() => refetch()"
-          >
-            Evaluate
-          </button>
-          <label class="label mt-2">
-            <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
-            Evaluate continuously
-          </label>
-        </div>
-      </fieldset>
-      <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend v-if="!compact" class="fieldset-legend">Acceptance Probabilities</legend>
-        <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
-          <span>Evaluation timed out</span>
-        </div>
-        <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Evaluation failed</span>
-        </div>
-        <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating...</span>
-        </div>
-        <template v-if="data !== undefined">
-          <div class="flex flex-wrap gap-2">
-            <span
-              v-for="entry in data.entries"
-              :key="entry.id"
-              class="btn btn-sm btn-ghost pointer-events-none"
-            >
-              {{ entry.name }}: {{ entry.probability.toFixed(4) }}
-            </span>
-          </div>
-          <p class="label">{{ data.evaluationDurationInMs }}ms</p>
-        </template>
-      </fieldset>
-    </div>
+    <template #parameters>
+      <label class="select select-sm w-fit">
+        <span class="label">Semantics</span>
+        <select v-model="selectedSemantic">
+          <optgroup v-for="group in KNOWN_SEMANTIC_GROUPS" :key="group.key" :label="group.displayName">
+            <option v-for="s in group.semantics" :key="s.key" :value="s">
+              {{ s.displayName }}
+            </option>
+          </optgroup>
+        </select>
+      </label>
+      <label class="select select-sm w-fit">
+        <span class="label">Mode</span>
+        <select v-model="selectedMode">
+          <option value="credulous">Credulous</option>
+          <option value="skeptical">Skeptical</option>
+        </select>
+      </label>
+      <label class="select select-sm w-fit">
+        <span class="label">Solver</span>
+        <select v-model="selectedSolver">
+          <option value="simple">Exact</option>
+          <option value="montecarlo">Approximate</option>
+        </select>
+      </label>
     </template>
-  </FloatingWindow>
+    <template #parameters-footer>
+      <TermDefinitionBlock :id="selectedSemantic.key" />
+    </template>
+    <template #results>
+      <template v-if="data !== undefined">
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-for="entry in data.entries"
+            :key="entry.id"
+            class="btn btn-sm btn-ghost pointer-events-none"
+          >
+            {{ entry.name }}: {{ entry.probability.toFixed(4) }}
+          </span>
+        </div>
+        <p class="label">{{ data.evaluationDurationInMs }}ms</p>
+      </template>
+    </template>
+  </BaseEvaluationWindow>
 </template>

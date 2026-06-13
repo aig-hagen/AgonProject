@@ -1,0 +1,119 @@
+<!--
+  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+
+  Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<script setup lang="ts">
+import { computed, type Ref, ref, watch } from 'vue'
+
+import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+
+export interface EvaluationWindowQuery {
+  status: Readonly<Ref<string>>
+  error: Readonly<Ref<Error | null | undefined>>
+  isPending: Readonly<Ref<boolean>>
+  isLoading: Readonly<Ref<boolean>>
+  isError: Readonly<Ref<boolean>>
+  refetch: () => void
+}
+
+const props = defineProps<{
+  title: string
+  instanceOffset?: number
+  initialPositionBase?: { x: number; y: number }
+  initialSize?: { width: number; height: number }
+  resultsHeader?: string
+  query: EvaluationWindowQuery
+}>()
+
+const emit = defineEmits<{
+  close: []
+  focus: []
+}>()
+
+const evaluateContinuously = defineModel<boolean>('evaluateContinuously', { required: true })
+
+const internalOpen = ref(true)
+watch(internalOpen, (v) => { if (!v) emit('close') })
+
+const isCompact = ref(false)
+watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
+
+const { status, error, isPending, isLoading, isError, refetch } = props.query
+
+const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
+const userCanTriggerFetch = computed(
+  () => !evaluateContinuously.value && status.value !== 'success',
+)
+
+const offset = computed(() => props.instanceOffset ?? 0)
+const basePos = computed(() => props.initialPositionBase ?? { x: 128, y: 64 })
+const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
+</script>
+
+<template>
+  <FloatingWindow
+    v-model:open="internalOpen"
+    v-model:compact="isCompact"
+    :title="title"
+    :initial-position="{ x: basePos.x + offset * 24, y: basePos.y + offset * 24 }"
+    :intitalSize="size"
+    compactable
+    @focus="emit('focus')"
+  >
+    <template #default="{ compact }">
+      <div class="p-4">
+        <fieldset v-if="!compact" class="fieldset">
+          <legend class="fieldset-legend">Parameters</legend>
+          <div class="flex gap-2 flex-wrap">
+            <slot name="parameters" :compact="compact" />
+          </div>
+          <slot name="parameters-footer" :compact="compact" />
+        </fieldset>
+
+        <fieldset v-if="!compact" class="fieldset">
+          <div class="flex gap-2 flex-wrap">
+            <button
+              class="btn btn-sm btn-soft btn-neutral mt-2"
+              :disabled="!userCanTriggerFetch"
+              @click="() => refetch()"
+            >
+              Evaluate
+            </button>
+            <label class="label mt-2">
+              <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
+              Evaluate continuously
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="fieldset" v-if="!isPending || isLoading">
+          <legend v-if="!compact && resultsHeader" class="fieldset-legend">{{ resultsHeader }}</legend>
+          <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
+            <span>Evaluation timed out</span>
+          </div>
+          <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
+            <span>Evaluation failed</span>
+          </div>
+          <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
+            <span>Evaluating...</span>
+          </div>
+          <slot name="results" :compact="compact" />
+        </fieldset>
+      </div>
+    </template>
+  </FloatingWindow>
+</template>

@@ -79,6 +79,8 @@ export interface RankingSemantic {
   displayName: string
 }
 
+export type RankingType = 'numerical' | 'lattice'
+
 export type RankingEntry = { id: ArgumentId; name: string; score: number }
 
 /** Arguments sorted from highest-scored (index 0) to lowest-scored. */
@@ -88,6 +90,7 @@ export interface RankingEvaluationResult {
   stateId: UUID
   evaluationDurationInMs: number
   ranking: Ranking
+  rankingType: RankingType
 }
 
 interface GetRankingRequestBody {
@@ -104,13 +107,14 @@ const GetRankingResponseSchema = z.object({
   time: z.number(),
   answer: z.string().nullable(),
   status: z.string().optional().nullable(),
+  rankingType: z.enum(['numerical', 'lattice']).optional(),
 })
 
 async function fetchRanking(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
-): Promise<{ evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }> }> {
+): Promise<{ evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }>; rankingType: RankingType }> {
   const body: GetRankingRequestBody = {
     email: USER_ID,
     cmd: 'get_model',
@@ -126,6 +130,7 @@ async function fetchRanking(
   return {
     evaluationDurationInMs: response.time,
     scores: parserScores(response.answer!),
+    rankingType: response.rankingType ?? 'numerical',
   }
 }
 
@@ -153,7 +158,7 @@ export function useRankingEvaluationQuery(
     () => ['rankings_get_model', semanticsRef, argumentData] as const,
   )
 
-  type RawResult = { evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }> }
+  type RawResult = { evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }>; rankingType: RankingType }
   const queryResult = useQuery<RawResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
@@ -186,6 +191,7 @@ export function useRankingEvaluationQuery(
       stateId: input.stateId,
       evaluationDurationInMs: raw.evaluationDurationInMs,
       ranking,
+      rankingType: raw.rankingType,
     }
   })
 
