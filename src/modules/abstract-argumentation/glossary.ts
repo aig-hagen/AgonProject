@@ -57,13 +57,13 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   scc: {
     label: 'strongly connected component',
     title: 'Strongly Connected Component',
-    content: ['A strongly connected component (SCC) of an AF is a maximal subset of arguments $S \\subseteq A$ such that for every pair of arguments $a,b \\in S$ there is a path from $a$ to $b$ and a path from $b$ to $a$.'],
+    content: ['A strongly connected component (SCC) of an AF is a maximal subset of arguments $S \\subseteq A$ such that for every pair of arguments $a,b \\in S$ there is a path from $a$ to $b$.'],
   },
 
   sccRecursive: {
-    label: 'SCC-recursive',
-    title: 'SCC-Recursive Schema',
-    content: ['The SCC-recursive schema defines a ', { ref: 'semantics' }, ' by applying a base semantics $\\sigma$ locally to each ', { ref: 'scc' }, ' (SCC) of the framework, processing SCCs in topological order and restricting attacks from previously evaluated SCCs.'],
+    label: 'SCC-recursive scheme',
+    title: 'SCC-Recursiveness Scheme',
+    content: ['The SCC-recursiveness scheme defines a ', { ref: 'semantics' }, ' by applying a base semantics $\\sigma$ locally to each ', { ref: 'scc' }, ' (SCC) of the framework, processing SCCs in topological order and restricting attacks from previously evaluated SCCs.'],
     reference: BGG05,
   },
 

@@ -17,10 +17,13 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
+import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { PafWindowInstanceState } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import {
@@ -41,6 +44,8 @@ const emit = defineEmits<{
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
   close: []
 }>()
+
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
 const internalOpen = ref(true)
 watch(internalOpen, (v) => { if (!v) emit('close') })
@@ -133,6 +138,7 @@ const windowTitle = computed(() => {
             </select>
           </label>
         </div>
+        <TermDefinitionBlock :id="selectedSemantic.key" />
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">

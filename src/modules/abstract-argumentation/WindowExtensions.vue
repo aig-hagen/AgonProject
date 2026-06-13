@@ -17,7 +17,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { InformationCircleIcon } from '@heroicons/vue/24/outline'
 import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
@@ -34,7 +33,7 @@ import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
-import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
+import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
@@ -191,21 +190,16 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
               <option selected>TweetyProject</option>
             </select>
           </label>
-          <div class="flex items-center gap-1">
-            <label class="select select-sm w-fit">
-              <span class="label">Semantics</span>
-              <select v-model="selectedSemantic">
-                <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-                  <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
-                    {{ semantic.displayName }}
-                  </option>
-                </optgroup>
-              </select>
-            </label>
-            <TermTooltip :id="selectedSemantic.key">
-              <InformationCircleIcon class="size-4 text-base-content/40 hover:text-base-content/70 cursor-help" />
-            </TermTooltip>
-          </div>
+          <label class="select select-sm w-fit">
+            <span class="label">Semantics</span>
+            <select v-model="selectedSemantic">
+              <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
+                <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
+                  {{ semantic.displayName }}
+                </option>
+              </optgroup>
+            </select>
+          </label>
           <label class="select select-sm w-fit">
             <span class="label">Mode</span>
             <select v-model="selectedMode">
@@ -215,6 +209,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
             </select>
           </label>
         </div>
+        <TermDefinitionBlock :id="selectedSemantic.key" />
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">

@@ -17,12 +17,15 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { ExtensionWindowInstanceState } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import {
@@ -46,6 +49,8 @@ const emit = defineEmits<{
   highlight: [highlight?: Highlight]
   close: []
 }>()
+
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
 const internalOpen = ref(true)
 watch(internalOpen, (v) => { if (!v) emit('close') })
@@ -211,6 +216,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
             </select>
           </label>
         </div>
+        <TermDefinitionBlock :id="selectedSemantic.key" />
       </fieldset>
 
       <fieldset v-if="!compact" class="fieldset">
