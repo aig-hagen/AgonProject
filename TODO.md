@@ -1,3 +1,12 @@
 - Some bug regarding enabled physics simulation and switching tabs
 - for mutual attacks, the probabilities in PAFs are above each other and one is not visible at all because of that
 - Shorten Names in Latex output
+- sometimes the prob values or acc conditions stick to a position even if nodes are moved
+- weight badges smear behind
+- clicking an eval window should switch to its highlighting function
+- fix highlighting of 3-valued models
+- snap to grid is sometimes not working (eg in iAF)
+- rework the toLatex pipeline
+- hide parameters should auto enable contin. eval
+- fix latex export of prob AFs
+- in general find a solution to annotations in latex output (to far away from node)

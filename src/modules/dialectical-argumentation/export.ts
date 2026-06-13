@@ -21,7 +21,6 @@ import {
   latexExportCommonConfig,
 } from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
-import { renderSvg } from '@/modules/common/export/renderSvg'
 import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
@@ -70,28 +69,25 @@ const exportLatexDialecticalArgumentation: ExportConfig<DialecticalArgumentation
     export(document, styleOptions?: ExportStyleOptions) {
       const argsList = [...document.arguments()]
 
-      // Build escaped-name map — same logic as the common exporter
       const latexNameMap = new Map<number, string>()
       for (const [id, data] of argsList) {
         latexNameMap.set(id, data.name.replace(/[^a-zA-Z0-9 ]/g, ''))
       }
 
-      const base = exportLatexArgumentationCommon(
+      const dataMap = new Map(argsList)
+
+      return exportLatexArgumentationCommon(
         argsList.values(),
         document.links(),
         (function* () {})(),
         styleOptions,
+        {
+          argumentAnnotation: (id) => {
+            const formula = formulaToLatexRaw(dataMap.get(id)!.condition, latexNameMap)
+            return `{\\scriptsize $${formula}$}`
+          },
+        },
       )
-
-      // Build annotation block and inject before \end{af}
-      let annotations = ''
-      for (const [id, data] of argsList) {
-        const latexFormula = formulaToLatexRaw(data.condition, latexNameMap)
-        annotations += `  \\annotation{a${id}}{$${latexFormula}$}\r\n`
-      }
-      const text = base.text.replace('\\end{af}', annotations + '\\end{af}')
-
-      return { text, svg: renderSvg(text) }
     },
   }
 

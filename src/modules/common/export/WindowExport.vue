@@ -19,9 +19,11 @@
 <script setup lang="ts" generic="DocumentT">
 import { EditorState, type Extension } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
+import { ClipboardDocumentCheckIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/outline'
 import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
-import { computed, shallowRef, useTemplateRef, watchEffect } from 'vue'
+import copy from 'copy-to-clipboard'
+import { computed, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
@@ -53,6 +55,27 @@ const isBipolarDocument = computed(() => {
   const maybeSupports = (input as unknown as { supports?: unknown }).supports
   return typeof maybeSupports === 'function'
 })
+
+const usePackageLine = computed(() => {
+  if (selectedExportConfig.value?.name !== 'LaTeX (argumentation)') return undefined
+  const opts = [
+    `argumentstyle=${selectedArgumentStyle.value}`,
+    `namestyle=${selectedNameStyle.value}`,
+    `attackstyle=${selectedAttackStyle.value}`,
+  ]
+  if (isBipolarDocument.value) opts.push(`supportstyle=${selectedSupportStyle.value}`)
+  return `\\usepackage[${opts.join(',')}]{argumentation}`
+})
+
+const packageLineCopied = ref(false)
+let packageLineCopyTimeout: ReturnType<typeof setTimeout>
+function copyPackageLine() {
+  if (usePackageLine.value === undefined) return
+  copy(usePackageLine.value)
+  packageLineCopied.value = true
+  clearTimeout(packageLineCopyTimeout)
+  packageLineCopyTimeout = setTimeout(() => (packageLineCopied.value = false), 500)
+}
 
 const exportResult = computed(() => {
   if (!open.value) {
@@ -162,7 +185,7 @@ watchEffect(() => {
     v-model:open="open"
     title="Export"
     :initial-position="{ x: 64, y: 128 }"
-    :intitalSize="{ width: 768, height: 512 }"
+    :intitalSize="{ width: 700, height: 480 }"
   >
     <div class="p-4">
       <fieldset class="fieldset">
@@ -194,7 +217,6 @@ watchEffect(() => {
                   <option value="thick">thick</option>
                   <option value="gray">gray</option>
                   <option value="colored">colored</option>
-                  <option value="large">large</option>
                 </select>
               </label>
               <label class="select select-sm w-66">
@@ -215,10 +237,7 @@ watchEffect(() => {
                   <option value="modern">modern</option>
                 </select>
               </label>
-              <label
-                v-if="isBipolarDocument"
-                class="select select-sm w-66"
-              >
+              <label v-if="isBipolarDocument" class="select select-sm w-66">
                 <span class="label">Support Style</span>
                 <select v-model="selectedSupportStyle">
                   <option value="standard">standard</option>
@@ -229,19 +248,31 @@ watchEffect(() => {
             </div>
             <div class="mt-4">
               <label class="label cursor-pointer">
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm mr-2"
-                  v-model="selectedSnapToGrid"
-                />
+                <input type="checkbox" class="checkbox checkbox-sm mr-2" v-model="selectedSnapToGrid" />
                 <span>Snap to Grid</span>
               </label>
+            </div>
+            <div class="relative mt-4 w-96">
+              <input
+                type="text"
+                class="input input-xs font-mono w-96 pr-8"
+                readonly
+                :value="usePackageLine"
+              />
+              <button
+                class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-xs btn-ghost btn-square"
+                :disabled="usePackageLine === undefined"
+                @click="copyPackageLine"
+              >
+                <ClipboardDocumentCheckIcon v-if="packageLineCopied" class="size-3.5" />
+                <ClipboardDocumentIcon v-else class="size-3.5" />
+              </button>
             </div>
           </div>
         </details>
       </fieldset>
       <div class="flex gap-2 flex-wrap">
-        <div class="grow max-w-92">
+        <div class="grow max-w-80">
           <fieldset class="fieldset">
             <legend class="fieldset-legend">Text</legend>
             <div class="flex gap-2 flex-wrap mb-2">
@@ -262,8 +293,8 @@ watchEffect(() => {
             <div class="min-w-58" ref="soureView"></div>
           </fieldset>
         </div>
-        <div v-if="exportResult?.svg !== undefined">
-          <fieldset class="fieldset" v-show="exportResult !== undefined">
+        <div v-if="exportResult?.svg !== undefined" v-show="exportResult !== undefined">
+          <fieldset class="fieldset">
             <legend class="fieldset-legend">SVG</legend>
             <div class="flex gap-2 flex-wrap mb-2">
               <ButtonSave

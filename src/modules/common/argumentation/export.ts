@@ -87,30 +87,47 @@ function rankCompressionNormalizer(epsilon: number = 0.75, step: number = 1): Co
   }
 }
 
-type ArgumentPlacementGenerator = (nodeMap: Map<number, NodeExportInfo>, snapToGrid: boolean) => string
+export interface ExportHooks {
+  argumentOptions?: (id: number) => string
+  attackOptions?: (sourceId: number, targetId: number) => string
+  attackSuffix?: (sourceId: number, targetId: number) => string
+  argumentAnnotation?: (id: number) => string | undefined
+}
+
+function buildOpts(...parts: string[]): string {
+  const joined = parts.filter(Boolean).join(',')
+  return joined ? `[${joined}]` : ''
+}
+
+type ArgumentPlacementGenerator = (
+  nodeMap: Map<number, NodeExportInfo>,
+  snapToGrid: boolean,
+  argumentOptions?: (id: number) => string,
+) => string
 
 function absolutePlacementGenerator(): ArgumentPlacementGenerator {
-  return (nodeMap, snapToGrid) => {
+  return (nodeMap, snapToGrid, argumentOptions) => {
     let text = ''
     for (const [id, node] of nodeMap.entries()) {
       const x = snapToGrid ? Math.round(node.x).toFixed(1) : node.x.toFixed(1)
       const y = snapToGrid ? Math.round(node.y).toFixed(1) : node.y.toFixed(1)
-      text += `  \\argument(a${id}){${node.name}} at (${x},${y})\r\n`
+      text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${id}){${node.name}} at (${x},${y})\r\n`
     }
     return text
   }
 }
 
 function relativePlacementGenerator(): ArgumentPlacementGenerator {
-  return (nodeMap) => {
+  return (nodeMap, _snapToGrid, argumentOptions) => {
     // Process bottom-to-top, left-to-right so earlier nodes serve as anchors
     const sorted = [...nodeMap.entries()].sort(([, a], [, b]) => a.y !== b.y ? a.y - b.y : a.x - b.x)
     let text = ''
     const placed = new Map<number, NodeExportInfo>()
 
     for (const [id, node] of sorted) {
+      const extraOpts = argumentOptions?.(id) ?? ''
       if (placed.size === 0) {
-        text += `  \\argument(a${id}){${node.name}} at (0,0)\r\n`
+        text += `  \\argument${buildOpts(extraOpts)}(a${id}){${node.name}} at (0,0)\r\n`
         placed.set(id, node)
         continue
       }
@@ -133,21 +150,21 @@ function relativePlacementGenerator(): ArgumentPlacementGenerator {
         const dx = node.x - refNode.x
         const dy = node.y - refNode.y
         if (dy === 0 && dx > 0) {
-          text += `  \\argument[right=${dx.toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`right=${dx.toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         } else if (dy === 0 && dx < 0) {
-          text += `  \\argument[left=${(-dx).toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`left=${(-dx).toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         } else if (dx === 0 && dy > 0) {
-          text += `  \\argument[above=${dy.toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`above=${dy.toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         } else if (dx === 0 && dy < 0) {
-          text += `  \\argument[below=${(-dy).toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`below=${(-dy).toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         } else if (dx > 0 && dy > 0) {
-          text += `  \\argument[above right=${dy.toFixed(1)} and ${dx.toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`above right=${dy.toFixed(1)} and ${dx.toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         } else if (dx < 0 && dy > 0) {
-          text += `  \\argument[above left=${dy.toFixed(1)} and ${(-dx).toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`above left=${dy.toFixed(1)} and ${(-dx).toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         } else if (dx > 0 && dy < 0) {
-          text += `  \\argument[below right=${(-dy).toFixed(1)} and ${dx.toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`below right=${(-dy).toFixed(1)} and ${dx.toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         } else {
-          text += `  \\argument[below left=${(-dy).toFixed(1)} and ${(-dx).toFixed(1)} of a${refId}](a${id}){${node.name}}\r\n`
+          text += `  \\argument${buildOpts(`below left=${(-dy).toFixed(1)} and ${(-dx).toFixed(1)} of a${refId}`, extraOpts)}(a${id}){${node.name}}\r\n`
         }
       }
       placed.set(id, node)
@@ -162,6 +179,7 @@ export function exportLatexArgumentationCommon(
   attacks: IterableIterator<[attackerId: number, attackedId: number]>,
   supports: IterableIterator<[attackerId: number, attackedId: number]>,
   styleOptions?: ExportStyleOptions,
+  hooks?: ExportHooks,
 ): ExportResult {
   const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2.4
   const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
@@ -169,16 +187,14 @@ export function exportLatexArgumentationCommon(
   const attackStyle = styleOptions?.attackStyle ?? 'standard'
   const supportStyle = styleOptions?.supportStyle ?? 'double'
   const snapToGrid = styleOptions?.snapToGrid ?? false
-  const scaleFactor = 1
-  const snapToGridValue = (value: number) => (Math.round(value / scaleFactor) * scaleFactor).toFixed(1)
   const coordinateNormalization = styleOptions?.coordinateNormalization ?? 'clamp'
   const normalizer: CoordinateNormalizer =
     coordinateNormalization === 'rank' ? rankCompressionNormalizer() : clampDistancesNormalizer()
   const placementGenerator: ArgumentPlacementGenerator =
     coordinateNormalization === 'rank' ? relativePlacementGenerator() : absolutePlacementGenerator()
 
-  let text = ''
-  text += `\\begin{af}[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]\r\n`
+  const afOptions = `[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]`
+  let text = '\\begin{af}\r\n'
   // Step 1: Collect all nodes and their coordinates in a mapping
   const nodeMap = new Map<number, NodeExportInfo>()
   for (const [argumentId, argumentData] of args) {
@@ -188,57 +204,18 @@ export function exportLatexArgumentationCommon(
     nodeMap.set(argumentId, { name: nameEscaped, x: rawX, y: rawY })
   }
 
-  const firstNode = nodeMap.values().next().value
-  if (firstNode !== undefined) {
-    const offsetX = firstNode.x
-    const offsetY = firstNode.y
-    for (const node of nodeMap.values()) {
-      node.x -= offsetX
-      node.y -= offsetY
-    }
-  }
+  // Step 2: Normalize coordinates to fit within LaTeX's limitations and optionally snap to grid
+  offsetNodesToOrigin(nodeMap)
   normalizer(nodeMap)
 
-  // Step 2: Process nodes for output
-  text += placementGenerator(nodeMap, snapToGrid)
-  const processedLinks = processLinks(attacks, supports)
-  for (const { type, self, reverseType, sourceId, targetId } of processedLinks) {
-    if (self) {
-      switch (type) {
-        case ProcessedLinkType.None:
-          break
-        case ProcessedLinkType.Attack:
-          text += `  \\selfattack{a${sourceId}}{a${targetId}}\r\n`
-          break
-        case ProcessedLinkType.Support:
-          text += `  \\support[selfattack]{a${sourceId}}{a${targetId}}\r\n`
-          break
-      }
-    } else if (type == ProcessedLinkType.Attack && reverseType === ProcessedLinkType.None) {
-      text += `  \\attack{a${sourceId}}{a${targetId}}\r\n`
-    } else if (type == ProcessedLinkType.Support && reverseType === ProcessedLinkType.None) {
-      text += `  \\support{a${sourceId}}{a${targetId}}\r\n`
-    } else if (type === ProcessedLinkType.None && reverseType == ProcessedLinkType.Attack) {
-      text += `  \\attack{a${targetId}}{a${sourceId}}\r\n`
-    } else if (type === ProcessedLinkType.None && reverseType == ProcessedLinkType.Support) {
-      text += `  \\support{a${targetId}}{a${sourceId}}\r\n`
-    } else if (type === ProcessedLinkType.Attack && reverseType == ProcessedLinkType.Attack) {
-      text += `  \\dualattack{a${sourceId}}{a${targetId}}\r\n`
-    } else if (type === ProcessedLinkType.Attack && reverseType == ProcessedLinkType.Support) {
-      text += `  \\attack[bend right]{a${sourceId}}{a${targetId}}\r\n`
-      text += `  \\support[bend right]{a${targetId}}{a${sourceId}}\r\n`
-    } else if (type === ProcessedLinkType.Support && reverseType == ProcessedLinkType.Attack) {
-      text += `  \\support[bend right]{a${sourceId}}{a${targetId}}\r\n`
-      text += `  \\attack[bend right]{a${targetId}}{a${sourceId}}\r\n`
-    } else if (type === ProcessedLinkType.Support && reverseType == ProcessedLinkType.Support) {
-      text += `  \\support[bend right]{a${sourceId}}{a${targetId}}\r\n`
-      text += `  \\support[bend right]{a${targetId}}{a${sourceId}}\r\n`
-    }
-  }
+  // Step 3: Emit argument, link placements and annotations
+  text += placementGenerator(nodeMap, snapToGrid, hooks?.argumentOptions)
+  text += emitLinks(processLinks(attacks, supports), hooks?.attackOptions, hooks?.attackSuffix)
+  text += emitAnnotations(nodeMap, hooks?.argumentAnnotation)
   text += `\\end{af}`
   return {
-    text: text,
-    svg: renderSvg(text),
+    text,
+    svg: renderSvg(text.replace('\\begin{af}', `\\begin{af}${afOptions}`)),
   }
 }
 
@@ -254,6 +231,86 @@ enum ProcessedLinkType {
   None,
   Attack,
   Support,
+}
+
+function offsetNodesToOrigin(nodes: Map<number, NodeExportInfo>): void {
+  const firstNode = nodes.values().next().value
+  if (firstNode === undefined) return
+  const offsetX = firstNode.x
+  const offsetY = firstNode.y
+  for (const node of nodes.values()) {
+    node.x -= offsetX
+    node.y -= offsetY
+  }
+}
+
+function emitAnnotations(
+  nodeMap: Map<number, NodeExportInfo>,
+  argumentAnnotation?: (id: number) => string | undefined,
+): string {
+  if (!argumentAnnotation) return ''
+  let text = ''
+  for (const id of nodeMap.keys()) {
+    const annotation = argumentAnnotation(id)
+    if (annotation !== undefined) {
+      text += `  \\annotation[yshift=-10pt]{a${id}}{${annotation}}\r\n`
+    }
+  }
+  return text
+}
+
+function emitLinks(
+  processedLinks: ProcessedLink[],
+  attackOptions?: (sourceId: number, targetId: number) => string,
+  attackSuffix?: (sourceId: number, targetId: number) => string,
+): string {
+  const attack = (s: number, t: number, ...extra: string[]) =>
+    `  \\attack${buildOpts(attackOptions?.(s, t) ?? '', ...extra)}{a${s}}{a${t}}${attackSuffix?.(s, t) ?? ''}\r\n`
+  const support = (s: number, t: number, ...extra: string[]) =>
+    `  \\support${buildOpts(...extra)}{a${s}}{a${t}}\r\n`
+
+  let text = ''
+  for (const { type, self, reverseType, sourceId, targetId } of processedLinks) {
+    if (self) {
+      switch (type) {
+        case ProcessedLinkType.None:
+          break
+        case ProcessedLinkType.Attack:
+          text += `  \\selfattack${buildOpts(attackOptions?.(sourceId, targetId) ?? '')}{a${sourceId}}{a${targetId}}\r\n`
+          break
+        case ProcessedLinkType.Support:
+          text += `  \\support[selfattack]{a${sourceId}}{a${targetId}}\r\n`
+          break
+      }
+    } else if (type == ProcessedLinkType.Attack && reverseType === ProcessedLinkType.None) {
+      text += attack(sourceId, targetId)
+    } else if (type == ProcessedLinkType.Support && reverseType === ProcessedLinkType.None) {
+      text += support(sourceId, targetId)
+    } else if (type === ProcessedLinkType.None && reverseType == ProcessedLinkType.Attack) {
+      text += attack(targetId, sourceId)
+    } else if (type === ProcessedLinkType.None && reverseType == ProcessedLinkType.Support) {
+      text += support(targetId, sourceId)
+    } else if (type === ProcessedLinkType.Attack && reverseType == ProcessedLinkType.Attack) {
+      const fwdOpts = attackOptions?.(sourceId, targetId) ?? ''
+      const revOpts = attackOptions?.(targetId, sourceId) ?? ''
+      if (fwdOpts || revOpts) {
+        text += attack(sourceId, targetId)
+        text += attack(targetId, sourceId)
+      } else {
+        text += `  \\dualattack{a${sourceId}}{a${targetId}}\r\n`
+      }
+    } else if (type === ProcessedLinkType.Attack && reverseType == ProcessedLinkType.Support) {
+      text += attack(sourceId, targetId, 'bend right')
+      text += support(targetId, sourceId, 'bend right')
+    } else if (type === ProcessedLinkType.Support && reverseType == ProcessedLinkType.Attack) {
+      text += support(sourceId, targetId, 'bend right')
+      text += attack(targetId, sourceId, 'bend right')
+    } else if (type === ProcessedLinkType.Support && reverseType == ProcessedLinkType.Support) {
+      text += support(sourceId, targetId, 'bend right')
+      text += support(targetId, sourceId, 'bend right')
+    }
+  }
+  return text
 }
 
 function processLinks(

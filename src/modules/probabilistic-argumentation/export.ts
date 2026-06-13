@@ -16,59 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { latexExportCommonConfig } from '@/modules/common/argumentation/export'
-import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
+import { exportLatexArgumentationCommon, latexExportCommonConfig } from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
-import { renderSvg } from '@/modules/common/export/renderSvg'
 import { IdMapping } from '@/modules/common/ids'
-import type { PafArgumentData } from '@/modules/probabilistic-argumentation/model'
-import type { ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+
+function* emptyIterator(): IterableIterator<[number, number]> {}
 
 const exportLatexPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> = {
   ...latexExportCommonConfig(),
   export(document, styleOptions?: ExportStyleOptions) {
-    const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2.4
-    const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
-    const nameStyle = styleOptions?.nameStyle ?? 'math'
-    const attackStyle = styleOptions?.attackStyle ?? 'standard'
-
-    let text = `\\begin{af}[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle}]\r\n`
-
-    type NodeInfo = { name: string; x: number; y: number; probability: number }
-    const nodeMap = new Map<number, NodeInfo>()
-
-    for (const [id, data] of document.arguments()) {
-      const name = data.name.replace(/[^a-zA-Z0-9 ]/g, '')
-      nodeMap.set(id, {
-        name,
-        x: data.x / inverseScaleFactor,
-        y: (data.y / inverseScaleFactor) * -1,
-        probability: data.probability,
-      })
+    function* attackIds(): IterableIterator<[number, number]> {
+      for (const [s, t] of document.attacks()) yield [s, t]
     }
 
-    const firstNode = nodeMap.values().next().value
-    if (firstNode !== undefined) {
-      const offsetX = firstNode.x
-      const offsetY = firstNode.y
-      for (const node of nodeMap.values()) {
-        node.x -= offsetX
-        node.y -= offsetY
-      }
-    }
-
-    for (const [id, node] of nodeMap.entries()) {
-      const probOpt = node.probability < 1 ? `,weight=${node.probability}` : ''
-      text += `  \\argument[${probOpt.slice(1)}](a${id}){${node.name}} at (${node.x.toFixed(1)},${node.y.toFixed(1)})\r\n`
-    }
-
-    for (const [sourceId, targetId, prob] of document.attacks()) {
-      const probOpt = prob < 1 ? `[weight=${prob}]` : ''
-      text += `  \\attack${probOpt}{a${sourceId}}{a${targetId}}\r\n`
-    }
-
-    text += `\\end{af}`
-    return { text, svg: renderSvg(text) }
+    return exportLatexArgumentationCommon(
+      document.arguments(),
+      attackIds(),
+      emptyIterator(),
+      styleOptions,
+      {
+        argumentAnnotation: (id) => {
+          const prob = document.getArgument(id).probability
+          return prob < 1 ? `{\\scriptsize $${prob}$}` : undefined
+        },
+        attackSuffix: (s, t) => {
+          const prob = document.getAttackProbability(s, t)
+          return prob < 1 ? `({\\scriptsize $${prob}$})` : ''
+        },
+      },
+    )
   },
 }
 
