@@ -45,7 +45,7 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   },
   {
     key: 'SER',
-    displayName: 'Serialised',
+    displayName: 'Serialisability-based',
   },
   {
     key: 'CO',

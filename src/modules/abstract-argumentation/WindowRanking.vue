@@ -26,7 +26,7 @@ import {
   type RankingSemantic,
   useRankingEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProjectRanking'
-import { abstractArgumentationRankingGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationGlossary, abstractArgumentationRankingGlossary } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -34,7 +34,7 @@ import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
-provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationRankingGlossary)
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary })
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>

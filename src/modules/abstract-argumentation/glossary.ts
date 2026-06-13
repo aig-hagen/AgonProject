@@ -17,15 +17,19 @@
  * along with this program, if not, see <https://www.gnu.org/licenses/>.
  */
 import {
+  AB13,
   BBU20,
   BGG05,
+  BH01,
   BT22,
+  BT22b,
   C06,
   C07,
   C14,
   D95,
   DG16,
   DMT07,
+  PLZL14,
   T22,
   T23,
   V96,
@@ -70,22 +74,32 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     reference: T22,
   },
 
+  serialisationSequence: {
+    label: 'serialisation sequence',
+    title: 'Serialisation Sequence',
+    content: ['A serialisation sequence is a sequence $(S_1, \\ldots, S_n)$ such that $S_1$ is an ', { ref: 'IS' }, ' of $F$ and every $S_{i}$ is an ', { ref: 'IS' }, ' of the ', { ref: 'reduct' }, ' $F^{S_1 \\cup \\ldots \\cup S_{i-1}}$. Every serialisation sequence induces an ', { ref: 'ADM' }, ' set.'],
+    reference: BT22b,
+  },
+
   defends: {
     label: 'defends',
     title: 'Defence',
     content: ['A set of arguments $S$ defends an argument $a$ iff for every argument $b$ attacking $a$, there is some argument $c \\in S$ attacking $b$.'],
+    reference: D95,
   },
 
   attackedSet: {
     label: '$S^+$',
     title: 'Attacked Arguments',
     content: ['The set of arguments attacked by $S$, i.e. $S^+ = \\{ a \\in A \\mid \\exists b \\in S: (b,a) \\in R \\}$'],
+    reference: V96,
   },
 
   attackersSet: {
     label: '$S^-$',
     title: 'Attacking Arguments',
     content: ['The set of arguments attacking $S$, i.e. $S^- = \\{ a \\in A \\mid \\exists b \\in S: (a,b) \\in R \\}$'],
+    reference: V96,
   },
 
   reduct: {
@@ -97,8 +111,9 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
 
   semantics: {
     label: 'semantics',
-    title: 'Semantics',
-    content: ['A semantics $\\sigma$ is a function that assigns to each AF $F$ a set of extensions $\\sigma(F) \\subseteq 2^A$.'],
+    title: 'Extension-based Semantics',
+    content: ['A semantics $\\sigma$ is a function that assigns to each ', { ref: 'AF' }, ' $F$ a set of extensions $\\sigma(F) \\subseteq 2^A$.'],
+    reference: D95,
   },
 
   unattackedInitial: {
@@ -277,31 +292,93 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
 }
 
 export const abstractArgumentationRankingGlossary: TooltipRegistry = {
+   rankingSemantics: {
+    label: 'ranking semantics',
+    title: 'Argument-ranking Semantics',
+    content: ['An argument-ranking semantics $\\Theta$ is a function that associates to any ', { ref: 'AF' }, ' $F$ a ranking $\\succeq_F^\\Theta$ on $A$, where $\\succeq_F^\\Theta$ is a ', { ref: 'preorder' }, ' on $A$. $a \\succeq_F^\\Theta b$ means that $a$ is at least as acceptable as $b$.'],
+    reference: AB13,
+  },
+
+  preorder: {
+    label: 'preorder',
+    title: 'Preorder',
+    content: ['A preorder is a binary relation that is ', { ref: 'reflexive' }, ' and ', { ref: 'transitive' }, '.'],
+  },
+
+  reflexive: {
+    label: 'reflexive',
+    title: 'Reflexivity',
+    content: ['A binary relation $\\succeq$ is reflexive iff for all $a$ we have that $a \\succeq a$.'],
+  },
+
+  transitive: {
+    label: 'transitive',
+    title: 'Transitivity',
+    content: ['A binary relation $\\succeq$ is transitive iff for all $a,b,c$ we have that if $a \\succeq b$ and $b \\succeq c$, then $a \\succeq c$.'],
+  },
+
   CAT: {
     label: 'categorizer',
     title: 'Categorizer Ranking',
-    content: ['TODO'],
+    content: ['The categorizer ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{Cat}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{Cat} b$ iff $\\mathrm{Cat}_F(a) \\geq \\mathrm{Cat}_F(b)$, where $\\mathrm{Cat}_F$ is the ', { ref: 'categorizerFunction' }, '.'],
+    reference: PLZL14,
   },
+
+  categorizerFunction: {
+    label: 'categorizer function',
+    title: 'Categorizer Function',
+    content: ['The categorizer function $\\mathrm{Cat}_F: A \\mapsto [0,1]$ is defined as $\\mathrm{Cat}_F(a) = 1$ if $a^-=\\emptyset$ and $\\mathrm{Cat}_F(a) = \\frac{1}{1 + \\sum_{b \\in a^-} \\mathrm{Cat}_F(b)}$ otherwise.'],
+    reference: BH01,
+  },
+
   BB: {
     label: 'burden-based',
     title: 'Burden-Based Ranking',
-    content: ['TODO'],
+    content: ['The burden-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{BB}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{BB} b$ iff $\\mathrm{Bur}(b) \\succeq_{lex} \\mathrm{Bur}(a)$, where $\\mathrm{Bur}$ is the ', { ref: 'BurdenNumber' }, '.'],
+    reference: AB13,
   },
+
+  BurdenNumber: {
+    label: 'burden number',
+    title: 'Burden Number',
+    content: ['The Burden number of $a$ is denoted $\\mathrm{Bur}(a) = \\langle \\mathrm{Bur}_0(a), \\mathrm{Bur}_1(a), \\ldots \\rangle$, where $\\mathrm{Bur}_0(a) = 1$ and $\\mathrm{Bur}_{i}(a) = 1 + \\sum_{b \\in a^-} \\frac{1}{\\mathrm{Bur}_{i-1}(b)}$ otherwise.'],
+    reference: AB13,
+  },
+
   SER: {
-    label: 'serialised',
-    title: 'Serialised Ranking',
-    content: ['TODO'],
+    label: 'serialisability-based',
+    title: 'Serialisability-based Ranking',
+    content: ['The Serialisability-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{Ser}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{Ser} b$ iff $\\mathrm{ser}_F(a) \\leq \\mathrm{ser}_F(b)$, where $\\mathrm{ser}_F(a)$ is the ', { ref: 'serialisationIndex' }, '.'],
+    reference: BT22b,
   },
+
+  serialisationIndex: {
+    label: 'serialisation index',
+    title: 'Serialisation Index',
+    content: ['The serialisation index $\\mathrm{ser}_F(a)$ of an argument $a$ is defined as $\\mathrm{ser}_F(a) = \\mathrm{min}\\{ n \\mid (S_1, \\ldots, S_n)$ is a ', { ref: 'serialisationSequence' }, ' and $a \\in S_n \\}$.'],
+    reference: BT22b,
+  },
+
   CO: {
     label: 'counting',
     title: 'Counting Ranking',
     content: ['TODO'],
   },
+
   DB: {
     label: 'discussion-based',
     title: 'Discussion-Based Ranking',
-    content: ['TODO'],
+    content: ['The discussion-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{DB}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{DB} b$ iff $\\mathrm{Dis}(b) \\succeq_{lex} \\mathrm{Dis}(a)$, where $\\mathrm{Dis}$ is the ', { ref: 'discussionCount' }, '.'],
+    reference: AB13,
   },
+
+  discussionCount: {
+    label: 'discussion count',
+    title: 'Discussion Count',
+    content: ['The discussion count of an argument $a$ is the tuple $\\mathrm{Dis}(a) = \\langle -|\\mathrm{P}^F_1(a)|, |\\mathrm{P}^F_2(a)|, -|\\mathrm{P}^F_3(a)|, |\\mathrm{P}^F_4(a)|, \\ldots \\rangle$, where $\\mathrm{P}^F_i(a)$ is the set of all paths of length $i$ that end in $a$.'],
+    reference: AB13,
+  },
+
   IGD: {
     label: 'iterated graded defense',
     title: 'Iterated Graded Defense Ranking',

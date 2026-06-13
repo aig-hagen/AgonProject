@@ -109,6 +109,38 @@ export const T23: Publication = {
   href: 'https://doi.org/10.1609/aaai.v37i5.25805',
 }
 
+// ── Ranking Semantics ──────────────────────────────────────────────────
+
+export const BDKM16: Publication = {
+  shortLabel: 'Bonzon et al. (2016)',
+  label: 'Bonzon, E., Delobelle, J., Konieczny, S. & Maudet, N. (2016). A Comparative Study of Ranking-Based Semantics for Abstract Argumentation. In: Proceedings of the 30th AAAI Conference on Artificial Intelligence (AAAI 2016), pp. 914-920.',
+  href: 'https://doi.org/10.1609/aaai.v30i1.10116',
+}
+
+export const BH01: Publication = {
+  shortLabel: 'Besnard & Hunter (2001)',
+  label: 'Besnard, P. & Hunter, A. (2001). A logic-based theory of deductive arguments. Artificial Intelligence, 128(1–2), pp. 203–235.',
+  href: 'https://doi.org/10.1016/S0004-3702(01)00071-6',
+}
+
+export const PLZL14: Publication = {
+  shortLabel: 'Pu et al. (2014)',
+  label: 'Pu, F., Luo, J., Zhang, Y. & Luo, G. (2014). Argument Ranking with Categoriser Function. In: Knowledge Science, Engineering and Management – KSEM 2014, LNCS 8793, pp. 290–301. Springer.',
+  href: 'https://doi.org/10.1007/978-3-319-12096-6_26',
+}
+
+export const AB13: Publication = {
+  shortLabel: 'Amgoud & Ben-Naim (2013)',
+  label: 'Amgoud, L. & Ben-Naim, J. (2013). Ranking-Based Semantics for Argumentation Frameworks. In: Scalable Uncertainty Management – SUM 2013, LNCS 8078, pp. 134–147. Springer.',
+  href: 'https://doi.org/10.1007/978-3-642-40381-1_11',
+}
+
+export const BT22b: Publication = {
+  shortLabel: 'Blümel & Thimm (2022)',
+  label: 'Blümel, L. & Thimm, M. (2022). A Ranking Semantics for Abstract Argumentation Based on Serialisability. In: Computational Models of Argument – Proceedings of COMMA 2022, Frontiers in Artificial Intelligence and Applications, Vol. 353, pp. 104–115. IOS Press.',
+  href: 'https://doi.org/10.3233/FAIA220145',
+}
+
 // ── Bipolar Argumentation ─────────────────────────────────────────────────────
 
 export const CL05: Publication = {
