@@ -27,6 +27,7 @@ import {
   loadFromString,
   saveAsString,
 } from '@/modules/collective-attacks-argumentation/save/saveFormat'
+import { BCDFP21, NP06 } from '@/modules/common/tooltip/publications'
 
 const TYPE_KEY = 'type'
 const SET_AF_V1_TYPE = 'set-af-v1'
@@ -87,15 +88,6 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
     return saveAsString(document)
   },
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
-  publications: [
-    {
-      label: 'Nielsen, S.H. & Parsons, S. (2006). A Generalization of Dung\'s Abstract Framework for Argumentation: Arguing with Sets of Attacking Arguments. ArgMAS 2006, LNCS 4766.',
-      href: 'https://doi.org/10.1007/978-3-540-75526-5_4',
-    },
-    {
-      label: 'Bikakis, A., Cohen, A., Dvořák, W., Flouris, G. & Parsons, S. (2021). Joint Attacks and Accrual in Argumentation Frameworks. In: Handbook of Formal Argumentation, Vol. 2, Chapter 2. College Publications.',
-      href: 'https://www.collegepublications.co.uk/downloads/handbooks00006.pdf',
-    },
-  ],
+  publications: [NP06, BCDFP21],
   underConstruction: true,
 }

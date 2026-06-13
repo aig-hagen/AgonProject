@@ -28,8 +28,6 @@ import {
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
-import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
-import PublicationsPopover from '@/modules/common/PublicationsPopover.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
@@ -108,17 +106,6 @@ watch(data, emitWeights)
             </select>
           </label>
         </div>
-      </fieldset>
-      <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
-        <details class="collapse collapse-arrow">
-          <summary class="collapse-title fieldset-legend ps-0 max-w-max">Definition</summary>
-          <div class="collapse-content text-sm p-0">
-            <div class="flex items-start gap-1 mb-1">
-              <p><KatexInlineElement :text="selectedSemantic.info.description" /></p>
-              <PublicationsPopover :publications="[{ label: selectedSemantic.info.reference.name, href: selectedSemantic.info.reference.url }]" />
-            </div>
-          </div>
-        </details>
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">

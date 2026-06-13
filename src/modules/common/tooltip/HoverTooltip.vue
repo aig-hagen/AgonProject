@@ -19,10 +19,10 @@
 <script lang="ts">
 import type { InjectionKey } from 'vue'
 
-// Module-scope symbols so all HoverPopover instances share the same injection key.
-const ANCESTOR_KEEP_OPEN_FNS: InjectionKey<Array<() => void>> = Symbol('hoverPopoverKeepOpen')
-const ANCESTOR_SCHEDULE_CLOSE_FNS: InjectionKey<Array<() => void>> = Symbol('hoverPopoverScheduleClose')
-const NESTING_DEPTH: InjectionKey<number> = Symbol('hoverPopoverDepth')
+// Module-scope symbols so all HoverTooltip instances share the same injection key.
+const ANCESTOR_KEEP_OPEN_FNS: InjectionKey<Array<() => void>> = Symbol('hoverTooltipKeepOpen')
+const ANCESTOR_SCHEDULE_CLOSE_FNS: InjectionKey<Array<() => void>> = Symbol('hoverTooltipScheduleClose')
+const NESTING_DEPTH: InjectionKey<number> = Symbol('hoverTooltipDepth')
 </script>
 
 <script setup lang="ts">
@@ -62,17 +62,17 @@ function scheduleClose() {
   closeTimer = setTimeout(() => {
     isOpen.value = false
   }, 150)
-  // When this popover closes, ancestors should close too if nothing else keeps them open.
+  // When this tooltip closes, ancestors should close too if nothing else keeps them open.
   ancestorScheduleCloseFns.forEach((fn) => fn())
 }
 
 function onEnter() {
   keepOpen()
-  // Keep all ancestor popovers open while this one (or a descendant) is hovered.
+  // Keep all ancestor tooltips open while this one (or a descendant) is hovered.
   ancestorKeepOpenFns.forEach((fn) => fn())
 }
 
-// Expose this popover's functions to descendants, chained with any ancestor functions.
+// Expose this tooltip's functions to descendants, chained with any ancestor functions.
 provide(ANCESTOR_KEEP_OPEN_FNS, [...ancestorKeepOpenFns, keepOpen])
 provide(ANCESTOR_SCHEDULE_CLOSE_FNS, [...ancestorScheduleCloseFns, scheduleClose])
 provide(NESTING_DEPTH, depth + 1)

@@ -20,22 +20,22 @@
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { computed, inject } from 'vue'
 
-import HoverPopover from '@/modules/common/HoverPopover.vue'
-import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
-import { POPOVER_REGISTRY_KEY } from '@/modules/common/popoverRegistry'
+import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
+import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { id } = defineProps<{ id: string }>()
 
-const registry = inject(POPOVER_REGISTRY_KEY, {})
+const registry = inject(TOOLTIP_REGISTRY_KEY, {})
 const definition = computed(() => registry[id])
 </script>
 
 <template>
   <!--
-    When id is not in the registry, render the slot text without any popover so the
+    When id is not in the registry, render the slot text without any tooltip so the
     page still reads correctly even if a definition is missing.
   -->
-  <HoverPopover v-if="definition">
+  <HoverTooltip v-if="definition">
     <slot><KatexInlineElement :text="definition.label" /></slot>
     <template #content>
       <div v-if="definition.title || definition.reference" class="flex items-center justify-between mb-2 pb-1 border-b border-base-300">
@@ -54,11 +54,13 @@ const definition = computed(() => registry[id])
       <span>
         <template v-for="(part, i) in definition.content" :key="i">
           <KatexInlineElement v-if="typeof part === 'string'" :text="(part as string)" />
-          <!-- Recursive: inline refs expand into nested TermPopovers automatically. -->
-          <TermPopover v-else :id="part.ref" />
+          <!-- Recursive: inline refs expand into nested TermTooltips automatically. -->
+          <TermTooltip v-else :id="part.ref">
+            <KatexInlineElement v-if="part.label" :text="part.label" />
+          </TermTooltip>
         </template>
       </span>
     </template>
-  </HoverPopover>
+  </HoverTooltip>
   <slot v-else />
 </template>

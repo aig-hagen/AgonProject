@@ -18,18 +18,20 @@
  */
 import type { InjectionKey } from 'vue'
 
-/** A plain string (may contain $...$ LaTeX) or a reference to another registry entry rendered as a nested TermPopover. */
-export type PopoverContentPart = string | { ref: string }
+import type { Publication } from '@/modules/common/tooltip/publications'
 
-export interface PopoverDefinition {
+/** A plain string (may contain $...$ LaTeX) or a reference to another registry entry rendered as a nested TermTooltip. */
+export type TooltipContentPart = string | { ref: string; label?: string }
+
+export interface TooltipDefinition {
   /** Text used as the trigger when this entry is referenced inline from another definition. */
   label: string
-  /** Optional bold header line shown at the top of the popover panel. */
+  /** Optional bold header line shown at the top of the tooltip panel. */
   title?: string
-  content: PopoverContentPart[]
-  reference?: { label: string; href: string }
+  content: TooltipContentPart[]
+  reference?: Publication
 }
 
-export type PopoverRegistry = Record<string, PopoverDefinition>
+export type TooltipRegistry = Record<string, TooltipDefinition>
 
-export const POPOVER_REGISTRY_KEY: InjectionKey<PopoverRegistry> = Symbol('popoverRegistry')
+export const TOOLTIP_REGISTRY_KEY: InjectionKey<TooltipRegistry> = Symbol('tooltipRegistry')

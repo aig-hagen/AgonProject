@@ -38,13 +38,6 @@ export const KEY_DEFAULT_SEMANTIC = 'ADM'
 export interface Semantic {
   key: string
   displayName: string
-  info?: {
-    description: string
-    reference: {
-      name: string
-      url: string
-    }
-  }
 }
 
 export interface SemanticGroup {

@@ -32,7 +32,7 @@ import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
-import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
+import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{

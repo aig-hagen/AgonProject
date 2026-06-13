@@ -28,7 +28,7 @@ defineProps<{
 
 const open = ref(false)
 const buttonEl = ref<HTMLButtonElement | null>(null)
-const popoverStyle = ref<{ top: string; right: string }>({ top: '0px', right: '0px' })
+const tooltipStyle = ref<{ top: string; right: string }>({ top: '0px', right: '0px' })
 let closeTimer: ReturnType<typeof setTimeout> | null = null
 
 function onMouseEnter() {
@@ -38,7 +38,7 @@ function onMouseEnter() {
   }
   if (buttonEl.value) {
     const rect = buttonEl.value.getBoundingClientRect()
-    popoverStyle.value = {
+    tooltipStyle.value = {
       top: `${rect.bottom + 4}px`,
       right: `${window.innerWidth - rect.right}px`,
     }
@@ -58,7 +58,7 @@ function onMouseLeave() {
     <Teleport to="body">
       <div
         v-show="open"
-        :style="popoverStyle"
+        :style="tooltipStyle"
         class="fixed z-9999 w-80 rounded-box bg-base-100 shadow-lg p-3 flex flex-col gap-1"
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"

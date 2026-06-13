@@ -76,13 +76,6 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
 export interface RankingSemantic {
   key: string
   displayName: string
-  info?: {
-    description: string
-    reference: {
-      name: string
-      url: string
-    }
-  }
 }
 
 export type RankingEntry = { id: ArgumentId; name: string; score: number }

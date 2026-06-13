@@ -20,6 +20,7 @@ import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { H14, HPPRT21, LON11 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/probabilistic-argumentation/examples'
 import GraphEditor from '@/modules/probabilistic-argumentation/GraphEditor.vue'
 import {
@@ -85,18 +86,5 @@ export const probabilisticArgumentationModule: ModuleConfig<
   },
   generateHref: '/generate?type=probabilistic',
   description: 'Arguments and attacks can be assigned a probability value between 0 and 1 to quantify uncertainty.',
-  publications: [
-    {
-      label: 'Li, H., Oren, N. & Norman, T.J. (2011). Probabilistic Argumentation Frameworks. TAFA 2011, LNAI 7132.',
-      href: 'https://link.springer.com/chapter/10.1007/978-3-642-29184-5_1',
-    },
-    {
-      label: 'Hunter, A. (2014). Probabilistic Qualification of Attack in Abstract Argumentation. International Journal of Approximate Reasoning, 55(2).',
-      href: 'https://doi.org/10.1016/j.ijar.2013.09.002',
-    },
-    {
-      label: 'Hunter, A., Polberg, S., Potyka, N., Rienstra, T. & Thimm, M. (2021). Probabilistic Argumentation: A Survey. In: Handbook of Formal Argumentation, Vol. 2, Chapter 7. College Publications.',
-      href: 'https://www.collegepublications.co.uk/downloads/handbooks00006.pdf',
-    },
-  ],
+  publications: [LON11, H14, HPPRT21],
 }

@@ -140,13 +140,6 @@ export interface SemanticGroup {
 export interface Semantic {
   key: string
   displayName: string
-  info?: {
-    description: string
-    reference: {
-      name: string
-      url: string
-    }
-  }
 }
 
 interface GetModelsRequestBody {

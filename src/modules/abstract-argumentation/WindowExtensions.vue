@@ -17,6 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { InformationCircleIcon } from '@heroicons/vue/24/outline'
 import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
@@ -33,10 +34,8 @@ import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
-import KatexInlineElement from '@/modules/common/KatexInlineElement.vue'
-import { POPOVER_REGISTRY_KEY } from '@/modules/common/popoverRegistry'
-import PublicationsPopover from '@/modules/common/PublicationsPopover.vue'
-import TermPopover from '@/modules/common/TermPopover.vue'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
@@ -51,7 +50,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-provide(POPOVER_REGISTRY_KEY, abstractArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
 const internalOpen = ref(true)
 watch(internalOpen, (v) => { if (!v) emit('close') })
@@ -191,16 +190,21 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
               <option selected>TweetyProject</option>
             </select>
           </label>
-          <label class="select select-sm w-52">
-            <span class="label">Semantics</span>
-            <select v-model="selectedSemantic">
-              <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-                <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
-                  {{ semantic.displayName }}
-                </option>
-              </optgroup>
-            </select>
-          </label>
+          <div class="flex items-center gap-1">
+            <label class="select select-sm w-52">
+              <span class="label">Semantics</span>
+              <select v-model="selectedSemantic">
+                <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
+                  <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
+                    {{ semantic.displayName }}
+                  </option>
+                </optgroup>
+              </select>
+            </label>
+            <TermTooltip :id="selectedSemantic.key">
+              <InformationCircleIcon class="size-4 text-base-content/40 hover:text-base-content/70 cursor-help" />
+            </TermTooltip>
+          </div>
           <label class="select select-sm w-52">
             <span class="label">Mode</span>
             <select v-model="selectedMode">
@@ -210,17 +214,6 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
             </select>
           </label>
         </div>
-      </fieldset>
-      <fieldset class="fieldset" v-if="!compact && selectedSemantic.info !== undefined">
-        <details class="collapse collapse-arrow">
-          <summary class="collapse-title fieldset-legend ps-0 max-w-max">Definition</summary>
-          <div class="collapse-content text-sm p-0">
-            <div class="flex items-start gap-1 mb-1">
-              <p><KatexInlineElement :text="selectedSemantic.info.description" /></p>
-              <PublicationsPopover :publications="[{ label: selectedSemantic.info.reference.name, href: selectedSemantic.info.reference.url }]" />
-            </div>
-          </div>
-        </details>
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">

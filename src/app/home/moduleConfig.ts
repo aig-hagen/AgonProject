@@ -21,10 +21,9 @@ import type { Objectish } from 'immer'
 import type { Example } from '@/modules/common/examples'
 import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
 import type { DeserializationResult } from '@/modules/common/save/load'
-export interface Publication {
-  label: string
-  href: string
-}
+import type { Publication } from '@/modules/common/tooltip/publications'
+
+export type { Publication }
 
 export interface ModuleConfig<DocumentT extends Objectish> {
   /**
@@ -97,7 +96,7 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    */
   description?: string
   /**
-   * Relevant publications shown in a popover on the welcome screen card.
+   * Relevant publications shown in a tooltip on the welcome screen card.
    */
   publications?: Publication[]
 }

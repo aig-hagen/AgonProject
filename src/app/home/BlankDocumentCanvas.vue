@@ -22,7 +22,7 @@ import { RouterLink } from 'vue-router'
 import type { Publication } from '@/app/home/moduleConfig'
 import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
-import PublicationsPopover from '@/modules/common/PublicationsPopover.vue'
+import PublicationsTooltip from '@/modules/common/tooltip/PublicationsTooltip.vue'
 
 export interface ModuleCard<DocumentT> {
   newNamePrefix: string
@@ -75,7 +75,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
           <div class="card-body flex flex-col">
             <div class="flex items-start justify-between gap-2">
               <h3 class="card-title">{{ moduleCard.displayNameSingular }}</h3>
-              <PublicationsPopover
+              <PublicationsTooltip
                 v-if="moduleCard.publications?.length"
                 :publications="moduleCard.publications"
               />
