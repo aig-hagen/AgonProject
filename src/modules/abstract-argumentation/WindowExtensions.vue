@@ -85,7 +85,7 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query)
+} = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantic.value.displayName))
 
 watch(currentHighlight, (h) => emit('highlight', h))
 function onWindowFocus() { emit('highlight', currentHighlight.value) }

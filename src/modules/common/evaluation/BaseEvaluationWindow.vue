@@ -19,6 +19,8 @@
 <script setup lang="ts">
 import { computed, type Ref, ref, watch } from 'vue'
 
+import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 export interface EvaluationWindowQuery {
@@ -35,7 +37,7 @@ const props = defineProps<{
   instanceOffset?: number
   initialPositionBase?: { x: number; y: number }
   initialSize?: { width: number; height: number }
-  resultsHeader?: string
+  resultsHeader?: ResultsHeaderPart[]
   query: EvaluationWindowQuery
 }>()
 
@@ -101,7 +103,14 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
         </fieldset>
 
         <fieldset class="fieldset" v-if="!isPending || isLoading">
-          <legend v-if="!compact && resultsHeader" class="fieldset-legend">{{ resultsHeader }}</legend>
+          <legend v-if="!compact && resultsHeader" class="fieldset-legend">
+            <span>
+              <template v-for="(part, i) in resultsHeader" :key="i">
+                <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
+                <template v-else>{{ part }}</template>
+              </template>
+            </span>
+          </legend>
           <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
             <span>Evaluation timed out</span>
           </div>

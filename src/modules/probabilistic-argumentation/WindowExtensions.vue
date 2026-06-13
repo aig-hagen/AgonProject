@@ -22,7 +22,7 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
-import type { Input } from '@/modules/common/evaluation/types'
+import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import type { PafWindowInstanceState } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
@@ -31,6 +31,7 @@ import {
   type PafSemantic,
   usePafEvaluationQuery,
 } from '@/modules/probabilistic-argumentation/evaluation/tweetyProject'
+import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
@@ -45,7 +46,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...probabilisticArgumentationGlossary })
 
 const allSemantics = KNOWN_SEMANTIC_GROUPS.flatMap((g) => g.semantics)
 
@@ -86,6 +87,12 @@ const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
   return `Probabilistic: ${selectedSemantic.value.displayName} · ${modeLabel}`
 })
+
+const resultsHeader = computed((): ResultsHeaderPart[] => {
+  const tooltipId = selectedMode.value === 'skeptical' ? 'skepticalAcceptance' : 'credulousAcceptance'
+  const prefix = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
+  return [{ text: prefix, tooltipId }, ` acceptance probabilities wrt ${selectedSemantic.value.displayName.toLowerCase()} semantics`]
+})
 </script>
 
 <template>
@@ -96,7 +103,7 @@ const windowTitle = computed(() => {
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 480, height: 320 }"
     :query="query"
-    results-header="Acceptance Probabilities"
+    :results-header="resultsHeader"
     @close="emit('close')"
   >
     <template #parameters>

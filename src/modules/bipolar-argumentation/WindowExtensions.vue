@@ -17,21 +17,24 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
+import { computed, provide, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
   type Semantic,
   useExtensionEvaluationQuery,
 } from '@/modules/bipolar-argumentation/evaluation/tweetyProject'
+import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
-import type { Input } from '@/modules/common/evaluation/types'
+import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
   input: Input<BipoloarArgumentation<ArgumentData>>
@@ -44,6 +47,8 @@ const emit = defineEmits<{
   highlight: [highlight?: Highlight]
   close: []
 }>()
+
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...bipolarArgumentationGlossary })
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 
@@ -113,16 +118,23 @@ const query = useExtensionEvaluationQuery(
 
 const {
   selectedExtension,
-  resultsHeader,
+  resultsHeader: baseResultsHeader,
   selectionHint,
   emptyMessage,
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query)
+} = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantic.value.displayName))
 
 watch(currentHighlight, (h) => emit('highlight', h))
 function onWindowFocus() { emit('highlight', currentHighlight.value) }
+
+const resultsHeader = computed((): ResultsHeaderPart[] => {
+  const interpretation = selectedInterpretation.value
+  if (interpretation === 'None') return baseResultsHeader.value
+  const tooltipId = interpretation === 'Deductive' ? 'deductiveSupport' : 'necessarySupport'
+  return [...baseResultsHeader.value, ' under ', { text: `${interpretation.toLowerCase()} support`, tooltipId }]
+})
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'

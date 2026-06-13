@@ -104,9 +104,9 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
     :title="`Ranking: ${selectedSemantic.displayName}`"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
-    :initial-size="{ width: 480, height: 320 }"
+    :initial-size="{ width: 480, height: 400 }"
     :query="query"
-    results-header="Ranking"
+    :results-header="[`${selectedSemantic.displayName} ranking`]"
     @close="emit('close')"
     @focus="onWindowFocus"
   >

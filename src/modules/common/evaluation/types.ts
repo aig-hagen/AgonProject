@@ -22,3 +22,5 @@ export interface Input<DocumentT> {
   stateId: UUID
   content: DocumentT
 }
+
+export type ResultsHeaderPart = string | { text: string; tooltipId: string }

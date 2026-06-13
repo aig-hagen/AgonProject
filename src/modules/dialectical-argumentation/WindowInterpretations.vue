@@ -17,12 +17,15 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { NODE_BLUE, NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
-import type { Input } from '@/modules/common/evaluation/types'
+import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { ExtensionWindowInstanceState } from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import {
@@ -31,6 +34,7 @@ import {
   type Semantic,
   useInterpretationEvaluationQuery,
 } from '@/modules/dialectical-argumentation/evaluation/tweetyProject'
+import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
@@ -44,6 +48,8 @@ const emit = defineEmits<{
   highlight: [highlight?: Highlight]
   close: []
 }>()
+
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...dialecticalArgumentationGlossary })
 
 const internalOpen = ref(true)
 watch(internalOpen, (v) => { if (!v) emit('close') })
@@ -98,9 +104,13 @@ function formatInterpretation(interp: Interpretation): string {
     .join(', ')
 }
 
-const resultsHeader = computed(() =>
-  selectedMode.value === 'enumerate' ? 'Models' : 'Acceptable Arguments',
-)
+const resultsHeader = computed((): ResultsHeaderPart[] => {
+  const name = selectedSemantic.value.displayName.toLowerCase()
+  if (selectedMode.value === 'enumerate') return [`${selectedSemantic.value.displayName} models`]
+  const tooltipId = selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
+  const prefix = selectedMode.value === 'credulous' ? 'Credulously' : 'Skeptically'
+  return [{ text: prefix, tooltipId }, ` accepted arguments wrt ${name} semantics`]
+})
 const selectionHint = computed(() =>
   selectedMode.value === 'enumerate'
     ? 'Select model to highlight.'
@@ -217,7 +227,14 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
         </div>
       </fieldset>
       <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend v-if="!compact" class="fieldset-legend">{{ resultsHeader }}</legend>
+        <legend v-if="!compact" class="fieldset-legend">
+          <span>
+            <template v-for="(part, i) in resultsHeader" :key="i">
+              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
+              <template v-else>{{ part }}</template>
+            </template>
+          </span>
+        </legend>
         <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
           <span>Evaluation timed out</span>
         </div>
