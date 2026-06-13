@@ -1,0 +1,18 @@
+{
+  "apiVersion": "argumentation-framework/v1",
+  "name": "grounded_ideal",
+  "description": "A minimal 4-argument framework where the grounded extension is different from the ideal extension.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": { "name": "a", "x": 200, "y": 0 },
+    "1": { "name": "b", "x": 0, "y": 200 },
+    "2": { "name": "c", "x": 400, "y": 200 },
+    "3": { "name": "d", "x": 150, "y": 400 }
+  },
+  "attacks": [
+    [0, 1], [1, 0],
+    [1, 2],
+    [0, 2],
+    [2, 3], [3, 2]
+  ]
+}

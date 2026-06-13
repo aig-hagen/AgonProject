@@ -18,13 +18,15 @@
  */
 import mealWineJson from '@/modules/abstract-argumentation/examples/meal_wine.json'
 import uniqueStableJson from '@/modules/abstract-argumentation/examples/unique_stable.json'
+import twoCyclesJson from '@/modules/abstract-argumentation/examples/two_cycles.json'
+import groundedIdealJson from '@/modules/abstract-argumentation/examples/grounded_ideal.json'
 import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { loadExampleFromJson } from '@/modules/abstract-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
 
-const exampleJsons: unknown[] = [mealWineJson, uniqueStableJson]
+const exampleJsons: unknown[] = [mealWineJson, uniqueStableJson, twoCyclesJson, groundedIdealJson]
 
 export const datasets: Example<AbstractArgumentation<ArgumentData>>[] = exampleJsons.map((json) => {
   const { framework: _, name, description, layoutType } = loadExampleFromJson(json)

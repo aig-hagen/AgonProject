@@ -37,8 +37,8 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   // General
 
   AF: {
-    label: 'argumentation framework',
-    title: 'Argumentation Framework',
+    label: 'AF',
+    title: 'Argumentation Framework (AF)',
     content: ['An argumentation framework $F = (A, R)$ consists of a finite set of arguments $A$ and an attack relation $R \\subseteq A \\times A$. We write $a \\to b$ if $(a,b) \\in R$, meaning $a$ attacks $b$.'],
     reference: D95,
   },
@@ -59,7 +59,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   sccRecursive: {
     label: 'SCC-recursive',
     title: 'SCC-Recursive Schema',
-    content: ['The SCC-recursive schema defines a semantics by applying a base semantics $\\sigma$ locally to each ', { ref: 'scc' }, ' (SCC) of the framework, processing SCCs in topological order and restricting attacks from previously evaluated SCCs.'],
+    content: ['The SCC-recursive schema defines a ', { ref: 'semantics' }, ' by applying a base semantics $\\sigma$ locally to each ', { ref: 'scc' }, ' (SCC) of the framework, processing SCCs in topological order and restricting attacks from previously evaluated SCCs.'],
     reference: BGG05,
   },
 
@@ -95,6 +95,12 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     reference: BBU20,
   },
 
+  semantics: {
+    label: 'semantics',
+    title: 'Semantics',
+    content: ['A semantics $\\sigma$ is a function that assigns to each AF $F$ a set of extensions $\\sigma(F) \\subseteq 2^A$.'],
+  },
+
   unattackedInitial: {
     label: 'unattacked',
     title: 'Unattacked Initial Sets',
@@ -114,6 +120,24 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     title: 'Challenged Initial Sets',
     content: ['An ', { ref: 'IS', label: 'initial' }, ' set $S$ is called challenged iff there is some other initial set $S\'$ that attacks $S$.'],
     reference: T22,
+  },
+
+  extension: {
+    label: 'extension',
+    title: 'Extension',
+    content: ['An extension $E$ of an AF $F$ under a semantics $\\sigma$ is a set of arguments $E \\in \\sigma(F)$.'],
+  },
+
+  skepticalAcceptance: {
+    label: 'skeptical',
+    title: 'Skeptical Acceptance',
+    content: ['An argument is skeptically accepted under a ', { ref: 'semantics' }, ' $\\sigma$ if it is contained in every ', { ref: 'extension', label: '$\\sigma$-extension' }, ' of $F$.'],
+  },
+
+  credulousAcceptance: {
+    label: 'credulous',
+    title: 'Credulous Acceptance',
+    content: ['An argument is credulously accepted under a ', { ref: 'semantics' }, ' $\\sigma$ if it is contained in at least one ', { ref: 'extension', label: '$\\sigma$-extension' }, ' of $F$.'],
   },
 
   // Extension semantics

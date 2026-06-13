@@ -137,10 +137,10 @@ export const LON11: Publication = {
   href: 'https://link.springer.com/chapter/10.1007/978-3-642-29184-5_1',
 }
 
-export const H14: Publication = {
-  shortLabel: 'Hunter (2014)',
-  label: 'Hunter, A. (2014). Probabilistic Qualification of Attack in Abstract Argumentation. International Journal of Approximate Reasoning, 55(2).',
-  href: 'https://doi.org/10.1016/j.ijar.2013.09.002',
+export const H12: Publication = {
+  shortLabel: 'Hunter (2012)',
+  label: 'Hunter, A. (2012). Some Foundations for Probabilistic Abstract Argumentation. In: Computational Models of Argument – Proceedings of COMMA 2012, Frontiers in Artificial Intelligence and Applications, Vol. 245, pp. 117–128. IOS Press.',
+  href: 'https://doi.org/10.3233/978-1-61499-111-3-117',
 }
 
 export const HPPRT21: Publication = {
