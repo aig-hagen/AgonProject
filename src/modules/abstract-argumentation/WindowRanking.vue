@@ -17,7 +17,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, ref, shallowRef, toRef, watch } from 'vue'
+import { InformationCircleIcon } from '@heroicons/vue/24/outline'
+import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import type { RankingWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/rankingWindowState'
 import {
@@ -25,10 +26,15 @@ import {
   type RankingSemantic,
   useRankingEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProjectRanking'
+import { abstractArgumentationRankingGlossary } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationRankingGlossary)
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
@@ -97,14 +103,19 @@ watch(data, emitWeights)
       <fieldset v-if="!compact" class="fieldset">
         <legend class="fieldset-legend">Parameters</legend>
         <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-52">
-            <span class="label">Semantics</span>
-            <select v-model="selectedSemantic">
-              <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
-                {{ s.displayName }}
-              </option>
-            </select>
-          </label>
+          <div class="flex items-center gap-1">
+            <label class="select select-sm w-52">
+              <span class="label">Semantics</span>
+              <select v-model="selectedSemantic">
+                <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
+                  {{ s.displayName }}
+                </option>
+              </select>
+            </label>
+            <TermTooltip :id="selectedSemantic.key">
+              <InformationCircleIcon class="size-4 text-base-content/40 hover:text-base-content/70 cursor-help" />
+            </TermTooltip>
+          </div>
         </div>
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">

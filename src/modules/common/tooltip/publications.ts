@@ -37,6 +37,12 @@ export const BCG18: Publication = {
   href: 'https://www.collegepublications.co.uk/downloads/handbooks00003.pdf',
 }
 
+export const BBU20: Publication = {
+  shortLabel: 'Baumann et al. (2020)',
+  label: 'Baumann, R., Brewka, G. & Ulbricht, J. (2020). Revisiting the Foundations of Abstract Argumentation - Semantics Based on Weak Admissibility and Weak Defense. In: The Thirty-Fourth AAAI Conference on Artificial Intelligence (AAAI 2020), pp. 2742-2749.',
+  href: 'https://doi.org/10.1609/aaai.v34i03.5661',
+}
+
 export const C06: Publication = {
   shortLabel: 'Caminada (2006)',
   label: 'Caminada, M. (2006). Semi-Stable Semantics. In: Computational Models of Argument – Proceedings of COMMA 2006, pp. 121–130.',
@@ -65,6 +71,12 @@ export const XC18: Publication = {
   shortLabel: 'Xu & Cayrol (2018)',
   label: 'Xu, Y. & Cayrol, C. (2018). Initial Sets in Abstract Argumentation Frameworks. Journal of Applied Non-Classical Logics, 28(2–3), pp. 260–279.',
   href: 'https://doi.org/10.1080/11663081.2018.1457252',
+}
+
+export const T22: Publication = {
+  shortLabel: 'Thimm (2022)',
+  label: 'Thimm, M. (2022). Revisiting Initial Sets in Abstract Argumentation. Argument & Computation, 13(3), pp. 325-360.',
+  href: 'https://doi.org/10.3233/AAC-210018',
 }
 
 export const BT22: Publication = {

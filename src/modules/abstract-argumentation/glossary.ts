@@ -17,6 +17,7 @@
  * along with this program, if not, see <https://www.gnu.org/licenses/>.
  */
 import {
+  BBU20,
   BGG05,
   BT22,
   C06,
@@ -25,6 +26,7 @@ import {
   D95,
   DG16,
   DMT07,
+  T22,
   T23,
   V96,
   XC18,
@@ -33,6 +35,40 @@ import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const abstractArgumentationGlossary: TooltipRegistry = {
   // General
+
+  AF: {
+    label: 'argumentation framework',
+    title: 'Argumentation Framework',
+    content: ['An argumentation framework $F = (A, R)$ consists of a finite set of arguments $A$ and an attack relation $R \\subseteq A \\times A$. We write $a \\to b$ if $(a,b) \\in R$, meaning $a$ attacks $b$.'],
+    reference: D95,
+  },
+
+  charFunction: {
+    label: 'characteristic function',
+    title: 'Characteristic Function',
+    content: ['The characteristic function $\\Delta_F: 2^A \\to 2^A$ maps each set $S$ to the arguments ', { ref: 'defends', label: 'defended' }, ' by $S$, i.e. $\\Delta_F(S) = \\{ a \\in A \\mid S$ defends $a \\}$.'],
+    reference: D95,
+  },
+
+  scc: {
+    label: 'strongly connected component',
+    title: 'Strongly Connected Component',
+    content: ['A strongly connected component (SCC) of an AF is a maximal subset of arguments $S \\subseteq A$ such that for every pair of arguments $a,b \\in S$ there is a path from $a$ to $b$ and a path from $b$ to $a$.'],
+  },
+
+  sccRecursive: {
+    label: 'SCC-recursive',
+    title: 'SCC-Recursive Schema',
+    content: ['The SCC-recursive schema defines a semantics by applying a base semantics $\\sigma$ locally to each ', { ref: 'scc' }, ' (SCC) of the framework, processing SCCs in topological order and restricting attacks from previously evaluated SCCs.'],
+    reference: BGG05,
+  },
+
+  serialisation: {
+    label: 'serialisation',
+    title: 'Serialisable Semantics',
+    content: ['For a serialisable semantics, the extensions can be computed by iteratively selecting ', { ref: 'IS' }, ' of the current AF and computing the ', { ref: 'reduct' }, ' until a predefined termination condition is met.'],
+    reference: T22,
+  },
 
   defends: {
     label: 'defends',
@@ -56,6 +92,28 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: 'reduct',
     title: '$S$-Reduct',
     content: ['The reduct of $F$ with respect to $S$ is the argumentation framework $F^S = (A \\setminus (S \\cup S^+), R \\cap (A\' \\times A\'))$.'],
+    reference: BBU20,
+  },
+
+  unattackedInitial: {
+    label: 'unattacked',
+    title: 'Unattacked Initial Sets',
+    content: ['An ', { ref: 'IS', label: 'initial' }, ' set $S$ is called unattacked iff there is no argument $a \\in A$ such that $a$ attacks some argument in $S$.'],
+    reference: T22,
+  },
+
+  unchallengedInitial: {
+    label: 'unchallenged',
+    title: 'Unchallenged Initial Sets',
+    content: ['An ', { ref: 'IS', label: 'initial' }, ' set $S$ is called unchallenged iff ', { ref: 'attackersSet' } , '$\\neq \\emptyset$ and there is no other initial set $S\'$ that attacks $S$.'],
+    reference: T22,
+  },
+
+  challengedInitial: {
+    label: 'challenged',
+    title: 'Challenged Initial Sets',
+    content: ['An ', { ref: 'IS', label: 'initial' }, ' set $S$ is called challenged iff there is some other initial set $S\'$ that attacks $S$.'],
+    reference: T22,
   },
 
   // Extension semantics
@@ -80,7 +138,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   GR: {
     label: 'grounded',
     title: 'Grounded Semantics',
-    content: ['A set of arguments $E$ is a grounded extension iff $E$ is ', { ref: 'CO' }, ' and $\\subseteq$-minimal.'],
+    content: ['A set of arguments $E$ is a grounded extension iff $E$ is ', { ref: 'CO' }, ' and $\\subseteq$-minimal. The unique grounded extension is the least fixpoint of the ', { ref: 'charFunction' }, ' $\\Delta_F(\\emptyset)$.'],
     reference: D95,
   },
   PR: {
@@ -120,7 +178,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     reference: C07,
   },
   IS: {
-    label: 'initial',
+    label: 'initial sets',
     title: 'Initial Sets',
     content: ['A set of arguments $E$ is initial iff $E$ is non-empty, ', { ref: 'ADM' }, ' and $\\subseteq$-minimal.'],
     reference: XC18,
@@ -128,7 +186,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   UC: {
     label: 'unchallenged',
     title: 'Unchallenged Semantics',
-    content: ['Unchallenged extensions are defined via serialisation by exhaustively selecting only unattacked and unchallenged initial sets.'],
+    content: ['Unchallenged extensions are defined via ', { ref: 'serialisation' }, ' by exhaustively selecting only ', { ref: 'unattackedInitial' }, ' and ', { ref: 'unchallengedInitial' }, ' ' ,{ ref: 'IS' }, '.'],
     reference: BT22,
   },
   NA: {
@@ -145,13 +203,13 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   STG2: {
     label: 'stage2',
     title: 'Stage2 Semantics',
-    content: ['The stage2 extensions are defined via the SCC-recursive schema with the ', { ref: 'STG' }, ' semantics as the base function.'],
+    content: ['The stage2 extensions are defined via the ', { ref: 'sccRecursive' }, ' with the ', { ref: 'STG' }, ' semantics as the base function.'],
     reference: DG16,
   },
   CF2: {
     label: 'CF2',
     title: 'CF2 Semantics',
-    content: ['The CF2-extensions are defined via the SCC-recursive schema with the ', { ref: 'NA' }, ' semantics as the base function.'],
+    content: ['The CF2-extensions are defined via the ', { ref: 'sccRecursive' }, ' with the ', { ref: 'NA' }, ' semantics as the base function.'],
     reference: BGG05,
   },
   UD: {
@@ -165,5 +223,79 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     title: 'Strongly Undisputed Sets',
     content: ['A set of arguments $E$ is strongly undisputed iff $E$ is ', { ref: 'CF' }, ' in $F$ and the ', { ref: 'reduct' }, ' $F^E$ contains no non-empty ', { ref: 'UD' }, ' set.'],
     reference: T23,
+  },
+
+  // Weak extension semantics
+  WAD: {
+    label: 'weakly admissible',
+    title: 'Weak Admissibility',
+    content: ['TODO'],
+    reference: BBU20,
+  },
+  WCO: {
+    label: 'weakly complete',
+    title: 'Weakly Complete Semantics',
+    content: ['TODO'],
+    reference: BBU20,
+  },
+  WGR: {
+    label: 'weakly grounded',
+    title: 'Weakly Grounded Semantics',
+    content: ['TODO'],
+    reference: BBU20,
+  },
+  WPR: {
+    label: 'weakly preferred',
+    title: 'Weakly Preferred Semantics',
+    content: ['TODO'],
+    reference: BBU20,
+  },
+}
+
+export const abstractArgumentationRankingGlossary: TooltipRegistry = {
+  CAT: {
+    label: 'categorizer',
+    title: 'Categorizer Ranking',
+    content: ['TODO'],
+  },
+  BB: {
+    label: 'burden-based',
+    title: 'Burden-Based Ranking',
+    content: ['TODO'],
+  },
+  SER: {
+    label: 'serialised',
+    title: 'Serialised Ranking',
+    content: ['TODO'],
+  },
+  CO: {
+    label: 'counting',
+    title: 'Counting Ranking',
+    content: ['TODO'],
+  },
+  DB: {
+    label: 'discussion-based',
+    title: 'Discussion-Based Ranking',
+    content: ['TODO'],
+  },
+  IGD: {
+    label: 'iterated graded defense',
+    title: 'Iterated Graded Defense Ranking',
+    content: ['TODO'],
+  },
+  SAF: {
+    label: 'social argumentation',
+    title: 'Social Argumentation Framework Ranking',
+    content: ['TODO'],
+  },
+  SB: {
+    label: 'strategy-based',
+    title: 'Strategy-Based Ranking',
+    content: ['TODO'],
+  },
+  TU: {
+    label: 'tuples',
+    title: 'Tuples Ranking',
+    content: ['TODO'],
   },
 }
