@@ -134,9 +134,9 @@ const windowTitle = computed(() => {
           <span
             v-for="entry in data.entries"
             :key="entry.id"
-            class="btn btn-sm btn-ghost pointer-events-none"
+            class="btn btn-sm btn-ghost pointer-events-none text-base"
           >
-            {{ entry.name }}: {{ entry.probability.toFixed(4) }}
+            {{ entry.name }}: {{ entry.probability.toFixed(3) }}
           </span>
         </div>
         <p class="label">{{ data.evaluationDurationInMs }}ms</p>

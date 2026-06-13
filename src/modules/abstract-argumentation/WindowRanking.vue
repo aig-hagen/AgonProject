@@ -79,7 +79,7 @@ const rankGroups = computed(() => {
     else byScore.set(entry.score, [entry])
   }
   return [...byScore.entries()]
-    .sort(([a], [b]) => b - a)
+    .sort(([a], [b]) => a - b)
     .map(([, entries]) => ({
       entries: [...entries].sort((a, b) => a.name.localeCompare(b.name)),
     }))
@@ -129,7 +129,7 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
           <div class="flex flex-wrap items-center gap-x-1 gap-y-1">
             <template v-for="(group, index) in rankGroups" :key="index">
               <span v-if="index > 0" class="text-sm select-none">&#x227B;</span>
-              <span class="text-sm">{{ group.entries.map((e) => e.name).join(', ') }}</span>
+              <span class="text-base">{{ group.entries.map((e) => e.name).join(', ') }}</span>
             </template>
           </div>
         </template>
@@ -138,7 +138,7 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
             <span
               v-for="entry in data.ranking"
               :key="entry.id"
-              class="text-sm"
+              class="text-base"
             >
               {{ entry.name }}: {{ entry.score }}
             </span>
