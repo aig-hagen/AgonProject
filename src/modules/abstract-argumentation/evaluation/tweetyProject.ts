@@ -180,7 +180,7 @@ async function fetchSkeptical(
     GetAcceptabilityResponseSchema,
   )
   throwIfTimeout(skepticalResponse.answer, skepticalResponse.status)
-  const accArguments = parserSet(skepticalResponse.answer)
+  const accArguments = parserSet(skepticalResponse.answer!)
   return {
     evaluationDurationInMs: skepticalResponse.time,
     arguments: accArguments,
