@@ -246,10 +246,13 @@ async function loadFromFileInput(inputEvent: Event) {
     }
   }
   if (result.data !== undefined) {
-    let documentName = fileName
-    if (documentName.endsWith('.json')) {
-      documentName = documentName.slice(0, -5)
-    }
+    const nameFromJson = (unvalidatedData as Record<string, unknown>).name
+    const documentName =
+      typeof nameFromJson === 'string'
+        ? nameFromJson
+        : fileName.endsWith('.json')
+          ? fileName.slice(0, -5)
+          : fileName
     createDocumentWithContent(result.data, documentName)
     addSuccessNotification('Data loaded')
   }
@@ -282,7 +285,7 @@ async function saveAsFile(documentId: number) {
     return
   }
   const fileName = getFileName(metadata.name, module)
-  const saveString = module.getSaveString(state.current.content)
+  const saveString = module.getSaveString(state.current.content, metadata.name)
   saveToFile(saveString, fileName, 'json')
 }
 

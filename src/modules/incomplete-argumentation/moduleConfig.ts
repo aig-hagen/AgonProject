@@ -75,7 +75,7 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
     load(dataString, fileName) {
       return loadFromString(dataString, fileName)
     },
-    getSaveString(document) {
+    getSaveString(document, _name) {
       return saveAsString(document)
     },
     generateHref: '/generate?type=incomplete',

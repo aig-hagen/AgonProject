@@ -84,7 +84,7 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document) {
+  getSaveString(document, _name) {
     return saveAsString(document)
   },
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',

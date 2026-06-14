@@ -90,7 +90,7 @@ export const dialecticalArgumentationModule: ModuleConfig<
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document) {
+  getSaveString(document, _name) {
     return saveAsString(document)
   },
   generateHref: '/generate?type=adf',

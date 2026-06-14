@@ -92,8 +92,8 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document) {
-    return saveAsString(document)
+  getSaveString(document, name) {
+    return saveAsString(document, name)
   },
   generateHref: '/generate?type=abstract',
   description: 'The foundational model for the formal representation of argumentation via arguments and directed attacks.',

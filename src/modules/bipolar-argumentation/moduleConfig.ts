@@ -98,7 +98,7 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document) {
+  getSaveString(document, _name) {
     return saveAsString(document)
   },
   generateHref: '/generate?type=bipolar',

@@ -91,7 +91,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                   <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
                     Open Example
                   </h4>
-                  <ul class="menu menu-sm p-0 -mx-2">
+                  <ul class="menu menu-sm p-0 -mx-2 pl-2 grid grid-cols-2 gap-x-8">
                     <li v-for="(example, index) in moduleCard.examples" :key="index">
                       <span
                         v-if="example.description"
@@ -108,7 +108,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
               <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
                 New
               </h4>
-              <div class="flex flex-row gap-2">
+              <div class="flex flex-row gap-4 pl-2">
                 <button
                   class="btn btn-sm btn-soft btn-neutral w-fit"
                   @click="openContent(moduleCard.initialCotent, moduleCard.newNamePrefix)"

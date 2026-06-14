@@ -49,7 +49,7 @@ export const SaveSchema = z
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(argumentation: AbstractArgumentation<ArgumentData>): string {
+export function saveAsString(argumentation: AbstractArgumentation<ArgumentData>, name: string): string {
   const argumentsSave = Object.create(null)
   for (const [argumentId, argumentData] of argumentation.arguments()) {
     argumentsSave[argumentId] = {
@@ -62,8 +62,9 @@ export function saveAsString(argumentation: AbstractArgumentation<ArgumentData>)
   for (const [attackerId, attackedId] of argumentation.attacks()) {
     attacksSave.push([attackerId, attackedId])
   }
-  const save: Save = {
+  const save: z.infer<typeof ExampleSaveSchema> = {
     apiVersion: API_VERSION,
+    name,
     arguments: argumentsSave,
     attacks: attacksSave,
   }
@@ -85,7 +86,7 @@ export function loadFromString(
     }
   }
 
-  const result = SaveSchema.safeParse(unvalidatedData)
+  const result = ExampleSaveSchema.safeParse(unvalidatedData)
   if (!result.success) {
     return {
       success: false,

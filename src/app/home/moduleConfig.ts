@@ -86,7 +86,7 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * This is used to save data to disk and to be loaded later.
    * @param dataObject
    */
-  getSaveString(document: DocumentT): string
+  getSaveString(document: DocumentT, name: string): string
   /**
    * Optional route href shown as a "Generate" link in the welcome screen.
    */
