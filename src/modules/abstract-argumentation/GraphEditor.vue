@@ -28,10 +28,15 @@ import {
   createDefaultRankingWindowInstance,
   type RankingWindowInstanceState,
 } from '@/modules/abstract-argumentation/evaluation/rankingWindowState'
+import {
+  createDefaultSerialisationWindowInstance,
+  type SerialisationWindowInstanceState,
+} from '@/modules/abstract-argumentation/evaluation/serialisationWindowState'
 import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
+import WindowSerialisation from '@/modules/abstract-argumentation/WindowSerialisation.vue'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
@@ -217,6 +222,29 @@ function updateRankingInstance(updated: RankingWindowInstanceState) {
     i.id === updated.id ? updated : i,
   )
 }
+
+const serialisationInstances = useLocalStorage<SerialisationWindowInstanceState[]>(
+  computed(() => `abstract-argumentation:${documentId}:serialisation-instances`),
+  [],
+)
+
+function addSerialisationInstance() {
+  serialisationInstances.value = [
+    ...serialisationInstances.value,
+    createDefaultSerialisationWindowInstance(),
+  ]
+}
+
+function removeSerialisationInstance(id: string, onHighlight: (h?: Highlight) => void) {
+  if (serialisationInstances.value.length === 1) onHighlight(undefined)
+  serialisationInstances.value = serialisationInstances.value.filter((i) => i.id !== id)
+}
+
+function updateSerialisationInstance(updated: SerialisationWindowInstanceState) {
+  serialisationInstances.value = serialisationInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
+}
 </script>
 <template>
   <GraphEditor
@@ -238,6 +266,7 @@ function updateRankingInstance(updated: RankingWindowInstanceState) {
     :history-state="historyState"
     @open-extension-window="addExtensionInstance()"
     @open-ranking-window="addRankingInstance()"
+    @open-serialisation-window="addSerialisationInstance()"
   >
     <template #evaluationExtensions="{ onHighlight }">
       <WindowExtensions
@@ -270,6 +299,18 @@ function updateRankingInstance(updated: RankingWindowInstanceState) {
         @update:instance-state="updateRankingInstance($event)"
         @set-weights="onSetWeights"
         @close="removeRankingInstance(instance.id)"
+      />
+    </template>
+    <template #evaluationSerialisation="{ onHighlight }">
+      <WindowSerialisation
+        v-for="(instance, index) in serialisationInstances"
+        :key="instance.id"
+        :input="evaluationInput"
+        :instance-state="instance"
+        :instance-offset="index"
+        @update:instance-state="updateSerialisationInstance($event)"
+        @highlight="onHighlight"
+        @close="removeSerialisationInstance(instance.id, onHighlight)"
       />
     </template>
   </GraphEditor>

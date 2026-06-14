@@ -30,6 +30,7 @@ import {
   ArrowLongRightIcon,
   BarsArrowUpIcon,
   PhotoIcon,
+  QueueListIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import {
@@ -101,6 +102,7 @@ const nodePhysicsEnabled = ref<boolean>(false)
 
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
+const hasSerialisationSlot = computed(() => !!slots.evaluationSerialisation)
 
 const enableLinkSwitching = Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
@@ -177,6 +179,7 @@ const emit = defineEmits<{
   save: []
   'open-extension-window': []
   'open-ranking-window': []
+  'open-serialisation-window': []
 }>()
 
 let idGenerator = new IdGenerator()
@@ -638,7 +641,8 @@ onUnmounted(() => {
 })
 
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
-const highlightToShow = computed(() => extensionHighlightRef.value)
+const serialisationHighlightRef = ref<Highlight | undefined>(undefined)
+const highlightToShow = computed(() => extensionHighlightRef.value ?? serialisationHighlightRef.value)
 
 watchEffect(() => {
   const graphComponent = graphComponentRef.value
@@ -854,6 +858,14 @@ const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
             >
               <BarsArrowUpIcon class="size-6 opacity-70" />
             </button>
+            <button
+              v-if="hasSerialisationSlot"
+              class="btn btn-square btn-sm"
+              @click="emit('open-serialisation-window')"
+              title="Serialisation Sequences"
+            >
+              <QueueListIcon class="size-6 opacity-70" />
+            </button>
           </div>
           <button
             ref="exportButton"
@@ -935,6 +947,10 @@ const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
     ></slot>
     <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
     <slot name="evaluationRanking"></slot>
+    <slot
+      name="evaluationSerialisation"
+      :on-highlight="(h: Highlight | undefined) => { serialisationHighlightRef = h }"
+    ></slot>
     <WindowHelp :link-names="linkNames" v-model:open="isHelpOpened" />
   </div>
 </template>

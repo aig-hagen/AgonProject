@@ -86,6 +86,70 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     reference: BT22b,
   },
 
+  // Serialisation selection functions
+  selFn: {
+    label: 'selection function',
+    title: 'Selection Function $\\alpha$',
+    content: ['TODO'],
+    reference: T22,
+  },
+  selFnADM: {
+    label: '$\\alpha_{\\mathsf{ad}}$',
+    title: 'Admissible Selection Function $\\alpha_{\\mathsf{ad}}$',
+    content: ['The ', { ref: 'selFn'}, ' $\\alpha_{\\mathsf{ad}}$ selects any ', { ref: 'IS' }, ') of the current ', { ref: 'AF' }, '.'],
+    reference: T22,
+  },
+  selFnUC: {
+    label: '$\\alpha_{\\mathsf{uc}}$',
+    title: 'Unchallenged Selection Function $\\alpha_{\\mathsf{uc}}$',
+    content: ['The ', { ref: 'selFn'}, ' $\\alpha_{\\mathsf{uc}}$ selects only ', { ref: 'unattackedInitial' }, ' and ', { ref: 'unchallengedInitial' }, ' initial sets of the current ', { ref: 'AF' }, '.'],
+    reference: BT22,
+  },
+  selFnGR: {
+    label: '$\\alpha_{\\mathsf{gr}}$',
+    title: 'Grounded Selection Function $\\alpha_{\\mathsf{gr}}$',
+    content: ['The ', { ref: 'selFn'}, ' $\\alpha_{\\mathsf{gr}}$ selects only ', { ref: 'unattackedInitial' }, ' initial sets of the current ', { ref: 'AF' }, '.'],
+    reference: T22,
+  },
+
+  // Serialisation termination functions
+  termFn: {
+    label: 'termination function',
+    title: 'Termination Function $\\beta$',
+    content: ['TODO'],
+    reference: T22,
+  },
+  termFnADM: {
+    label: '$\\beta_{\\mathsf{ad}}$',
+    title: 'Admissible Termination Function $\\beta_{\\mathsf{ad}}$',
+    content: ['The termination function $\\beta_{\\mathsf{ad}}$ returns $\\mathsf{true}$ for every state.'],
+    reference: T22,
+  },
+  termFnCO: {
+    label: '$\\beta_{\\mathsf{co}}$',
+    title: 'Complete Termination Function $\\beta_{\\mathsf{co}}$',
+    content: ['The termination function $\\beta_{\\mathsf{co}}$ returns $\\mathsf{true}$ iff we have that ', { ref: 'unattackedInitial', label: '$\\mathsf{is}^{\\not\\leftarrow}(F)$' } ,'$=\\emptyset$.'],
+    reference: T22,
+  },
+  termFnUC: {
+    label: '$\\beta_{\\mathsf{uc}}$',
+    title: 'Unchallenged Termination Function $\\beta_{\\mathsf{uc}}$',
+    content: ['The termination function $\\beta_{\\mathsf{uc}}$ returns $\\mathsf{true}$ iff we have that ', { ref: 'unattackedInitial', label: '$\\mathsf{is}^{\\not\\leftarrow}(F)$' }, '$=$', { ref: 'unchallengedInitial', label: '$\\mathsf{is}^{\\not\\leftrightarrow}(F)$' } ,'$=\\emptyset$.'],
+    reference: BT22,
+  },
+  termFnPR: {
+    label: '$\\beta_{\\mathsf{pr}}$',
+    title: 'Preferred Termination Function $\\beta_{\\mathsf{pr}}$',
+    content: ['The termination function $\\beta_{\\mathsf{pr}}$ returns $\\mathsf{true}$ iff we have that ', { ref: 'IS', label: '$\\mathsf{is}(F)$' } ,'$=\\emptyset$.'],
+    reference: T22,
+  },
+  termFnST: {
+    label: '$\\beta_{\\mathsf{st}}$',
+    title: 'Stable Termination Function $\\beta_{\\mathsf{st}}$',
+    content: ['The termination function $\\beta_{\\mathsf{st}}$ returns $\\mathsf{true}$ iff we have $F = (\\emptyset, \\emptyset)$.'],
+    reference: T22,
+  },
+
   defends: {
     label: 'defends',
     title: 'Defence',

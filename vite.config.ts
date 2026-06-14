@@ -72,6 +72,7 @@ export default defineConfig({
       '/dung': 'http://localhost:8080/',
       '/bipolar': 'http://localhost:8080/',
       '/rankings': 'http://localhost:8080/',
+      '/serialisation': 'http://localhost:8080/',
       '/paf': 'http://localhost:8080/',
       '/adf': 'http://localhost:8080/',
       '/iaf': 'http://localhost:8080/',
