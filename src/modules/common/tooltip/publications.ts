@@ -39,7 +39,7 @@ export const BCG18: Publication = {
 
 export const BBU20: Publication = {
   shortLabel: 'Baumann et al. (2020)',
-  label: 'Baumann, R., Brewka, G. & Ulbricht, J. (2020). Revisiting the Foundations of Abstract Argumentation - Semantics Based on Weak Admissibility and Weak Defense. In: The Thirty-Fourth AAAI Conference on Artificial Intelligence (AAAI 2020), pp. 2742-2749.',
+  label: 'Baumann, R., Brewka, G. & Ulbricht, M. (2020). Revisiting the Foundations of Abstract Argumentation - Semantics Based on Weak Admissibility and Weak Defense. In: The Thirty-Fourth AAAI Conference on Artificial Intelligence (AAAI 2020), pp. 2742-2749.',
   href: 'https://doi.org/10.1609/aaai.v34i03.5661',
 }
 

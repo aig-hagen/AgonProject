@@ -276,25 +276,34 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   WAD: {
     label: 'weakly admissible',
     title: 'Weak Admissibility',
-    content: ['TODO'],
+    content: ['A set of arguments $E$ is weakly admissible iff $E$ is ', { ref: 'CF' }, ', and for any attacker $b \\in$ ', { ref: 'attackersSet', label: '$E^-$' },  ', we have that $b \\notin \\bigcup \\mathsf{wad}$', { ref: 'reduct', label: '$(F^E)$' } ,'.'],
     reference: BBU20,
   },
+
   WCO: {
     label: 'weakly complete',
     title: 'Weakly Complete Semantics',
-    content: ['TODO'],
+    content: ['A set of arguments $E$ is a weakly complete extension iff $E$ is ', { ref: 'WAD' }, ' and for any $E\' \\subseteq A$ such that $E \\subseteq E\'$ and $E\'$ is ', { ref: 'weakDefence', label: 'weakly defended' }, ' by $E$, we have that $E\' \\subseteq E$.'],
     reference: BBU20,
   },
+
+  weakDefence: {
+    label: 'weak defence',
+    title: 'Weak Defence',
+    content: ['A set of arguments $E$ weakly defends the set $E\'$ iff for any attacker $b$ of $E\'$ we have, $E$ attacks $b$, or $b \\notin \\bigcup \\mathsf{wad}(F^E)$, $b \\notin E$ and $E\' \\subseteq E\'\' \\in \\mathsf{wad}(F)$.'],
+    reference: BBU20,
+  },
+
   WGR: {
     label: 'weakly grounded',
     title: 'Weakly Grounded Semantics',
-    content: ['TODO'],
+    content: ['A set of arguments $E$ is a weakly grounded extension iff $E$ is a $\\subseteq$-minimal ', { ref: 'WCO' }, ' extension.'],
     reference: BBU20,
   },
   WPR: {
     label: 'weakly preferred',
     title: 'Weakly Preferred Semantics',
-    content: ['TODO'],
+    content: ['A set of arguments $E$ is a weakly preferred extension iff $E$ is a $\\subseteq$-maximal ', { ref: 'WAD' }, ' set.'],
     reference: BBU20,
   },
 }
@@ -440,13 +449,13 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
   SB: {
     label: 'strategy-based',
     title: 'Strategy-Based Ranking',
-    content: ['The strategy-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{SB}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{SB} b$ iff $\\mathrm{s}(a) \\geq \\mathrm{s}(b)$ where $\\mathrm{s}(a)$ is the strength of $a$ based on a two-person zero-sum game.'],
+    content: ['The strategy-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{SB}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{SB} b$ iff $\\mathrm{s}(a) \\geq \\mathrm{s}(b)$ where $\\mathrm{s}(a)$ is the strength of $a$ based on a ', { ref: 'strategyGame', label: 'two-person zero-sum game' }, '.'],
     reference: MT08,
   },
 
   strategyGame: {
     label: 'strategic game',
-    title: 'Two-person zero-sumStrategic Game',
+    title: 'Two-person zero-sum Strategic Game',
     content: ['TODO'],
     reference: MT08,
   },

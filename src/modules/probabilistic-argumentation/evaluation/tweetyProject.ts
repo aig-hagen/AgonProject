@@ -70,14 +70,29 @@ export const KNOWN_SEMANTIC_GROUPS: PafSemanticGroup[] = [
       { key: 'ID',  displayName: 'Ideal' },
       { key: 'EA',  displayName: 'Eager' },
       { key: 'IS',  displayName: 'Initial' },
+      { key: 'UC',  displayName: 'Unchallenged' },
     ],
   },
   {
     key: 'non-admissible',
     displayName: 'Non-admissible Semantics',
     semantics: [
-      { key: 'NA',  displayName: 'Naive' },
-      { key: 'STG', displayName: 'Stage' },
+      { key: 'NA',   displayName: 'Naive' },
+      { key: 'STG',  displayName: 'Stage' },
+      { key: 'STG2', displayName: 'Stage2' },
+      { key: 'CF2',  displayName: 'CF2' },
+      { key: 'UD',   displayName: 'Undisputed' },
+      { key: 'SUD',  displayName: 'Strongly Undisputed' },
+    ],
+  },
+  {
+    key: 'weak',
+    displayName: 'Weak Semantics',
+    semantics: [
+      { key: 'WAD', displayName: 'Weakly Admissible' },
+      { key: 'WCO', displayName: 'Weakly Complete' },
+      { key: 'WGR', displayName: 'Weakly Grounded' },
+      { key: 'WPR', displayName: 'Weakly Preferred' },
     ],
   },
 ]
