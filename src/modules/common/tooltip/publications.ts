@@ -141,6 +141,30 @@ export const BT22b: Publication = {
   href: 'https://doi.org/10.3233/FAIA220145',
 }
 
+export const MT08: Publication = {
+  shortLabel: 'Matt & Toni (2008)',
+  label: 'Matt, P.-A. & Toni, F. (2008). A Game-Theoretic Measure of Argument Strength for Abstract Argumentation. In: Logics in Artificial Intelligence – JELIA 2008, LNCS 5293, pp. 285–297. Springer.',
+  href: 'https://doi.org/10.1007/978-3-540-87803-2_24',
+}
+
+export const GM15: Publication = {
+  shortLabel: 'Grossi & Modgil (2015)',
+  label: 'Grossi, D. & Modgil, S. (2015). On the Graded Acceptability of Arguments. In: Proceedings of the Twenty-Fourth International Joint Conference on Artificial Intelligence (IJCAI 2015), pp. 868–874. AAAI Press.',
+  href: 'http://ijcai.org/Abstract/15/127',
+}
+
+export const CL05b: Publication = {
+  shortLabel: 'Cayrol & Lagasquie-Schiex (2005)',
+  label: 'Cayrol, C. & Lagasquie-Schiex, M.-C. (2005). Graduality in Argumentation. Journal of Artificial Intelligence Research, 23, pp. 245–297.',
+  href: 'https://doi.org/10.1613/jair.1411',
+}
+
+export const LM11: Publication = {
+  shortLabel: 'Leite & Martins (2011)',
+  label: 'Leite, J. & Martins, J.G. (2011). Social Abstract Argumentation. In: Proceedings of the 22nd International Joint Conference on Artificial Intelligence (IJCAI 2011), pp. 2287–2292.',
+  href: 'http://ijcai.org/Proceedings/11/Papers/381.pdf',
+}
+
 // ── Bipolar Argumentation ─────────────────────────────────────────────────────
 
 export const CL05: Publication = {

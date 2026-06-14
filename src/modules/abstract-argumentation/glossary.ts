@@ -26,9 +26,13 @@ import {
   C06,
   C07,
   C14,
+  CL05b,
   D95,
   DG16,
   DMT07,
+  GM15,
+  LM11,
+  MT08,
   PLZL14,
   T22,
   T23,
@@ -383,20 +387,70 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
     label: 'iterated graded defense',
     title: 'Iterated Graded Defense Ranking',
     content: ['TODO'],
+    reference: GM15,
   },
+
   SAF: {
     label: 'social argumentation',
-    title: 'Social Argumentation Framework Ranking',
-    content: ['TODO'],
+    title: 'Social Argumentation Ranking',
+    content: ['The social argumentation ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{SA}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{SA} b$ iff $M_S(a) \\geq M_S(b)$, where $M_S$ is a ', { ref: 'socialModel' }, ' based on the ', { ref: 'simpleProductSemantics' }, ' $S$.'],
+    reference: LM11,
+
   },
+
+  socialModel: {
+    label: 'social model',
+    title: 'Social Model',
+    content: ['A social model of an AF $F$ is a mapping $M_S : A \\mapsto L$ with $M_S(a) = \\tau(a) \\curlywedge \\neg \\{ M_S(b) \\mid b \\in a^- \\}$, where $\\langle L, \\tau, \\curlywedge, \\curlyvee, \\neg \\rangle$ is a ', { ref: 'saSemantics' }, '.'],
+    reference: LM11,
+  },
+
+  saSemantics: {
+    label: 'SA-semantics',
+    title: 'Social Argumentation Semantics',
+    content: ['A social argumentation semantics is defined by the tuple $\\langle L, \\tau, \\curlywedge, \\curlyvee, \\neg \\rangle$, where $L$ is a totally ordered set of labels, $\\tau$ is an attenuation factor, $\\curlywedge$ is a T-norm, $\\curlyvee$ is a T-CoNorm and $\\neg$ is a negation operator.'],
+    reference: LM11,
+  },
+
+  simpleProductSemantics: {
+    label: 'simple product semantics',
+    title: 'Simple Product Semantics',
+    content: ['The simple product semantics is defined by the tuple $SP_\\epsilon = \\langle [0,1], \\tau_\\epsilon, \\curlywedge, \\curlyvee, \\neg \\rangle$, where $\\tau_\\epsilon = \\frac{1}{1 + \\epsilon}$ and $\\epsilon > 0$ ensure the uniqueness, $x \\curlywedge y$ is the ', { ref: 'productTNorm' }, ' and $x \\curlyvee y$ is the ', { ref: 'probabilisticSumTCoNorm' }, '.'],
+    reference: LM11,
+  },
+
+  productTNorm: {
+    label: 'Product T-Norm',
+    title: 'Product T-Norm',
+    content: ['The product T-norm is defined as $x \\curlywedge y = x \\times y$ .'],
+    reference: LM11,
+  },
+
+  probabilisticSumTCoNorm: {
+    label: 'Probabilistic Sum T-CoNorm',
+    title: 'Probabilistic Sum T-CoNorm',
+    content: ['The probabilistic sum T-CoNorm is defined as $x \\curlyvee y = x + y - x \\times y$ .'],
+    reference: LM11,
+  },
+
   SB: {
     label: 'strategy-based',
     title: 'Strategy-Based Ranking',
-    content: ['TODO'],
+    content: ['The strategy-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{SB}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{SB} b$ iff $\\mathrm{s}(a) \\geq \\mathrm{s}(b)$ where $\\mathrm{s}(a)$ is the strength of $a$ based on a two-person zero-sum game.'],
+    reference: MT08,
   },
+
+  strategyGame: {
+    label: 'strategic game',
+    title: 'Two-person zero-sumStrategic Game',
+    content: ['TODO'],
+    reference: MT08,
+  },
+
   TU: {
     label: 'tuples',
     title: 'Tuples Ranking',
-    content: ['TODO'],
+    content: ['The tuples ranking compares arguments based on the lengths of the attack and defense branches in the argumentation framework. Note that this ranking is only implemented for acyclic AFs.'],
+    reference: CL05b,
   },
 }

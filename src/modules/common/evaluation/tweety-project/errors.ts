@@ -25,5 +25,6 @@ export class EvaluationTimeoutError extends Error {
 }
 
 export function throwIfTimeout(answer: string | null, status?: string | null): void {
-  if (answer === null || status === 'TIMEOUT') throw new EvaluationTimeoutError()
+  if (status === 'TIMEOUT') throw new EvaluationTimeoutError()
+  if (answer === null) throw new Error('Evaluation failed')
 }

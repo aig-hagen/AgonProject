@@ -24,6 +24,7 @@ import { NODE_BLUE, NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
@@ -105,11 +106,14 @@ function formatInterpretation(interp: Interpretation): string {
 }
 
 const resultsHeader = computed((): ResultsHeaderPart[] => {
-  const name = selectedSemantic.value.displayName.toLowerCase()
-  if (selectedMode.value === 'enumerate') return [`${selectedSemantic.value.displayName} models`]
+  const { displayName, tooltipId: semanticTooltipId } = selectedSemantic.value
+  const semanticPart: ResultsHeaderPart = semanticTooltipId
+    ? { text: displayName, tooltipId: semanticTooltipId }
+    : displayName
+  if (selectedMode.value === 'enumerate') return [semanticPart, ' models']
   const tooltipId = selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
   const prefix = selectedMode.value === 'credulous' ? 'Credulously' : 'Skeptically'
-  return [{ text: prefix, tooltipId }, ` accepted arguments wrt ${name} semantics`]
+  return [{ text: prefix, tooltipId }, ' accepted arguments wrt ', semanticPart, ' semantics']
 })
 const selectionHint = computed(() =>
   selectedMode.value === 'enumerate'
@@ -210,6 +214,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
             </select>
           </label>
         </div>
+        <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
       </fieldset>
       <fieldset v-if="!compact" class="fieldset">
         <div class="flex gap-2 flex-wrap">

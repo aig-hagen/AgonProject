@@ -39,6 +39,7 @@ export const KEY_DEFAULT_SEMANTIC = 'ADM'
 export interface Semantic {
   key: string
   displayName: string
+  tooltipId?: string
 }
 
 export interface SemanticGroup {
@@ -53,11 +54,11 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     displayName: 'ADF Semantics',
     semantics: [
       { key: 'CF', displayName: 'Conflict-Free' },
-      { key: 'ADM', displayName: 'Admissible' },
-      { key: 'CO', displayName: 'Complete' },
-      { key: 'GR', displayName: 'Grounded' },
-      { key: 'PR', displayName: 'Preferred' },
-      { key: 'ST', displayName: 'Stable' },
+      { key: 'ADM', displayName: 'Admissible', tooltipId: 'adfADM' },
+      { key: 'CO', displayName: 'Complete', tooltipId: 'adfCO' },
+      { key: 'GR', displayName: 'Grounded', tooltipId: 'adfGR' },
+      { key: 'PR', displayName: 'Preferred', tooltipId: 'adfPR' },
+      { key: 'ST', displayName: 'Stable', tooltipId: 'adfST' },
       { key: 'NA', displayName: 'Naive' },
     ],
   },
