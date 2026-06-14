@@ -103,6 +103,12 @@ export const DG16: Publication = {
   href: 'https://doi.org/10.1093/logcom/exu006',
 }
 
+export const DD17: Publication = {
+  shortLabel: 'Dvořák & Dunne (2017)',
+  label: 'Dvořák, W. & Dunne, P.E. (2017). Computational Problems in Formal Argumentation and their Complexity. Logics for New-Generation AI (FLAP), 4(8).',
+  href: 'http://www.collegepublications.co.uk/downloads/ifcolog00017.pdf',
+}
+
 export const T23: Publication = {
   shortLabel: 'Thimm (2023)',
   label: 'Thimm, M. (2023). On Undisputed Sets in Abstract Argumentation. In: Proceedings of the AAAI Conference on Artificial Intelligence (AAAI 2023), pp. 6550–6557.',
@@ -234,6 +240,12 @@ export const BCDFP21: Publication = {
 }
 
 // ── Dialectical Argumentation ─────────────────────────────────────────────────
+
+export const SW15: Publication = {
+  shortLabel: 'Strass & Wallner (2015)',
+  label: 'Strass, H. & Wallner, J.P. (2015). Analyzing the Computational Complexity of Abstract Dialectical Frameworks via Approximation Fixpoint Theory. Artificial Intelligence, 226, pp. 34–74.',
+  href: 'https://doi.org/10.1016/j.artint.2015.05.003',
+}
 
 export const BW10: Publication = {
   shortLabel: 'Brewka & Woltran (2010)',

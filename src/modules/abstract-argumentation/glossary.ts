@@ -28,6 +28,7 @@ import {
   C14,
   CL05b,
   D95,
+  DD17,
   DG16,
   DMT07,
   GM15,
@@ -145,18 +146,21 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: 'extension',
     title: 'Extension',
     content: ['An extension $E$ of an AF $F$ under a semantics $\\sigma$ is a set of arguments $E \\in \\sigma(F)$.'],
+    reference: D95,
   },
 
   skepticalAcceptance: {
     label: 'skeptical',
     title: 'Skeptical Acceptance',
     content: ['An argument is skeptically accepted under a ', { ref: 'semantics' }, ' $\\sigma$ if it is contained in every ', { ref: 'extension', label: '$\\sigma$-extension' }, ' of $F$.'],
+    reference: DD17,
   },
 
   credulousAcceptance: {
     label: 'credulous',
     title: 'Credulous Acceptance',
     content: ['An argument is credulously accepted under a ', { ref: 'semantics' }, ' $\\sigma$ if it is contained in at least one ', { ref: 'extension', label: '$\\sigma$-extension' }, ' of $F$.'],
+    reference: DD17,
   },
 
   // Extension semantics

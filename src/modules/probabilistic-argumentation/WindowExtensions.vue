@@ -90,8 +90,8 @@ const windowTitle = computed(() => {
 
 const resultsHeader = computed((): ResultsHeaderPart[] => {
   const tooltipId = selectedMode.value === 'skeptical' ? 'skepticalAcceptance' : 'credulousAcceptance'
-  const prefix = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
-  return [{ text: prefix, tooltipId }, ` acceptance probabilities wrt ${selectedSemantic.value.displayName.toLowerCase()} semantics`]
+  const prefix = selectedMode.value === 'skeptical' ? 'Skeptically accepted' : 'Credulously accepted'
+  return [{ text: prefix, tooltipId }, ` probabilities wrt ${selectedSemantic.value.displayName.toLowerCase()} semantics`]
 })
 </script>
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { BESWW13, BESWW18, BW10 } from '@/modules/common/tooltip/publications'
+import { BESWW13, BESWW18, BW10, SW15 } from '@/modules/common/tooltip/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const dialecticalArgumentationGlossary: TooltipRegistry = {
@@ -109,5 +109,19 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
     title: 'Consensus Operator',
     content: ['The consensus operator $\\sqcap$ combines two ', { ref: 'threeValuedInterpretation', label: 'three-valued interpretations' }, ' $v_1$ and $v_2$ into a new interpretation $v_3 = v_1 \\sqcap v_2$ such that for each $a \\in A$: $v_3(a) = \\mathbf{t}$ iff $v_1(a) = v_2(a) = \\mathbf{t}$, $v_3(a) = \\mathbf{f}$ iff $v_1(a) = v_2(a) = \\mathbf{f}$, and $v_3(a) = \\mathbf{u}$ otherwise.'],
     reference: BESWW18,
+  },
+
+  adfCF: {
+    label: 'conflict-free',
+    title: 'Conflict-Freeness (ADF)',
+    content: ['A three-valued interpretation $v$ of an ', { ref: 'ADF' }, ' is a conflict-free model iff TODO.'],
+    reference: BW10,
+  },
+
+  adfNA: {
+    label: 'naive',
+    title: 'Naive Semantics (ADF)',
+    content: ['A three-valued interpretation $v$ of an ', { ref: 'ADF' }, ' is a naive model iff iff $v$ is ', { ref: 'adfCF', label: 'conflict-free' }, ' and there is no conflict-free model $v\'$ such that $v <_i v\'$.'],
+    reference: SW15,
   },
 }

@@ -112,8 +112,8 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     : displayName
   if (selectedMode.value === 'enumerate') return [semanticPart, ' models']
   const tooltipId = selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
-  const prefix = selectedMode.value === 'credulous' ? 'Credulously' : 'Skeptically'
-  return [{ text: prefix, tooltipId }, ' accepted arguments wrt ', semanticPart, ' semantics']
+  const prefix = selectedMode.value === 'credulous' ? 'Credulously accepted' : 'Skeptically accepted'
+  return [{ text: prefix, tooltipId }, ' arguments wrt ', semanticPart, ' semantics']
 })
 const selectionHint = computed(() =>
   selectedMode.value === 'enumerate'

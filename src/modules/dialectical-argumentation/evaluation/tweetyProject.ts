@@ -53,13 +53,13 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     key: 'adf-semantics',
     displayName: 'ADF Semantics',
     semantics: [
-      { key: 'CF', displayName: 'Conflict-Free' },
+      { key: 'CF', displayName: 'Conflict-Free', tooltipId: 'adfCF' },
       { key: 'ADM', displayName: 'Admissible', tooltipId: 'adfADM' },
       { key: 'CO', displayName: 'Complete', tooltipId: 'adfCO' },
       { key: 'GR', displayName: 'Grounded', tooltipId: 'adfGR' },
       { key: 'PR', displayName: 'Preferred', tooltipId: 'adfPR' },
       { key: 'ST', displayName: 'Stable', tooltipId: 'adfST' },
-      { key: 'NA', displayName: 'Naive' },
+      { key: 'NA', displayName: 'Naive', tooltipId: 'adfNA' },
     ],
   },
 ]

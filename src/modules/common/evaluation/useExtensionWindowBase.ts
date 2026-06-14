@@ -45,8 +45,8 @@ export function useExtensionWindowBase(
     const name = selectedSemanticName.value.toLowerCase()
     if (selectedMode.value === 'enumerate') return [`${selectedSemanticName.value} extensions`]
     const tooltipId = selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
-    const prefix = selectedMode.value === 'credulous' ? 'Credulously' : 'Skeptically'
-    return [{ text: prefix, tooltipId }, ` accepted arguments wrt ${name} semantics`]
+    const prefix = selectedMode.value === 'credulous' ? 'Credulously accepted' : 'Skeptically accepted'
+    return [{ text: prefix, tooltipId }, ` arguments wrt ${name} semantics`]
   })
 
   const selectionHint = computed(() =>
