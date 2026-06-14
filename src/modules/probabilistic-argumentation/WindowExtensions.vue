@@ -90,7 +90,8 @@ watch(data, (d) => {
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
-  return `Probabilistic: ${selectedSemantic.value.displayName} · ${modeLabel}`
+  const solverLabel = isApproximate.value ? ' · Approx.' : ''
+  return `Probabilistic: ${selectedSemantic.value.displayName} · ${modeLabel}${solverLabel}`
 })
 
 const resultsHeader = computed((): ResultsHeaderPart[] => {

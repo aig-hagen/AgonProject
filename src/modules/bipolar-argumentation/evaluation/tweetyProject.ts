@@ -41,38 +41,14 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     displayName: 'None Interpretation',
     interpretations: ['None'],
     semantics: [
-      {
-        key: 'b-cf',
-        displayName: 'Conflict-free',
-      },
-      {
-        key: 'b-coh',
-        displayName: 'Coherent',
-      },
-      {
-        key: 'b-ad',
-        displayName: 'Coherent Admissible',
-      },
-      {
-        key: 'b-coal-ad',
-        displayName: 'Coalition-Admissible',
-      },
-      {
-        key: 'b-coal-co',
-        displayName: 'Coalition-Complete',
-      },
-      {
-        key: 'b-coal-gr',
-        displayName: 'Coalition-Grounded',
-      },
-      {
-        key: 'b-coal-pr',
-        displayName: 'Coalition-Preferred',
-      },
-      {
-        key: 'b-coal-st',
-        displayName: 'Coalition-Stable',
-      },
+      { key: 'b-cf',      displayName: 'Conflict-free',         tooltipId: 'b-cf' },
+      { key: 'b-coh',     displayName: 'Coherent',              tooltipId: 'b-coh' },
+      { key: 'b-ad',      displayName: 'Coherent Admissible',   tooltipId: 'b-ad' },
+      { key: 'b-coal-ad', displayName: 'Coalition-Admissible',  tooltipId: 'b-coal-ad' },
+      { key: 'b-coal-co', displayName: 'Coalition-Complete',    tooltipId: 'b-coal-co' },
+      { key: 'b-coal-gr', displayName: 'Coalition-Grounded',    tooltipId: 'b-coal-gr' },
+      { key: 'b-coal-pr', displayName: 'Coalition-Preferred',   tooltipId: 'b-coal-pr' },
+      { key: 'b-coal-st', displayName: 'Coalition-Stable',      tooltipId: 'b-coal-st' },
     ],
   },
   {
@@ -80,26 +56,11 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     displayName: 'Deductive Interpretation',
     interpretations: ['Deductive'],
     semantics: [
-      {
-        key: 'd-ad',
-        displayName: 'Admissible',
-      },
-      {
-        key: 'd-co',
-        displayName: 'Complete',
-      },
-      {
-        key: 'd-gr',
-        displayName: 'Grounded',
-      },
-      {
-        key: 'd-pr',
-        displayName: 'Preferred',
-      },
-      {
-        key: 'd-st',
-        displayName: 'Stable',
-      },
+      { key: 'd-ad', displayName: 'Admissible', tooltipId: 'd-ad' },
+      { key: 'd-co', displayName: 'Complete',   tooltipId: 'd-co' },
+      { key: 'd-gr', displayName: 'Grounded',   tooltipId: 'd-gr' },
+      { key: 'd-pr', displayName: 'Preferred',  tooltipId: 'd-pr' },
+      { key: 'd-st', displayName: 'Stable',     tooltipId: 'd-st' },
     ],
   },
   {
@@ -107,26 +68,11 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     displayName: 'Necessary Interpretation',
     interpretations: ['Necessary'],
     semantics: [
-      {
-        key: 'n-ad',
-        displayName: 'Admissible',
-      },
-      {
-        key: 'n-co',
-        displayName: 'Complete',
-      },
-      {
-        key: 'n-gr',
-        displayName: 'Grounded',
-      },
-      {
-        key: 'n-pr',
-        displayName: 'Preferred',
-      },
-      {
-        key: 'n-st',
-        displayName: 'Stable',
-      },
+      { key: 'n-ad', displayName: 'Admissible', tooltipId: 'n-ad' },
+      { key: 'n-co', displayName: 'Complete',   tooltipId: 'n-co' },
+      { key: 'n-gr', displayName: 'Grounded',   tooltipId: 'n-gr' },
+      { key: 'n-pr', displayName: 'Preferred',  tooltipId: 'n-pr' },
+      { key: 'n-st', displayName: 'Stable',     tooltipId: 'n-st' },
     ],
   },
 ]
@@ -141,6 +87,7 @@ export interface SemanticGroup {
 export interface Semantic {
   key: string
   displayName: string
+  tooltipId?: string
 }
 
 interface GetModelsRequestBody {

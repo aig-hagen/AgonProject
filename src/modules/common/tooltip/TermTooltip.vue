@@ -39,7 +39,7 @@ const definition = computed(() => registry[id])
     <slot><KatexInlineElement :text="definition.label" /></slot>
     <template #content>
       <div v-if="definition.title || definition.reference" class="flex items-center justify-between mb-2 pb-1 border-b border-base-300">
-        <span v-if="definition.title" class="font-semibold text-xs">{{ definition.title }}</span>
+        <KatexInlineElement v-if="definition.title" :text="definition.title" class="font-semibold text-xs" />
         <a
           v-if="definition.reference"
           :href="definition.reference.href"

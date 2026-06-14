@@ -45,4 +45,125 @@ export const bipolarArgumentationGlossary: TooltipRegistry = {
     content: ['A coalition of arguments $S$ is a ', { ref: 'CF' }, ' set of arguments, connected via the support relation and $\\subseteq$-maximal with this property.'],
     reference: CL10,
   },
+
+  coalitionGraph: {
+    label: 'coalition graph',
+    title: 'Coalition Graph',
+    content: [''],
+    reference: CL10,
+  },
+
+  // ── None Interpretation ──────────────────────────────────────────────────────
+
+  'b-cf': {
+    label: 'conflict-free',
+    title: 'Conflict-Free (BAF)',
+    content: ['TODO'],
+  },
+
+  'b-coh': {
+    label: 'coherent',
+    title: 'Coherent',
+    content: ['TODO'],
+  },
+
+  'b-ad': {
+    label: 'coherent admissible',
+    title: 'Coherent Admissible',
+    content: ['TODO'],
+  },
+
+  'b-coal-ad': {
+    label: 'coalition-admissible',
+    title: 'Coalition-Admissible',
+    content: ['TODO'],
+  },
+
+  'b-coal-co': {
+    label: 'coalition-complete',
+    title: 'Coalition-Complete',
+    content: ['TODO'],
+  },
+
+  'b-coal-gr': {
+    label: 'coalition-grounded',
+    title: 'Coalition-Grounded',
+    content: ['TODO'],
+  },
+
+  'b-coal-pr': {
+    label: 'coalition-preferred',
+    title: 'Coalition-Preferred',
+    content: ['TODO'],
+  },
+
+  'b-coal-st': {
+    label: 'coalition-stable',
+    title: 'Coalition-Stable',
+    content: ['TODO'],
+  },
+
+  // ── Deductive Interpretation ─────────────────────────────────────────────────
+
+  'd-ad': {
+    label: 'admissible',
+    title: 'Admissible (Deductive)',
+    content: ['TODO'],
+  },
+
+  'd-co': {
+    label: 'complete',
+    title: 'Complete (Deductive)',
+    content: ['TODO'],
+  },
+
+  'd-gr': {
+    label: 'grounded',
+    title: 'Grounded (Deductive)',
+    content: ['TODO'],
+  },
+
+  'd-pr': {
+    label: 'preferred',
+    title: 'Preferred (Deductive)',
+    content: ['TODO'],
+  },
+
+  'd-st': {
+    label: 'stable',
+    title: 'Stable (Deductive)',
+    content: ['TODO'],
+  },
+
+  // ── Necessary Interpretation ─────────────────────────────────────────────────
+
+  'n-ad': {
+    label: 'admissible',
+    title: 'Admissibility',
+    content: ['TODO'],
+  },
+
+  'n-co': {
+    label: 'complete',
+    title: 'Complete Semantics',
+    content: ['TODO'],
+  },
+
+  'n-gr': {
+    label: 'grounded',
+    title: 'Grounded Semantics',
+    content: ['TODO'],
+  },
+
+  'n-pr': {
+    label: 'preferred',
+    title: 'Preferred Semantics',
+    content: ['TODO'],
+  },
+
+  'n-st': {
+    label: 'stable',
+    title: 'Stable Semantics',
+    content: ['TODO'],
+  },
 }

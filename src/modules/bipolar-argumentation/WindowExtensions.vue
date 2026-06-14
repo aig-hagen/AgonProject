@@ -34,6 +34,7 @@ import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGr
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { input, instanceState, instanceOffset = 0 } = defineProps<{
@@ -186,6 +187,9 @@ const windowTitle = computed(() => {
           <option value="skeptical">Skeptical</option>
         </select>
       </label>
+    </template>
+    <template #parameters-footer>
+      <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
     </template>
     <template #results>
       <template v-if="dataExtensionsFormatedAndSorted !== undefined">
