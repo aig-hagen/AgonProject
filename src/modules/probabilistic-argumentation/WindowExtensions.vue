@@ -24,6 +24,7 @@ import type { ArgumentId } from '@/modules/common/argumentation/model'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import type { PafWindowInstanceState } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import {
@@ -57,6 +58,10 @@ function resolveSemanticFromKey(key: string): PafSemantic {
 const selectedSemantic = shallowRef<PafSemantic>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref(instanceState.mode)
 const selectedSolver = ref(instanceState.solver)
+const isApproximate = computed({
+  get: () => selectedSolver.value === 'montecarlo',
+  set: (v) => { selectedSolver.value = v ? 'montecarlo' : 'simple' },
+})
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
 watch([selectedSemantic, selectedMode, selectedSolver, evaluateContinuously], () => {
@@ -124,13 +129,11 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
           <option value="skeptical">Skeptical</option>
         </select>
       </label>
-      <label class="select select-sm w-fit">
-        <span class="label">Solver</span>
-        <select v-model="selectedSolver">
-          <option value="simple">Exact</option>
-          <option value="montecarlo">Approximate</option>
-        </select>
-      </label>
+      <div class="flex items-center gap-1.5 text-sm">
+        <TermTooltip id="exactInference" :class="!isApproximate ? '' : 'opacity-40'">Exact</TermTooltip>
+        <input type="checkbox" class="toggle toggle-sm" v-model="isApproximate" />
+        <TermTooltip id="approximateInference" :class="isApproximate ? '' : 'opacity-40'">Approximate</TermTooltip>
+      </div>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />

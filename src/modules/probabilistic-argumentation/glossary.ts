@@ -49,12 +49,12 @@ export const probabilisticArgumentationGlossary: TooltipRegistry = {
   exactInference: {
     label: 'exact inference',
     title: 'Exact Inference',
-    content: ['TODO'],
+    content: ['The acceptance probabilities are computed by considering all subgraphs of the ', { ref: 'PAF' }, ' and their corresponding probabilities.'],
   },
 
   approximateInference: {
     label: 'approximate inference',
     title: 'Approximate Inference',
-    content: ['TODO'],
+    content: ['The acceptance probabilities are approximated via a Monte Carlo algorithm that samples 10,000 subgraphs of the ', { ref: 'PAF' }, '.'],
   },
 }
