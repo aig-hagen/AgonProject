@@ -21,7 +21,7 @@ import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const bipolarArgumentationGlossary: TooltipRegistry = {
   BAF: {
-    label: 'bipolar argumentation framework',
+    label: 'BAF',
     title: 'Bipolar Argumentation Framework (BAF)',
     content: ['A bipolar argumentation framework $B = (A, R, S)$ extends the classical ', { ref: 'AF' }, ' with a support relation $S \\subseteq A \\times A$.'],
     reference: CL05,
@@ -49,7 +49,7 @@ export const bipolarArgumentationGlossary: TooltipRegistry = {
   coalitionGraph: {
     label: 'coalition graph',
     title: 'Coalition Graph',
-    content: [''],
+    content: ['The coalition graph $F_B^{\\mathsf{Coal}}$ for some ', { ref: 'BAF' }, ' B is defined as the ', { ref: 'AF'}, ' $F^{\\mathsf{Coal}}_B = (\\mathsf{Coal}(B), R\')$, where $\\mathsf{Coal}(B)$ is the ', { ref: 'coalitions', label: 'set of coalitions'},' of $B$ and we have $(S_1, S_2) \\in R\'$ iff there are $a \\in S_1$ and $b\\in S_2$ with $(a,b)\\in R$, for all $S_1,S_2 \\in \\mathsf{Coal}(B)$.'],
     reference: CL10,
   },
 
@@ -75,32 +75,37 @@ export const bipolarArgumentationGlossary: TooltipRegistry = {
 
   'b-coal-ad': {
     label: 'coalition-admissible',
-    title: 'Coalition-Admissible',
-    content: ['TODO'],
+    title: 'Coalition-Admissible Semantics',
+    content: ['A set of arguments $E$ is coalition-admissible in $B$ iff there is an ', { ref: 'ADM', label: 'admissible set' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
+    reference: CL10,
   },
 
   'b-coal-co': {
     label: 'coalition-complete',
-    title: 'Coalition-Complete',
-    content: ['TODO'],
+    title: 'Coalition-Complete Semantics',
+    content: ['A set of arguments $E$ is coalition-complete in $B$ iff there is an ', { ref: 'CO', label: 'complete extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
+    reference: CL10,
   },
 
   'b-coal-gr': {
     label: 'coalition-grounded',
-    title: 'Coalition-Grounded',
-    content: ['TODO'],
+    title: 'Coalition-Grounded Semantics',
+    content: ['A set of arguments $E$ is coalition-grounded in $B$ iff there is an ', { ref: 'GR', label: 'grounded extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
+    reference: CL10,
   },
 
   'b-coal-pr': {
     label: 'coalition-preferred',
-    title: 'Coalition-Preferred',
-    content: ['TODO'],
+    title: 'Coalition-Preferred Semantics',
+    content: ['A set of arguments $E$ is coalition-preferred in $B$ iff there is an ', { ref: 'PR', label: 'preferred extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
+    reference: CL10,
   },
 
   'b-coal-st': {
     label: 'coalition-stable',
-    title: 'Coalition-Stable',
-    content: ['TODO'],
+    title: 'Coalition-Stable Semantics',
+    content: ['A set of arguments $E$ is coalition-stable in $B$ iff there is an ', { ref: 'ST', label: 'stable extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
+    reference: CL10,
   },
 
   // ── Deductive Interpretation ─────────────────────────────────────────────────
