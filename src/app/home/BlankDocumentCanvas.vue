@@ -56,8 +56,8 @@ function openContent(content: DocumentT, newNamePrefix: string) {
 </script>
 <template>
   <div class="h-full w-full flex items-center justify-center">
-    <div class="max-w-5xl w-full p-8">
-      <h2 class="text-4xl font-bold mb-2">
+    <div class="max-w-5xl w-full p-4 sm:p-8">
+      <h2 class="text-2xl sm:text-4xl font-bold mb-2">
         Argumentation Toolbox
         <div class="text-lg font-normal text-base-content/70">
           Create, Analyse and Visualise Different Approaches to Formal Argumentation
@@ -65,7 +65,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
       </h2>
       <HelpLinks />
       <div class="divider"></div>
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           class="card bg-base-200 shadow-sm"
           :class="{ 'opacity-50': moduleCard.underConstruction }"

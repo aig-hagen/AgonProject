@@ -156,11 +156,11 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
           </div>
         </template>
         <template v-else>
-          <div class="flex flex-wrap gap-2">
+          <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr))">
             <div
               v-for="entry in numericalDisplayData"
               :key="entry.id"
-              class="flex items-center gap-2 rounded-lg px-3 py-1.5 border text-sm"
+              class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm"
               :style="{ backgroundColor: entry.bgColor, borderColor: entry.borderColor }"
             >
               <span class="font-medium">{{ entry.name }}</span>

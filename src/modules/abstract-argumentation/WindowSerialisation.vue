@@ -289,6 +289,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
     :title="windowTitle"
     :initial-position="{ x: 256 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intital-size="{ width: 576, height: 480 }"
+    :instance-offset="instanceOffset"
     compactable
     @focus="onWindowFocus"
   >

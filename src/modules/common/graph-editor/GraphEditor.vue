@@ -734,6 +734,8 @@ const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
 const evaluationButtonsRef = useTemplateRef<HTMLDivElement>('evaluationButtons')
 const exportButtonRef = useTemplateRef('exportButton')
 const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
+
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
 </script>
 <template>
   <div class="h-full w-full" ref="container">
@@ -881,17 +883,23 @@ const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
         <template v-if="!historyState.canUndo && !historyState.canRedo">
           <FloatingHintBottom :reference="mainMenuBottomRef" :offset-y="48" placement="bottom-start"
             ><ul class="list-disc">
-              <li>
+              <li v-if="!isTouchDevice">
                 <p class="mb-1">Use <kbd class="kbd kbd-sm">Left double-click</kbd> to create a new argument</p>
               </li>
-              <li>
+              <li v-else>
+                <p class="mb-1"><kbd class="kbd kbd-sm">Double-tap</kbd> on canvas to create a new argument</p>
+              </li>
+              <li v-if="!isTouchDevice">
                 <p class="mb-1"> Press <kbd class="kbd kbd-sm">Right-click</kbd> on an argument, hold and drag towards
                   another argument to create an {{ linkNames.join('/') }} edge
                 </p>
               </li>
+              <li v-else>
+                <p class="mb-1"><kbd class="kbd kbd-sm">Hold and drag</kbd> from an argument towards another to create an {{ linkNames.join('/') }} edge</p>
+              </li>
               <li v-if="enableLinkSwitching">
                 Switch between {{ linkNamesEnumeration }} for existing links
-                <p class="mb-1"><kbd class="kbd kbd-sm">Right-click</kbd> on link</p>
+                <p class="mb-1"><kbd class="kbd kbd-sm">{{ isTouchDevice ? 'Tap' : 'Right-click' }}</kbd> on link</p>
               </li>
               <li>Open menu to show more actions</li>
             </ul>
@@ -915,28 +923,31 @@ const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
       </FloatingHintRight>
       <FloatingHintBottom :reference="mainMenuBottomRef" :offset-y="48" placement="bottom-start">
         <ul class="list-disc">
-          <li>
-            <div class="flex justify-between">
-              <div class="mr-2">Redo</div>
-              <div>
-                <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
-                <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
-                <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
-                <kbd class="kbd kbd-sm">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
+          <template v-if="!isTouchDevice">
+            <li>
+              <div class="flex justify-between">
+                <div class="mr-2">Redo</div>
+                <div>
+                  <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+                  <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
+                  <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
+                  <kbd class="kbd kbd-sm">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
+                </div>
               </div>
-            </div>
-          </li>
-          <li>
-            <div class="flex justify-between">
-              <div class="mr-2">Undo</div>
-              <div>
-                <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
-                <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
-                <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
-                <kbd class="kbd kbd-sm">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
+            </li>
+            <li>
+              <div class="flex justify-between">
+                <div class="mr-2">Undo</div>
+                <div>
+                  <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+                  <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
+                  <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
+                  <kbd class="kbd kbd-sm">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
+                </div>
               </div>
-            </div>
-          </li>
+            </li>
+          </template>
+          <li v-else>Undo/redo via the menu</li>
           <li>Open help to see more controls</li>
         </ul>
       </FloatingHintBottom>

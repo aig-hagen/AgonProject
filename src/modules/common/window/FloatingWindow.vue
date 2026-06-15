@@ -36,15 +36,17 @@ const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
 const compact = defineModel('compact', { default: false })
 const emit = defineEmits<{ focus: [] }>()
-const { title, initialPosition, intitalSize, compactable = false } = defineProps<{
+const { title, initialPosition, intitalSize, compactable = false, instanceOffset = 0 } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
   intitalSize: { width: number; height: number }
   compactable?: boolean
+  instanceOffset?: number
 }>()
 
 const position = { ...initialPosition }
 const minimized = ref(false)
+const isMobileLayout = ref(false)
 let savedMinimizeHeight = ''
 let savedMinimizeWidth = ''
 let savedCompactHeight = ''
@@ -55,7 +57,9 @@ function toggleMinimize() {
     savedMinimizeHeight = floating.value!.style.height
     savedMinimizeWidth = floating.value!.style.width
     floating.value!.style.height = ''
-    floating.value!.style.width = 'fit-content'
+    if (!isMobileLayout.value) {
+      floating.value!.style.width = 'fit-content'
+    }
     minimized.value = true
     interactable?.resizable({ enabled: false })
   } else {
@@ -99,64 +103,113 @@ function endDragOrResize() {
 }
 
 onMounted(() => {
-  if (floating.value === null) {
+  const el = floating.value
+  if (el === null) {
     throw Error('Window ref not set.')
   }
-  floating.value.style.transform = `translate(${position.x}px, ${position.y}px)`
-  floating.value.style.width = intitalSize.width + 'px'
-  floating.value.style.height = intitalSize.height + 'px'
   pointerShield.value!.style.display = 'none'
-  interactable = interact(floating.value)
-    .draggable({
-      modifiers: [
-        interact.modifiers.restrict({
-          restriction: 'parent',
-          elementRect: {
-            left: 0,
-            right: 1,
-            top: 0,
-            bottom: 1,
+
+  const mobile = window.innerWidth < 640
+  isMobileLayout.value = mobile
+
+  if (mobile) {
+    const parent = el.parentElement!
+    const parentW = parent.clientWidth
+    const parentH = parent.clientHeight
+    const mobileH = Math.min(intitalSize.height, Math.floor(parentH * 0.45))
+    const mobileY = parentH - mobileH - instanceOffset * (mobileH + 4)
+
+    position.x = 0
+    position.y = mobileY
+
+    el.style.transform = `translate(0px, ${mobileY}px)`
+    el.style.width = `${parentW}px`
+    el.style.height = `${mobileH}px`
+
+    interactable = interact(el)
+      .draggable({
+        modifiers: [
+          interact.modifiers.restrict({
+            restriction: 'parent',
+            elementRect: { left: 0, right: 1, top: 0, bottom: 1 },
+          }),
+        ],
+        allowFrom: header.value!,
+        listeners: {
+          start: startDragOrResize,
+          move(event) {
+            position.y += event.dy
+            event.target.style.transform = `translate(0px, ${position.y}px)`
           },
-        }),
-      ],
-      allowFrom: header.value!,
-      listeners: {
-        start: startDragOrResize,
-        move(event) {
-          position.x += event.dx
-          position.y += event.dy
-          event.target.style.transform = `translate(${position.x}px, ${position.y}px)`
+          end: endDragOrResize,
         },
-        end: endDragOrResize,
-      },
-    })
-    .resizable({
-      modifiers: [
-        interact.modifiers.restrictEdges({
-          outer: 'parent',
-        }),
-        interact.modifiers.restrictSize({
-          min: { width: 92, height: 64 },
-        }),
-      ],
-      allowFrom: floating.value!,
-      invert: 'none',
-      edges: { top: false, left: true, bottom: true, right: true },
-      listeners: {
-        start: startDragOrResize,
-        move(event) {
-          position.x += event.deltaRect.left
-          position.y += event.deltaRect.top
-
-          const { width, height } = event.rect
-
-          event.target.style.transform = `translate(${position.x}px, ${position.y}px)`
-          event.target.style.width = `${width}px`
-          event.target.style.height = `${height}px`
+      })
+      .resizable({
+        modifiers: [
+          interact.modifiers.restrictEdges({ outer: 'parent' }),
+          interact.modifiers.restrictSize({ min: { width: parentW, height: 64 } }),
+        ],
+        edges: { top: true, left: false, bottom: false, right: false },
+        listeners: {
+          start: startDragOrResize,
+          move(event) {
+            position.y += event.deltaRect.top
+            const { height } = event.rect
+            event.target.style.transform = `translate(0px, ${position.y}px)`
+            event.target.style.height = `${height}px`
+            event.target.style.width = `${parentW}px`
+          },
+          end: endDragOrResize,
         },
-        end: endDragOrResize,
-      },
-    })
+      })
+  } else {
+    el.style.transform = `translate(${position.x}px, ${position.y}px)`
+    el.style.width = intitalSize.width + 'px'
+    el.style.height = intitalSize.height + 'px'
+
+    interactable = interact(el)
+      .draggable({
+        modifiers: [
+          interact.modifiers.restrict({
+            restriction: 'parent',
+            elementRect: { left: 0, right: 1, top: 0, bottom: 1 },
+          }),
+        ],
+        allowFrom: header.value!,
+        listeners: {
+          start: startDragOrResize,
+          move(event) {
+            position.x += event.dx
+            position.y += event.dy
+            event.target.style.transform = `translate(${position.x}px, ${position.y}px)`
+          },
+          end: endDragOrResize,
+        },
+      })
+      .resizable({
+        modifiers: [
+          interact.modifiers.restrictEdges({ outer: 'parent' }),
+          interact.modifiers.restrictSize({ min: { width: 92, height: 64 } }),
+        ],
+        allowFrom: el,
+        invert: 'none',
+        edges: { top: false, left: true, bottom: true, right: true },
+        listeners: {
+          start: startDragOrResize,
+          move(event) {
+            position.x += event.deltaRect.left
+            position.y += event.deltaRect.top
+
+            const { width, height } = event.rect
+
+            event.target.style.transform = `translate(${position.x}px, ${position.y}px)`
+            event.target.style.width = `${width}px`
+            event.target.style.height = `${height}px`
+          },
+          end: endDragOrResize,
+        },
+      })
+  }
 })
 
 const { zIndex: zIndexValue, focusIn, focusOut } = useZIndex()

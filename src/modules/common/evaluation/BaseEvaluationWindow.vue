@@ -73,6 +73,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
     :title="title"
     :initial-position="{ x: basePos.x + offset * 24, y: basePos.y + offset * 24 }"
     :intitalSize="size"
+    :instance-offset="offset"
     compactable
     @focus="emit('focus')"
   >
