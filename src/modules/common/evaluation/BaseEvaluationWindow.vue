@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, type Ref, ref, watch } from 'vue'
+import { computed, nextTick, type Ref, ref, useTemplateRef, watch } from 'vue'
 
 import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
@@ -58,6 +58,15 @@ watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
 const { status, error, isPending, isLoading, isError, refetch } = props.query
 
 const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
+
+const floatingWindow = useTemplateRef<InstanceType<typeof FloatingWindow>>('floatingWindow')
+
+watch(isLoading, (loading) => {
+  if (!loading && status.value === 'success') {
+    nextTick(() => floatingWindow.value?.resizeToFitContent())
+  }
+})
+
 const userCanTriggerFetch = computed(
   () => !evaluateContinuously.value && status.value !== 'success',
 )
@@ -69,6 +78,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
 
 <template>
   <FloatingWindow
+    ref="floatingWindow"
     v-model:open="internalOpen"
     v-model:compact="isCompact"
     :title="title"

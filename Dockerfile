@@ -45,6 +45,7 @@ COPY /share-server/package-lock.json /opt/share-server/package-lock.json
 RUN npm ci --prefix /opt/share-server
 COPY /share-server/src /opt/share-server/src
 COPY /share-server/tsconfig.json /opt/share-server/tsconfig.json
+RUN mkdir -p /opt/share-server/data && chown www-data:www-data /opt/share-server/data
 COPY --chmod=755 /deployment/wrapper_script.sh wrapper_script.sh
 USER www-data
 ENTRYPOINT ["./wrapper_script.sh"]

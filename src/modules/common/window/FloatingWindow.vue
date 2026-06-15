@@ -240,6 +240,18 @@ onMounted(() => {
   }
 })
 
+function resizeToFitContent(maxHeight = Math.min(window.innerHeight * 0.8, 700)) {
+  if (minimized.value || isMobileLayout.value) return
+  const el = floating.value
+  if (!el) return
+  el.style.height = ''
+  const naturalHeight = el.offsetHeight
+  el.style.height = `${Math.min(naturalHeight, maxHeight)}px`
+  saveWindowState()
+}
+
+defineExpose({ resizeToFitContent })
+
 const { zIndex: zIndexValue, focusIn, focusOut } = useZIndex()
 
 useEventListener(floating, 'focus', () => {
