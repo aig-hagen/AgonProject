@@ -58,6 +58,7 @@ const emit = defineEmits<{
   undo: []
   redo: []
   save: []
+  share: []
   export: [filedata: ExportFileData]
 }>()
 
@@ -313,6 +314,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       @undo="emit('undo')"
       @redo="emit('redo')"
       @save="emit('save')"
+      @share="emit('share')"
       @open-extension-window="addEvaluationInstance()"
     >
       <template #evaluationExtensions>

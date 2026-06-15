@@ -178,6 +178,7 @@ const emit = defineEmits<{
   undo: []
   redo: []
   save: []
+  share: []
   'open-extension-window': []
   'open-ranking-window': []
   'open-serialisation-window': []
@@ -850,6 +851,8 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           @evaluate="emit('open-extension-window')"
           :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
           @export="isExportOpened = !isExportOpened"
+          :show-share="EntryState.ENABLE"
+          @share="emit('share')"
           @layout="doLayout($event)"
           :show-undo="historyState.canUndo ? EntryState.ENABLE : EntryState.DISABLE"
           @undo="emit('undo')"

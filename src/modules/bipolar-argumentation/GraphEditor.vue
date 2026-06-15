@@ -55,6 +55,7 @@ const emit = defineEmits<{
   undo: []
   redo: []
   save: []
+  share: []
   export: [filedata: ExportFileData]
 }>()
 
@@ -231,6 +232,7 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
+    @share="emit('share')"
     @open-extension-window="addExtensionInstance()"
   >
     <template #evaluationExtensions="{ onHighlight }">

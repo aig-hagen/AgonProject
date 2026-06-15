@@ -19,12 +19,14 @@
 <script setup lang="ts" generic="DocumentT extends Objectish">
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { computed, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/home/EditorTabs.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
+import ShareModal from '@/modules/common/share/ShareModal.vue'
+import { uploadShare } from '@/modules/common/share/useShare'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import {
   loadDocumentState,
@@ -275,6 +277,21 @@ async function loadTextData(file: File): Promise<string> {
   })
 }
 
+const shareUrl = ref<string | null>(null)
+
+async function shareDocument(documentId: number) {
+  const metadata = documents.value.find((document) => document.id === documentId)
+  const [state, module] = await loadDocumentState(db, modules, documentId)
+  if (state === undefined || module === undefined) return
+  const content = module.getSaveString(state.current.content, metadata?.name ?? '')
+  try {
+    const result = await uploadShare(content)
+    shareUrl.value = result.url
+  } catch {
+    addErrorNotification('Failed to create share link')
+  }
+}
+
 async function saveAsFile(documentId: number) {
   const metadata = documents.value.find((document) => document.id === documentId)
   if (metadata === undefined) {
@@ -361,12 +378,14 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           @undo="undo"
           @redo="redo"
           @save="saveAsFile(loadedDocument.id)"
+          @share="shareDocument(loadedDocument.id)"
           @export="exportAsFile(loadedDocument.id, $event)"
         />
       </div>
     </main>
   </div>
   <NotificationsDisplay :notifications="notifications" />
+  <ShareModal :url="shareUrl" @close="shareUrl = null" />
   <input
     ref="file-input"
     type="file"

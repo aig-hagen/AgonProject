@@ -72,6 +72,7 @@ const emit = defineEmits<{
   undo: []
   redo: []
   save: []
+  share: []
   export: [filedata: ExportFileData]
 }>()
 
@@ -263,6 +264,7 @@ function updateSerialisationInstance(updated: SerialisationWindowInstanceState) 
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
+    @share="emit('share')"
     :history-state="historyState"
     @open-extension-window="addExtensionInstance()"
     @open-ranking-window="addRankingInstance()"

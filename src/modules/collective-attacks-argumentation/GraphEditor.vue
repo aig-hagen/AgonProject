@@ -36,6 +36,7 @@ defineEmits<{
   undo: []
   redo: []
   save: []
+  share: []
   export: [filedata: ExportFileData]
 }>()
 </script>

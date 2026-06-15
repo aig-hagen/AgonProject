@@ -27,6 +27,7 @@ import {
   CheckIcon,
   ChevronRightIcon,
   FolderOpenIcon,
+  LinkIcon,
   PhotoIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
@@ -45,6 +46,7 @@ const {
   showUndo = EntryState.HIDE,
   showRedo = EntryState.HIDE,
   showExport = EntryState.HIDE,
+  showShare = EntryState.HIDE,
   showEvaluate = EntryState.HIDE,
   showPhysics = EntryState.HIDE,
   physicsEnabled = false,
@@ -54,6 +56,7 @@ const {
   showUndo?: EntryState
   showRedo?: EntryState
   showExport?: EntryState
+  showShare?: EntryState
   showEvaluate?: EntryState
   showPhysics?: EntryState
   physicsEnabled?: boolean
@@ -68,6 +71,7 @@ const emit = defineEmits<{
   layout: [layout: Layout]
   redo: []
   export: []
+  share: []
   evaluate: []
   generate: []
   togglePhysics: []
@@ -264,6 +268,15 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
             }"
             @click="emit('export')"
             ><PhotoIcon class="size-5 opacity-70" />Export...</a
+          >
+        </li>
+        <li v-if="showShare !== EntryState.HIDE">
+          <a
+            :class="{
+              'opacity-50 pointer-events-none': showShare === EntryState.DISABLE,
+            }"
+            @click="emit('share')"
+            ><LinkIcon class="size-5 opacity-70" />Share link...</a
           >
         </li>
       </template>
