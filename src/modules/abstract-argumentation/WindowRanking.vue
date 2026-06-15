@@ -35,10 +35,11 @@ import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary })
 
-const { input, instanceState, instanceOffset = 0 } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: RankingWindowInstanceState
   instanceOffset?: number
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -129,6 +130,7 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
     :initial-size="{ width: 480, height: 400 }"
     :query="query"
     :results-header="[`${selectedSemantic.displayName} ranking`]"
+    :storage-key="storageKey"
     @close="emit('close')"
     @focus="onWindowFocus"
   >

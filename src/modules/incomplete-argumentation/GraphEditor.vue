@@ -277,6 +277,7 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
+        :storage-key="`incomplete-argumentation:${documentId}:${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
         @highlight="onHighlight"
         @close="removeExtensionInstance(instance.id, onHighlight)"

@@ -39,6 +39,7 @@ const props = defineProps<{
   initialSize?: { width: number; height: number }
   resultsHeader?: ResultsHeaderPart[]
   query: EvaluationWindowQuery
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -74,6 +75,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
     :initial-position="{ x: basePos.x + offset * 24, y: basePos.y + offset * 24 }"
     :intitalSize="size"
     :instance-offset="offset"
+    :storage-key="props.storageKey"
     compactable
     @focus="emit('focus')"
   >

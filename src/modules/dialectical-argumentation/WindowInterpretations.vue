@@ -38,10 +38,11 @@ import {
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
-const { input, instanceState, instanceOffset = 0 } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
   input: Input<DialecticalArgumentation<AdfArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -188,6 +189,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
     :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
     :intitalSize="{ width: 512, height: 400 }"
     :instance-offset="instanceOffset"
+    :storage-key="storageKey"
     compactable
     @focus="onWindowFocus"
   >

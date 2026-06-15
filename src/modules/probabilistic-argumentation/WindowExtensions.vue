@@ -35,10 +35,11 @@ import {
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 
-const { input, instanceState, instanceOffset = 0 } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
   instanceState: PafWindowInstanceState
   instanceOffset?: number
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -110,6 +111,7 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     :initial-size="{ width: 480, height: 320 }"
     :query="query"
     :results-header="resultsHeader"
+    :storage-key="storageKey"
     @close="emit('close')"
   >
     <template #parameters>

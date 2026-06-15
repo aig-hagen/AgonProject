@@ -36,12 +36,13 @@ const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
 const compact = defineModel('compact', { default: false })
 const emit = defineEmits<{ focus: [] }>()
-const { title, initialPosition, intitalSize, compactable = false, instanceOffset = 0 } = defineProps<{
+const { title, initialPosition, intitalSize, compactable = false, instanceOffset = 0, storageKey } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
   intitalSize: { width: number; height: number }
   compactable?: boolean
   instanceOffset?: number
+  storageKey?: string
 }>()
 
 const position = { ...initialPosition }
@@ -51,6 +52,29 @@ let savedMinimizeHeight = ''
 let savedMinimizeWidth = ''
 let savedCompactHeight = ''
 let interactable: ReturnType<typeof interact> | null = null
+
+interface StoredWindowState {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+function saveWindowState() {
+  if (!storageKey) return
+  const el = floating.value
+  if (!el) return
+  const w = parseFloat(el.style.width) || intitalSize.width
+  const h = parseFloat(el.style.height) || intitalSize.height
+  localStorage.setItem(storageKey, JSON.stringify({ x: position.x, y: position.y, width: w, height: h } satisfies StoredWindowState))
+}
+
+function loadWindowState(): StoredWindowState | null {
+  if (!storageKey) return null
+  const raw = localStorage.getItem(storageKey)
+  if (!raw) return null
+  try { return JSON.parse(raw) as StoredWindowState } catch { return null }
+}
 
 function toggleMinimize() {
   if (!minimized.value) {
@@ -100,6 +124,7 @@ function endDragOrResize() {
   pointerShield.value!.style.display = 'none'
   content.value!.style.userSelect = 'text'
   header.value!.style.userSelect = 'text'
+  saveWindowState()
 }
 
 onMounted(() => {
@@ -109,6 +134,7 @@ onMounted(() => {
   }
   pointerShield.value!.style.display = 'none'
 
+  const stored = loadWindowState()
   const mobile = window.innerWidth < 640
   isMobileLayout.value = mobile
 
@@ -120,11 +146,11 @@ onMounted(() => {
     const mobileY = parentH - mobileH - instanceOffset * (mobileH + 4)
 
     position.x = 0
-    position.y = mobileY
+    position.y = stored?.y ?? mobileY
 
-    el.style.transform = `translate(0px, ${mobileY}px)`
+    el.style.transform = `translate(0px, ${position.y}px)`
     el.style.width = `${parentW}px`
-    el.style.height = `${mobileH}px`
+    el.style.height = `${stored?.height ?? mobileH}px`
 
     interactable = interact(el)
       .draggable({
@@ -163,9 +189,11 @@ onMounted(() => {
         },
       })
   } else {
+    position.x = stored?.x ?? initialPosition.x
+    position.y = stored?.y ?? initialPosition.y
     el.style.transform = `translate(${position.x}px, ${position.y}px)`
-    el.style.width = intitalSize.width + 'px'
-    el.style.height = intitalSize.height + 'px'
+    el.style.width = (stored?.width ?? intitalSize.width) + 'px'
+    el.style.height = (stored?.height ?? intitalSize.height) + 'px'
 
     interactable = interact(el)
       .draggable({

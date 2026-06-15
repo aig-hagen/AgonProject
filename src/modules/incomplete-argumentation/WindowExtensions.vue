@@ -38,10 +38,11 @@ import {
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 
-const { input, instanceState, instanceOffset = 0 } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
   input: Input<IncompleteArgumentation<IafArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -120,6 +121,7 @@ const windowTitle = computed(() => {
     :instance-offset="instanceOffset"
     :query="query"
     :results-header="resultsHeader"
+    :storage-key="storageKey"
     @close="emit('close')"
     @focus="onWindowFocus"
   >

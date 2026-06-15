@@ -37,10 +37,11 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { input, instanceState, instanceOffset = 0 } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
   input: Input<BipoloarArgumentation<ArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -151,6 +152,7 @@ const windowTitle = computed(() => {
     :instance-offset="instanceOffset"
     :query="query"
     :results-header="resultsHeader"
+    :storage-key="storageKey"
     @close="emit('close')"
     @focus="onWindowFocus"
   >

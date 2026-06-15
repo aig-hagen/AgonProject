@@ -40,10 +40,11 @@ import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vu
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
-const { input, instanceState, instanceOffset = 0 } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: SerialisationWindowInstanceState
   instanceOffset?: number
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -290,6 +291,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
     :initial-position="{ x: 256 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intital-size="{ width: 576, height: 480 }"
     :instance-offset="instanceOffset"
+    :storage-key="storageKey"
     compactable
     @focus="onWindowFocus"
   >

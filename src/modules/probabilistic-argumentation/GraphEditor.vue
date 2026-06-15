@@ -322,6 +322,7 @@ function onPopupKeydown(event: KeyboardEvent) {
           :input="evaluationInput"
           :instance-state="instance"
           :instance-offset="index"
+          :storage-key="`probabilistic-argumentation:${documentId}:${instance.id}:window`"
           @update:instance-state="updateEvaluationInstance($event)"
           @set-weights="onSetWeights"
           @close="removeEvaluationInstance(instance.id)"
@@ -371,6 +372,7 @@ function onPopupKeydown(event: KeyboardEvent) {
     <ProbabilityEditor
       v-model:open="isProbabilitiesOpen"
       :input="evaluationInput"
+      :storage-key="`probabilistic-argumentation:${documentId}:probabilities:window`"
       @change-argument-probability="onChangeArgumentProbability"
       @change-attack-probability="onChangeAttackProbability"
     />

@@ -24,8 +24,9 @@ import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 
 const open = defineModel<boolean>('open', { required: true })
-const { input } = defineProps<{
+const { input, storageKey } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
+  storageKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -72,6 +73,7 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
     title="Probabilities"
     :initial-position="{ x: 128, y: 64 }"
     :intitalSize="{ width: 360, height: 300 }"
+    :storage-key="storageKey"
   >
     <div class="p-2 flex flex-col gap-2 overflow-y-auto h-full">
       <fieldset class="fieldset" v-if="argumentList.length > 0">

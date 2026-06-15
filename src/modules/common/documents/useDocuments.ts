@@ -107,6 +107,14 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
     await metadataStore.delete(id)
     await contentStore.delete(id)
 
+    const marker = `:${id}:`
+    const keysToRemove: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key !== null && key.includes(marker)) keysToRemove.push(key)
+    }
+    for (const key of keysToRemove) localStorage.removeItem(key)
+
     const newMetadata = await getNewMetadata(tx)
     await tx.done
     documentsRef.value = newMetadata
@@ -174,26 +182,36 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
   }
 }
 
+const LAST_SELECTED_DOCUMENT_KEY = 'last-selected-document'
+
 export function useSelectedDocumentId(documentsRef: Readonly<Ref<Readonly<DocumentMetadata[]>>>) {
   const selectedDocumentRef = shallowRef<DocumentId | undefined>(undefined)
 
+  const stored = localStorage.getItem(LAST_SELECTED_DOCUMENT_KEY)
+  let pendingId: DocumentId | undefined = stored !== null ? Number(stored) : undefined
+
   function selectDocument(id: DocumentId | undefined) {
+    pendingId = id
+    resolve()
+  }
+
+  function resolve() {
     const documents = unref(documentsRef)
     let newDocument
-    if (id !== undefined) {
-      newDocument = documents.find((document) => document.id === id)
+    if (pendingId !== undefined) {
+      newDocument = documents.find((document) => document.id === pendingId)
     }
     if (newDocument === undefined) {
       newDocument = documents[documents.length - 1]
     }
     selectedDocumentRef.value = newDocument?.id
+    if (newDocument?.id !== undefined) {
+      localStorage.setItem(LAST_SELECTED_DOCUMENT_KEY, String(newDocument.id))
+    }
   }
 
-  watch(documentsRef, () => {
-    selectDocument(selectedDocumentRef.value)
-  })
-
-  selectDocument(undefined)
+  watch(documentsRef, resolve)
+  resolve()
 
   return {
     selectedDocumentId: readonly(selectedDocumentRef),

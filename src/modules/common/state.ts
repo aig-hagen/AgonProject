@@ -20,6 +20,8 @@ import { applyPatches, type Objectish, type Patch, produce } from 'immer'
 
 import { generateUUID, type UUID } from '@/modules/common/ids'
 
+const MAX_HISTORY_DEPTH = 100
+
 export interface DocumentState<DocumentT> {
   stateId: UUID
   changes: Patch[][]
@@ -35,8 +37,8 @@ export function modifyDocument<DocumentT>(
   recipe: (draft: DocumentT) => DocumentT | void,
 ): DocumentState<DocumentT> | undefined {
   const changeIdx = state.current.changeIdx
-  const changes = state.changes.slice(0, changeIdx + 1)
-  const inverseChanges = state.inverseChanges.slice(0, changeIdx + 1)
+  let changes = state.changes.slice(0, changeIdx + 1)
+  let inverseChanges = state.inverseChanges.slice(0, changeIdx + 1)
   let changed = false
   const next = produce(state.current.content, recipe, (patches, inversePatches) => {
     changed = patches.length > 0 || inversePatches.length > 0
@@ -46,10 +48,17 @@ export function modifyDocument<DocumentT>(
   if (!changed) {
     return undefined
   }
+  let newChangeIdx = changes.length - 1
+  if (changes.length > MAX_HISTORY_DEPTH) {
+    const excess = changes.length - MAX_HISTORY_DEPTH
+    changes = changes.slice(excess)
+    inverseChanges = inverseChanges.slice(excess)
+    newChangeIdx -= excess
+  }
   return {
     stateId: generateUUID(),
     current: {
-      changeIdx: state.current.changeIdx + 1,
+      changeIdx: newChangeIdx,
       content: next,
     },
     changes,
