@@ -28,6 +28,7 @@ export function latexExportCommonConfig(): {
   codemirrorOptions?: {
     extensions: Extension[]
   }
+  references: { label: string; url: string }[]
 } {
   return {
     name: 'LaTeX (argumentation)',
@@ -40,6 +41,9 @@ export function latexExportCommonConfig(): {
         }),
       ],
     },
+    references: [
+      { label: 'CTAN Package', url: 'https://ctan.org/pkg/argumentation' },
+    ],
   }
 }
 interface NodeExportInfo {

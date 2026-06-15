@@ -33,6 +33,7 @@ import {
   QueueListIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
+import { useMediaQuery } from '@vueuse/core'
 import {
   computed,
   nextTick,
@@ -448,6 +449,38 @@ onMounted(() => {
     })
     dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
   }
+
+  // The graph-component host has `touch-action: none` which prevents the browser
+  // from generating synthetic dblclick events from double-tap. We detect double-tap
+  // in the capture phase (before d3's stopImmediatePropagation can block it) and
+  // dispatch a synthetic MouseEvent so the graph's dblclick → createNode path fires.
+  const graphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+  const svgCanvas = containerRef.value?.querySelector('.graph-controller__graph-canvas')
+  if (graphHost && svgCanvas) {
+    let lastTap: { time: number; x: number; y: number } | null = null
+    const handleDoubleTap = (event: TouchEvent) => {
+      if (event.touches.length !== 1) { lastTap = null; return }
+      const touch = event.changedTouches[0]!
+      const now = Date.now()
+      if (
+        lastTap !== null &&
+        now - lastTap.time < 300 &&
+        Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
+      ) {
+        svgCanvas.dispatchEvent(new MouseEvent('dblclick', {
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          bubbles: true,
+          cancelable: true,
+        }))
+        lastTap = null
+      } else {
+        lastTap = { time: now, x: touch.clientX, y: touch.clientY }
+      }
+    }
+    graphHost.addEventListener('touchstart', handleDoubleTap, { capture: true })
+    doubleTapCleanup = () => graphHost.removeEventListener('touchstart', handleDoubleTap, { capture: true })
+  }
 })
 
 function toggleNodePhysics() {
@@ -621,6 +654,7 @@ function formatWeightFontSize(w: number): number {
 
 let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
+let doubleTapCleanup: (() => void) | undefined
 
 // Live node positions updated on every D3 tick during drag, so the overlay
 // doesn't lag behind until nodes-moved fires on mouseup.
@@ -638,6 +672,7 @@ const overlayNodes = computed(() => {
 onUnmounted(() => {
   zoomObserver?.disconnect()
   dragObserver?.disconnect()
+  doubleTapCleanup?.()
 })
 
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
@@ -735,7 +770,7 @@ const evaluationButtonsRef = useTemplateRef<HTMLDivElement>('evaluationButtons')
 const exportButtonRef = useTemplateRef('exportButton')
 const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
 
-const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+const isTouchDevice = useMediaQuery('(pointer: coarse)')
 </script>
 <template>
   <div class="h-full w-full" ref="container">

@@ -28,12 +28,18 @@ export interface ExportStyleOptions {
   shortenNames?: boolean
 }
 
+export interface ExportReference {
+  label: string
+  url: string
+}
+
 export interface ExportConfig<DocumentT> {
   name: string
   export(document: DocumentT, styleOptions?: ExportStyleOptions): ExportResult
   codemirrorOptions?: {
     extensions: Extension[]
   }
+  references?: ExportReference[]
 }
 
 export interface ExportResult {

@@ -25,9 +25,11 @@ import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/mo
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import { IdMapping } from '@/modules/common/ids'
 
-// See https://argumentationcompetition.org/2025/rules.html
 const exportICCMA: ExportConfig<AbstractArgumentation<ArgumentData>> = {
   name: 'ICCMA',
+  references: [
+    { label: 'ICCMA 2025 Rules', url: 'https://argumentationcompetition.org/2025/rules.html' },
+  ],
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<ArgumentId, number>()
@@ -50,7 +52,10 @@ const exportICCMA: ExportConfig<AbstractArgumentation<ArgumentData>> = {
 }
 
 const exportTGF: ExportConfig<AbstractArgumentation<ArgumentData>> = {
-  name: 'TGF',
+  name: 'Trivial Graph Format (TGF)',
+  references: [
+    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
+  ],
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<ArgumentId, number>()

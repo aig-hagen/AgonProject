@@ -19,7 +19,7 @@
 <script setup lang="ts" generic="DocumentT">
 import { EditorState, type Extension } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { ClipboardDocumentCheckIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/outline'
+import { ArrowTopRightOnSquareIcon, ClipboardDocumentCheckIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/outline'
 import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
@@ -100,7 +100,7 @@ const saveFiledataText = computed(() => {
   let extension = 'tex'
   if (selectedExportConfig.value?.name === 'ICCMA') {
     extension = 'af'
-  } else if (selectedExportConfig.value?.name === 'TGF') {
+  } else if (selectedExportConfig.value?.name === 'Trivial Graph Format (TGF)') {
     extension = 'tgf'
   }
   return {
@@ -202,6 +202,16 @@ watchEffect(() => {
               </option>
             </select>
           </label>
+          <a
+            v-if="selectedExportConfig?.references?.[0]"
+            :href="selectedExportConfig.references[0].url"
+            :title="selectedExportConfig.references[0].label"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-sm btn-ghost btn-square self-end"
+          >
+            <ArrowTopRightOnSquareIcon class="size-4" />
+          </a>
         </div>
       </fieldset>
       <fieldset v-if="selectedExportConfig?.name === 'LaTeX (argumentation)'" class="fieldset">

@@ -352,10 +352,10 @@ async function openInEditor() {
   await router.push('/')
 }
 
-const abstractTgfExport = abstractExports.find((e) => e.name === 'TGF')!
+const abstractTgfExport = abstractExports.find((e) => e.name === 'Trivial Graph Format (TGF)')!
 const abstractIccmaExport = abstractExports.find((e) => e.name === 'ICCMA')!
-const bipolarTgfExport = bipolarExports.find((e) => e.name === 'TGF')!
-const incompleteTgfExport = incompleteExports.find((e) => e.name === 'TGF')!
+const bipolarTgfExport = bipolarExports.find((e) => e.name === 'Trivial Graph Format (TGF)')!
+const incompleteTgfExport = incompleteExports.find((e) => e.name === 'Trivial Graph Format (TGF)')!
 
 function downloadTGF() {
   const fw = generated.value

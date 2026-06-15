@@ -50,7 +50,10 @@ const exportLatexPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> 
 }
 
 const exportTGFPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> = {
-  name: 'TGF',
+  name: 'Trivial Graph Format (TGF)',
+  references: [
+    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
+  ],
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<number, number>()

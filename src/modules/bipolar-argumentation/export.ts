@@ -36,7 +36,10 @@ const exportLatexBipolarArgumentation: ExportConfig<BipoloarArgumentation<Argume
 }
 
 const exportTGFBipolarArgumentation: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
-  name: 'TGF',
+  name: 'Trivial Graph Format (TGF)',
+  references: [
+    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
+  ],
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<ArgumentId, number>()

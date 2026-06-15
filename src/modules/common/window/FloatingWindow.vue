@@ -285,7 +285,7 @@ watchEffect(async () => {
         </button>
       </div>
     </div>
-    <div v-show="!minimized" ref="content" class="floating-window-content bg-base-100 overflow-x-auto flex-1">
+    <div v-show="!minimized" ref="content" class="floating-window-content bg-base-100 overflow-x-auto overflow-y-auto flex-1">
       <slot :compact="compact" />
     </div>
   </div>

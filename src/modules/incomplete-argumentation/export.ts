@@ -45,7 +45,10 @@ const exportLatexIncompleteArgumentation: ExportConfig<IncompleteArgumentation<I
 }
 
 const exportTGFIncompleteArgumentation: ExportConfig<IncompleteArgumentation<IafArgumentData>> = {
-  name: 'TGF',
+  name: 'Trivial Graph Format (TGF)',
+  references: [
+    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
+  ],
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<number, number>()

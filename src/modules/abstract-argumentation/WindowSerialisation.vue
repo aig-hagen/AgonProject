@@ -331,7 +331,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
         </fieldset>
 
         <!-- Definitions for selected functions (hidden in compact) -->
-        <div v-if="!compact" class="flex gap-3">
+        <div v-if="!compact" class="flex flex-col sm:flex-row gap-3">
           <TermDefinitionBlock :id="selectedSelectionFunction.tooltipId" class="flex-1" />
           <TermDefinitionBlock :id="selectedTerminationFunction.tooltipId" class="flex-1" />
         </div>
