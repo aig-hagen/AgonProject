@@ -8,6 +8,10 @@
 !/dist
 !/graph-gen-server/requirements.txt
 !/graph-gen-server/server.py
+!/share-server/package.json
+!/share-server/package-lock.json
+!/share-server/tsconfig.json
+!/share-server/src/**
 !/third-party/TweetyProjectTeam/TweetyProject/pom.xml
 !/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/src/**
 !/third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject*/pom.xml

@@ -45,3 +45,6 @@ playwright-report/
 __pycache__/
 *.pyc
 .venv/
+
+# Share server data
+data/
