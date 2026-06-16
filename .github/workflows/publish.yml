@@ -1,8 +1,8 @@
 name: Publish
 on:
-  release:
-    types: [published]
-  
+  push:
+    tags:
+      - 'v*'
 
 env:
   REGISTRY: ghcr.io
@@ -66,3 +66,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
