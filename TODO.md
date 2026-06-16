@@ -1,5 +1,0 @@
-- Some bug regarding enabled physics simulation and switching tabs
-- sometimes the prob values or acc conditions stick to a position even if nodes are moved
-- weight badges smear behind
-- load from tgf/iccma
-- rename iccma to af

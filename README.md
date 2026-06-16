@@ -1,6 +1,19 @@
 # Argumentation Toolbox
 
-A graphical application to create and inspect argumentation frameworks.
+A graphical application to create, analyse and visualise different approaches to formal argumentation.
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-argumentation--toolbox.aig.fernuni--hagen.de-blue)](https://argumentation-toolbox.aig.fernuni-hagen.de/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
+
+![Screenshot of the Argumentation Toolbox](docs/screenshot.png)
+
+## Supported Frameworks
+
+- **Abstract Argumentation (AF)** — the foundational model, with arguments and directed attacks
+- **Bipolar Argumentation (BAF)** — extends AF with support relations between arguments
+- **Dialectical Argumentation (ADF)** — argument acceptance governed by propositional acceptance conditions
+- **Incomplete Argumentation (IAF)** — distinguishes certain and uncertain arguments and attacks
+- **Probabilistic Argumentation (PAF)** — assigns probability values to arguments and attacks
 
 ## Usage
 
@@ -17,6 +30,12 @@ docker run -p 8080:8080 ghcr.io/aig-hagen/argumentation-toolbox:latest
 ```
 
 ## Acknowledgments
+
+### [TweetyProject](https://tweetyproject.org/)
+
+Semantic evaluation is powered by the TweetyProject — a collection of Java libraries for argumentation and non-monotonic reasoning, developed by Matthias Thimm and contributors.
+
+It is used here under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ### [Graph Component](https://github.com/aig-hagen/aig_graph_component)
 

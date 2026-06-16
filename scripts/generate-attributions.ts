@@ -4,7 +4,7 @@ import { execSync } from 'child_process'
 import { readdir, readFile, writeFile } from 'fs/promises'
 import checker, { type InitOpts, type ModuleInfo, type ModuleInfos } from 'license-checker'
 
-import { type Attribution } from './src/modules/common/attributions/types.ts'
+import { type Attribution } from '../src/modules/common/attributions/types.ts'
 
 const TWEETY_VERSION = getVersionFromGit('third-party/TweetyProjectTeam/TweetyProject')
 const XAI_CA_VERSION = await getVersionFromDirName('third-party/xai-ca/xray')

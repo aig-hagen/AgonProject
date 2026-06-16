@@ -6,7 +6,8 @@
     "cypress.config.*",
     "nightwatch.conf.*",
     "playwright.config.*",
-    "eslint.config.*"
+    "eslint.config.*",
+    "scripts/generate-attributions.ts"
   ],
   "compilerOptions": {
     "noEmit": true,

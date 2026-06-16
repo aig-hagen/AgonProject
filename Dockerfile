@@ -36,15 +36,15 @@ COPY /deployment/logback.xml logback.xml
 COPY --from=build /build/org-tweetyproject-web/target/web-*.jar web.jar
 # Prepare graph-gen server
 RUN python3 -m venv /opt/graph-gen-venv
-COPY /graph-gen-server/requirements.txt /opt/graph-gen-server/requirements.txt
+COPY /servers/graph-gen/requirements.txt /opt/graph-gen-server/requirements.txt
 RUN /opt/graph-gen-venv/bin/pip install --no-cache-dir -r /opt/graph-gen-server/requirements.txt
-COPY /graph-gen-server/server.py /opt/graph-gen-server/server.py
+COPY /servers/graph-gen/server.py /opt/graph-gen-server/server.py
 # Prepare share-server
-COPY /share-server/package.json /opt/share-server/package.json
-COPY /share-server/package-lock.json /opt/share-server/package-lock.json
+COPY /servers/share/package.json /opt/share-server/package.json
+COPY /servers/share/package-lock.json /opt/share-server/package-lock.json
 RUN npm ci --prefix /opt/share-server
-COPY /share-server/src /opt/share-server/src
-COPY /share-server/tsconfig.json /opt/share-server/tsconfig.json
+COPY /servers/share/src /opt/share-server/src
+COPY /servers/share/tsconfig.json /opt/share-server/tsconfig.json
 RUN mkdir -p /opt/share-server/data && chown www-data:www-data /opt/share-server/data
 COPY --chmod=755 /deployment/wrapper_script.sh wrapper_script.sh
 USER www-data

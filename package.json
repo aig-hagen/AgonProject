@@ -12,12 +12,12 @@
     "test:e2e": "playwright test",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "license-headers": "license-check-and-add add -f check-license-header.json -r 2026",
+    "license-headers": "license-check-and-add add -f scripts/check-license-header.json -r 2026",
     "lint": "run-s license-headers lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
-    "generate-attributions": "node ./generate-attributions.ts"
+    "generate-attributions": "node ./scripts/generate-attributions.ts"
   },
   "dependencies": {
     "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.3.tgz",
