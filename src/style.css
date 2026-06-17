@@ -36,6 +36,30 @@
   stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--graph-node-stroke-color, #5a87a8) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #5a87a8;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #3e6a8a;
+}
+
 .graph-controller__node-label {
   font-family: 'JetBrains Mono', 'Fira Mono', 'Cascadia Code', 'Consolas', monospace;
 }

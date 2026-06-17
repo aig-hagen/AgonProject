@@ -202,6 +202,29 @@ onMounted(() => {
             restriction: 'parent',
             elementRect: { left: 0, right: 1, top: 0, bottom: 1 },
           }),
+          interact.modifiers.snap({
+            range: Infinity,
+            relativePoints: [{ x: 0, y: 0 }],
+            targets: [
+              (x, y) => {
+                const rect = el.parentElement!.getBoundingClientRect()
+                const leftEdge = rect.left
+                const topEdge = rect.top
+                const rightEdge = rect.right - el.offsetWidth
+                const bottomEdge = rect.bottom - el.offsetHeight
+                const SNAP_DIST = 20
+                const nearLeft = Math.abs(x - leftEdge) <= SNAP_DIST
+                const nearRight = Math.abs(x - rightEdge) <= SNAP_DIST
+                const nearTop = Math.abs(y - topEdge) <= SNAP_DIST
+                const nearBottom = Math.abs(y - bottomEdge) <= SNAP_DIST
+                if (!nearLeft && !nearRight && !nearTop && !nearBottom) return undefined
+                return {
+                  x: nearLeft ? leftEdge : nearRight ? rightEdge : x,
+                  y: nearTop ? topEdge : nearBottom ? bottomEdge : y,
+                }
+              },
+            ],
+          }),
         ],
         allowFrom: header.value!,
         listeners: {

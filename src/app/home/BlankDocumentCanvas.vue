@@ -55,7 +55,8 @@ function openContent(content: DocumentT, newNamePrefix: string) {
 
 </script>
 <template>
-  <div class="h-full w-full flex items-center justify-center">
+  <div class="h-full w-full overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center">
     <div class="max-w-5xl w-full p-4 sm:p-8">
       <h2 class="text-2xl sm:text-4xl font-bold mb-2">
         Argumentation Toolbox
@@ -127,6 +128,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
