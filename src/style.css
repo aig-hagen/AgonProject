@@ -36,6 +36,10 @@
   stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
+.graph-controller__node-label {
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+
 .graph-controller__label-input {
   background-color: var(--graph-node-color, #99b7d5);
   border: var(--graph-node-stroke-width, 1.5px) solid var(--graph-node-stroke-color, #5a87a8);
