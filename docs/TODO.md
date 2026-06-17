@@ -69,6 +69,9 @@ Add Explanation Evaluation to AFs; most of this still needs a backend implementa
 
 ## Planned Features
 
+### Settings
+Add possibility to customize the app, ie, changing color scheme.
+
 ### SetAFs (Collective-Attacks Argumentation)
 The TweetyProject Backend supports most relevant features already. Requires a support of set-edges in the `@aig-hagen/graph-component` to be implemented.
 

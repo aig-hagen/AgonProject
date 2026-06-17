@@ -105,8 +105,8 @@ function transformToEditorState(
 }
 
 const linkConfig = {
-  SINGLE: { displayName: 'Definite Attack', color: ATTACK_COLOR },
-  DOUBLE: { displayName: 'Uncertain Attack', color: ATTACK_COLOR, arrowType: 'SINGLE' as const, dashArray: '8 4', icon: ArrowLongRightDashedIcon },
+  SINGLE: { displayName: 'Definite Attack' },
+  DOUBLE: { displayName: 'Uncertain Attack', arrowType: 'SINGLE' as const, dashArray: '8 4', icon: ArrowLongRightDashedIcon },
 }
 
 const uncertainArgumentIds = computed(() => {

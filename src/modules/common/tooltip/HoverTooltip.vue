@@ -30,6 +30,8 @@ import type { Placement } from '@floating-ui/vue'
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
 import { inject, provide, ref, useTemplateRef } from 'vue'
 
+defineOptions({ inheritAttrs: false })
+
 const { placement = 'bottom' } = defineProps<{
   placement?: Placement
 }>()
@@ -79,7 +81,7 @@ provide(NESTING_DEPTH, depth + 1)
 </script>
 
 <template>
-  <span ref="trigger" class="cursor-help border-b border-dotted border-info" @mouseenter="onEnter" @mouseleave="scheduleClose">
+  <span ref="trigger" v-bind="$attrs" class="cursor-help border-b border-dotted border-info" @mouseenter="onEnter" @mouseleave="scheduleClose">
     <slot />
   </span>
   <Teleport to="body">

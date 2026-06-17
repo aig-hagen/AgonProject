@@ -22,7 +22,7 @@
 }
 
 .graph-controller__link {
-  stroke-width: 2.5px;
+  stroke-width: var(--graph-link-stroke-width, 2.5px);
 }
 
 .graph-controller__arrow path {
@@ -32,13 +32,13 @@
 }
 
 .graph-controller__node {
-  stroke: #5a87a8;
-  stroke-width: 1.5px;
+  stroke: var(--graph-node-stroke-color, #5a87a8);
+  stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
 .graph-controller__label-input {
-  background-color: #99b7d5;
-  border: 1.5px solid #5a87a8;
+  background-color: var(--graph-node-color, #99b7d5);
+  border: var(--graph-node-stroke-width, 1.5px) solid var(--graph-node-stroke-color, #5a87a8);
   border-radius: 50vh;
   padding: 1px 8px;
   font-size: 0.875rem;
@@ -51,6 +51,6 @@
 }
 
 .graph-controller__label-input:focus {
-  box-shadow: 0 0 0 3px rgba(90, 135, 168, 0.35);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--graph-node-stroke-color, #5a87a8) 35%, transparent);
 }
 

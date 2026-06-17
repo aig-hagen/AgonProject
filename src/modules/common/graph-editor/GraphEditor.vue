@@ -48,11 +48,7 @@ import {
   watchEffect,
 } from 'vue'
 
-import {
-  ARGUMENT_COLOR,
-  ARGUMENT_RADIUS_IN_PX,
-  ATTACK_COLOR,
-} from '@/modules/common/argumentation/model'
+import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
   type GraphEditorState,
@@ -62,6 +58,10 @@ import {
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
+import {
+  GRAPH_STYLE_DEFAULT,
+  type GraphStyle,
+} from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
@@ -81,14 +81,17 @@ import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
-const { state, linkConfigs, historyState, nodeWeights, allowLinkCreation = true, allowLinkDeletion = true } = defineProps<{
+const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCreation = true, allowLinkDeletion = true } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
   nodeWeights?: Map<NodeId, number>
+  graphStyle?: GraphStyle
   allowLinkCreation?: boolean
   allowLinkDeletion?: boolean
 }>()
+
+const effectiveStyle = computed<GraphStyle>(() => graphStyle ?? GRAPH_STYLE_DEFAULT)
 
 const linkNames = computed(() =>
   Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
@@ -278,7 +281,7 @@ function onNodeCreated(
   emit('nodeCreated', nodeData)
   nextTick(() => {
     graphComponentRef.value!.setLabel(name, node.id)
-    graphComponentRef.value!.setColor(ARGUMENT_COLOR, node.id)
+    graphComponentRef.value!.setColor(effectiveStyle.value.nodeColor, node.id)
     adjustNodeLabelFontSize(node.id, name)
   })
 }
@@ -333,7 +336,7 @@ function onLinkCreated(
     type: selectedLinkType.value,
   })
   void nextTick(() => {
-    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? ATTACK_COLOR
+    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
     graphComponentRef.value!.setColor(linkColor, link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
     applyLinkDash(link.id, linkConfigs[selectedLinkType.value]?.dashArray)
@@ -605,12 +608,12 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     label: node.label,
     x: node.x,
     y: node.y,
-    color: ARGUMENT_COLOR,
+    color: effectiveStyle.value.nodeColor,
   }))
   const links: jsonLink[] = state.links.map((link) => ({
     sourceId: link.sourceId,
     targetId: link.targetId,
-    color: linkConfigs[link.type]?.color ?? ATTACK_COLOR,
+    color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
     arrowType: toArrowType(link.type),
   }))
 
@@ -663,7 +666,7 @@ function updateLinkType(linkId: string, linkType: LinkType) {
   const publicTargetId = idMapping.getOrFail(internalTargetId)
   emit('linkChanged', { sourceId: publicSourceId, targetId: publicTargetId, type: linkType })
   const arrowType = toArrowType(linkType)
-  const linkColor = linkConfigs[linkType]?.color ?? ATTACK_COLOR
+  const linkColor = linkConfigs[linkType]?.color ?? effectiveStyle.value.linkColor
   graphComponentRef.value!.setColor(linkColor, linkId)
   graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
   applyLinkDash(linkId, linkConfigs[linkType]?.dashArray)
@@ -794,7 +797,7 @@ watchEffect(() => {
   if (highlight?.attackedByFirst !== undefined) {
     graphComponent.setColor(highlight.attackedByFirst, attackedBucket)
   }
-  graphComponent.setColor(ARGUMENT_COLOR, defaultBucket)
+  graphComponent.setColor(effectiveStyle.value.nodeColor, defaultBucket)
 })
 
 function doLayout(layout: Layout) {
@@ -834,7 +837,16 @@ const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
 const isTouchDevice = useMediaQuery('(pointer: coarse)')
 </script>
 <template>
-  <div class="h-full w-full" ref="container">
+  <div
+    class="h-full w-full"
+    ref="container"
+    :style="{
+      '--graph-node-color': effectiveStyle.nodeColor,
+      '--graph-node-stroke-color': effectiveStyle.nodeStrokeColor,
+      '--graph-node-stroke-width': `${effectiveStyle.nodeStrokeWidth}px`,
+      '--graph-link-stroke-width': `${effectiveStyle.linkStrokeWidth}px`,
+    }"
+  >
     <GraphComponent
       @node-created="onNodeCreated"
       @node-deleted="onNodeDeleted"
@@ -858,7 +870,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
             :cy="node.y - ARGUMENT_RADIUS_IN_PX * 0.7"
             r="12"
             fill="white"
-            :stroke="ARGUMENT_COLOR"
+            :stroke="effectiveStyle.nodeColor"
             stroke-width="1.5"
           />
           <text
