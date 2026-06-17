@@ -28,6 +28,7 @@ import {
   ChevronRightIcon,
   FolderOpenIcon,
   LinkIcon,
+  MoonIcon,
   PhotoIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
@@ -40,6 +41,9 @@ import { computed } from 'vue'
 import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
 import { EntryState, type PhysicsMode } from '@/modules/common/main-menu/types'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+import { useTheme } from '@/modules/common/theme/useTheme'
+
+const { isDark } = useTheme()
 
 const {
   showSave = EntryState.HIDE,
@@ -282,6 +286,14 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
         </li>
       </template>
       <li class="disabled"><hr class="mt-2 border-base-300" /></li>
+      <li>
+        <a @click="isDark = !isDark" class="flex justify-between gap-8">
+          <span class="flex items-center gap-2">
+            <MoonIcon class="size-5 opacity-70" />Dark mode
+          </span>
+          <CheckIcon v-if="isDark" class="size-4 opacity-70" />
+        </a>
+      </li>
       <li>
         <a @click="emit('help')"><QuestionMarkCircleIcon class="size-5 opacity-70" />Help</a>
       </li>

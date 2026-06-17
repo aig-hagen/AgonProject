@@ -25,8 +25,6 @@ import { useRouter } from 'vue-router'
 import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/home/EditorTabs.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
-import ShareModal from '@/modules/common/share/ShareModal.vue'
-import { uploadShare } from '@/modules/common/share/useShare'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import {
   loadDocumentState,
@@ -39,6 +37,8 @@ import { saveToFile } from '@/modules/common/export/saveFile'
 import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
+import ShareModal from '@/modules/common/share/ShareModal.vue'
+import { uploadShare } from '@/modules/common/share/useShare'
 import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 import {
   type DocumentState,

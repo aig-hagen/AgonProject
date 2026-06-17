@@ -41,8 +41,8 @@ import {
 } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/probabilistic-argumentation/export'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
-import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
 import ProbabilityEditor from '@/modules/probabilistic-argumentation/ProbabilityEditor.vue'
+import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
 
 const { state, historyState, documentId } = defineProps<{
   state: DocumentState<ProbabilisticArgumentation<PafArgumentData>>

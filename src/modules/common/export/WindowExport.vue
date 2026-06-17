@@ -287,14 +287,14 @@ watchEffect(() => {
             <legend class="fieldset-legend">Text</legend>
             <div class="flex gap-2 flex-wrap mb-2">
               <ButtonSave
-                class="btn btn-sm btn-soft btn-neutral w-28 justify-start"
+                class="btn btn-sm btn-soft w-28 justify-start"
                 :filedata="saveFiledataText"
                 @export="emit('export', $event)"
               >
                 text
               </ButtonSave>
               <ButtonCopy
-                class="btn btn-sm btn-soft btn-neutral w-28 justify-start"
+                class="btn btn-sm btn-soft w-28 justify-start"
                 :text="exportResult?.text"
               >
                 text
@@ -308,14 +308,14 @@ watchEffect(() => {
             <legend class="fieldset-legend">SVG</legend>
             <div class="flex gap-2 flex-wrap mb-2">
               <ButtonSave
-                class="btn btn-sm btn-soft btn-neutral w-28 justify-start"
+                class="btn btn-sm btn-soft w-28 justify-start"
                 :filedata="saveFiledataSvg"
                 @export="emit('export', $event)"
               >
                 SVG
               </ButtonSave>
               <ButtonCopy
-                class="btn btn-sm btn-soft btn-neutral w-28 justify-start"
+                class="btn btn-sm btn-soft w-28 justify-start"
                 :text="svgText"
               >
                 SVG

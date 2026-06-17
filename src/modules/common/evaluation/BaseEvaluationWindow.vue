@@ -102,7 +102,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
         <fieldset v-if="!compact" class="fieldset">
           <div class="flex gap-2 flex-wrap">
             <button
-              class="btn btn-sm btn-soft btn-neutral mt-2"
+              class="btn btn-sm btn-soft mt-2"
               :disabled="!userCanTriggerFetch"
               @click="() => refetch()"
             >

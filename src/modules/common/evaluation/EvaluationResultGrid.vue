@@ -70,7 +70,7 @@ watchEffect(async () => {
       type="button"
       class="btn btn-sm gap-2 justify-start outline-none focus:outline-none text-base"
       :class="{
-        'btn-soft btn-neutral': selected === item.key,
+        'btn-soft': selected === item.key,
         'btn-ghost': selected !== item.key,
       }"
       @click="selected = item.key"

@@ -50,6 +50,14 @@ export const GRAPH_STYLE_MINIMAL: GraphStyle = {
   linkStrokeWidth: 1.5,
 }
 
+export const GRAPH_STYLE_DARK: GraphStyle = {
+  nodeColor: '#4a7a9b',
+  nodeStrokeColor: '#82b5d0',
+  nodeStrokeWidth: 1.5,
+  linkColor: '#c8dce8',
+  linkStrokeWidth: 2.5,
+}
+
 // Matches the graph-component library's built-in defaults:
 // orange nodes (#eb9850), navy edges (#004c97), no node border.
 export const GRAPH_STYLE_LIBRARY: GraphStyle = {

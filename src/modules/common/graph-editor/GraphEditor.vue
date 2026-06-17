@@ -59,6 +59,7 @@ import {
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import {
+  GRAPH_STYLE_DARK,
   GRAPH_STYLE_DEFAULT,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
@@ -74,6 +75,7 @@ import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState, type PhysicsMode } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+import { useTheme } from '@/modules/common/theme/useTheme'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
@@ -91,7 +93,11 @@ const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCrea
   allowLinkDeletion?: boolean
 }>()
 
-const effectiveStyle = computed<GraphStyle>(() => graphStyle ?? GRAPH_STYLE_DEFAULT)
+const { isDark } = useTheme()
+const effectiveStyle = computed<GraphStyle>(() => {
+  if (graphStyle !== undefined) return graphStyle
+  return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
+})
 
 const linkNames = computed(() =>
   Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
@@ -129,6 +135,10 @@ watch(
     }
   },
 )
+
+watch(isDark, () => {
+  setGraph(state, false)
+})
 
 const emit = defineEmits<{
   load: []
@@ -951,7 +961,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
             :cx="node.x + ARGUMENT_RADIUS_IN_PX * 0.7"
             :cy="node.y - ARGUMENT_RADIUS_IN_PX * 0.7"
             r="12"
-            fill="white"
+            fill="var(--color-base-100)"
             :stroke="effectiveStyle.nodeColor"
             stroke-width="1.5"
           />
@@ -961,7 +971,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
             text-anchor="middle"
             dominant-baseline="central"
             :font-size="formatWeightFontSize(nodeWeights!.get(node.id)!)"
-            fill="#333"
+            fill="var(--color-base-content)"
           >{{ formatWeight(nodeWeights!.get(node.id)!) }}</text>
         </g>
         <slot name="nodeOverlay" :nodes="overlayNodes" />

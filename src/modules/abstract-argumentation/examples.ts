@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import mealWineJson from '@/modules/abstract-argumentation/examples/meal_wine.json'
-import uniqueStableJson from '@/modules/abstract-argumentation/examples/unique_stable.json'
-import twoCyclesJson from '@/modules/abstract-argumentation/examples/two_cycles.json'
 import groundedIdealJson from '@/modules/abstract-argumentation/examples/grounded_ideal.json'
 import initialSetsJson from '@/modules/abstract-argumentation/examples/initial_sets.json'
+import mealWineJson from '@/modules/abstract-argumentation/examples/meal_wine.json'
+import twoCyclesJson from '@/modules/abstract-argumentation/examples/two_cycles.json'
+import uniqueStableJson from '@/modules/abstract-argumentation/examples/unique_stable.json'
 import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { loadExampleFromJson } from '@/modules/abstract-argumentation/save/saveFormat'

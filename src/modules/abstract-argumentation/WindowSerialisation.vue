@@ -342,7 +342,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
         <fieldset v-if="!compact && selectedMode === 'sequences'" class="fieldset">
           <div class="flex gap-2 flex-wrap">
             <button
-              class="btn btn-sm btn-soft btn-neutral"
+              class="btn btn-sm btn-soft"
               :disabled="!userCanTriggerFetch"
               @click="refetch()"
             >
@@ -358,7 +358,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
         <!-- Interactive mode: reset button (hidden in compact) -->
         <fieldset v-if="!compact && selectedMode === 'interactive'" class="fieldset">
           <div class="flex gap-2">
-            <button class="btn btn-sm btn-soft btn-neutral" @click="resetInteractive()">
+            <button class="btn btn-sm btn-soft" @click="resetInteractive()">
               Reset
             </button>
           </div>

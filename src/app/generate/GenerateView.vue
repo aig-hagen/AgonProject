@@ -36,14 +36,14 @@ import type { DocumentsDB } from '@/modules/common/documents/db'
 import { useDocumentMetadata } from '@/modules/common/documents/useDocuments'
 import { saveToFile } from '@/modules/common/export/saveFile'
 import { Layout } from '@/modules/common/main-menu/layouting'
+import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
+import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 import { availableExports as incompleteExports } from '@/modules/incomplete-argumentation/export'
 import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 import { type PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
-import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
-import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 
 interface ParamSchema {
   name: string
@@ -653,14 +653,14 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
             </span>
             <button
               v-if="frameworkTypeId === 'abstract'"
-              class="btn btn-sm btn-soft btn-neutral"
+              class="btn btn-sm btn-soft"
               @click="downloadICCMA"
             >
               Download ICCMA
             </button>
             <button
               v-if="frameworkTypeId !== 'adf'"
-              class="btn btn-sm btn-soft btn-neutral"
+              class="btn btn-sm btn-soft"
               @click="downloadTGF"
             >
               Download TGF

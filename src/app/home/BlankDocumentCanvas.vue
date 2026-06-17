@@ -111,7 +111,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
               </h4>
               <div class="flex flex-row gap-4 pl-2">
                 <button
-                  class="btn btn-sm btn-soft btn-neutral w-fit"
+                  class="btn btn-sm btn-soft w-fit"
                   @click="openContent(moduleCard.initialCotent, moduleCard.newNamePrefix)"
                 >
                   Create new
@@ -119,7 +119,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                 <RouterLink
                   v-if="moduleCard.generateHref !== undefined"
                   :to="moduleCard.generateHref"
-                  class="btn btn-sm btn-soft btn-neutral w-fit"
+                  class="btn btn-sm btn-soft w-fit"
                 >
                   Generate random {{ moduleCard.newNamePrefix }}
                 </RouterLink>

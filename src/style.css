@@ -18,7 +18,11 @@
  */
 @import 'tailwindcss';
 @plugin "daisyui" {
-  themes: light --default;
+  themes: light --default, dark;
+}
+
+.graph-controller__graph-canvas {
+  background-color: var(--color-base-100) !important;
 }
 
 .graph-controller__link {
