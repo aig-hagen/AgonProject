@@ -349,7 +349,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
         documentState !== undefined
       "
     />
-    <main class="border-t -mt-px border-base-300 editor flex-1">
+    <main class="border-t -mt-px border-base-300 editor flex-1 overflow-hidden">
       <div class="relative h-full w-full">
         <BlankDocumentCanvas
           v-if="selectedDocumentId === undefined"

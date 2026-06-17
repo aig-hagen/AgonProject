@@ -486,12 +486,56 @@ onMounted(() => {
       if (event.button !== 1) return
       if ((event.target as Element)?.closest('.graph-controller__node-container, .graph-controller__link')) return
       event.preventDefault()
+      if (state.nodes.length === 0) return
+
+      // The graph-component library caches canvas dimensions (R, F) at mount time and
+      // never updates them on resize when zoom is enabled. We bypass centerView() and
+      // compute + apply the transform directly so the centering respects the actual
+      // window size at the time of the click.
       const margin = ARGUMENT_RADIUS_IN_PX * 2
-      graphComponentRef.value!.centerView(
-        { top: margin, right: margin, bottom: margin, left: margin },
-        undefined,
-        1,
-      )
+      const radius = ARGUMENT_RADIUS_IN_PX
+
+      // Compute node bounding box including node radius (mirrors library's Ih function)
+      let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity
+      for (const node of state.nodes) {
+        xMin = Math.min(xMin, node.x - radius)
+        xMax = Math.max(xMax, node.x + radius)
+        yMin = Math.min(yMin, node.y - radius)
+        yMax = Math.max(yMax, node.y + radius)
+      }
+      xMin -= margin; xMax += margin; yMin -= margin; yMax += margin
+
+      const contentW = xMax - xMin
+      const contentH = yMax - yMin
+
+      const canvasW = containerRef.value?.clientWidth ?? 400
+      const canvasH = containerRef.value?.clientHeight ?? 400
+
+      // Fit content in canvas; cap scale at 1 (mirrors library's maxScale param = 1)
+      const scale = Math.min(canvasH / contentH, canvasW / contentW, 1)
+
+      // Center content in canvas
+      const tx = canvasW / 2 - scale * (xMin + contentW / 2)
+      const ty = canvasH / 2 - scale * (yMin + contentH / 2)
+
+      const svgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+        | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
+        | null
+      const g = svgEl?.firstElementChild
+      if (!svgEl || !g) return
+
+      // Keep D3's internal zoom state consistent so subsequent pan/zoom works correctly
+      const currentZoom = svgEl.__zoom
+      if (currentZoom != null) {
+        const newZoom = Object.create(Object.getPrototypeOf(currentZoom))
+        newZoom.k = scale
+        newZoom.x = tx
+        newZoom.y = ty
+        svgEl.__zoom = newZoom
+      }
+
+      // Updating the transform attribute triggers the MutationObserver that syncs the SVG overlay
+      g.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`)
     }
     ;(svgCanvas as HTMLElement).addEventListener('auxclick', handleMiddleClick)
     middleClickCleanup = () => (svgCanvas as HTMLElement).removeEventListener('auxclick', handleMiddleClick)
