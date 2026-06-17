@@ -32,7 +32,7 @@ import {
   type IafMode,
   type IafType,
   KNOWN_SEMANTIC_GROUPS,
-  type Semantic,
+  type Semantics,
   useExtensionEvaluationQuery,
 } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
@@ -56,11 +56,11 @@ provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...incompleteA
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
 
-function resolveSemanticFromKey(key: string): Semantic {
+function resolveSemanticFromKey(key: string): Semantics {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
 }
 
-const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedType = ref<IafType>(instanceState.type)
 const selectedMode = ref<IafMode>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)

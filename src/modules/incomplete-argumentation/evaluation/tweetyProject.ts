@@ -18,26 +18,24 @@
  */
 import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
-import z from 'zod'
 
 import type { ArgumentId } from '@/modules/common/argumentation/model'
+import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
-import { IdMapping, type UUID } from '@/modules/common/ids'
+import { type UUID } from '@/modules/common/ids'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 
 export {
   KEY_DEFAULT_SEMANTIC,
   KNOWN_SEMANTIC_GROUPS,
-  type Semantic,
-  type SemanticGroup,
+  type Semantics,
+  type SemanticsFamily,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
 
 const ENDPOINT_IAF = '/iaf'
-const TIMEOUT_IN_MS = 10000
-const TIMEOUT_UNIT_MS = 'ms'
 
 type IafCommand =
   | 'get_models_pos'
@@ -59,14 +57,8 @@ interface IafRequestBody {
   uncertainAttacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const IafResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 function buildRequestBody(
   cmd: IafCommand,
@@ -84,8 +76,8 @@ function buildRequestBody(
     definiteAttacks,
     uncertainAttacks,
     semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
 }
 
@@ -97,20 +89,10 @@ async function fetchModels(
   uncertainAttacks: number[][],
   semantics: string,
 ): Promise<{ evaluationDurationInMs: number; extensions: number[][] }> {
-  const body = buildRequestBody(
-    `get_models_${type}`,
-    numberOfArguments,
-    uncertainArgumentIds,
-    definiteAttacks,
-    uncertainAttacks,
-    semantics,
-  )
-  const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
+  const body = buildRequestBody(`get_models_${type}`, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+  const response = await fetchTyped(ENDPOINT_IAF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    extensions: parserListOfSets(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, extensions: parserListOfSets(response.answer!) }
 }
 
 async function fetchAcceptability(
@@ -122,20 +104,10 @@ async function fetchAcceptability(
   uncertainAttacks: number[][],
   semantics: string,
 ): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
-  const body = buildRequestBody(
-    `get_${mode}_${type}`,
-    numberOfArguments,
-    uncertainArgumentIds,
-    definiteAttacks,
-    uncertainAttacks,
-    semantics,
-  )
-  const response = await fetchTyped(ENDPOINT_IAF, body, IafResponseSchema)
+  const body = buildRequestBody(`get_${mode}_${type}`, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+  const response = await fetchTyped(ENDPOINT_IAF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
 }
 
 export interface ExtensionEvaluationResult {
@@ -156,13 +128,7 @@ export function useExtensionEvaluationQuery(
   const argumentData = computed(() => {
     const input = unref(inputRef)
     const content = input.content
-    let numberOfArguments = 0
-    const idMapping = new IdMapping<ArgumentId, number>()
-    for (const [argumentId] of content.arguments()) {
-      // Tweety expects argument IDs to start with 1 and go up to n,
-      // where n is the number of arguments.
-      idMapping.add(argumentId, ++numberOfArguments)
-    }
+    const { numberOfArguments, idMapping } = buildArgumentIdMapping(content.arguments())
     const uncertainArgumentIds: number[] = []
     for (const [argumentId] of content.uncertainArguments()) {
       uncertainArgumentIds.push(idMapping.getOrFail(argumentId))

@@ -18,37 +18,24 @@
  */
 import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
-import z from 'zod'
 
+import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
+import type { SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
-import { IdMapping, type UUID } from '@/modules/common/ids'
+import { type IdMapping, type UUID } from '@/modules/common/ids'
 import { type FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
 import { type AdfArgumentData, type DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 
 const ENDPOINT_ADF = '/adf'
-const TIMEOUT_IN_MS = 10000
-const TIMEOUT_UNIT_MS = 'ms'
 
 // ── Semantics ─────────────────────────────────────────────────────────────────
 
 export const KEY_DEFAULT_SEMANTIC = 'ADM'
 
-export interface Semantic {
-  key: string
-  displayName: string
-  tooltipId?: string
-}
-
-export interface SemanticGroup {
-  key: string
-  displayName: string
-  semantics: Semantic[]
-}
-
-export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
+export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   {
     key: 'adf-semantics',
     displayName: 'ADF Semantics',
@@ -63,6 +50,8 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
     ],
   },
 ]
+
+export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 
 // ── Formula serialization ─────────────────────────────────────────────────────
 // Produces the KPP-style condition string expected by the /adf endpoint,
@@ -135,14 +124,8 @@ interface GetModelsRequestBody {
   conditions: string[]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const GetModelsResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 async function fetchModels(
   numberOfArguments: number,
@@ -155,15 +138,12 @@ async function fetchModels(
     nr_of_arguments: numberOfArguments,
     conditions,
     semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-  const response = await fetchTyped(ENDPOINT_ADF, body, GetModelsResponseSchema)
+  const response = await fetchTyped(ENDPOINT_ADF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    interpretations: parseInterpretations(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, interpretations: parseInterpretations(response.answer!) }
 }
 
 interface GetCredulousRequestBody {
@@ -173,7 +153,7 @@ interface GetCredulousRequestBody {
   conditions: string[]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
 
 interface GetSkepticalRequestBody {
@@ -183,14 +163,8 @@ interface GetSkepticalRequestBody {
   conditions: string[]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const GetAcceptabilityResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 async function fetchCredulous(
   numberOfArguments: number,
@@ -203,15 +177,12 @@ async function fetchCredulous(
     nr_of_arguments: numberOfArguments,
     conditions,
     semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-  const response = await fetchTyped(ENDPOINT_ADF, body, GetAcceptabilityResponseSchema)
+  const response = await fetchTyped(ENDPOINT_ADF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
 }
 
 async function fetchSkeptical(
@@ -225,15 +196,12 @@ async function fetchSkeptical(
     nr_of_arguments: numberOfArguments,
     conditions,
     semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-  const response = await fetchTyped(ENDPOINT_ADF, body, GetAcceptabilityResponseSchema)
+  const response = await fetchTyped(ENDPOINT_ADF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
 }
 
 // ── Public result types ───────────────────────────────────────────────────────
@@ -265,12 +233,7 @@ export function useInterpretationEvaluationQuery(
   const argumentData = computed(() => {
     const input = unref(inputRef)
     const content = input.content
-    let numberOfArguments = 0
-    const idMapping = new IdMapping<number, number>()
-
-    for (const [argumentId] of content.arguments()) {
-      idMapping.add(argumentId, ++numberOfArguments)
-    }
+    const { numberOfArguments, idMapping } = buildArgumentIdMapping(content.arguments())
 
     const conditions: string[] = []
     for (const [argumentId, data] of content.arguments()) {

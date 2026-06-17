@@ -22,7 +22,7 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
-  type Semantic,
+  type Semantics,
   useExtensionEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
@@ -54,11 +54,11 @@ provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
 
-function resolveSemanticFromKey(key: string): Semantic {
+function resolveSemanticFromKey(key: string): Semantics {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
 }
 
-const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 

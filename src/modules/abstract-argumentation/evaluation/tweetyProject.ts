@@ -18,23 +18,21 @@
  */
 import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
-import z from 'zod'
 
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
+import type { SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
-import { IdMapping, type UUID } from '@/modules/common/ids'
+import { type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_ABSTRACT_ARGUMENTATION = '/dung'
 
-const TIMEOUT_IN_MS = 10000
-const TIMEOUT_UNIT_MS = 'ms'
-
 export const KEY_DEFAULT_SEMANTIC = 'ST'
-export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
+export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   {
     key: 'classical',
     displayName: 'Classical Semantics',
@@ -88,16 +86,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   },
 ].filter((group) => group.semantics.length > 0)
 
-export interface SemanticGroup {
-  key: string
-  displayName: string
-  semantics: Semantic[]
-}
-
-export interface Semantic {
-  key: string
-  displayName: string
-}
+export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 
 interface GetCredulousRequestBody {
   email: string
@@ -106,44 +95,26 @@ interface GetCredulousRequestBody {
   attacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const GetAcceptabilityResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 async function fetchCredulous(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
-): Promise<{
-  evaluationDurationInMs: number
-  arguments: number[]
-}> {
+): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
   const body: GetCredulousRequestBody = {
     email: USER_ID,
     cmd: 'get_credulous',
     nr_of_arguments: numberOfArguments,
-    attacks: attacks,
-    semantics: semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    attacks,
+    semantics,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-
-  const credulousResponse = await fetchTyped(
-    ENDPOINT_ABSTRACT_ARGUMENTATION,
-    body,
-    GetAcceptabilityResponseSchema,
-  )
-  throwIfTimeout(credulousResponse.answer, credulousResponse.status)
-  const accArguments = parserSet(credulousResponse.answer!)
-  return {
-    evaluationDurationInMs: credulousResponse.time,
-    arguments: accArguments,
-  }
+  const response = await fetchTyped(ENDPOINT_ABSTRACT_ARGUMENTATION, body, TweetyResponseSchema)
+  throwIfTimeout(response.answer, response.status)
+  return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
 }
 
 interface GetSkepticalRequestBody {
@@ -153,41 +124,28 @@ interface GetSkepticalRequestBody {
   attacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
 
 async function fetchSkeptical(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
-): Promise<{
-  evaluationDurationInMs: number
-  arguments: number[]
-}> {
+): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
   const body: GetSkepticalRequestBody = {
     email: USER_ID,
     cmd: 'get_skeptical',
     nr_of_arguments: numberOfArguments,
-    attacks: attacks,
-    semantics: semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    attacks,
+    semantics,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-
-  const skepticalResponse = await fetchTyped(
-    ENDPOINT_ABSTRACT_ARGUMENTATION,
-    body,
-    GetAcceptabilityResponseSchema,
-  )
-  throwIfTimeout(skepticalResponse.answer, skepticalResponse.status)
-  const accArguments = parserSet(skepticalResponse.answer!)
-  return {
-    evaluationDurationInMs: skepticalResponse.time,
-    arguments: accArguments,
-  }
+  const response = await fetchTyped(ENDPOINT_ABSTRACT_ARGUMENTATION, body, TweetyResponseSchema)
+  throwIfTimeout(response.answer, response.status)
+  return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
 }
 
-// Stuff for requesting models from the Tweety server
 interface GetModelsRequestBody {
   email: string
   cmd: 'get_models'
@@ -195,44 +153,26 @@ interface GetModelsRequestBody {
   attacks: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const GetModelsResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 async function fetchModels(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
-): Promise<{
-  evaluationDurationInMs: number
-  extensions: number[][]
-}> {
+): Promise<{ evaluationDurationInMs: number; extensions: number[][] }> {
   const body: GetModelsRequestBody = {
     email: USER_ID,
     cmd: 'get_models',
     nr_of_arguments: numberOfArguments,
-    attacks: attacks,
-    semantics: semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    attacks,
+    semantics,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-
-  const modelsResponse = await fetchTyped(
-    ENDPOINT_ABSTRACT_ARGUMENTATION,
-    body,
-    GetModelsResponseSchema,
-  )
-  throwIfTimeout(modelsResponse.answer, modelsResponse.status)
-  const extensions = parserListOfSets(modelsResponse.answer!)
-  return {
-    evaluationDurationInMs: modelsResponse.time,
-    extensions,
-  }
+  const response = await fetchTyped(ENDPOINT_ABSTRACT_ARGUMENTATION, body, TweetyResponseSchema)
+  throwIfTimeout(response.answer, response.status)
+  return { evaluationDurationInMs: response.time, extensions: parserListOfSets(response.answer!) }
 }
 
 export interface ExtensionEvaluationResult {
@@ -255,18 +195,10 @@ export function useExtensionEvaluationQuery(
   const argumentData = computed(() => {
     const input = unref(inputRef)
     const content = input.content
-    let numberOfArguments = 0
-    const idMapping = new IdMapping<ArgumentId, number>()
-    for (const [argumentId] of content.arguments()) {
-      // Tweety expects argument IDs to start with 1 and go up to n,
-      // where n is the number of arguments.
-      idMapping.add(argumentId, ++numberOfArguments)
-    }
+    const { numberOfArguments, idMapping } = buildArgumentIdMapping(content.arguments())
     const attacks = []
     for (const [sourceId, targetId] of content.attacks()) {
-      const serverSourceId = idMapping.getOrFail(sourceId)
-      const serverTargetId = idMapping.getOrFail(targetId)
-      attacks.push([serverSourceId, serverTargetId])
+      attacks.push([idMapping.getOrFail(sourceId), idMapping.getOrFail(targetId)])
     }
     return { numberOfArguments, attacks, semanticsRef: unref(semanticsRef), idMapping }
   })

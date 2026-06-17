@@ -23,7 +23,7 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
-  type Semantic,
+  type Semantics,
   useExtensionEvaluationQuery,
 } from '@/modules/bipolar-argumentation/evaluation/tweetyProject'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
@@ -56,7 +56,7 @@ const semanticGroups = KNOWN_SEMANTIC_GROUPS
 
 const byInterpretationSemantics = computed(() => {
   const allInterpretations = new Set(semanticGroups.flatMap((g) => g.interpretations))
-  const result: Record<string, Semantic[]> = {}
+  const result: Record<string, Semantics[]> = {}
   for (const interpretation of allInterpretations) {
     result[interpretation] = semanticGroups
       .filter((g) => g.interpretations.includes(interpretation))
@@ -65,12 +65,12 @@ const byInterpretationSemantics = computed(() => {
   return result
 })
 
-function resolveSemanticFromKey(key: string): Semantic {
+function resolveSemanticsFromKey(key: string): Semantics {
   return semanticGroups.flatMap((g) => g.semantics).find((s) => s.key === key)
     ?? semanticGroups[0]!.semantics[0]!
 }
 
-function resolveInterpretationForSemantic(semanticKey: string, preferredInterpretation: string): string {
+function resolveInterpretationForSemantics(semanticKey: string, preferredInterpretation: string): string {
   for (const group of semanticGroups) {
     if (group.semantics.some((s) => s.key === semanticKey) && group.interpretations.includes(preferredInterpretation)) {
       return preferredInterpretation
@@ -84,17 +84,17 @@ function resolveInterpretationForSemantic(semanticKey: string, preferredInterpre
   return semanticGroups[0]!.interpretations[0]!
 }
 
-const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantics = shallowRef<Semantics>(resolveSemanticsFromKey(instanceState.semanticKey))
 const selectedInterpretation = shallowRef<string>(
-  resolveInterpretationForSemantic(instanceState.semanticKey, instanceState.interpretationKey),
+  resolveInterpretationForSemantics(instanceState.semanticKey, instanceState.interpretationKey),
 )
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, selectedInterpretation, selectedMode, evaluateContinuously], () => {
+watch([selectedSemantics, selectedInterpretation, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
     id: instanceState.id,
-    semanticKey: selectedSemantic.value.key,
+    semanticKey: selectedSemantics.value.key,
     interpretationKey: selectedInterpretation.value,
     mode: selectedMode.value,
     evaluateContinuously: evaluateContinuously.value,
@@ -106,14 +106,14 @@ watchEffect(() => {
   if (validSemantics === undefined || validSemantics.length === 0) {
     throw new Error('Encountred invalid interpretation without semantics.')
   }
-  if (!validSemantics.some((s) => s.key === selectedSemantic.value.key)) {
-    selectedSemantic.value = validSemantics[0]!
+  if (!validSemantics.some((s) => s.key === selectedSemantics.value.key)) {
+    selectedSemantics.value = validSemantics[0]!
   }
 })
 
 const query = useExtensionEvaluationQuery(
   toRef(() => input),
-  computed(() => selectedSemantic.value.key),
+  computed(() => selectedSemantics.value.key),
   selectedMode,
   evaluateContinuously,
 )
@@ -126,7 +126,7 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantic.value.displayName))
+} = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantics.value.displayName))
 
 watch(currentHighlight, (h) => emit('highlight', h))
 function onWindowFocus() { emit('highlight', currentHighlight.value) }
@@ -141,7 +141,7 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
     : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
-  return `Extensions: ${selectedInterpretation.value} · ${selectedSemantic.value.displayName} · ${modeLabel}`
+  return `Extensions: ${selectedInterpretation.value} · ${selectedSemantics.value.displayName} · ${modeLabel}`
 })
 </script>
 
@@ -171,7 +171,7 @@ const windowTitle = computed(() => {
       </label>
       <label class="select select-sm w-fit">
         <span class="label">Semantics</span>
-        <select v-model="selectedSemantic">
+        <select v-model="selectedSemantics">
           <option
             v-for="semantic in byInterpretationSemantics[selectedInterpretation]"
             :key="semantic.key"
@@ -191,7 +191,7 @@ const windowTitle = computed(() => {
       </label>
     </template>
     <template #parameters-footer>
-      <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
+      <TermDefinitionBlock v-if="selectedSemantics.tooltipId" :id="selectedSemantics.tooltipId" />
     </template>
     <template #results>
       <template v-if="dataExtensionsFormatedAndSorted !== undefined">

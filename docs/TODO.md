@@ -1,3 +1,18 @@
+## Name Ideas
+- kratos (power/strength; what winning an argument can confer)
+- aporia (puzzlement/deadlock; the productive state of being stuck, often where Socratic dialogue begins)
+- kosmos (order/beauty; the idea that a good argument has an elegant shape)
+- agora (the central public space of a Greek city; the primary site of civic debate, commerce, and encounter)
+- argnexus
+- polyarg
+- argkit
+- argsuite
+- argvault
+- openarg :(
+- platagon  Plato + Agon (agon = contest/debate in Greek)
+- formagon
+- argonline
+
 ## Bugs
 
 ### Physics simulation breaks when switching tabs
@@ -18,8 +33,23 @@ The blank-canvas home screen has no button to open/import an existing AF file; u
 ### LaTeX export: node positioning needs improvement
 Node coordinates from the graph editor do not translate well to readable TikZ output and need to be scaled/adjusted more during export.
 
+### Fix Window Overflow
+Floating windows can sometimes go outside the screen leading to a scrollbar appearing for the whole editor view.
+
 
 ## Potential Features
+
+### Split View
+Add the option to split the editor view to have two AFs next to each other
+
+### Window Snapping
+Make windows snap to the edge of the screen and potentially to each other
+
+### Reference to Implementation
+In addition to the literature reference, glossary entries could have a reference to their TweetyProject implementation.
+
+### Separate Glossary View
+Could implement a new subsite presenting the glossary.
 
 ### Include evaluation window state in shares
 Shares currently only serialize graph content; evaluation window positions, open/closed state, and selected semantics are not included. Should be optional.

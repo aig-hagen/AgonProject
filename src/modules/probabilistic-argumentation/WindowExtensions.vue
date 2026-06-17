@@ -29,7 +29,7 @@ import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import type { PafWindowInstanceState } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
-  type PafSemantic,
+  type Semantics,
   usePafEvaluationQuery,
 } from '@/modules/probabilistic-argumentation/evaluation/tweetyProject'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
@@ -52,11 +52,11 @@ provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...probabilist
 
 const allSemantics = KNOWN_SEMANTIC_GROUPS.flatMap((g) => g.semantics)
 
-function resolveSemanticFromKey(key: string): PafSemantic {
+function resolveSemanticFromKey(key: string): Semantics {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
 }
 
-const selectedSemantic = shallowRef<PafSemantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref(instanceState.mode)
 const selectedSolver = ref(instanceState.solver)
 const isApproximate = computed({

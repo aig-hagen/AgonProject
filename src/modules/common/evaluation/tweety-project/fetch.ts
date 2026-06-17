@@ -16,13 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type z from 'zod'
+import z from 'zod'
 
 import { EvaluationTimeoutError } from '@/modules/common/evaluation/tweety-project/errors'
 
 const sourceTree = import.meta.env.VITE_APP_SOURCE_TREE
 
 export const USER_ID = `argumentation-toolbox.aig.fernuni-hagen.de/${sourceTree}`
+
+export const TWEETY_TIMEOUT_IN_MS = 10000
+export const TWEETY_TIMEOUT_UNIT_MS = 'ms' as const
+
+export const TweetyResponseSchema = z.object({
+  time: z.number(),
+  answer: z.string().nullable(),
+  status: z.string().optional().nullable(),
+})
 
 const HTTP_TIMEOUT_STATUSES = new Set([408, 504, 524])
 

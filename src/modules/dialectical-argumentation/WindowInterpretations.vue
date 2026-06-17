@@ -32,7 +32,7 @@ import type { ExtensionWindowInstanceState } from '@/modules/dialectical-argumen
 import {
   type Interpretation,
   KNOWN_SEMANTIC_GROUPS,
-  type Semantic,
+  type Semantics,
   useInterpretationEvaluationQuery,
 } from '@/modules/dialectical-argumentation/evaluation/tweetyProject'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
@@ -59,11 +59,11 @@ watch(internalOpen, (v) => { if (!v) emit('close') })
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
 
-function resolveSemanticFromKey(key: string): Semantic {
+function resolveSemanticFromKey(key: string): Semantics {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
 }
 
-const selectedSemantic = shallowRef<Semantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 const isCompact = ref(false)

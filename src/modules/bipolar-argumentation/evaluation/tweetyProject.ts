@@ -18,24 +18,22 @@
  */
 import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
-import z from 'zod'
 
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
+import type { Semantics } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
-import { IdMapping, type UUID } from '@/modules/common/ids'
+import { type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
 
-const TIMEOUT_IN_MS = 10000
-const TIMEOUT_UNIT_MS = 'ms'
-
 export const KEY_DEFAULT_SEMANTIC = 'b-cf'
 
-export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
+export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   {
     key: 'none-interpretation',
     displayName: 'None Interpretation',
@@ -77,18 +75,14 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticGroup[] = [
   },
 ]
 
-export interface SemanticGroup {
+export interface SemanticsFamily {
   key: string
   displayName: string
   interpretations: string[]
-  semantics: Semantic[]
+  semantics: Semantics[]
 }
 
-export interface Semantic {
-  key: string
-  displayName: string
-  tooltipId?: string
-}
+export { type Semantics } from '@/modules/common/evaluation/tweety-project/semantics'
 
 interface GetModelsRequestBody {
   email: string
@@ -98,46 +92,28 @@ interface GetModelsRequestBody {
   supports: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const GetModelsResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 async function fetchModels(
   numberOfArguments: number,
   attacks: number[][],
   supports: number[][],
   semantics: string,
-): Promise<{
-  evaluationDurationInMs: number
-  extensions: number[][]
-}> {
+): Promise<{ evaluationDurationInMs: number; extensions: number[][] }> {
   const body: GetModelsRequestBody = {
     email: USER_ID,
     cmd: 'get_models',
     nr_of_arguments: numberOfArguments,
-    attacks: attacks,
-    supports: supports,
-    semantics: semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    attacks,
+    supports,
+    semantics,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-
-  const modelsResponse = await fetchTyped(
-    ENDPOINT_BIPOLAR_ARGUMENTATION,
-    body,
-    GetModelsResponseSchema,
-  )
-  throwIfTimeout(modelsResponse.answer, modelsResponse.status)
-  const extensions = parserListOfSets(modelsResponse.answer!)
-  return {
-    evaluationDurationInMs: modelsResponse.time,
-    extensions,
-  }
+  const response = await fetchTyped(ENDPOINT_BIPOLAR_ARGUMENTATION, body, TweetyResponseSchema)
+  throwIfTimeout(response.answer, response.status)
+  return { evaluationDurationInMs: response.time, extensions: parserListOfSets(response.answer!) }
 }
 
 interface GetCredulousRequestBody {
@@ -148,7 +124,7 @@ interface GetCredulousRequestBody {
   supports: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
 
 interface GetSkepticalRequestBody {
@@ -159,14 +135,8 @@ interface GetSkepticalRequestBody {
   supports: number[][]
   semantics: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const GetAcceptabilityResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 async function fetchCredulous(
   numberOfArguments: number,
@@ -181,15 +151,12 @@ async function fetchCredulous(
     attacks,
     supports,
     semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-  const response = await fetchTyped(ENDPOINT_BIPOLAR_ARGUMENTATION, body, GetAcceptabilityResponseSchema)
+  const response = await fetchTyped(ENDPOINT_BIPOLAR_ARGUMENTATION, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
 }
 
 async function fetchSkeptical(
@@ -205,15 +172,12 @@ async function fetchSkeptical(
     attacks,
     supports,
     semantics,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-  const response = await fetchTyped(ENDPOINT_BIPOLAR_ARGUMENTATION, body, GetAcceptabilityResponseSchema)
+  const response = await fetchTyped(ENDPOINT_BIPOLAR_ARGUMENTATION, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    arguments: parserSet(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
 }
 
 export interface ExtensionEvaluationResult {
@@ -236,24 +200,14 @@ export function useExtensionEvaluationQuery(
   const argumentData = computed(() => {
     const input = unref(inputRef)
     const content = input.content
-    let numberOfArguments = 0
-    const idMapping = new IdMapping<ArgumentId, number>()
-    for (const [argumentId] of content.arguments()) {
-      // Tweety expects argument IDs to start with 1 and go up to n,
-      // where n is the number of arguments.
-      idMapping.add(argumentId, ++numberOfArguments)
-    }
+    const { numberOfArguments, idMapping } = buildArgumentIdMapping(content.arguments())
     const attacks = []
     for (const [sourceId, targetId] of content.attacks()) {
-      const serverSourceId = idMapping.getOrFail(sourceId)
-      const serverTargetId = idMapping.getOrFail(targetId)
-      attacks.push([serverSourceId, serverTargetId])
+      attacks.push([idMapping.getOrFail(sourceId), idMapping.getOrFail(targetId)])
     }
     const supports = []
     for (const [sourceId, targetId] of content.supports()) {
-      const serverSourceId = idMapping.getOrFail(sourceId)
-      const serverTargetId = idMapping.getOrFail(targetId)
-      supports.push([serverSourceId, serverTargetId])
+      supports.push([idMapping.getOrFail(sourceId), idMapping.getOrFail(targetId)])
     }
     return { numberOfArguments, attacks, supports, idMapping }
   })

@@ -18,37 +18,23 @@
  */
 import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
-import z from 'zod'
 
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserScores } from '@/modules/common/evaluation/tweety-project/rankingScore'
+import type { SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
 import { IdMapping, type UUID } from '@/modules/common/ids'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 
 const ENDPOINT = '/paf'
 
-const TIMEOUT_IN_MS = 10000
-const TIMEOUT_UNIT_MS = 'ms'
-
 export const KEY_DEFAULT_SEMANTIC = 'ST'
 export const KEY_DEFAULT_MODE = 'credulous'
 export const KEY_DEFAULT_SOLVER = 'simple'
 
-export interface PafSemantic {
-  key: string
-  displayName: string
-}
-
-export interface PafSemanticGroup {
-  key: string
-  displayName: string
-  semantics: PafSemantic[]
-}
-
-export const KNOWN_SEMANTIC_GROUPS: PafSemanticGroup[] = [
+export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   {
     key: 'classical',
     displayName: 'Classical Semantics',
@@ -97,6 +83,8 @@ export const KNOWN_SEMANTIC_GROUPS: PafSemanticGroup[] = [
   },
 ]
 
+export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
+
 export type PafEntry = { id: ArgumentId; name: string; probability: number }
 
 export interface PafEvaluationResult {
@@ -115,14 +103,8 @@ interface PafRequestBody {
   semantics: string
   solver: string
   timeout: number
-  unit_timeout: typeof TIMEOUT_UNIT_MS
+  unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
-
-const PafResponseSchema = z.object({
-  time: z.number(),
-  answer: z.string().nullable(),
-  status: z.string().optional().nullable(),
-})
 
 async function fetchPaf(
   cmd: 'get_credulous' | 'get_skeptical',
@@ -142,15 +124,12 @@ async function fetchPaf(
     attack_probabilities: attackProbabilities,
     semantics,
     solver,
-    timeout: TIMEOUT_IN_MS,
-    unit_timeout: TIMEOUT_UNIT_MS,
+    timeout: TWEETY_TIMEOUT_IN_MS,
+    unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
-  const response = await fetchTyped(ENDPOINT, body, PafResponseSchema)
+  const response = await fetchTyped(ENDPOINT, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return {
-    evaluationDurationInMs: response.time,
-    scores: parserScores(response.answer!),
-  }
+  return { evaluationDurationInMs: response.time, scores: parserScores(response.answer!) }
 }
 
 export function usePafEvaluationQuery(
