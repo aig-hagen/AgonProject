@@ -21,3 +21,5 @@ export enum EntryState {
   ENABLE,
   DISABLE,
 }
+
+export type PhysicsMode = 'off' | 'settle' | 'on'

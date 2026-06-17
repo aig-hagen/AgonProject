@@ -33,7 +33,7 @@ import {
   QueueListIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
-import { useMediaQuery } from '@vueuse/core'
+import { useElementVisibility, useMediaQuery } from '@vueuse/core'
 import {
   computed,
   nextTick,
@@ -71,7 +71,7 @@ import FloatingHintRight from '@/modules/common/hints/FloatingHintRight.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
-import { EntryState } from '@/modules/common/main-menu/types'
+import { EntryState, type PhysicsMode } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
@@ -102,7 +102,9 @@ const linkNamesEnumeration = computed(
 )
 const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
-const nodePhysicsEnabled = ref<boolean>(false)
+const physicsMode = ref<PhysicsMode>('off')
+let settleTimerId: ReturnType<typeof setTimeout> | null = null
+let settlePointerCleanup: (() => void) | undefined
 
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
@@ -279,6 +281,7 @@ function onNodeCreated(
     y: node.y,
   }
   emit('nodeCreated', nodeData)
+  triggerSettle()
   nextTick(() => {
     graphComponentRef.value!.setLabel(name, node.id)
     graphComponentRef.value!.setColor(effectiveStyle.value.nodeColor, node.id)
@@ -300,6 +303,7 @@ function onNodeDeleted(
 
   const publicId = idMapping.delete(node.id)
   emit('nodeDeleted', { id: publicId })
+  triggerSettle()
 }
 
 function openLinkTypeSwitch(
@@ -335,6 +339,7 @@ function onLinkCreated(
     targetId: publicTargetId,
     type: selectedLinkType.value,
   })
+  triggerSettle()
   void nextTick(() => {
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
     graphComponentRef.value!.setColor(linkColor, link.id)
@@ -365,6 +370,7 @@ function onLinkDeleted(
   const publicSourceId = idMapping.getOrFail(internalSourceId)
   const publicTargetId = idMapping.getOrFail(internalTargetId)
   emit('linkDeleted', { sourceId: publicSourceId, targetId: publicTargetId })
+  triggerSettle()
 }
 
 function onNodesMoved(positions: PositionSnapshot[]) {
@@ -449,7 +455,9 @@ onMounted(() => {
         updated.set(publicId, { x, y })
         changed = true
       }
-      if (changed) liveNodePositions.value = updated
+      if (changed) {
+        liveNodePositions.value = updated
+      }
     })
     dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
   }
@@ -542,41 +550,91 @@ onMounted(() => {
     }
     ;(svgCanvas as HTMLElement).addEventListener('auxclick', handleMiddleClick)
     middleClickCleanup = () => (svgCanvas as HTMLElement).removeEventListener('auxclick', handleMiddleClick)
+
+    let nodePointerDown = false
+    const handleSettlePointerDown = (event: PointerEvent) => {
+      if (physicsMode.value !== 'settle') return
+      if (!(event.target as Element).closest('.graph-controller__node-container')) return
+      nodePointerDown = true
+      graphComponentRef.value?.toggleNodePhysics(true)
+      if (settleTimerId !== null) { clearTimeout(settleTimerId); settleTimerId = null }
+    }
+    const handleSettlePointerUp = () => {
+      if (!nodePointerDown) return
+      nodePointerDown = false
+      if (physicsMode.value === 'settle') triggerSettle()
+    }
+    graphHost.addEventListener('pointerdown', handleSettlePointerDown, true)
+    graphHost.addEventListener('pointerup', handleSettlePointerUp, true)
+    graphHost.addEventListener('pointercancel', handleSettlePointerUp, true)
+    settlePointerCleanup = () => {
+      graphHost.removeEventListener('pointerdown', handleSettlePointerDown, true)
+      graphHost.removeEventListener('pointerup', handleSettlePointerUp, true)
+      graphHost.removeEventListener('pointercancel', handleSettlePointerUp, true)
+    }
   }
 })
 
-function toggleNodePhysics() {
-  nodePhysicsEnabled.value = !nodePhysicsEnabled.value
+function enablePhysics() {
   const gc = graphComponentRef.value!
-  if (nodePhysicsEnabled.value) {
-    // Before enabling physics, center nodes at the SVG element's midpoint so the
-    // simulation's centering forces don't cause the cluster to drift on screen.
-    const el = gc.$el as HTMLElement
-    const graphHost = (el.querySelector('.graph-controller__graph-host') ?? el) as HTMLElement
-    const svgCenterX = graphHost.clientWidth / 2
-    const svgCenterY = graphHost.clientHeight / 2
-    let sumX = 0, sumY = 0, count = 0
+  // Before enabling physics, center nodes at the SVG element's midpoint so the
+  // simulation's centering forces don't cause the cluster to drift on screen.
+  const el = gc.$el as HTMLElement
+  const graphHost = (el.querySelector('.graph-controller__graph-host') ?? el) as HTMLElement
+  const svgCenterX = graphHost.clientWidth / 2
+  const svgCenterY = graphHost.clientHeight / 2
+  let sumX = 0, sumY = 0, count = 0
+  for (const node of state.nodes) {
+    if (!idMapping.hasReverse(node.id)) continue
+    const pos = gc.getNodePosition(idMapping.getOrFailReverse(node.id))
+    sumX += pos.x
+    sumY += pos.y
+    count++
+  }
+  if (count > 0) {
+    const dx = svgCenterX - sumX / count
+    const dy = svgCenterY - sumY / count
     for (const node of state.nodes) {
       if (!idMapping.hasReverse(node.id)) continue
-      const pos = gc.getNodePosition(idMapping.getOrFailReverse(node.id))
-      sumX += pos.x
-      sumY += pos.y
-      count++
-    }
-    if (count > 0) {
-      const dx = svgCenterX - sumX / count
-      const dy = svgCenterY - sumY / count
-      for (const node of state.nodes) {
-        if (!idMapping.hasReverse(node.id)) continue
-        const internalId = idMapping.getOrFailReverse(node.id)
-        const pos = gc.getNodePosition(internalId)
-        gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
-      }
+      const internalId = idMapping.getOrFailReverse(node.id)
+      const pos = gc.getNodePosition(internalId)
+      gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
     }
   }
-  gc.toggleNodePhysics(nodePhysicsEnabled.value)
+  gc.toggleNodePhysics(true)
   const margin = ARGUMENT_RADIUS_IN_PX * 2
   gc.centerView({ top: margin, right: margin, bottom: margin, left: margin }, undefined, 1)
+}
+
+function disablePhysics() {
+  graphComponentRef.value?.toggleNodePhysics(false)
+}
+
+function triggerSettle() {
+  if (physicsMode.value !== 'settle') return
+  graphComponentRef.value?.toggleNodePhysics(true)
+  if (settleTimerId !== null) clearTimeout(settleTimerId)
+  settleTimerId = setTimeout(() => {
+    settleTimerId = null
+    if (physicsMode.value === 'settle') disablePhysics()
+  }, 500)
+}
+
+function toggleNodePhysics() {
+  if (physicsMode.value === 'off') {
+    physicsMode.value = 'settle'
+  } else if (physicsMode.value === 'settle') {
+    if (settleTimerId !== null) {
+      clearTimeout(settleTimerId)
+      settleTimerId = null
+    }
+    disablePhysics()
+    physicsMode.value = 'on'
+    enablePhysics()
+  } else {
+    physicsMode.value = 'off'
+    disablePhysics()
+  }
 }
 
 function toArrowType(linkType: LinkType): ArrowType {
@@ -603,6 +661,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   }
   idGenerator = new IdGenerator()
   idMapping = new IdMapping()
+  liveNodePositions.value = new Map()
   const nodes: jsonNode[] = state.nodes.map((node) => ({
     id: node.id,
     label: node.label,
@@ -700,6 +759,18 @@ const arrowSwitcherTarget = shallowRef<
 
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
+
+const isTabVisible = useElementVisibility(containerRef)
+watch(isTabVisible, (visible) => {
+  if (!visible) {
+    if (settleTimerId !== null) {
+      clearTimeout(settleTimerId)
+      settleTimerId = null
+    }
+    disablePhysics()
+    physicsMode.value = 'off'
+  }
+})
 const nodesWithWeights = computed(() =>
   nodeWeights
     ? state.nodes.filter((n) => nodeWeights.has(n.id))
@@ -723,6 +794,15 @@ let middleClickCleanup: (() => void) | undefined
 // doesn't lag behind until nodes-moved fires on mouseup.
 const liveNodePositions = shallowRef<Map<NodeId, { x: number; y: number }>>(new Map())
 
+// Clear live positions whenever state is committed (physics tick, undo, document load, etc.)
+// so stale drag coords can't override the freshly committed state.nodes.
+// During an active drag no state is committed, so the stateId is stable and
+// the dragObserver continues to populate liveNodePositions normally.
+watch(
+  () => state.stateId,
+  () => { liveNodePositions.value = new Map() },
+)
+
 const overlayNodes = computed(() => {
   const live = liveNodePositions.value
   if (live.size === 0) return state.nodes
@@ -737,6 +817,8 @@ onUnmounted(() => {
   dragObserver?.disconnect()
   doubleTapCleanup?.()
   middleClickCleanup?.()
+  settlePointerCleanup?.()
+  if (settleTimerId !== null) clearTimeout(settleTimerId)
 })
 
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
@@ -931,7 +1013,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
           @redo="emit('redo')"
           :show-physics="EntryState.ENABLE"
-          :physics-enabled="nodePhysicsEnabled"
+          :physics-mode="physicsMode"
           @toggle-physics="toggleNodePhysics"
           @help="isHelpOpened = !isHelpOpened"
           />

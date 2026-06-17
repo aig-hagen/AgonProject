@@ -38,7 +38,7 @@ import {
 import { computed } from 'vue'
 
 import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
-import { EntryState } from '@/modules/common/main-menu/types'
+import { EntryState, type PhysicsMode } from '@/modules/common/main-menu/types'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
 const {
@@ -49,7 +49,7 @@ const {
   showShare = EntryState.HIDE,
   showEvaluate = EntryState.HIDE,
   showPhysics = EntryState.HIDE,
-  physicsEnabled = false,
+  physicsMode = 'off' as PhysicsMode,
   layoutsToShow = [],
 } = defineProps<{
   showSave?: EntryState
@@ -59,7 +59,7 @@ const {
   showShare?: EntryState
   showEvaluate?: EntryState
   showPhysics?: EntryState
-  physicsEnabled?: boolean
+  physicsMode?: PhysicsMode
   layoutsToShow?: Layout[]
 }>()
 
@@ -196,7 +196,8 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
             <span class="flex items-center gap-2">
               <BoltIcon class="size-5 opacity-70" />Node Physics
             </span>
-            <CheckIcon v-if="physicsEnabled" class="size-4 opacity-70" />
+            <CheckIcon v-if="physicsMode === 'on'" class="size-4 opacity-70" />
+            <SparklesIcon v-else-if="physicsMode === 'settle'" class="size-4 opacity-70" />
           </a>
         </li>
       </template>

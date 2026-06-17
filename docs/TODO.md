@@ -1,14 +1,24 @@
 ## Name Ideas
-- kratos (power/strength; what winning an argument can confer)
-- aporia (puzzlement/deadlock; the productive state of being stuck, often where Socratic dialogue begins)
-- kosmos (order/beauty; the idea that a good argument has an elegant shape)
-- agora (the central public space of a Greek city; the primary site of civic debate, commerce, and encounter)
-- argnexus
-- polyarg
-- argkit
-- argsuite
-- argvault
-- openarg :(
+- Draco
+- Kratos
+- Athena
+- Hades
+- Aporia (puzzlement/deadlock; the productive state of being stuck, often where Socratic dialogue begins)
+- Kosmos (order/beauty; the idea that a good argument has an elegant shape)
+- Agora (the central public space of a Greek city; the primary site of civic debate, commerce, and encounter)
 - platagon  Plato + Agon (agon = contest/debate in Greek)
 - formagon
-- argonline
+- openarg :(
+- Prism
+- Faros
+- Chroniton
+- Platoform
+
+- PolyArg
+- ArgKit
+- ArgSuite
+- ArgVault
+- ArgOnline
+- ArgNexus
+- ArgTool
+- ArgWorks

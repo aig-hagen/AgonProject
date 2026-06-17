@@ -367,7 +367,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           v-show="loadedDocument.id === selectedDocumentId"
           :key="loadedDocument.id"
           :is="loadedDocument.module.editorComponent"
-          @change="updateDocument"
+          @change="(state) => { if (loadedDocument.id === selectedDocumentId) updateDocument(state) }"
           @new="createAndSelectBlankDocument"
           @load="loadFile"
           @generate="router.push(documentModule?.generateHref ?? '/generate')"
