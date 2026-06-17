@@ -18,6 +18,7 @@
  */
 import * as z from 'zod'
 
+import { Layout } from '@/modules/common/main-menu/layouting'
 import {
   type DeserializationResult,
   JsonSyntaxError,
@@ -136,6 +137,35 @@ export function validateLinks(
       }
     })
   }
+}
+
+export const ExampleSaveExtension = {
+  name: z.string().optional(),
+  description: z.string().optional(),
+  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
+}
+
+export function loadExampleFromJsonWithSchema<
+  S extends z.ZodType<{ name?: string; description?: string; layoutType?: Layout }>,
+  F,
+>(
+  schema: S,
+  json: unknown,
+  buildFn: (data: Omit<z.infer<S>, 'name' | 'description' | 'layoutType'>) => F,
+): { framework: F; name?: string; description?: string; layoutType?: Layout } {
+  const result = schema.safeParse(json)
+  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
+  const { name, description, layoutType, ...rest } = result.data
+  return {
+    framework: buildFn(rest as Omit<z.infer<S>, 'name' | 'description' | 'layoutType'>),
+    name,
+    description,
+    layoutType,
+  }
+}
+
+export function makeCanLoadFromObject(apiVersion: string): (dataObject: Record<string, unknown>) => boolean {
+  return (dataObject) => dataObject['apiVersion'] === apiVersion
 }
 
 export function loadFromStringWithSchema<SchemaT, ResultT>(

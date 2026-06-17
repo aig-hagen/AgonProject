@@ -19,21 +19,19 @@
 import * as z from 'zod'
 
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import {} from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import {
   ArgumentsSaveSchema,
+  ExampleSaveExtension,
   type LinksSave,
   LinksSaveSchema,
+  loadExampleFromJsonWithSchema,
+  loadFromStringWithSchema,
+  makeCanLoadFromObject,
   toFormatedJsonString,
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
-import { Layout } from '@/modules/common/main-menu/layouting'
-import {
-  type DeserializationResult,
-  JsonSyntaxError,
-  ValidationError,
-} from '@/modules/common/save/load'
+import type { DeserializationResult } from '@/modules/common/save/load'
 
 const API_VERSION = 'argumentation-framework/v1' as const
 
@@ -48,6 +46,8 @@ export const SaveSchema = z
   })
 
 export type Save = z.infer<typeof SaveSchema>
+
+export const ExampleSaveSchema = SaveSchema.extend(ExampleSaveExtension)
 
 export function saveAsString(argumentation: AbstractArgumentation<ArgumentData>, name: string): string {
   const argumentsSave = Object.create(null)
@@ -76,73 +76,37 @@ export function loadFromString(
   dtoString: string,
   fileName: string,
 ): DeserializationResult<AbstractArgumentation<ArgumentData>> {
-  let unvalidatedData: unknown
-  try {
-    unvalidatedData = JSON.parse(dtoString)
-  } catch (e) {
-    return {
-      success: false,
-      errors: [new JsonSyntaxError((e as Error).message, fileName)],
+  return loadFromStringWithSchema(ExampleSaveSchema, dtoString, fileName, (data) => {
+    const argumentation = new AbstractArgumentation<ArgumentData>()
+    for (const [id, argumentData] of Object.entries(data.arguments)) {
+      argumentation.addArgument(parseInt(id, 10), {
+        name: argumentData.name,
+        x: argumentData.x,
+        y: argumentData.y,
+      })
     }
-  }
-
-  const result = ExampleSaveSchema.safeParse(unvalidatedData)
-  if (!result.success) {
-    return {
-      success: false,
-      errors: [new ValidationError(z.prettifyError(result.error), fileName)],
+    for (const [attackerId, attackedId] of data.attacks) {
+      argumentation.addAttack(attackerId, attackedId)
     }
-  }
-  const dto = result.data
-
-  const argumentation = new AbstractArgumentation<ArgumentData>()
-  for (const [id, argumentData] of Object.entries(dto.arguments)) {
-    const numericId = parseInt(id, 10)
-    argumentation.addArgument(numericId, {
-      name: argumentData.name,
-      x: argumentData.x,
-      y: argumentData.y,
-    })
-  }
-  for (const [attackerId, attackedId] of dto.attacks) {
-    argumentation.addAttack(attackerId, attackedId)
-  }
-
-  return {
-    success: true,
-    data: argumentation,
-  }
+    return argumentation
+  })
 }
 
-export const ExampleSaveSchema = SaveSchema.extend({
-  name: z.string().optional(),
-  description: z.string().optional(),
-  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
-})
-
-export function loadExampleFromJson(json: unknown): {
-  framework: AbstractArgumentation<ArgumentData>
-  name?: string
-  description?: string
-  layoutType?: Layout
-} {
-  const result = ExampleSaveSchema.safeParse(json)
-  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
-  const { name, description, layoutType, ...rest } = result.data
-  const framework = new AbstractArgumentation<ArgumentData>()
-  for (const [id, argumentData] of Object.entries(rest.arguments)) {
-    framework.addArgument(parseInt(id, 10), {
-      name: argumentData.name,
-      x: argumentData.x,
-      y: argumentData.y,
-    })
-  }
-  for (const [attackerId, attackedId] of rest.attacks) {
-    framework.addAttack(attackerId, attackedId)
-  }
-  return { framework, name, description, layoutType }
+export function loadExampleFromJson(json: unknown) {
+  return loadExampleFromJsonWithSchema(ExampleSaveSchema, json, (data) => {
+    const framework = new AbstractArgumentation<ArgumentData>()
+    for (const [id, argumentData] of Object.entries(data.arguments)) {
+      framework.addArgument(parseInt(id, 10), {
+        name: argumentData.name,
+        x: argumentData.x,
+        y: argumentData.y,
+      })
+    }
+    for (const [attackerId, attackedId] of data.attacks) {
+      framework.addAttack(attackerId, attackedId)
+    }
+    return framework
+  })
 }
 
-export function canLoadFromObject(dataObject: Record<string, unknown>) {
-  return dataObject['apiVersion'] === API_VERSION
-}
+export const canLoadFromObject = makeCanLoadFromObject(API_VERSION)

@@ -22,6 +22,7 @@ import { SetAF,type SetAfArgumentData } from '@/modules/collective-attacks-argum
 import {
   ArgumentIdSaveSchema,
   loadFromStringWithSchema,
+  makeCanLoadFromObject,
   toFormatedJsonString,
 } from '@/modules/common/argumentation/save/saveFormat'
 import type { DeserializationResult } from '@/modules/common/save/load'
@@ -108,6 +109,4 @@ export function loadFromString(
   })
 }
 
-export function canLoadFromObject(dataObject: Record<string, unknown>): boolean {
-  return dataObject['apiVersion'] === API_VERSION
-}
+export const canLoadFromObject = makeCanLoadFromObject(API_VERSION)

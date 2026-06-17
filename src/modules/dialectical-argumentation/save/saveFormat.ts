@@ -20,11 +20,13 @@ import * as z from 'zod'
 
 import {
   ArgumentIdSaveSchema,
+  ExampleSaveExtension,
+  loadExampleFromJsonWithSchema,
   loadFromStringWithSchema,
+  makeCanLoadFromObject,
   toFormatedJsonString,
 } from '@/modules/common/argumentation/save/saveFormat'
-import { Layout } from '@/modules/common/main-menu/layouting'
-import { type DeserializationResult } from '@/modules/common/save/load'
+import type { DeserializationResult } from '@/modules/common/save/load'
 import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
 import { FormulaNodeSchema } from '@/modules/dialectical-argumentation/condition/formulaSchema'
 import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
@@ -98,41 +100,29 @@ export function loadFromString(
   })
 }
 
-export const ExampleSaveSchema = SaveSchema.extend({
-  name: z.string().optional(),
-  description: z.string().optional(),
-  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
-})
+export const ExampleSaveSchema = SaveSchema.extend(ExampleSaveExtension)
 
-export function loadExampleFromJson(json: unknown): {
-  framework: DialecticalArgumentation<AdfArgumentData>
-  name?: string
-  description?: string
-  layoutType?: Layout
-} {
-  const result = ExampleSaveSchema.safeParse(json)
-  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
-  const { name, description, layoutType, ...rest } = result.data
-  const adf = new DialecticalArgumentation<AdfArgumentData>()
-  for (const [id, argumentData] of Object.entries(rest.arguments)) {
-    const numericId = parseInt(id, 10)
-    const conditionResult = FormulaNodeSchema.safeParse(argumentData.condition)
-    const condition: FormulaNode = conditionResult.success
-      ? conditionResult.data
-      : { type: 'tautology' }
-    adf.addArgument(numericId, {
-      name: argumentData.name,
-      x: argumentData.x,
-      y: argumentData.y,
-      condition,
-    })
-  }
-  for (const [id] of adf.arguments()) {
-    adf.setCondition(id, adf.getArgument(id).condition)
-  }
-  return { framework: adf, name, description, layoutType }
+export function loadExampleFromJson(json: unknown) {
+  return loadExampleFromJsonWithSchema(ExampleSaveSchema, json, (data) => {
+    const adf = new DialecticalArgumentation<AdfArgumentData>()
+    for (const [id, argumentData] of Object.entries(data.arguments)) {
+      const numericId = parseInt(id, 10)
+      const conditionResult = FormulaNodeSchema.safeParse(argumentData.condition)
+      const condition: FormulaNode = conditionResult.success
+        ? conditionResult.data
+        : { type: 'tautology' }
+      adf.addArgument(numericId, {
+        name: argumentData.name,
+        x: argumentData.x,
+        y: argumentData.y,
+        condition,
+      })
+    }
+    for (const [id] of adf.arguments()) {
+      adf.setCondition(id, adf.getArgument(id).condition)
+    }
+    return adf
+  })
 }
 
-export function canLoadFromObject(dataObject: Record<string, unknown>) {
-  return dataObject['apiVersion'] === API_VERSION
-}
+export const canLoadFromObject = makeCanLoadFromObject(API_VERSION)

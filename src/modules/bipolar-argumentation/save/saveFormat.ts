@@ -22,14 +22,16 @@ import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import {
   ArgumentsSaveSchema,
+  ExampleSaveExtension,
   type LinksSave,
   LinksSaveSchema,
+  loadExampleFromJsonWithSchema,
   loadFromStringWithSchema,
+  makeCanLoadFromObject,
   toFormatedJsonString,
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
-import { Layout } from '@/modules/common/main-menu/layouting'
-import { type DeserializationResult } from '@/modules/common/save/load'
+import type { DeserializationResult } from '@/modules/common/save/load'
 
 const API_VERSION = 'bipolar-argumentation-framework/v1' as const
 
@@ -44,11 +46,7 @@ export const SaveSchema = z
     validateLinks(ctx, argumentation.arguments, argumentation.attacks, argumentation.supports)
   })
 
-export const ExampleSaveSchema = SaveSchema.extend({
-  name: z.string().optional(),
-  description: z.string().optional(),
-  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
-})
+export const ExampleSaveSchema = SaveSchema.extend(ExampleSaveExtension)
 
 export type Save = z.infer<typeof SaveSchema>
 
@@ -103,32 +101,24 @@ export function loadFromString(
   })
 }
 
-export function loadExampleFromJson(json: unknown): {
-  framework: BipoloarArgumentation<ArgumentData>
-  name?: string
-  description?: string
-  layoutType?: Layout
-} {
-  const result = ExampleSaveSchema.safeParse(json)
-  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
-  const { name, description, layoutType, ...rest } = result.data
-  const framework = new BipoloarArgumentation<ArgumentData>()
-  for (const [id, argumentData] of Object.entries(rest.arguments)) {
-    framework.addArgument(parseInt(id, 10), {
-      name: argumentData.name,
-      x: argumentData.x,
-      y: argumentData.y,
-    })
-  }
-  for (const [attackerId, attackedId] of rest.attacks) {
-    framework.addAttack(attackerId, attackedId)
-  }
-  for (const [supporterId, supportedId] of rest.supports) {
-    framework.addSupport(supporterId, supportedId)
-  }
-  return { framework, name, description, layoutType }
+export function loadExampleFromJson(json: unknown) {
+  return loadExampleFromJsonWithSchema(ExampleSaveSchema, json, (data) => {
+    const framework = new BipoloarArgumentation<ArgumentData>()
+    for (const [id, argumentData] of Object.entries(data.arguments)) {
+      framework.addArgument(parseInt(id, 10), {
+        name: argumentData.name,
+        x: argumentData.x,
+        y: argumentData.y,
+      })
+    }
+    for (const [attackerId, attackedId] of data.attacks) {
+      framework.addAttack(attackerId, attackedId)
+    }
+    for (const [supporterId, supportedId] of data.supports) {
+      framework.addSupport(supporterId, supportedId)
+    }
+    return framework
+  })
 }
 
-export function canLoadFromObject(dataObject: Record<string, unknown>) {
-  return dataObject['apiVersion'] === API_VERSION
-}
+export const canLoadFromObject = makeCanLoadFromObject(API_VERSION)

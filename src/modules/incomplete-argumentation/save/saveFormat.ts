@@ -20,13 +20,15 @@ import * as z from 'zod'
 
 import {
   ArgumentIdSaveSchema,
+  ExampleSaveExtension,
   type LinksSave,
   LinksSaveSchema,
+  loadExampleFromJsonWithSchema,
   loadFromStringWithSchema,
+  makeCanLoadFromObject,
   toFormatedJsonString,
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
-import { Layout } from '@/modules/common/main-menu/layouting'
 import type { DeserializationResult } from '@/modules/common/save/load'
 import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 
@@ -107,39 +109,27 @@ export function loadFromString(
   })
 }
 
-export const ExampleSaveSchema = SaveSchema.extend({
-  name: z.string().optional(),
-  description: z.string().optional(),
-  layoutType: z.enum(Object.values(Layout) as [Layout, ...Layout[]]).optional(),
-})
+export const ExampleSaveSchema = SaveSchema.extend(ExampleSaveExtension)
 
-export function loadExampleFromJson(json: unknown): {
-  framework: IncompleteArgumentation<IafArgumentData>
-  name?: string
-  description?: string
-  layoutType?: Layout
-} {
-  const result = ExampleSaveSchema.safeParse(json)
-  if (!result.success) throw new Error(`Invalid example JSON: ${z.prettifyError(result.error)}`)
-  const { name, description, layoutType, ...rest } = result.data
-  const framework = new IncompleteArgumentation<IafArgumentData>()
-  for (const [id, argumentData] of Object.entries(rest.arguments)) {
-    framework.addArgument(parseInt(id, 10), {
-      name: argumentData.name,
-      x: argumentData.x,
-      y: argumentData.y,
-      uncertain: argumentData.uncertain,
-    })
-  }
-  for (const [sourceId, targetId] of rest.definiteAttacks) {
-    framework.addDefiniteAttack(sourceId, targetId)
-  }
-  for (const [sourceId, targetId] of rest.uncertainAttacks) {
-    framework.addUncertainAttack(sourceId, targetId)
-  }
-  return { framework, name, description, layoutType }
+export function loadExampleFromJson(json: unknown) {
+  return loadExampleFromJsonWithSchema(ExampleSaveSchema, json, (data) => {
+    const framework = new IncompleteArgumentation<IafArgumentData>()
+    for (const [id, argumentData] of Object.entries(data.arguments)) {
+      framework.addArgument(parseInt(id, 10), {
+        name: argumentData.name,
+        x: argumentData.x,
+        y: argumentData.y,
+        uncertain: argumentData.uncertain,
+      })
+    }
+    for (const [sourceId, targetId] of data.definiteAttacks) {
+      framework.addDefiniteAttack(sourceId, targetId)
+    }
+    for (const [sourceId, targetId] of data.uncertainAttacks) {
+      framework.addUncertainAttack(sourceId, targetId)
+    }
+    return framework
+  })
 }
 
-export function canLoadFromObject(dataObject: Record<string, unknown>): boolean {
-  return dataObject['apiVersion'] === API_VERSION
-}
+export const canLoadFromObject = makeCanLoadFromObject(API_VERSION)
