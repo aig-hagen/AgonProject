@@ -481,6 +481,20 @@ onMounted(() => {
     }
     graphHost.addEventListener('touchstart', handleDoubleTap, { capture: true })
     doubleTapCleanup = () => graphHost.removeEventListener('touchstart', handleDoubleTap, { capture: true })
+
+    const handleMiddleClick = (event: MouseEvent) => {
+      if (event.button !== 1) return
+      if ((event.target as Element)?.closest('.graph-controller__node-container, .graph-controller__link')) return
+      event.preventDefault()
+      const margin = ARGUMENT_RADIUS_IN_PX * 2
+      graphComponentRef.value!.centerView(
+        { top: margin, right: margin, bottom: margin, left: margin },
+        undefined,
+        1,
+      )
+    }
+    ;(svgCanvas as HTMLElement).addEventListener('auxclick', handleMiddleClick)
+    middleClickCleanup = () => (svgCanvas as HTMLElement).removeEventListener('auxclick', handleMiddleClick)
   }
 })
 
@@ -656,6 +670,7 @@ function formatWeightFontSize(w: number): number {
 let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
 let doubleTapCleanup: (() => void) | undefined
+let middleClickCleanup: (() => void) | undefined
 
 // Live node positions updated on every D3 tick during drag, so the overlay
 // doesn't lag behind until nodes-moved fires on mouseup.
@@ -674,6 +689,7 @@ onUnmounted(() => {
   zoomObserver?.disconnect()
   dragObserver?.disconnect()
   doubleTapCleanup?.()
+  middleClickCleanup?.()
 })
 
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
