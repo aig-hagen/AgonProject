@@ -24,7 +24,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
-import { useDocumentMetadata } from '@/modules/common/documents/useDocuments'
+import { LAST_SELECTED_DOCUMENT_KEY, useDocumentMetadata } from '@/modules/common/documents/useDocuments'
 import { fetchShare } from '@/modules/common/share/useShare'
 
 const { db, modules } = defineProps<{
@@ -83,7 +83,8 @@ onMounted(async () => {
       ? nameFromJson
       : importModule.newNamePrefix
 
-  await createDocument(documentName, result.data as Objectish)
+  const newId = await createDocument(documentName, result.data as Objectish)
+  localStorage.setItem(LAST_SELECTED_DOCUMENT_KEY, String(newId))
   await router.replace('/')
 })
 </script>

@@ -16,7 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { SetAF,SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import tandemTripJson from '@/modules/collective-attacks-argumentation/examples/tandem_trip.json'
+import type { SetAF, SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import { loadExampleFromJson } from '@/modules/collective-attacks-argumentation/save/saveFormat'
 import type { Example } from '@/modules/common/examples'
 
-export const datasets: Example<SetAF<SetAfArgumentData>>[] = []
+const exampleJsons: unknown[] = [tandemTripJson]
+
+export const datasets: Example<SetAF<SetAfArgumentData>>[] = exampleJsons.map((json) => {
+  const { name, description } = loadExampleFromJson(json)
+  return {
+    name: name ?? 'unknown',
+    description,
+    load: () => loadExampleFromJson(json).framework,
+  }
+})

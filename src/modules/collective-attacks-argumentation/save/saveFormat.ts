@@ -21,6 +21,8 @@ import * as z from 'zod'
 import { SetAF,type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
   ArgumentIdSaveSchema,
+  ExampleSaveExtension,
+  loadExampleFromJsonWithSchema,
   loadFromStringWithSchema,
   makeCanLoadFromObject,
   toFormatedJsonString,
@@ -110,3 +112,23 @@ export function loadFromString(
 }
 
 export const canLoadFromObject = makeCanLoadFromObject(API_VERSION)
+
+const ExampleSaveSchema = z.object({
+  apiVersion: z.literal(API_VERSION),
+  ...ExampleSaveExtension,
+  arguments: SetAfArgumentsSaveSchema,
+  attacks: SetAfAttacksSaveSchema,
+})
+
+export function loadExampleFromJson(json: unknown) {
+  return loadExampleFromJsonWithSchema(ExampleSaveSchema, json, ({ arguments: args, attacks }) => {
+    const af = new SetAF<SetAfArgumentData>()
+    for (const [id, argData] of Object.entries(args)) {
+      af.addArgument(parseInt(id, 10), { name: argData.name, x: argData.x, y: argData.y })
+    }
+    for (const { attackers, target } of attacks) {
+      af.addCollectiveAttack(attackers, target)
+    }
+    return af
+  })
+}

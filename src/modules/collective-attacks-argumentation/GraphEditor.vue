@@ -81,11 +81,14 @@ function transformToEditorState(
     y: data.y,
   }))
   const links: GraphEditorStateLink[] = []
-  const hyperLinks: GraphEditorStateHyperLink[] = af.attacks().map((attack) => ({
-    sourceIds: attack.attackers,
-    targetId: attack.target,
-    type: LinkType.SINGLE,
-  }))
+  const hyperLinks: GraphEditorStateHyperLink[] = []
+  for (const attack of af.attacks()) {
+    if (attack.attackers.length === 1) {
+      links.push({ sourceId: attack.attackers[0]!, targetId: attack.target, type: LinkType.SINGLE })
+    } else {
+      hyperLinks.push({ sourceIds: attack.attackers, targetId: attack.target, type: LinkType.SINGLE })
+    }
+  }
   return { stateId: state.stateId, nodes, links, hyperLinks, redraw }
 }
 
@@ -126,8 +129,21 @@ function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
   })
 }
 
+function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
+  createNewState((draft) => { draft.addCollectiveAttack([data.sourceId], data.targetId) })
+}
+
+function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
+  createNewState((draft) => {
+    const attack = draft.attacks().find(
+      (a) => a.attackers.length === 1 && a.attackers[0] === data.sourceId && a.target === data.targetId,
+    )
+    if (attack !== undefined) draft.deleteCollectiveAttack(attack.id)
+  })
+}
+
 function onHyperLinkCreated(data: { sourceIds: NodeId[]; targetId: NodeId }) {
-  createNewState((draft) => draft.addCollectiveAttack(data.sourceIds, data.targetId))
+  createNewState((draft) => { draft.addCollectiveAttack(data.sourceIds, data.targetId) })
 }
 
 function onHyperLinkDeleted(data: { sourceIds: NodeId[]; targetId: NodeId }) {
@@ -179,12 +195,14 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     @node-deleted="onNodeDeleted"
     @node-label-edited="onNodeLabelEdited"
     @nodes-moved="onNodesMoved"
+    @link-created="onLinkCreated"
+    @link-deleted="onLinkDeleted"
     @hyper-link-created="onHyperLinkCreated"
     @hyper-link-deleted="onHyperLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
-    :allow-link-creation="false"
-    :allow-link-deletion="false"
+    :allow-link-creation="true"
+    :allow-link-deletion="true"
     :allow-hyper-link-creation="true"
     @undo="emit('undo')"
     @redo="emit('redo')"

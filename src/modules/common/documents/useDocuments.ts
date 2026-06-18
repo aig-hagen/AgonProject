@@ -182,7 +182,7 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
   }
 }
 
-const LAST_SELECTED_DOCUMENT_KEY = 'last-selected-document'
+export const LAST_SELECTED_DOCUMENT_KEY = 'last-selected-document'
 
 export function useSelectedDocumentId(documentsRef: Readonly<Ref<Readonly<DocumentMetadata[]>>>) {
   const selectedDocumentRef = shallowRef<DocumentId | undefined>(undefined)

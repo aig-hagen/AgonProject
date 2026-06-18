@@ -1,0 +1,16 @@
+{
+  "apiVersion": "set-af/v1",
+  "name": "tandem_trip",
+  "description": "Three friends planning a tandem trip - only two people fit on the bike.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": { "name": "Alice",   "x": 150, "y": 30  },
+    "1": { "name": "Bob",     "x": 17,  "y": 210 },
+    "2": { "name": "Charlie", "x": 283, "y": 210 }
+  },
+  "attacks": [
+    { "id": 0, "attackers": [0, 1], "target": 2 },
+    { "id": 1, "attackers": [0, 2], "target": 1 },
+    { "id": 2, "attackers": [1, 2], "target": 0 }
+  ]
+}
