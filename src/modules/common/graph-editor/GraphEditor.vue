@@ -21,6 +21,7 @@ import {
   ArrowType,
   EVENT_CAUSE,
   GraphComponent,
+  type jsonHyperLink,
   type jsonLink,
   type jsonNode,
   NodeShape,
@@ -83,7 +84,7 @@ import { useTheme } from '@/modules/common/theme/useTheme'
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
 
-const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCreation = true, allowLinkDeletion = true } = defineProps<{
+const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
@@ -91,6 +92,7 @@ const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCrea
   graphStyle?: GraphStyle
   allowLinkCreation?: boolean
   allowLinkDeletion?: boolean
+  allowHyperLinkCreation?: boolean
 }>()
 
 const { isDark } = useTheme()
@@ -190,6 +192,19 @@ const emit = defineEmits<{
       targetId: NodeId
     },
   ]
+  hyperLinkCreated: [
+    data: {
+      sourceIds: NodeId[]
+      targetId: NodeId
+      type: LinkType
+    },
+  ]
+  hyperLinkDeleted: [
+    data: {
+      sourceIds: NodeId[]
+      targetId: NodeId
+    },
+  ]
   undo: []
   redo: []
   save: []
@@ -235,6 +250,19 @@ function getNextArgumentName() {
 
 function hasMoreThenOneEntry<T>(array: T[]): array is [T, T, ...T[]] & [...T[], T, T] {
   return array.length > 1
+}
+
+function parseHyperLinkId(hyperLinkId: string) {
+  const dashIdx = hyperLinkId.lastIndexOf('-')
+  const sourcesPart = hyperLinkId.slice(0, dashIdx)
+  const targetPart = hyperLinkId.slice(dashIdx + 1)
+  const sourceIds = sourcesPart.split(',').map(Number)
+  const targetId = parseInt(targetPart)
+  if (sourceIds.some((id) => !Number.isSafeInteger(id)))
+    throw new Error(`HyperLink with ID \`${hyperLinkId}\` has invalid source IDs.`)
+  if (!Number.isSafeInteger(targetId))
+    throw new Error(`HyperLink with ID \`${hyperLinkId}\` has invalid target ID ${targetId}.`)
+  return { sourceIds, targetId }
 }
 
 function parseLinkId(linkId: string) {
@@ -313,6 +341,36 @@ function onNodeDeleted(
 
   const publicId = idMapping.delete(node.id)
   emit('nodeDeleted', { id: publicId })
+  triggerSettle()
+}
+
+function onHyperLinkCreated(
+  link: { id: string; label?: string },
+  cause: EVENT_CAUSE,
+) {
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
+  const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
+  const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
+  const publicTargetId = idMapping.getOrFail(internalTargetId)
+  emit('hyperLinkCreated', { sourceIds: publicSourceIds, targetId: publicTargetId, type: selectedLinkType.value })
+  triggerSettle()
+  void nextTick(() => {
+    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
+    graphComponentRef.value!.setColor(linkColor, link.id)
+    applyHyperLinkSourceColor(link.id, linkColor)
+  })
+}
+
+function onHyperLinkDeleted(
+  link: { id: string; label?: string },
+  cause: EVENT_CAUSE,
+) {
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
+  const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
+  if (!internalSourceIds.every((id) => idMapping.has(id)) || !idMapping.has(internalTargetId)) return
+  const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
+  const publicTargetId = idMapping.getOrFail(internalTargetId)
+  emit('hyperLinkDeleted', { sourceIds: publicSourceIds, targetId: publicTargetId })
   triggerSettle()
 }
 
@@ -404,6 +462,7 @@ onMounted(() => {
   graphComponent.toggleZoom(true)
   graphComponent.toggleNodePhysics(false)
   graphComponent.toggleCollisionDetection(false)
+  graphComponent.toggleHyperLinkCreationViaGUI(allowHyperLinkCreation)
   graphComponent.setDefaults({
     nodeAutoGrowToLabelSize: false,
     nodeProps: {
@@ -655,6 +714,17 @@ function toArrowType(linkType: LinkType): ArrowType {
   throw new Error('Encountered unsupported linkType')
 }
 
+function applyHyperLinkSourceColor(hyperLinkId: string, color: string): void {
+  const el = graphComponentRef.value?.$el as Element | undefined
+  if (!el) return
+  const targetPath = el.querySelector(`#${CSS.escape(`${graphComponentId}-hyperlink-${hyperLinkId}`)}`)
+  const container = targetPath?.closest('.graph-controller__hyperlink-container')
+  if (!container) return
+  container.querySelectorAll<SVGPathElement>('.graph-controller__hyperlink-source-path').forEach((path) => {
+    path.style.stroke = color
+  })
+}
+
 function applyLinkDash(linkId: string, dashArray?: string): void {
   const el = graphComponentRef.value?.$el?.querySelector(
     `.graph-controller__link[id$="-link-${linkId}"]`,
@@ -685,8 +755,13 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
     arrowType: toArrowType(link.type),
   }))
+  const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => ({
+    sourceIds: hyperLink.sourceIds,
+    targetId: hyperLink.targetId,
+    color: linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor,
+  }))
 
-  graphComponent.setGraph({ nodes, links }, true)
+  graphComponent.setGraph({ nodes, links, hyperLinks }, true)
   const { nodes: importedNodes } = graphComponent.getGraph(
     'json',
     false,
@@ -703,9 +778,18 @@ function setGraph(state: GraphEditorState, center: boolean): void {
 
   void nextTick(() => {
     for (const link of state.links) {
-      const internalSourceId = idMapping.getOrFail(link.sourceId)
-      const internalTargetId = idMapping.getOrFail(link.targetId)
+      const internalSourceId = idMapping.getOrFailReverse(link.sourceId)
+      const internalTargetId = idMapping.getOrFailReverse(link.targetId)
       applyLinkDash(`${internalSourceId}-${internalTargetId}`, linkConfigs[link.type]?.dashArray)
+    }
+    for (const hyperLink of (state.hyperLinks ?? [])) {
+      const internalSourceIds = hyperLink.sourceIds
+        .map((id) => idMapping.getOrFailReverse(id))
+        .sort((a, b) => a - b)
+      const internalTargetId = idMapping.getOrFailReverse(hyperLink.targetId)
+      const internalHyperLinkId = `${internalSourceIds.join(',')}-${internalTargetId}`
+      const color = linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor
+      applyHyperLinkSourceColor(internalHyperLinkId, color)
     }
     for (const importedNode of importedNodes) {
       const node = state.nodes.find((n) => n.id === importedNode.idImported)
@@ -945,6 +1029,8 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       @link-clicked="onLinkClicked"
       @link-created="onLinkCreated"
       @link-deleted="onLinkDeleted"
+      @hyper-link-created="onHyperLinkCreated"
+      @hyper-link-deleted="onHyperLinkDeleted"
       @nodes-moved="onNodesMoved"
       @label-edited="onLabelEdited"
       :id="graphComponentId"

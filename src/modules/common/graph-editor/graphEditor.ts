@@ -83,11 +83,18 @@ export interface GraphEditorStateLink {
   type: LinkType
 }
 
+export interface GraphEditorStateHyperLink {
+  sourceIds: NodeId[]
+  targetId: NodeId
+  type: LinkType
+}
+
 export interface GraphEditorState {
   stateId: UUID
   redraw: boolean
   nodes: GraphEditorStateNode[]
   links: GraphEditorStateLink[]
+  hyperLinks?: GraphEditorStateHyperLink[]
 }
 
 export interface Highlight {

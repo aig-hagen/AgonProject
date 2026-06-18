@@ -1,19 +1,17 @@
 ## Name Ideas
+- Agora (the central public space of a Greek city; the primary site of civic debate, commerce, and encounter)
+- Platagon  Plato + Agon (agon = contest/debate in Greek)
+- Formagon
+- openArg
 - Draco
+- Cortex
 - Kratos
 - Athena
 - Hades
-- Aporia (puzzlement/deadlock; the productive state of being stuck, often where Socratic dialogue begins)
-- Kosmos (order/beauty; the idea that a good argument has an elegant shape)
-- Agora (the central public space of a Greek city; the primary site of civic debate, commerce, and encounter)
-- platagon  Plato + Agon (agon = contest/debate in Greek)
-- formagon
-- openarg :(
 - Prism
 - Faros
-- Chroniton
-- Platoform
 
+- Argex
 - PolyArg
 - ArgKit
 - ArgSuite
