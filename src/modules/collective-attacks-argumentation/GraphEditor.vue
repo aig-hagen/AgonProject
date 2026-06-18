@@ -17,21 +17,30 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import type { SetAF,SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
-import type { ExportFileData } from '@/modules/common/export'
-import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
-import type { DocumentState } from '@/modules/common/state'
+import { shallowRef, watch } from 'vue'
 
-defineProps<{
+import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import type { ExportFileData } from '@/modules/common/export'
+import {
+  type GraphEditorStateHyperLink,
+  type GraphEditorStateLink,
+  type GraphEditorStateNode,
+  type HistoryState,
+  LinkType,
+  type NodeId,
+} from '@/modules/common/graph-editor/graphEditor'
+import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { type DocumentState, modifyDocument } from '@/modules/common/state'
+
+const { state, historyState } = defineProps<{
   state: DocumentState<SetAF<SetAfArgumentData>>
   historyState: HistoryState
   documentId: number
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   load: []
   new: []
-  generate: []
   change: [state: DocumentState<SetAF<SetAfArgumentData>>]
   undo: []
   redo: []
@@ -39,9 +48,117 @@ defineEmits<{
   share: []
   export: [filedata: ExportFileData]
 }>()
+
+const renderedState = shallowRef(state)
+const editorState = shallowRef(transformToEditorState(state, true))
+
+watch(
+  () => state,
+  () => {
+    if (state.stateId === renderedState.value.stateId) return
+    renderedState.value = state
+    editorState.value = transformToEditorState(state, true)
+  },
+)
+
+function transformToEditorState(
+  state: DocumentState<SetAF<SetAfArgumentData>>,
+  redraw: boolean,
+) {
+  const af = state.current.content
+  const nodes: GraphEditorStateNode[] = [...af.arguments()].map(([id, data]) => ({
+    id,
+    label: data.name,
+    x: data.x,
+    y: data.y,
+  }))
+  const links: GraphEditorStateLink[] = []
+  const hyperLinks: GraphEditorStateHyperLink[] = af.attacks().map((attack) => ({
+    sourceIds: attack.attackers,
+    targetId: attack.target,
+    type: LinkType.SINGLE,
+  }))
+  return { stateId: state.stateId, nodes, links, hyperLinks, redraw }
+}
+
+const linkConfig = {
+  SINGLE: { displayName: 'Collective Attack' },
+}
+
+function createNewState(recipe: (draft: SetAF<SetAfArgumentData>) => void) {
+  const nextState = modifyDocument(renderedState.value, recipe)
+  if (nextState !== undefined) {
+    renderedState.value = nextState
+    editorState.value = transformToEditorState(nextState, false)
+    emit('change', nextState)
+  }
+}
+
+function onNodeCreated(data: { id: NodeId; label: string; x: number; y: number }) {
+  createNewState((draft) => draft.addArgument(data.id, { name: data.label, x: data.x, y: data.y }))
+}
+
+function onNodeDeleted(data: { id: NodeId }) {
+  createNewState((draft) => draft.deleteArgument(data.id))
+}
+
+function onNodeLabelEdited(data: { id: NodeId; label: string }) {
+  createNewState((draft) => {
+    draft.getArgument(data.id).name = data.label
+  })
+}
+
+function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
+  createNewState((draft) => {
+    for (const node of data) {
+      const arg = draft.getArgument(node.id)
+      arg.x = node.x
+      arg.y = node.y
+    }
+  })
+}
+
+function onHyperLinkCreated(data: { sourceIds: NodeId[]; targetId: NodeId }) {
+  createNewState((draft) => draft.addCollectiveAttack(data.sourceIds, data.targetId))
+}
+
+function onHyperLinkDeleted(data: { sourceIds: NodeId[]; targetId: NodeId }) {
+  const sortedSourceIds = [...data.sourceIds].sort((a, b) => a - b)
+  createNewState((draft) => {
+    const attack = draft.attacks().find((a) => {
+      const sortedAttackers = [...a.attackers].sort((a, b) => a - b)
+      return (
+        a.target === data.targetId &&
+        sortedAttackers.length === sortedSourceIds.length &&
+        sortedAttackers.every((id, i) => id === sortedSourceIds[i])
+      )
+    })
+    if (attack !== undefined) {
+      draft.deleteCollectiveAttack(attack.id)
+    }
+  })
+}
 </script>
 <template>
-  <div class="h-full w-full flex items-center justify-center text-base-content/50">
-    <p>Editor for Argumentation Frameworks with Collective Attacks — coming soon</p>
-  </div>
+  <GraphEditor
+    v-if="editorState"
+    @new="emit('new')"
+    @load="emit('load')"
+    @node-created="onNodeCreated"
+    @node-deleted="onNodeDeleted"
+    @node-label-edited="onNodeLabelEdited"
+    @nodes-moved="onNodesMoved"
+    @hyper-link-created="onHyperLinkCreated"
+    @hyper-link-deleted="onHyperLinkDeleted"
+    :link-configs="linkConfig"
+    :state="editorState"
+    :allow-link-creation="false"
+    :allow-link-deletion="false"
+    :allow-hyper-link-creation="true"
+    @undo="emit('undo')"
+    @redo="emit('redo')"
+    @save="emit('save')"
+    @share="emit('share')"
+    :history-state="historyState"
+  />
 </template>

@@ -17,9 +17,10 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, nextTick, type Ref, ref, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onUnmounted, type Ref, ref, useTemplateRef, watch } from 'vue'
 
 import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
+import { TWEETY_TIMEOUT_IN_MS } from '@/modules/common/evaluation/tweety-project/fetch'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
@@ -71,6 +72,28 @@ const userCanTriggerFetch = computed(
   () => !evaluateContinuously.value && status.value !== 'success',
 )
 
+const TIMEOUT_S = Math.round(TWEETY_TIMEOUT_IN_MS / 1000)
+const remainingSeconds = ref(TIMEOUT_S)
+let countdownInterval: ReturnType<typeof setInterval> | null = null
+
+watch(isLoading, (loading) => {
+  if (loading) {
+    remainingSeconds.value = TIMEOUT_S
+    countdownInterval = setInterval(() => {
+      remainingSeconds.value = Math.max(0, remainingSeconds.value - 1)
+    }, 1000)
+  } else {
+    if (countdownInterval !== null) {
+      clearInterval(countdownInterval)
+      countdownInterval = null
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (countdownInterval !== null) clearInterval(countdownInterval)
+})
+
 const offset = computed(() => props.instanceOffset ?? 0)
 const basePos = computed(() => props.initialPositionBase ?? { x: 128, y: 64 })
 const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
@@ -87,6 +110,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
     :instance-offset="offset"
     :storage-key="props.storageKey"
     compactable
+    :minimizable="false"
     @focus="emit('focus')"
   >
     <template #default="{ compact }">
@@ -131,7 +155,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
             <span>Evaluation failed</span>
           </div>
           <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-            <span>Evaluating...</span>
+            <span>Evaluating... ({{ remainingSeconds }}s remaining)</span>
           </div>
           <slot name="results" :compact="compact" />
         </fieldset>

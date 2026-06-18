@@ -338,6 +338,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
       @select="selectDocument($event)"
       @create="createAndSelectBlankDocument"
       @delete="deleteDocument($event)"
+      @clear-all="documents.forEach((d) => deleteDocument(d.id))"
       @rename="(id, name) => renameDocument(id, name)"
       :db="db"
       :modules="modules"
@@ -359,6 +360,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
         <BlankDocumentCanvas
           v-if="!documentLoading && documentState === undefined"
           :module-cards="modules"
+          :source-document-id="selectedDocumentId"
           @open="overrideWithContent"
         ></BlankDocumentCanvas>
         <component

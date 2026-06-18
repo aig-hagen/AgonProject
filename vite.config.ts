@@ -70,6 +70,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/dung': 'http://localhost:8080/',
+      '/setaf': 'http://localhost:8080/',
       '/bipolar': 'http://localhost:8080/',
       '/rankings': 'http://localhost:8080/',
       '/serialisation': 'http://localhost:8080/',

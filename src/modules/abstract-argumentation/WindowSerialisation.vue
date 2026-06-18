@@ -293,6 +293,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
     :instance-offset="instanceOffset"
     :storage-key="storageKey"
     compactable
+    :minimizable="false"
     @focus="onWindowFocus"
   >
     <template #default="{ compact }">

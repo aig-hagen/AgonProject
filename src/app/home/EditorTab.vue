@@ -21,7 +21,7 @@ import { ArrowDownTrayIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outli
 import { useDebounceFn } from '@vueuse/core'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { useTemplateRef } from 'vue'
+import { nextTick, useTemplateRef } from 'vue'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
@@ -69,10 +69,12 @@ async function doRequestClose() {
     emit('delete')
   }
   closeModal.value?.showModal()
+  nextTick(() => deleteButtonRef.value?.focus())
 }
 
 const inputSizerRef = useTemplateRef('input-sizer')
 const closeModal = useTemplateRef('closeModal')
+const deleteButtonRef = useTemplateRef('deleteButton')
 
 const tabRef = useTemplateRef('tab')
 </script>
@@ -125,7 +127,7 @@ const tabRef = useTemplateRef('tab')
         <button class="btn btn-sm" @click="emit('save')">
           <ArrowDownTrayIcon class="size-4"></ArrowDownTrayIcon>Save
         </button>
-        <button class="btn btn-error btn-sm" @click="emit('delete')">
+        <button ref="deleteButton" class="btn btn-error btn-sm" @click="emit('delete')">
           <TrashIcon class="size-4"></TrashIcon>Delete
         </button>
       </div>

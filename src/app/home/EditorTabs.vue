@@ -17,13 +17,17 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="DocumentT extends Objectish">
-import { PlusIcon } from '@heroicons/vue/24/outline'
+import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
+import { nextTick, useAttrs, useTemplateRef } from 'vue'
 
 import EditorTab from '@/app/home/EditorTab.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
+
+defineOptions({ inheritAttrs: false })
+const attrs = useAttrs()
 
 defineProps<{
   data: readonly { readonly name: string; readonly id: number }[]
@@ -39,30 +43,73 @@ const emit = defineEmits<{
   delete: [id: number]
   create: []
   save: [id: number]
+  clearAll: []
 }>()
+
+const clearAllModal = useTemplateRef('clearAllModal')
+const clearAllButtonRef = useTemplateRef('clearAllButton')
+
+function openClearAllModal() {
+  clearAllModal.value?.showModal()
+  nextTick(() => clearAllButtonRef.value?.focus())
+}
 </script>
 
 <template>
-  <div role="tablist" class="tabs bg-base-200 tabs-lift flex-nowrap overflow-x-auto">
-    <EditorTab
-      ref="editorTab"
-      v-for="datum in data"
-      :key="datum.id"
-      :value="datum.name"
-      :active="datum.id === selected"
-      @delete="emit('delete', datum.id)"
-      @rename="emit('rename', datum.id, $event)"
-      @select="emit('select', datum.id)"
-      :document-id="datum.id"
-      :db="db"
-      :modules="modules"
-      @save="emit('save', datum.id)"
-      :showRenameHint="showRenameHint && datum.id === selected"
-    />
-    <div role="tab" class="tab sticky right-0 bg-base-200">
-      <button class="btn btn-square btn-xs btn-ghost" @click="emit('create')" title="Create">
-        <PlusIcon class="size-4"></PlusIcon>
+  <div class="flex bg-base-200" v-bind="attrs">
+    <div role="tablist" class="tabs tabs-lift flex-nowrap overflow-x-auto flex-1 min-w-0">
+      <EditorTab
+        ref="editorTab"
+        v-for="datum in data"
+        :key="datum.id"
+        :value="datum.name"
+        :active="datum.id === selected"
+        @delete="emit('delete', datum.id)"
+        @rename="emit('rename', datum.id, $event)"
+        @select="emit('select', datum.id)"
+        :document-id="datum.id"
+        :db="db"
+        :modules="modules"
+        @save="emit('save', datum.id)"
+        :showRenameHint="showRenameHint && datum.id === selected"
+      />
+      <div role="tab" class="tab">
+        <button class="btn btn-square btn-xs btn-ghost" @click="emit('create')" title="Create">
+          <PlusIcon class="size-4" />
+        </button>
+      </div>
+    </div>
+    <div v-if="data.length > 0" class="flex items-center px-1 shrink-0 border-b border-base-300">
+      <button
+        class="btn btn-square btn-xs btn-ghost text-error"
+        @click="openClearAllModal"
+        title="Delete all"
+      >
+        <TrashIcon class="size-4" />
       </button>
     </div>
   </div>
+  <dialog class="modal" ref="clearAllModal">
+    <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-square btn-ghost absolute right-2 top-2">
+          <XMarkIcon class="size-4" />
+        </button>
+      </form>
+      <h3 class="text-lg font-bold">Delete all documents</h3>
+      <p class="py-4">
+        All unsaved data will be <span class="font-bold">permanently deleted</span>.
+        <br />
+        Save your data before closing if you want to keep it.
+      </p>
+      <div class="modal-action">
+        <button ref="clearAllButton" class="btn btn-error btn-sm" @click="clearAllModal?.close(); emit('clearAll')">
+          <TrashIcon class="size-4" />Delete all
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>Dismiss</button>
+    </form>
+  </dialog>
 </template>

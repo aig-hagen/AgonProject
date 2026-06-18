@@ -36,11 +36,12 @@ const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
 const compact = defineModel('compact', { default: false })
 const emit = defineEmits<{ focus: [] }>()
-const { title, initialPosition, intitalSize, compactable = false, instanceOffset = 0, storageKey } = defineProps<{
+const { title, initialPosition, intitalSize, compactable = false, minimizable = true, instanceOffset = 0, storageKey } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
   intitalSize: { width: number; height: number }
   compactable?: boolean
+  minimizable?: boolean
   instanceOffset?: number
   storageKey?: string
 }>()
@@ -331,7 +332,7 @@ watchEffect(async () => {
       <div class="flex-1 mr-2 self-center" :class="{ truncate: !minimized }">{{ title }}</div>
       <div class="flex gap-0.5">
         <button
-          v-if="compactable"
+          v-if="compactable && minimizable"
           @click="toggleCompact"
           class="btn btn-square btn-xs btn-ghost"
           :class="{ 'opacity-40': compact }"
@@ -339,8 +340,13 @@ watchEffect(async () => {
         >
           <AdjustmentsHorizontalIcon class="size-4" />
         </button>
-        <button @click="toggleMinimize" class="btn btn-square btn-xs btn-ghost">
-          <ChevronUpIcon v-if="minimized" class="size-4" />
+        <button
+          v-if="minimizable || compactable"
+          @click="!minimizable && compactable ? toggleCompact() : toggleMinimize()"
+          class="btn btn-square btn-xs btn-ghost"
+          :title="!minimizable && compactable ? (compact ? 'Show parameters' : 'Hide parameters') : (minimized ? 'Expand' : 'Minimize')"
+        >
+          <ChevronUpIcon v-if="!minimizable && compactable ? compact : minimized" class="size-4" />
           <ChevronDownIcon v-else class="size-4" />
         </button>
         <button @click="open = false" class="btn btn-square btn-xs btn-ghost">

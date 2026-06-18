@@ -86,7 +86,7 @@ const { db, modules } = defineProps<{
 const route = useRoute()
 const router = useRouter()
 
-const { documents, createDocument } = useDocumentMetadata(db, [
+const { documents, createDocument, deleteDocument } = useDocumentMetadata(db, [
   abstractArgumentationModule,
   bipoloarArgumentationModule,
   incompleteArgumentationModule,
@@ -349,6 +349,13 @@ async function openInEditor() {
     layout(fw, Layout.ForceDirected)
   }
   await createDocument(getNextName(prefix), fw as Objectish)
+  const sourceId = Number(route.query.source)
+  if (Number.isInteger(sourceId) && sourceId > 0) {
+    const sourceDoc = documents.value.find((d) => d.id === sourceId)
+    if (sourceDoc?.name === '') {
+      await deleteDocument(sourceId)
+    }
+  }
   await router.push('/')
 }
 

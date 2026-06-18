@@ -1,23 +1,7 @@
-## Name Ideas
-- Agora (the central public space of a Greek city; the primary site of civic debate, commerce, and encounter)
-- Platagon  Plato + Agon (agon = contest/debate in Greek)
-- Formagon
-- openArg
-- Draco
-- Cortex
-- Kratos
-- Themis
-- Athena
-- Hades
-- Prism
-- Faros
+## Bugs and Issues
 
-- Argex
-- PolyArg
-- ArgKit
-- ArgSuite
-- ArgVault
-- ArgOnline
-- ArgNexus
-- ArgTool
-- ArgWorks
+### Zooming and Proability Labels
+zooming can sometimes break probability labels; not sure when and why that happens
+
+### TweetyProject Server with long timeout
+Potential out of heap error on sending a large PAF will completely crash the TweetyProject Server

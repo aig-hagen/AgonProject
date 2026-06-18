@@ -40,7 +40,7 @@ initialSetAF.addArgument(3, { name: 'd', x: 200, y: 0 })
 initialSetAF.addCollectiveAttack([0, 1], 2)
 initialSetAF.addCollectiveAttack([2, 3], 1)
 
-export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgumentData>> & { underConstruction: true } = {
+export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgumentData>> = {
   newNamePrefix: 'SetAF',
   displayNameSingular: 'Argumentation with Collective Attacks',
   is(model: unknown) {
@@ -89,5 +89,4 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   },
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
   publications: [NP06, BCDFP21],
-  underConstruction: true,
 }

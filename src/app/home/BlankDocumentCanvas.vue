@@ -34,8 +34,9 @@ export interface ModuleCard<DocumentT> {
   underConstruction?: boolean
   publications?: Publication[]
 }
-const { moduleCards } = defineProps<{
+const { moduleCards, sourceDocumentId } = defineProps<{
   moduleCards: ModuleCard<DocumentT>[]
+  sourceDocumentId?: number
 }>()
 
 const emit = defineEmits<{
@@ -118,7 +119,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                 </button>
                 <RouterLink
                   v-if="moduleCard.generateHref !== undefined"
-                  :to="moduleCard.generateHref"
+                  :to="sourceDocumentId !== undefined ? moduleCard.generateHref + '&source=' + sourceDocumentId : moduleCard.generateHref"
                   class="btn btn-sm btn-soft w-fit"
                 >
                   Generate random {{ moduleCard.newNamePrefix }}
