@@ -6,6 +6,7 @@
 - Draco
 - Cortex
 - Kratos
+- Themis
 - Athena
 - Hades
 - Prism
