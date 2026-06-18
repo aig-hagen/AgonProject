@@ -17,14 +17,22 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { shallowRef, watch } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
+import { computed, shallowRef, watch } from 'vue'
 
+import {
+  createDefaultExtensionWindowInstance,
+  type ExtensionWindowInstanceState,
+} from '@/modules/collective-attacks-argumentation/evaluation/extensionWindowState'
 import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import WindowExtensions from '@/modules/collective-attacks-argumentation/WindowExtensions.vue'
+import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import {
   type GraphEditorStateHyperLink,
   type GraphEditorStateLink,
   type GraphEditorStateNode,
+  type Highlight,
   type HistoryState,
   LinkType,
   type NodeId,
@@ -32,7 +40,7 @@ import {
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state, historyState } = defineProps<{
+const { state, historyState, documentId } = defineProps<{
   state: DocumentState<SetAF<SetAfArgumentData>>
   historyState: HistoryState
   documentId: number
@@ -138,6 +146,29 @@ function onHyperLinkDeleted(data: { sourceIds: NodeId[]; targetId: NodeId }) {
     }
   })
 }
+
+const evaluationInput = computed<Input<SetAF<SetAfArgumentData>>>(() => ({
+  stateId: state.stateId,
+  content: state.current.content,
+}))
+
+const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
+  computed(() => `collective-attacks-argumentation:${documentId}:extension-instances`),
+  [],
+)
+
+function addExtensionInstance() {
+  extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
+}
+
+function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
+  if (extensionInstances.value.length === 1) onHighlight(undefined)
+  extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
+}
+
+function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
+  extensionInstances.value = extensionInstances.value.map((i) => (i.id === updated.id ? updated : i))
+}
 </script>
 <template>
   <GraphEditor
@@ -160,5 +191,20 @@ function onHyperLinkDeleted(data: { sourceIds: NodeId[]; targetId: NodeId }) {
     @save="emit('save')"
     @share="emit('share')"
     :history-state="historyState"
-  />
+    @open-extension-window="addExtensionInstance"
+  >
+    <template #evaluationExtensions="{ onHighlight }">
+      <WindowExtensions
+        v-for="(instance, index) in extensionInstances"
+        :key="instance.id"
+        :input="evaluationInput"
+        :instance-state="instance"
+        :instance-offset="index"
+        :storage-key="`collective-attacks-argumentation:${documentId}:${instance.id}:window`"
+        @update:instance-state="updateExtensionInstance($event)"
+        @highlight="onHighlight"
+        @close="removeExtensionInstance(instance.id, onHighlight)"
+      />
+    </template>
+  </GraphEditor>
 </template>
