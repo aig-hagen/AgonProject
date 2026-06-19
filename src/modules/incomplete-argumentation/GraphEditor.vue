@@ -20,7 +20,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
 
-import { ARGUMENT_RADIUS_IN_PX, ATTACK_COLOR } from '@/modules/common/argumentation/model'
+import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -267,7 +267,7 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
         :cy="node.y"
         :r="ARGUMENT_RADIUS_IN_PX"
         fill="none"
-        :stroke="ATTACK_COLOR"
+        stroke="var(--color-base-content)"
         stroke-dasharray="5,4"
         stroke-width="2.5"
       />

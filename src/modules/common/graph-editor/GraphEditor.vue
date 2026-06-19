@@ -625,6 +625,7 @@ onMounted(() => {
       if (physicsMode.value !== 'settle') return
       if (!(event.target as Element).closest('.graph-controller__node-container')) return
       nodePointerDown = true
+      alignNodesToSimulationCenter()
       graphComponentRef.value?.toggleNodePhysics(true)
       if (settleTimerId !== null) { clearTimeout(settleTimerId); settleTimerId = null }
     }
@@ -644,32 +645,55 @@ onMounted(() => {
   }
 })
 
-function enablePhysics() {
-  const gc = graphComponentRef.value!
-  // Before enabling physics, center nodes at the SVG element's midpoint so the
-  // simulation's centering forces don't cause the cluster to drift on screen.
+// Shifts all nodes so their centroid sits at the simulation's centering-force target
+// (clientWidth/2, clientHeight/2), then compensates the zoom/pan transform so that
+// no visual jump occurs. Must be called before enabling physics to prevent the
+// centering force from pulling the entire graph across the canvas.
+function alignNodesToSimulationCenter() {
+  const gc = graphComponentRef.value
+  if (!gc) return
   const el = gc.$el as HTMLElement
   const graphHost = (el.querySelector('.graph-controller__graph-host') ?? el) as HTMLElement
   const svgCenterX = graphHost.clientWidth / 2
   const svgCenterY = graphHost.clientHeight / 2
+  // Iterate idMapping directly so newly created nodes (added to idMapping before
+  // triggerSettle fires but not yet reflected in the state prop) are included.
   let sumX = 0, sumY = 0, count = 0
-  for (const node of state.nodes) {
-    if (!idMapping.hasReverse(node.id)) continue
-    const pos = gc.getNodePosition(idMapping.getOrFailReverse(node.id))
+  for (const internalId of idMapping.inputIds()) {
+    const pos = gc.getNodePosition(internalId)
     sumX += pos.x
     sumY += pos.y
     count++
   }
-  if (count > 0) {
-    const dx = svgCenterX - sumX / count
-    const dy = svgCenterY - sumY / count
-    for (const node of state.nodes) {
-      if (!idMapping.hasReverse(node.id)) continue
-      const internalId = idMapping.getOrFailReverse(node.id)
-      const pos = gc.getNodePosition(internalId)
-      gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
-    }
+  if (count === 0) return
+  const dx = svgCenterX - sumX / count
+  const dy = svgCenterY - sumY / count
+  for (const internalId of idMapping.inputIds()) {
+    const pos = gc.getNodePosition(internalId)
+    gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
   }
+  // Compensate the zoom/pan so nodes remain at the same visual positions.
+  const svgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+    | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
+    | null
+  const g = svgEl?.firstElementChild
+  const currentZoom = svgEl?.__zoom
+  if (svgEl && g && currentZoom != null) {
+    const k = currentZoom.k
+    const newTx = currentZoom.x - dx * k
+    const newTy = currentZoom.y - dy * k
+    const newZoom = Object.create(Object.getPrototypeOf(currentZoom))
+    newZoom.k = k
+    newZoom.x = newTx
+    newZoom.y = newTy
+    svgEl.__zoom = newZoom
+    g.setAttribute('transform', `translate(${newTx},${newTy}) scale(${k})`)
+  }
+}
+
+function enablePhysics() {
+  const gc = graphComponentRef.value!
+  alignNodesToSimulationCenter()
   gc.toggleNodePhysics(true)
   const margin = ARGUMENT_RADIUS_IN_PX * 2
   gc.centerView({ top: margin, right: margin, bottom: margin, left: margin }, undefined, 1)
@@ -681,6 +705,7 @@ function disablePhysics() {
 
 function triggerSettle() {
   if (physicsMode.value !== 'settle') return
+  alignNodesToSimulationCenter()
   graphComponentRef.value?.toggleNodePhysics(true)
   if (settleTimerId !== null) clearTimeout(settleTimerId)
   settleTimerId = setTimeout(() => {
@@ -980,6 +1005,9 @@ function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
     return
   }
+  const wasPhysicsOn = physicsMode.value === 'on'
+  if (wasPhysicsOn) disablePhysics()
+
   const nodes = [...state.nodes]
     .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
     .map((node) => node.id)
@@ -997,12 +1025,16 @@ function doLayout(layout: Layout) {
   }
   emit('nodesMoved', newPositions)
 
-  const margin = ARGUMENT_RADIUS_IN_PX * 2
-  graphComponentRef.value.centerView(
-    { top: margin, right: margin, bottom: margin, left: margin },
-    undefined,
-    1,
-  )
+  if (wasPhysicsOn) {
+    enablePhysics()
+  } else {
+    const margin = ARGUMENT_RADIUS_IN_PX * 2
+    graphComponentRef.value.centerView(
+      { top: margin, right: margin, bottom: margin, left: margin },
+      undefined,
+      1,
+    )
+  }
 }
 
 const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
@@ -1068,7 +1100,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       v-if="state.nodes.length === 0"
     >
       <div class="m-auto w-fit">
-        <HelpControls :link-names="linkNames" />
+        <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
       </div>
     </div>
     <ArrowSwitcher
@@ -1185,6 +1217,11 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               <li v-else>
                 <p class="mb-1"><kbd class="kbd kbd-sm">Hold and drag</kbd> from an argument towards another to create an {{ linkNames.join('/') }} edge</p>
               </li>
+              <li v-if="allowHyperLinkCreation && !isTouchDevice">
+                <p class="mb-1">
+                  <kbd class="kbd kbd-sm">Shift</kbd>+<kbd class="kbd kbd-sm">Left-click</kbd> on 2 or more arguments to select sources for a collective attack, then drag to the target
+                </p>
+              </li>
               <li v-if="enableLinkSwitching">
                 Switch between {{ linkNamesEnumeration }} for existing links
                 <p class="mb-1"><kbd class="kbd kbd-sm">{{ isTouchDevice ? 'Tap' : 'Right-click' }}</kbd> on link</p>
@@ -1250,7 +1287,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       name="evaluationSerialisation"
       :on-highlight="(h: Highlight | undefined) => { serialisationHighlightRef = h }"
     ></slot>
-    <WindowHelp :link-names="linkNames" v-model:open="isHelpOpened" />
+    <WindowHelp :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" v-model:open="isHelpOpened" />
   </div>
 </template>
 <style>

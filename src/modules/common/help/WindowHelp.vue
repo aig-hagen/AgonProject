@@ -21,8 +21,9 @@ import HelpControls from '@/modules/common/help/HelpControls.vue'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
-const { linkNames } = defineProps<{
+const props = defineProps<{
   linkNames: string[]
+  allowHyperLinkCreation?: boolean
 }>()
 
 const open = defineModel('open', { required: true })
@@ -37,7 +38,7 @@ const open = defineModel('open', { required: true })
   >
     <div class="p-4">
       <HelpLinks />
-      <HelpControls :link-names="linkNames" />
+      <HelpControls :link-names="props.linkNames" :allow-hyper-link-creation="props.allowHyperLinkCreation" />
     </div>
   </FloatingWindow>
 </template>

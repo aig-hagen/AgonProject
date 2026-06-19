@@ -43,6 +43,10 @@ export class IdMapping<InputIdT, OutputIdT> {
     throw new Error('No ID mapping found.')
   }
 
+  inputIds(): Iterable<InputIdT> {
+    return this.perInputIdOutputId.keys()
+  }
+
   hasReverse(outputId: OutputIdT): boolean {
     return this.perOutputIdInputId.has(outputId)
   }
