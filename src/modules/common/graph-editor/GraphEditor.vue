@@ -29,11 +29,11 @@ import {
 } from '@aig-hagen/graph-component/lib'
 import {
   ArrowLongRightIcon,
-  BarsArrowUpIcon,
   PhotoIcon,
   QueueListIcon,
-  VariableIcon,
 } from '@heroicons/vue/24/outline'
+import ExtensionSetIcon from '@/modules/common/graph-editor/ExtensionSetIcon.vue'
+import PreceqIcon from '@/modules/common/graph-editor/PreceqIcon.vue'
 import { useElementVisibility, useMediaQuery } from '@vueuse/core'
 import {
   computed,
@@ -1221,7 +1221,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="emit('open-extension-window')"
               title="Extension Semantics"
             >
-              <VariableIcon class="size-6 opacity-70" />
+              <ExtensionSetIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasRankingSlot"
@@ -1229,7 +1229,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="emit('open-ranking-window')"
               title="Ranking Semantics"
             >
-              <BarsArrowUpIcon class="size-6 opacity-70" />
+              <PreceqIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasSerialisationSlot"

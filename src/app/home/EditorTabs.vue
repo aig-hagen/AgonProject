@@ -34,6 +34,7 @@ defineProps<{
   selected?: number
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<DocumentT>[]
+  showCreate?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -71,7 +72,7 @@ function openClearAllModal() {
         :modules="modules"
         @save="emit('save', datum.id)"
       />
-      <div role="tab" class="tab">
+      <div v-if="showCreate" role="tab" class="tab">
         <button class="btn btn-square btn-xs btn-ghost" @click="emit('create')" title="Create">
           <PlusIcon class="size-4" />
         </button>

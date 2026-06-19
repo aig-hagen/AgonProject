@@ -167,6 +167,10 @@ function redo() {
   }
 }
 
+const showCreate = computed(
+  () => selectedDocumentId.value !== undefined && (documentLoading.value || documentState.value !== undefined),
+)
+
 const historyState = computed<HistoryState>(() => {
   const currentState = documentState.value
   if (currentState === undefined) {
@@ -343,6 +347,7 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
       :db="db"
       :modules="modules"
       @save="saveAsFile($event)"
+      :show-create="showCreate"
     />
     <main class="border-t -mt-px border-base-300 editor flex-1 overflow-hidden">
       <div class="relative h-full w-full">

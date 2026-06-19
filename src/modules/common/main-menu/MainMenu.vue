@@ -27,7 +27,7 @@ import {
   CheckIcon,
   ChevronRightIcon,
   FolderOpenIcon,
-  LinkIcon,
+  ShareIcon,
   MoonIcon,
   PhotoIcon,
   PlusCircleIcon,
@@ -281,7 +281,7 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
               'opacity-50 pointer-events-none': showShare === EntryState.DISABLE,
             }"
             @click="emit('share')"
-            ><LinkIcon class="size-5 opacity-70" />Share link...</a
+            ><ShareIcon class="size-5 opacity-70" />Share link...</a
           >
         </li>
       </template>
