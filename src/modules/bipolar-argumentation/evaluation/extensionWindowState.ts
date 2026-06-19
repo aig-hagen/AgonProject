@@ -18,12 +18,12 @@
  */
 import { KEY_DEFAULT_SEMANTIC } from '@/modules/bipolar-argumentation/evaluation/tweetyProject'
 
-export const KEY_DEFAULT_INTERPRETATION = 'None'
+export const KEY_DEFAULT_SUPPORT_TYPE = 'none'
 
 export interface ExtensionWindowInstanceState {
   id: string
   semanticKey: string
-  interpretationKey: string
+  supportTypeKey: string
   mode: string
   evaluateContinuously: boolean
 }
@@ -32,7 +32,7 @@ export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceS
   return {
     id: crypto.randomUUID(),
     semanticKey: KEY_DEFAULT_SEMANTIC,
-    interpretationKey: KEY_DEFAULT_INTERPRETATION,
+    supportTypeKey: KEY_DEFAULT_SUPPORT_TYPE,
     mode: 'enumerate',
     evaluateContinuously: false,
   }

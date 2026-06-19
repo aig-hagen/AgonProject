@@ -31,46 +31,68 @@ import { type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
 
-export const KEY_DEFAULT_SEMANTIC = 'b-cf'
+export const KEY_DEFAULT_SEMANTIC = 'BCF'
+export const KEY_NONE_INTERPRETATION_GROUP = 'none-interpretation'
 
 export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   {
     key: 'none-interpretation',
     displayName: 'None Interpretation',
-    interpretations: ['None'],
     semantics: [
-      { key: 'b-cf',      displayName: 'Conflict-free',         tooltipId: 'b-cf' },
-      { key: 'b-coh',     displayName: 'Coherent',              tooltipId: 'b-coh' },
-      { key: 'b-ad',      displayName: 'Coherent Admissible',   tooltipId: 'b-ad' },
-      { key: 'b-coal-ad', displayName: 'Coalition-Admissible',  tooltipId: 'b-coal-ad' },
-      { key: 'b-coal-co', displayName: 'Coalition-Complete',    tooltipId: 'b-coal-co' },
-      { key: 'b-coal-gr', displayName: 'Coalition-Grounded',    tooltipId: 'b-coal-gr' },
-      { key: 'b-coal-pr', displayName: 'Coalition-Preferred',   tooltipId: 'b-coal-pr' },
-      { key: 'b-coal-st', displayName: 'Coalition-Stable',      tooltipId: 'b-coal-st' },
+      { key: 'BCF',  displayName: 'Conflict-free',        tooltipId: 'b-cf' },
+      { key: 'BCOH', displayName: 'Coherent',             tooltipId: 'b-coh' },
+      { key: 'BAD',  displayName: 'Coherent Admissible',  tooltipId: 'b-ad' },
+      { key: 'CAD',  displayName: 'Coalition-Admissible', tooltipId: 'b-coal-ad' },
+      { key: 'CCO',  displayName: 'Coalition-Complete',   tooltipId: 'b-coal-co' },
+      { key: 'CGR',  displayName: 'Coalition-Grounded',   tooltipId: 'b-coal-gr' },
+      { key: 'CPR',  displayName: 'Coalition-Preferred',  tooltipId: 'b-coal-pr' },
+      { key: 'CST',  displayName: 'Coalition-Stable',     tooltipId: 'b-coal-st' },
     ],
   },
   {
-    key: 'deductive-interpretation',
-    displayName: 'Deductive Interpretation',
-    interpretations: ['Deductive'],
+    key: 'classical',
+    displayName: 'Classical Semantics',
     semantics: [
-      { key: 'd-ad', displayName: 'Admissible', tooltipId: 'd-ad' },
-      { key: 'd-co', displayName: 'Complete',   tooltipId: 'd-co' },
-      { key: 'd-gr', displayName: 'Grounded',   tooltipId: 'd-gr' },
-      { key: 'd-pr', displayName: 'Preferred',  tooltipId: 'd-pr' },
-      { key: 'd-st', displayName: 'Stable',     tooltipId: 'd-st' },
+      { key: 'CF',  displayName: 'Conflict-Free' },
+      { key: 'ADM', displayName: 'Admissible' },
+      { key: 'CO',  displayName: 'Complete' },
+      { key: 'GR',  displayName: 'Grounded' },
+      { key: 'PR',  displayName: 'Preferred' },
+      { key: 'ST',  displayName: 'Stable' },
     ],
   },
   {
-    key: 'necessary-interpretation',
-    displayName: 'Necessary Interpretation',
-    interpretations: ['Necessary'],
+    key: 'admissibility-based',
+    displayName: 'Admissibility-based Semantics',
     semantics: [
-      { key: 'n-ad', displayName: 'Admissible', tooltipId: 'n-ad' },
-      { key: 'n-co', displayName: 'Complete',   tooltipId: 'n-co' },
-      { key: 'n-gr', displayName: 'Grounded',   tooltipId: 'n-gr' },
-      { key: 'n-pr', displayName: 'Preferred',  tooltipId: 'n-pr' },
-      { key: 'n-st', displayName: 'Stable',     tooltipId: 'n-st' },
+      { key: 'SAD', displayName: 'Strongly Admissible' },
+      { key: 'SST', displayName: 'Semi-Stable' },
+      { key: 'ID',  displayName: 'Ideal' },
+      { key: 'EA',  displayName: 'Eager' },
+      { key: 'IS',  displayName: 'Initial' },
+      { key: 'UC',  displayName: 'Unchallenged' },
+    ],
+  },
+  {
+    key: 'non-admissible',
+    displayName: 'Non-admissible Semantics',
+    semantics: [
+      { key: 'NA',   displayName: 'Naive' },
+      { key: 'STG',  displayName: 'Stage' },
+      { key: 'STG2', displayName: 'Stage2' },
+      { key: 'CF2',  displayName: 'CF2' },
+      { key: 'UD',   displayName: 'Undisputed' },
+      { key: 'SUD',  displayName: 'Strongly Undisputed' },
+    ],
+  },
+  {
+    key: 'weak',
+    displayName: 'Weak Semantics',
+    semantics: [
+      { key: 'WAD', displayName: 'Weakly Admissible' },
+      { key: 'WCO', displayName: 'Weakly Complete' },
+      { key: 'WGR', displayName: 'Weakly Grounded' },
+      { key: 'WPR', displayName: 'Weakly Preferred' },
     ],
   },
 ]
@@ -78,7 +100,6 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
 export interface SemanticsFamily {
   key: string
   displayName: string
-  interpretations: string[]
   semantics: Semantics[]
 }
 
@@ -90,6 +111,7 @@ interface GetModelsRequestBody {
   nr_of_arguments: number
   attacks: number[][]
   supports: number[][]
+  support_type: string
   semantics: string
   timeout: number
   unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
@@ -100,6 +122,7 @@ async function fetchModels(
   attacks: number[][],
   supports: number[][],
   semantics: string,
+  supportType: string,
 ): Promise<{ evaluationDurationInMs: number; extensions: number[][] }> {
   const body: GetModelsRequestBody = {
     email: USER_ID,
@@ -107,6 +130,7 @@ async function fetchModels(
     nr_of_arguments: numberOfArguments,
     attacks,
     supports,
+    support_type: supportType,
     semantics,
     timeout: TWEETY_TIMEOUT_IN_MS,
     unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
@@ -122,6 +146,7 @@ interface GetCredulousRequestBody {
   nr_of_arguments: number
   attacks: number[][]
   supports: number[][]
+  support_type: string
   semantics: string
   timeout: number
   unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
@@ -133,6 +158,7 @@ interface GetSkepticalRequestBody {
   nr_of_arguments: number
   attacks: number[][]
   supports: number[][]
+  support_type: string
   semantics: string
   timeout: number
   unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
@@ -143,6 +169,7 @@ async function fetchCredulous(
   attacks: number[][],
   supports: number[][],
   semantics: string,
+  supportType: string,
 ): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
   const body: GetCredulousRequestBody = {
     email: USER_ID,
@@ -150,6 +177,7 @@ async function fetchCredulous(
     nr_of_arguments: numberOfArguments,
     attacks,
     supports,
+    support_type: supportType,
     semantics,
     timeout: TWEETY_TIMEOUT_IN_MS,
     unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
@@ -164,6 +192,7 @@ async function fetchSkeptical(
   attacks: number[][],
   supports: number[][],
   semantics: string,
+  supportType: string,
 ): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
   const body: GetSkepticalRequestBody = {
     email: USER_ID,
@@ -171,6 +200,7 @@ async function fetchSkeptical(
     nr_of_arguments: numberOfArguments,
     attacks,
     supports,
+    support_type: supportType,
     semantics,
     timeout: TWEETY_TIMEOUT_IN_MS,
     unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
@@ -194,6 +224,7 @@ export type Extension = {
 export function useExtensionEvaluationQuery(
   inputRef: MaybeRef<Input<BipoloarArgumentation<ArgumentData>>>,
   semanticsRef: MaybeRef<string>,
+  supportTypeRef: MaybeRef<string>,
   modeRef: MaybeRef<string>,
   enabled: MaybeRef<boolean>,
 ) {
@@ -223,24 +254,25 @@ export function useExtensionEvaluationQuery(
 
   const queryKey = computed(() => {
     const mode = unref(modeRef)
-    if (mode === 'credulous') return ['bipolar_get_credulous', semanticsRef, modeRef, argumentData] as const
-    if (mode === 'skeptical') return ['bipolar_get_skeptical', semanticsRef, modeRef, argumentData] as const
-    return ['bipolar_get_models', semanticsRef, modeRef, argumentData] as const
+    if (mode === 'credulous') return ['bipolar_get_credulous', semanticsRef, supportTypeRef, modeRef, argumentData] as const
+    if (mode === 'skeptical') return ['bipolar_get_skeptical', semanticsRef, supportTypeRef, modeRef, argumentData] as const
+    return ['bipolar_get_models', semanticsRef, supportTypeRef, modeRef, argumentData] as const
   })
 
   const queryResult = useQuery<EvaluationQueryResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
-      const [, semantics, , { attacks, supports, numberOfArguments }] = queryKey as [
+      const [, semantics, supportType, , { attacks, supports, numberOfArguments }] = queryKey as [
+        string,
         string,
         string,
         string,
         { attacks: number[][]; supports: number[][]; numberOfArguments: number },
       ]
       const mode = unref(modeRef)
-      if (mode === 'credulous') return fetchCredulous(numberOfArguments, attacks, supports, semantics)
-      if (mode === 'skeptical') return fetchSkeptical(numberOfArguments, attacks, supports, semantics)
-      return fetchModels(numberOfArguments, attacks, supports, semantics)
+      if (mode === 'credulous') return fetchCredulous(numberOfArguments, attacks, supports, semantics, supportType)
+      if (mode === 'skeptical') return fetchSkeptical(numberOfArguments, attacks, supports, semantics, supportType)
+      return fetchModels(numberOfArguments, attacks, supports, semantics, supportType)
     },
     enabled,
   })

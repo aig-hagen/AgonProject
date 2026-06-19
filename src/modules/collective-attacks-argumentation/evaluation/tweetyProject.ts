@@ -52,15 +52,41 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     ],
   },
   {
-    key: 'other',
-    displayName: 'Other Semantics',
+    key: 'admissibility-based',
+    displayName: 'Admissibility-based Semantics',
     semantics: [
-      { key: 'STG', displayName: 'Stage' },
-      { key: 'ID',  displayName: 'Ideal' },
+      { key: 'SAD', displayName: 'Strongly Admissible' },
       { key: 'SST', displayName: 'Semi-Stable' },
+      { key: 'ID',  displayName: 'Ideal' },
+      { key: 'EA',  displayName: 'Eager' },
+      { key: 'IS',  displayName: 'Initial' },
+      { key: 'UC',  displayName: 'Unchallenged' },
     ],
   },
-]
+  {
+    key: 'non-admissible',
+    displayName: 'Non-admissible Semantics',
+    semantics: [
+      { key: 'NA',   displayName: 'Naive' },
+      { key: 'STG',  displayName: 'Stage' },
+      { key: 'STG2', displayName: 'Stage2' },
+      { key: 'CF2',  displayName: 'CF2' },
+      { key: 'SCF2', displayName: 'SCF2' },
+      { key: 'UD',   displayName: 'Undisputed' },
+      { key: 'SUD',  displayName: 'Strongly Undisputed' },
+    ],
+  },
+  {
+    key: 'weak',
+    displayName: 'Weak Semantics',
+    semantics: [
+      { key: 'WAD', displayName: 'Weakly Admissible' },
+      { key: 'WCO', displayName: 'Weakly Complete' },
+      { key: 'WGR', displayName: 'Weakly Grounded' },
+      { key: 'WPR', displayName: 'Weakly Preferred' },
+    ],
+  },
+].filter((group) => group.semantics.length > 0)
 
 export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 

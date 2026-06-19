@@ -22,6 +22,7 @@ import { computed, provide, ref, shallowRef, toRef, watch, watchEffect } from 'v
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import {
+  KEY_NONE_INTERPRETATION_GROUP,
   KNOWN_SEMANTIC_GROUPS,
   type Semantics,
   useExtensionEvaluationQuery,
@@ -53,67 +54,46 @@ const emit = defineEmits<{
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...bipolarArgumentationGlossary })
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
+const noneGroups = semanticGroups.filter((g) => g.key === KEY_NONE_INTERPRETATION_GROUP)
+const afGroups = semanticGroups.filter((g) => g.key !== KEY_NONE_INTERPRETATION_GROUP)
 
-const byInterpretationSemantics = computed(() => {
-  const allInterpretations = new Set(semanticGroups.flatMap((g) => g.interpretations))
-  const result: Record<string, Semantics[]> = {}
-  for (const interpretation of allInterpretations) {
-    result[interpretation] = semanticGroups
-      .filter((g) => g.interpretations.includes(interpretation))
-      .flatMap((g) => g.semantics)
-  }
-  return result
-})
-
-function resolveSemanticsFromKey(key: string): Semantics {
-  return semanticGroups.flatMap((g) => g.semantics).find((s) => s.key === key)
-    ?? semanticGroups[0]!.semantics[0]!
+function resolveSemanticFromKey(key: string, supportType: string): Semantics {
+  const groups = supportType === 'none' ? noneGroups : afGroups
+  const found = groups.flatMap((g) => g.semantics).find((s) => s.key === key)
+  return found ?? groups[0]!.semantics[0]!
 }
 
-function resolveInterpretationForSemantics(semanticKey: string, preferredInterpretation: string): string {
-  for (const group of semanticGroups) {
-    if (group.semantics.some((s) => s.key === semanticKey) && group.interpretations.includes(preferredInterpretation)) {
-      return preferredInterpretation
-    }
-  }
-  for (const group of semanticGroups) {
-    if (group.semantics.some((s) => s.key === semanticKey)) {
-      return group.interpretations[0]!
-    }
-  }
-  return semanticGroups[0]!.interpretations[0]!
-}
-
-const selectedSemantics = shallowRef<Semantics>(resolveSemanticsFromKey(instanceState.semanticKey))
-const selectedInterpretation = shallowRef<string>(
-  resolveInterpretationForSemantics(instanceState.semanticKey, instanceState.interpretationKey),
+const selectedSupportType = ref<string>(instanceState.supportTypeKey)
+const selectedSemantics = shallowRef<Semantics>(
+  resolveSemanticFromKey(instanceState.semanticKey, instanceState.supportTypeKey),
 )
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantics, selectedInterpretation, selectedMode, evaluateContinuously], () => {
+const visibleGroups = computed(() =>
+  selectedSupportType.value === 'none' ? noneGroups : afGroups,
+)
+
+watchEffect(() => {
+  const validSemantics = visibleGroups.value.flatMap((g) => g.semantics)
+  const currentKey = selectedSemantics.value.key
+  selectedSemantics.value = validSemantics.find((s) => s.key === currentKey) ?? validSemantics[0]!
+})
+
+watch([selectedSemantics, selectedSupportType, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantics.value.key,
-    interpretationKey: selectedInterpretation.value,
+    supportTypeKey: selectedSupportType.value,
     mode: selectedMode.value,
     evaluateContinuously: evaluateContinuously.value,
   })
 })
 
-watchEffect(() => {
-  const validSemantics = byInterpretationSemantics.value[selectedInterpretation.value]
-  if (validSemantics === undefined || validSemantics.length === 0) {
-    throw new Error('Encountred invalid interpretation without semantics.')
-  }
-  if (!validSemantics.some((s) => s.key === selectedSemantics.value.key)) {
-    selectedSemantics.value = validSemantics[0]!
-  }
-})
-
 const query = useExtensionEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantics.value.key),
+  selectedSupportType,
   selectedMode,
   evaluateContinuously,
 )
@@ -132,16 +112,19 @@ watch(currentHighlight, (h) => emit('highlight', h))
 function onWindowFocus() { emit('highlight', currentHighlight.value) }
 
 const resultsHeader = computed((): ResultsHeaderPart[] => {
-  const interpretation = selectedInterpretation.value
-  if (interpretation === 'None') return baseResultsHeader.value
-  const tooltipId = interpretation === 'Deductive' ? 'deductiveSupport' : 'necessarySupport'
-  return [...baseResultsHeader.value, ' under ', { text: `${interpretation.toLowerCase()} support`, tooltipId }]
+  const support = selectedSupportType.value
+  if (support === 'none') return baseResultsHeader.value
+  const tooltipId = support === 'ded' ? 'deductiveSupport' : 'necessarySupport'
+  const label = support === 'ded' ? 'deductive' : 'necessary'
+  return [...baseResultsHeader.value, ' under ', { text: `${label} support`, tooltipId }]
 })
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
     : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
-  return `Extensions: ${selectedInterpretation.value} · ${selectedSemantics.value.displayName} · ${modeLabel}`
+  const supportLabel = selectedSupportType.value === 'none' ? 'None'
+    : selectedSupportType.value === 'ded' ? 'Deductive' : 'Necessary'
+  return `Extensions: ${supportLabel} · ${selectedSemantics.value.displayName} · ${modeLabel}`
 })
 </script>
 
@@ -158,27 +141,21 @@ const windowTitle = computed(() => {
   >
     <template #parameters>
       <label class="select select-sm w-fit">
-        <span class="label">Interpretation</span>
-        <select v-model="selectedInterpretation">
-          <option
-            v-for="interpretation in Object.keys(byInterpretationSemantics)"
-            :key="interpretation"
-            :value="interpretation"
-          >
-            {{ interpretation }}
-          </option>
+        <span class="label">Support</span>
+        <select v-model="selectedSupportType">
+          <option value="none">None</option>
+          <option value="ded">Deductive</option>
+          <option value="nec">Necessary</option>
         </select>
       </label>
       <label class="select select-sm w-fit">
         <span class="label">Semantics</span>
         <select v-model="selectedSemantics">
-          <option
-            v-for="semantic in byInterpretationSemantics[selectedInterpretation]"
-            :key="semantic.key"
-            :value="semantic"
-          >
-            {{ semantic.displayName }}
-          </option>
+          <optgroup v-for="group in visibleGroups" :key="group.key" :label="group.displayName">
+            <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
+              {{ semantic.displayName }}
+            </option>
+          </optgroup>
         </select>
       </label>
       <label class="select select-sm w-fit">
@@ -191,7 +168,7 @@ const windowTitle = computed(() => {
       </label>
     </template>
     <template #parameters-footer>
-      <TermDefinitionBlock v-if="selectedSemantics.tooltipId" :id="selectedSemantics.tooltipId" />
+      <TermDefinitionBlock :id="selectedSemantics.tooltipId ?? selectedSemantics.key" />
     </template>
     <template #results>
       <template v-if="dataExtensionsFormatedAndSorted !== undefined">
