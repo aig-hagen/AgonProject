@@ -34,6 +34,7 @@ import {
   QuestionMarkCircleIcon,
   SparklesIcon,
   Squares2X2Icon,
+  TableCellsIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
@@ -54,6 +55,7 @@ const {
   showEvaluate = EntryState.HIDE,
   showPhysics = EntryState.HIDE,
   physicsMode = 'off' as PhysicsMode,
+  showGrid = false,
   layoutsToShow = [],
 } = defineProps<{
   showSave?: EntryState
@@ -64,6 +66,7 @@ const {
   showEvaluate?: EntryState
   showPhysics?: EntryState
   physicsMode?: PhysicsMode
+  showGrid?: boolean
   layoutsToShow?: Layout[]
 }>()
 
@@ -79,6 +82,7 @@ const emit = defineEmits<{
   evaluate: []
   generate: []
   togglePhysics: []
+  toggleGrid: []
   help: []
 }>()
 
@@ -286,6 +290,14 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
         </li>
       </template>
       <li class="disabled"><hr class="mt-2 border-base-300" /></li>
+      <li>
+        <a @click="emit('toggleGrid')" class="flex justify-between gap-8">
+          <span class="flex items-center gap-2">
+            <TableCellsIcon class="size-5 opacity-70" />Show grid
+          </span>
+          <CheckIcon v-if="showGrid" class="size-4 opacity-70" />
+        </a>
+      </li>
       <li>
         <a @click="isDark = !isDark" class="flex justify-between gap-8">
           <span class="flex items-center gap-2">

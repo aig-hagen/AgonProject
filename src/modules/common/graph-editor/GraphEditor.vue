@@ -110,6 +110,7 @@ const linkNamesEnumeration = computed(
 )
 const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
+const showGrid = ref<boolean>(false)
 const physicsMode = ref<PhysicsMode>('off')
 let settleTimerId: ReturnType<typeof setTimeout> | null = null
 let settlePointerCleanup: (() => void) | undefined
@@ -462,6 +463,9 @@ function setupZoomAndDragObservers() {
     '.graph-controller__graph-canvas > g',
   ) as SVGGElement | null
   if (!zoomGroup || !overlayGroupRef.value) return
+
+  removeGrid()
+  if (showGrid.value) injectGrid(zoomGroup)
 
   const syncTransform = () => {
     const transform = zoomGroup.getAttribute('transform')
@@ -854,7 +858,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     if (savedZoom !== null) {
       const newSvgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
         (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null
-      const newG = newSvgEl?.firstElementChild as SVGGElement | null
+      const newG = newSvgEl?.querySelector(':scope > g') as SVGGElement | null
       if (newSvgEl && newG && newSvgEl.__zoom != null) {
         const newZoom = Object.create(Object.getPrototypeOf(newSvgEl.__zoom))
         newZoom.k = savedZoom.k
@@ -959,6 +963,58 @@ let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
 let doubleTapCleanup: (() => void) | undefined
 let middleClickCleanup: (() => void) | undefined
+let gridRectEl: SVGRectElement | null = null
+let gridDefsEl: SVGDefsElement | null = null
+
+function injectGrid(zoomGroup: SVGGElement) {
+  const ns = 'http://www.w3.org/2000/svg'
+  const cellSize = ARGUMENT_RADIUS_IN_PX * 2
+
+  const defs = document.createElementNS(ns, 'defs')
+  const pattern = document.createElementNS(ns, 'pattern')
+  pattern.setAttribute('id', `${graphComponentId}-grid`)
+  pattern.setAttribute('width', String(cellSize))
+  pattern.setAttribute('height', String(cellSize))
+  pattern.setAttribute('patternUnits', 'userSpaceOnUse')
+  const path = document.createElementNS(ns, 'path')
+  path.setAttribute('d', `M ${cellSize} 0 L 0 0 0 ${cellSize}`)
+  path.setAttribute('fill', 'none')
+  path.setAttribute('vector-effect', 'non-scaling-stroke')
+  path.style.stroke = 'var(--color-base-300)'
+  path.style.strokeWidth = '1'
+  pattern.appendChild(path)
+  defs.appendChild(pattern)
+
+  const rect = document.createElementNS(ns, 'rect')
+  rect.setAttribute('x', '-10000')
+  rect.setAttribute('y', '-10000')
+  rect.setAttribute('width', '20000')
+  rect.setAttribute('height', '20000')
+  rect.setAttribute('fill', `url(#${graphComponentId}-grid)`)
+
+  // Inject inside the zoom group so the grid is transformed by D3 automatically.
+  // This means no patternTransform tracking is needed.
+  zoomGroup.insertBefore(rect, zoomGroup.firstChild)
+  zoomGroup.insertBefore(defs, rect)
+  gridDefsEl = defs
+  gridRectEl = rect
+}
+
+function removeGrid() {
+  gridDefsEl?.remove()
+  gridRectEl?.remove()
+  gridDefsEl = null
+  gridRectEl = null
+}
+
+watch(showGrid, (show) => {
+  const zoomGroup = containerRef.value?.querySelector(
+    '.graph-controller__graph-canvas > g',
+  ) as SVGGElement | null
+  if (!zoomGroup) return
+  if (show) injectGrid(zoomGroup)
+  else removeGrid()
+})
 
 // Live node positions updated on every D3 tick during drag, so the overlay
 // doesn't lag behind until nodes-moved fires on mouseup.
@@ -989,6 +1045,7 @@ onUnmounted(() => {
   middleClickCleanup?.()
   settlePointerCleanup?.()
   if (settleTimerId !== null) clearTimeout(settleTimerId)
+  removeGrid()
 })
 
 const extensionHighlightRef = ref<Highlight | undefined>(undefined)
@@ -1194,6 +1251,8 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           :show-physics="EntryState.ENABLE"
           :physics-mode="physicsMode"
           @toggle-physics="toggleNodePhysics"
+          :show-grid="showGrid"
+          @toggle-grid="showGrid = !showGrid"
           @help="isHelpOpened = !isHelpOpened"
           />
           <div ref="mainMenuBottom" class="h-0"></div>
