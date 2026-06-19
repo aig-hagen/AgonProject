@@ -454,6 +454,57 @@ function onNodesMoved(positions: PositionSnapshot[]) {
   emit('nodesMoved', data)
 }
 
+function setupZoomAndDragObservers() {
+  zoomObserver?.disconnect()
+  dragObserver?.disconnect()
+
+  const zoomGroup = containerRef.value?.querySelector(
+    '.graph-controller__graph-canvas > g',
+  ) as SVGGElement | null
+  if (!zoomGroup || !overlayGroupRef.value) return
+
+  const syncTransform = () => {
+    const transform = zoomGroup.getAttribute('transform')
+    if (overlayGroupRef.value) {
+      overlayGroupRef.value.setAttribute('transform', transform ?? '')
+    }
+  }
+  syncTransform()
+  zoomObserver = new MutationObserver(syncTransform)
+  zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
+
+  const nodeIdPrefix = `${graphComponentId}-node-`
+  dragObserver = new MutationObserver((mutations) => {
+    const updated = new Map(liveNodePositions.value)
+    let changed = false
+    for (const mutation of mutations) {
+      if (mutation.attributeName !== 'transform') continue
+      const container = mutation.target as Element
+      if (!container.classList.contains('graph-controller__node-container')) continue
+      const circle = container.querySelector(`[id^="${nodeIdPrefix}"]`)
+      if (!circle) continue
+      const domId = circle.getAttribute('id')
+      if (!domId) continue
+      const internalId = parseInt(domId.slice(nodeIdPrefix.length))
+      if (!Number.isFinite(internalId) || !idMapping.has(internalId)) continue
+      const publicId = idMapping.getOrFail(internalId)
+      const transform = (container as SVGGElement).getAttribute('transform')
+      if (!transform) continue
+      const match = /translate\(([^,]+),([^)]+)\)/.exec(transform)
+      if (!match) continue
+      const x = parseFloat(match[1]!)
+      const y = parseFloat(match[2]!)
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue
+      updated.set(publicId, { x, y })
+      changed = true
+    }
+    if (changed) {
+      liveNodePositions.value = updated
+    }
+  })
+  dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
+}
+
 onMounted(() => {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) {
@@ -485,51 +536,7 @@ onMounted(() => {
 
   renderNewState(state, true)
 
-  const zoomGroup = containerRef.value?.querySelector(
-    '.graph-controller__graph-canvas > g',
-  ) as SVGGElement | null
-  if (zoomGroup && overlayGroupRef.value) {
-    const syncTransform = () => {
-      const transform = zoomGroup.getAttribute('transform')
-      if (overlayGroupRef.value) {
-        overlayGroupRef.value.setAttribute('transform', transform ?? '')
-      }
-    }
-    syncTransform()
-    zoomObserver = new MutationObserver(syncTransform)
-    zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
-
-    const nodeIdPrefix = `${graphComponentId}-node-`
-    dragObserver = new MutationObserver((mutations) => {
-      const updated = new Map(liveNodePositions.value)
-      let changed = false
-      for (const mutation of mutations) {
-        if (mutation.attributeName !== 'transform') continue
-        const container = mutation.target as Element
-        if (!container.classList.contains('graph-controller__node-container')) continue
-        const circle = container.querySelector(`[id^="${nodeIdPrefix}"]`)
-        if (!circle) continue
-        const domId = circle.getAttribute('id')
-        if (!domId) continue
-        const internalId = parseInt(domId.slice(nodeIdPrefix.length))
-        if (!Number.isFinite(internalId) || !idMapping.has(internalId)) continue
-        const publicId = idMapping.getOrFail(internalId)
-        const transform = (container as SVGGElement).getAttribute('transform')
-        if (!transform) continue
-        const match = /translate\(([^,]+),([^)]+)\)/.exec(transform)
-        if (!match) continue
-        const x = parseFloat(match[1]!)
-        const y = parseFloat(match[2]!)
-        if (!Number.isFinite(x) || !Number.isFinite(y)) continue
-        updated.set(publicId, { x, y })
-        changed = true
-      }
-      if (changed) {
-        liveNodePositions.value = updated
-      }
-    })
-    dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
-  }
+  setupZoomAndDragObservers()
 
   // The graph-component host has `touch-action: none` which prevents the browser
   // from generating synthetic dblclick events from double-tap. We detect double-tap
@@ -548,7 +555,9 @@ onMounted(() => {
         now - lastTap.time < 300 &&
         Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
       ) {
-        svgCanvas.dispatchEvent(new MouseEvent('dblclick', {
+        // Query fresh — setGraph recreates the SVG element so a captured reference goes stale.
+        const currentSvgCanvas = containerRef.value?.querySelector('.graph-controller__graph-canvas')
+        currentSvgCanvas?.dispatchEvent(new MouseEvent('dblclick', {
           clientX: touch.clientX,
           clientY: touch.clientY,
           bubbles: true,
@@ -617,8 +626,10 @@ onMounted(() => {
       // Updating the transform attribute triggers the MutationObserver that syncs the SVG overlay
       g.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`)
     }
-    ;(svgCanvas as HTMLElement).addEventListener('auxclick', handleMiddleClick)
-    middleClickCleanup = () => (svgCanvas as HTMLElement).removeEventListener('auxclick', handleMiddleClick)
+    // Attach to graphHost (not svgCanvas) — setGraph recreates the SVG element so a
+    // listener on svgCanvas would be on a detached element after the first redraw.
+    graphHost.addEventListener('auxclick', handleMiddleClick)
+    middleClickCleanup = () => graphHost.removeEventListener('auxclick', handleMiddleClick)
 
     let nodePointerDown = false
     const handleSettlePointerDown = (event: PointerEvent) => {
@@ -764,16 +775,34 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   if (graphComponent === null) {
     throw new Error('Graph component is not rendered.')
   }
+  // When physics is active, nodes may have drifted from their stored model positions.
+  // Capture current visual positions before resetting so nodes don't snap back.
+  const preservedPositions = new Map<number, { x: number; y: number }>()
+  if (physicsMode.value !== 'off') {
+    for (const internalId of idMapping.inputIds()) {
+      preservedPositions.set(idMapping.getOrFail(internalId), graphComponent.getNodePosition(internalId))
+    }
+  }
+  // Capture the D3 zoom state before setGraph destroys and recreates the SVG canvas.
+  // setGraph resets D3 zoom to identity; restoring it keeps the graph visually stable.
+  // Only for in-place redraws (center=false) — initial renders should use the library defaults.
+  const savedZoom = center ? null : (() => {
+    const z = (containerRef.value?.querySelector('.graph-controller__graph-canvas') as (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null)?.__zoom
+    return z != null ? { k: z.k, x: z.x, y: z.y } : null
+  })()
   idGenerator = new IdGenerator()
   idMapping = new IdMapping()
   liveNodePositions.value = new Map()
-  const nodes: jsonNode[] = state.nodes.map((node) => ({
-    id: node.id,
-    label: node.label,
-    x: node.x,
-    y: node.y,
-    color: effectiveStyle.value.nodeColor,
-  }))
+  const nodes: jsonNode[] = state.nodes.map((node) => {
+    const preserved = preservedPositions.get(node.id)
+    return {
+      id: node.id,
+      label: node.label,
+      x: preserved?.x ?? node.x,
+      y: preserved?.y ?? node.y,
+      color: effectiveStyle.value.nodeColor,
+    }
+  })
   const links: jsonLink[] = state.links.map((link) => ({
     sourceId: link.sourceId,
     targetId: link.targetId,
@@ -819,6 +848,28 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     for (const importedNode of importedNodes) {
       const node = state.nodes.find((n) => n.id === importedNode.idImported)
       if (node?.label) adjustNodeLabelFontSize(importedNode.id, node.label)
+    }
+    // setGraph recreates the SVG canvas and resets D3 zoom to identity. Restore the
+    // captured zoom so node visual positions don't jump after an in-place redraw.
+    if (savedZoom !== null) {
+      const newSvgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+        (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null
+      const newG = newSvgEl?.firstElementChild as SVGGElement | null
+      if (newSvgEl && newG && newSvgEl.__zoom != null) {
+        const newZoom = Object.create(Object.getPrototypeOf(newSvgEl.__zoom))
+        newZoom.k = savedZoom.k
+        newZoom.x = savedZoom.x
+        newZoom.y = savedZoom.y
+        newSvgEl.__zoom = newZoom
+        newG.setAttribute('transform', `translate(${savedZoom.x},${savedZoom.y}) scale(${savedZoom.k})`)
+      }
+    }
+    // setGraph rebuilds the graph DOM, potentially replacing the zoom group element that
+    // zoomObserver and dragObserver are watching. Reconnect them to the current element
+    // so that the overlay transform sync and live drag positions keep working.
+    setupZoomAndDragObservers()
+    if (physicsMode.value === 'on') {
+      graphComponentRef.value?.toggleNodePhysics(true)
     }
   })
 

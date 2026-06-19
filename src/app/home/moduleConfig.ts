@@ -99,4 +99,8 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * Relevant publications shown in a tooltip on the welcome screen card.
    */
   publications?: Publication[]
+  /**
+   * If true, the module card is shown as under construction and cannot be used.
+   */
+  underConstruction?: boolean
 }
