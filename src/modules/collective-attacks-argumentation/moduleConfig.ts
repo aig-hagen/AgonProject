@@ -89,5 +89,4 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   },
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
   publications: [NP06, BCDFP21],
-  underConstruction: true,
 }

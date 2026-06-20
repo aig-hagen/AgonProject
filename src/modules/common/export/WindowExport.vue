@@ -284,7 +284,6 @@ watchEffect(() => {
       <div class="flex gap-2 flex-wrap">
         <div class="grow max-w-80">
           <fieldset class="fieldset">
-            <legend class="fieldset-legend">Text</legend>
             <div class="flex gap-2 flex-wrap mb-2">
               <ButtonSave
                 class="btn btn-sm btn-soft w-28 justify-start"
@@ -305,7 +304,6 @@ watchEffect(() => {
         </div>
         <div v-if="exportResult?.svg !== undefined" v-show="exportResult !== undefined">
           <fieldset class="fieldset">
-            <legend class="fieldset-legend">SVG</legend>
             <div class="flex gap-2 flex-wrap mb-2">
               <ButtonSave
                 class="btn btn-sm btn-soft w-28 justify-start"
