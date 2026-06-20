@@ -41,7 +41,7 @@ export default defineConfig({
         // Add custom TeX package to the ones provided by @drgrice1/tikzjax
         // See https://github.com/drgrice1/tikzjax#options
         {
-          src: 'third-party/ctan.org/pkg/argumentation/1.6 2026-07-31/argumentation.sty.gz',
+          src: 'third-party/ctan.org/pkg/argumentation/1.7 2026-06-20/argumentation.sty.gz',
           dest: 'node_modules/@drgrice1/tikzjax/dist/tex_files/',
           rename: { stripBase: 5 },
         },
