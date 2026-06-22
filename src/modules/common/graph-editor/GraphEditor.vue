@@ -79,7 +79,7 @@ import FloatingHintRight from '@/modules/common/hints/FloatingHintRight.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
-import { EntryState } from '@/modules/common/main-menu/types'
+import { EntryState, type GridVisibility } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 import { useSettings } from '@/modules/common/settings/useSettings'
@@ -106,7 +106,7 @@ const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCrea
 }>()
 
 const { isDark } = useTheme()
-const { graphStyle: graphStyleSetting, defaultShowGrid, defaultGridType, showHints } = useSettings()
+const { graphStyle: graphStyleSetting, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints } = useSettings()
 const effectiveStyle = computed<GraphStyle>(() => {
   if (graphStyle !== undefined) return graphStyle
   switch (graphStyleSetting.value) {
@@ -237,10 +237,26 @@ const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics, enablePhy
   getIdMapping: () => idMapping,
   containerRef,
 })
-const showGrid = ref<boolean>(defaultShowGrid.value)
+const showGrid = ref<GridVisibility>(defaultShowGrid.value)
 const settingsDialog = useTemplateRef<InstanceType<typeof WindowSettings>>('settings-dialog')
-watch(showGrid, (show) => { graphComponentRef.value?.setShowGrid(show) })
+
+function applyGridVisibility(visibility: GridVisibility) {
+  const effective = snapMode.value && visibility === 'off' ? 'auto' : visibility
+  graphComponentRef.value?.setShowGrid(effective === 'on')
+  graphComponentRef.value?.setAutoShowGrid(effective === 'auto')
+}
+function cycleGridVisibility() {
+  if (showGrid.value === 'off') showGrid.value = 'auto'
+  else if (showGrid.value === 'auto') showGrid.value = 'on'
+  else showGrid.value = 'off'
+}
+watch(showGrid, applyGridVisibility)
 watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
+watch(gridCellScale, (scale) => { graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * scale) })
+watch(snapMode, (enabled) => {
+  graphComponentRef.value?.setSnapToGrid(enabled)
+  applyGridVisibility(showGrid.value)
+})
 const { extensionHighlightRef, serialisationHighlightRef } = useHighlight({
   graphComponentRef: graphComponentRef as any,
   getIdMapping: () => idMapping,
@@ -485,7 +501,8 @@ onMounted(() => {
   graphComponent.toggleNodePhysics(false)
   graphComponent.toggleCollisionDetection(false)
   graphComponent.toggleHyperLinkCreationViaGUI(allowHyperLinkCreation)
-  graphComponent.setGridCellSize(ARGUMENT_RADIUS_IN_PX * 2)
+  graphComponent.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
+  graphComponent.setSnapToGrid(snapMode.value)
   graphComponent.setDefaults({
     nodeAutoGrowToLabelSize: false,
     nodeProps: {
@@ -602,6 +619,66 @@ onMounted(() => {
     // listener on svgCanvas would be on a detached element after the first redraw.
     graphHost.addEventListener('auxclick', handleMiddleClick)
     middleClickCleanup = () => graphHost.removeEventListener('auxclick', handleMiddleClick)
+  }
+
+  const ctrlSnapGraphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+  if (ctrlSnapGraphHost) {
+    const nodeIdPrefix = `${graphComponentId}-node-`
+    let draggingNodeId: number | null = null
+
+    const enableSnap = (internalId: number) => {
+      ctrlSnapNodeId = internalId
+      graphComponentRef.value?.setNodeSnapToGrid(!snapMode.value, internalId)
+      graphComponentRef.value?.setShowGrid(true)
+      disablePhysics()
+    }
+    const disableSnap = () => {
+      if (ctrlSnapNodeId === null) return
+      graphComponentRef.value?.setNodeSnapToGrid(undefined, ctrlSnapNodeId)
+      ctrlSnapNodeId = null
+      applyGridVisibility(showGrid.value)
+      if (physicsMode.value === 'on') enablePhysics()
+      else if (physicsMode.value === 'settle') triggerSettle()
+    }
+
+    const handleCtrlSnapPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0) return
+      const nodeContainer = (event.target as Element).closest('.graph-controller__node-container')
+      if (!nodeContainer) return
+      const circle = nodeContainer.querySelector(`[id^="${nodeIdPrefix}"]`)
+      if (!circle) return
+      const domId = circle.getAttribute('id')
+      if (!domId) return
+      const internalId = parseInt(domId.slice(nodeIdPrefix.length))
+      if (!Number.isFinite(internalId)) return
+      draggingNodeId = internalId
+      if (event.ctrlKey) enableSnap(internalId)
+    }
+    const handleCtrlSnapPointerUp = () => {
+      disableSnap()
+      draggingNodeId = null
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Control' || draggingNodeId === null) return
+      enableSnap(draggingNodeId)
+    }
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key !== 'Control') return
+      disableSnap()
+    }
+
+    ctrlSnapGraphHost.addEventListener('pointerdown', handleCtrlSnapPointerDown, true)
+    ctrlSnapGraphHost.addEventListener('pointerup', handleCtrlSnapPointerUp, true)
+    ctrlSnapGraphHost.addEventListener('pointercancel', handleCtrlSnapPointerUp, true)
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    ctrlSnapCleanup = () => {
+      ctrlSnapGraphHost.removeEventListener('pointerdown', handleCtrlSnapPointerDown, true)
+      ctrlSnapGraphHost.removeEventListener('pointerup', handleCtrlSnapPointerUp, true)
+      ctrlSnapGraphHost.removeEventListener('pointercancel', handleCtrlSnapPointerUp, true)
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
   }
 })
 
@@ -731,8 +808,10 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     // zoomObserver and dragObserver are watching. Reconnect them to the current element
     // so that the overlay transform sync and live drag positions keep working.
     setupZoomAndDragObservers()
-    graphComponentRef.value?.setShowGrid(showGrid.value)
+    applyGridVisibility(showGrid.value)
     graphComponentRef.value?.setGridType(defaultGridType.value)
+    graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
+    graphComponentRef.value?.setSnapToGrid(snapMode.value)
     if (physicsMode.value === 'on') {
       if (center) alignNodesToSimulationCenter()
       graphComponentRef.value?.toggleNodePhysics(true)
@@ -813,6 +892,8 @@ let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
 let doubleTapCleanup: (() => void) | undefined
 let middleClickCleanup: (() => void) | undefined
+let ctrlSnapCleanup: (() => void) | undefined
+let ctrlSnapNodeId: number | null = null
 // Live node positions updated on every D3 tick during drag, so the overlay
 // doesn't lag behind until nodes-moved fires on mouseup.
 const liveNodePositions = shallowRef<Map<NodeId, { x: number; y: number }>>(new Map())
@@ -840,6 +921,7 @@ onUnmounted(() => {
   dragObserver?.disconnect()
   doubleTapCleanup?.()
   middleClickCleanup?.()
+  ctrlSnapCleanup?.()
 })
 
 function doLayout(layout: Layout) {
@@ -985,7 +1067,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           :physics-mode="physicsMode"
           @toggle-physics="toggleNodePhysics"
           :show-grid="showGrid"
-          @toggle-grid="showGrid = !showGrid"
+          @toggle-grid="cycleGridVisibility"
           @help="isHelpOpened = !isHelpOpened"
           @settings="settingsDialog?.open()"
           />

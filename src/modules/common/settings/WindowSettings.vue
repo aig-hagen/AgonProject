@@ -25,7 +25,7 @@ import { useTheme } from '@/modules/common/theme/useTheme'
 
 const dialog = useTemplateRef('dialog')
 const { isDark } = useTheme()
-const { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, showHints } = useSettings()
+const { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints } = useSettings()
 
 function open() {
   dialog.value?.showModal()
@@ -77,10 +77,14 @@ defineExpose({ open })
                 <input class="join-item btn btn-sm" type="radio" name="physics-mode" aria-label="On" value="on" v-model="defaultPhysicsMode" />
               </div>
             </div>
-            <label class="flex items-center justify-between gap-4">
+            <div class="flex items-center justify-between gap-4">
               <span class="text-sm">Show grid</span>
-              <input type="checkbox" class="toggle toggle-sm" v-model="defaultShowGrid" />
-            </label>
+              <div class="join">
+                <input class="join-item btn btn-sm" type="radio" name="grid-visibility" aria-label="Off" value="off" v-model="defaultShowGrid" />
+                <input class="join-item btn btn-sm" type="radio" name="grid-visibility" aria-label="On drag" value="auto" v-model="defaultShowGrid" />
+                <input class="join-item btn btn-sm" type="radio" name="grid-visibility" aria-label="On" value="on" v-model="defaultShowGrid" />
+              </div>
+            </div>
             <div class="flex items-center justify-between gap-4">
               <span class="text-sm">Grid type</span>
               <div class="join">
@@ -88,6 +92,17 @@ defineExpose({ open })
                 <input class="join-item btn btn-sm" type="radio" name="grid-type" aria-label="Rhombus" value="rhombus" v-model="defaultGridType" />
               </div>
             </div>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-sm">Grid cell size</span>
+              <div class="flex items-center gap-2">
+                <input type="range" class="range range-sm w-28" min="1" max="4" step="0.5" v-model.number="gridCellScale" />
+                <span class="text-sm w-6 text-right opacity-60">{{ gridCellScale }}×</span>
+              </div>
+            </div>
+            <label class="flex items-center justify-between gap-4">
+              <span class="text-sm">Snap to grid</span>
+              <input type="checkbox" class="toggle toggle-sm" v-model="snapMode" />
+            </label>
           </div>
         </section>
 

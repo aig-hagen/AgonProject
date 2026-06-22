@@ -23,3 +23,4 @@ export enum EntryState {
 }
 
 export type PhysicsMode = 'off' | 'settle' | 'on'
+export type GridVisibility = 'off' | 'auto' | 'on'

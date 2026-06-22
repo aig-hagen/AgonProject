@@ -19,7 +19,7 @@
 import { useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
 
-import type { PhysicsMode } from '@/modules/common/main-menu/types'
+import type { GridVisibility, PhysicsMode } from '@/modules/common/main-menu/types'
 
 export type GraphStyleName = 'default' | 'high-contrast' | 'minimal' | 'library'
 export type GridType = 'square' | 'rhombus'
@@ -27,9 +27,11 @@ export type GridType = 'square' | 'rhombus'
 export const useSettings = createSharedComposable(() => {
   const graphStyle = useStorage<GraphStyleName>('settings:graphStyle', 'default')
   const defaultPhysicsMode = useStorage<PhysicsMode>('settings:defaultPhysicsMode', 'off')
-  const defaultShowGrid = useStorage<boolean>('settings:defaultShowGrid', false)
+  const defaultShowGrid = useStorage<GridVisibility>('settings:defaultGridVisibility', 'off')
   const defaultGridType = useStorage<GridType>('settings:defaultGridType', 'square')
+  const gridCellScale = useStorage<number>('settings:gridCellScale', 2)
+  const snapMode = useStorage<boolean>('settings:snapMode', false)
   const showHints = useStorage<boolean>('settings:showHints', true)
 
-  return { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, showHints }
+  return { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints }
 })

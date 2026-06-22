@@ -40,7 +40,7 @@ import {
 import { computed } from 'vue'
 
 import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
-import { EntryState, type PhysicsMode } from '@/modules/common/main-menu/types'
+import { EntryState, type GridVisibility, type PhysicsMode } from '@/modules/common/main-menu/types'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
 const {
@@ -52,7 +52,7 @@ const {
   showEvaluate = EntryState.HIDE,
   showPhysics = EntryState.HIDE,
   physicsMode = 'off' as PhysicsMode,
-  showGrid = false,
+  showGrid = 'off' as GridVisibility,
   layoutsToShow = [],
 } = defineProps<{
   showSave?: EntryState
@@ -63,7 +63,7 @@ const {
   showEvaluate?: EntryState
   showPhysics?: EntryState
   physicsMode?: PhysicsMode
-  showGrid?: boolean
+  showGrid?: GridVisibility
   layoutsToShow?: Layout[]
 }>()
 
@@ -293,7 +293,8 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
           <span class="flex items-center gap-2">
             <TableCellsIcon class="size-5 opacity-70" />Show grid
           </span>
-          <CheckIcon v-if="showGrid" class="size-4 opacity-70" />
+          <CheckIcon v-if="showGrid === 'on'" class="size-4 opacity-70" />
+          <SparklesIcon v-else-if="showGrid === 'auto'" class="size-4 opacity-70" />
         </a>
       </li>
       <li>
