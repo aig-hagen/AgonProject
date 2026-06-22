@@ -26,17 +26,15 @@ import { nextTick, useTemplateRef } from 'vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import { loadDocumentState } from '@/modules/common/documents/useDocuments'
-import FloatingHintBottom from '@/modules/common/hints/FloatingHintBottom.vue'
 
 const PLACEHOLDER = 'new'
 
-const { active, documentId, value, db, modules, showRenameHint } = defineProps<{
+const { active, documentId, value, db, modules } = defineProps<{
   active: boolean
   value: string
   documentId: number
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<DocumentT>[]
-  showRenameHint: boolean
 }>()
 
 const emit = defineEmits<{
@@ -76,7 +74,6 @@ const inputSizerRef = useTemplateRef('input-sizer')
 const closeModal = useTemplateRef('closeModal')
 const deleteButtonRef = useTemplateRef('deleteButton')
 
-const tabRef = useTemplateRef('tab')
 </script>
 <template>
   <div
@@ -136,14 +133,6 @@ const tabRef = useTemplateRef('tab')
       <button>Dismiss</button>
     </form>
   </dialog>
-  <FloatingHintBottom
-    v-if="showRenameHint"
-    class="z-1"
-    :reference="tabRef"
-    :offset-y="44"
-    placement="bottom-start"
-    >Edit name
-  </FloatingHintBottom>
 </template>
 
 <style scoped>

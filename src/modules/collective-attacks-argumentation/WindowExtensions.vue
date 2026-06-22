@@ -25,6 +25,7 @@ import {
   type Semantics,
   useSetAfEvaluationQuery,
 } from '@/modules/collective-attacks-argumentation/evaluation/tweetyProject'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
@@ -48,7 +49,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, collectiveAttacksArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...collectiveAttacksArgumentationGlossary })
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)

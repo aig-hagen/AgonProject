@@ -44,8 +44,12 @@ export function useNotifications() {
     }, timeout)
   }
 
-  function addErrorNotification(title: string, description?: string) {
-    addNotification(title, NotificationType.ERROR, description)
+  function addErrorNotification(title: string, description?: string, timeout = 5_000) {
+    const notification = addNotification(title, NotificationType.ERROR, description)
+
+    setTimeout(() => {
+      notification.remove()
+    }, timeout)
   }
 
   function addNotification(title: string, type: NotificationType, description?: string) {

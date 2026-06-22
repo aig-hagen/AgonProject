@@ -183,6 +183,38 @@ function shortenNameToLetter(name: string): string {
   return match ? match[0] : name
 }
 
+export function buildArgumentPlacementText(
+  args: IterableIterator<[id: number, data: ArgumentData]>,
+  styleOptions?: ExportStyleOptions,
+  argumentOptions?: (id: number) => string,
+  argumentAnnotation?: (id: number) => string | undefined,
+): string {
+  const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2.4
+  const snapToGrid = styleOptions?.snapToGrid ?? false
+  const shortenNames = styleOptions?.shortenNames ?? true
+  const coordinateNormalization = styleOptions?.coordinateNormalization ?? 'clamp'
+  const normalizer: CoordinateNormalizer =
+    coordinateNormalization === 'rank' ? rankCompressionNormalizer() : clampDistancesNormalizer()
+  const placementGenerator: ArgumentPlacementGenerator =
+    coordinateNormalization === 'rank' ? relativePlacementGenerator() : absolutePlacementGenerator()
+
+  const nodeMap = new Map<number, NodeExportInfo>()
+  for (const [argumentId, argumentData] of args) {
+    const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
+    const displayName = shortenNames ? shortenNameToLetter(nameEscaped) : nameEscaped
+    const rawX = argumentData.x / inverseScaleFactor
+    const rawY = (argumentData.y / inverseScaleFactor) * -1
+    nodeMap.set(argumentId, { name: displayName, x: rawX, y: rawY })
+  }
+
+  offsetNodesToOrigin(nodeMap)
+  normalizer(nodeMap)
+
+  let text = placementGenerator(nodeMap, snapToGrid, argumentOptions)
+  text += emitAnnotations(nodeMap, argumentAnnotation)
+  return text
+}
+
 export function exportLatexArgumentationCommon(
   args: IterableIterator<[id: number, data: ArgumentData]>,
   attacks: IterableIterator<[attackerId: number, attackedId: number]>,

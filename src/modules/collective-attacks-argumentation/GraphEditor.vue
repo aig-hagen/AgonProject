@@ -24,10 +24,12 @@ import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
 } from '@/modules/collective-attacks-argumentation/evaluation/extensionWindowState'
+import { availableExports } from '@/modules/collective-attacks-argumentation/export'
 import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import WindowExtensions from '@/modules/collective-attacks-argumentation/WindowExtensions.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
+import WindowExport from '@/modules/common/export/WindowExport.vue'
 import {
   type GraphEditorStateHyperLink,
   type GraphEditorStateLink,
@@ -211,6 +213,15 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     :history-state="historyState"
     @open-extension-window="addExtensionInstance"
   >
+    <template #export="{ isOpen, onIsOpen }">
+      <WindowExport
+        :input="state.current.content"
+        :open="isOpen"
+        @update:open="onIsOpen"
+        :export-configs="availableExports"
+        @export="emit('export', $event)"
+      />
+    </template>
     <template #evaluationExtensions="{ onHighlight }">
       <WindowExtensions
         v-for="(instance, index) in extensionInstances"

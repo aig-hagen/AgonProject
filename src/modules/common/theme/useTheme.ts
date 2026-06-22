@@ -16,14 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { useDark } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
+import { computed, watchEffect } from 'vue'
 
 export const useTheme = createSharedComposable(() => {
-  const isDark = useDark({
-    attribute: 'data-theme',
-    valueDark: 'dark',
-    valueLight: 'light',
+  const theme = useStorage('vueuse-color-scheme', 'light')
+
+  watchEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme.value)
   })
+
+  const isDark = computed({
+    get: () => theme.value === 'dark',
+    set: (value: boolean) => {
+      theme.value = value ? 'dark' : 'light'
+    },
+  })
+
   return { isDark }
 })

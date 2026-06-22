@@ -29,12 +29,12 @@ import {
 } from '@aig-hagen/graph-component/lib'
 import {
   ArrowLongRightIcon,
-  BarsArrowUpIcon,
   PhotoIcon,
   QueueListIcon,
-  VariableIcon,
 } from '@heroicons/vue/24/outline'
-import { useElementVisibility, useMediaQuery } from '@vueuse/core'
+import ExtensionSetIcon from '@/modules/common/graph-editor/ExtensionSetIcon.vue'
+import PreceqIcon from '@/modules/common/graph-editor/PreceqIcon.vue'
+import { useMediaQuery } from '@vueuse/core'
 import {
   computed,
   nextTick,
@@ -42,12 +42,16 @@ import {
   onUnmounted,
   ref,
   shallowRef,
+  toRef,
   useId,
   useSlots,
   useTemplateRef,
   watch,
-  watchEffect,
 } from 'vue'
+import { adjustNodeLabelFontSize, parseHyperLinkId, parseLinkId } from '@/modules/common/graph-editor/graphEditorUtils'
+import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
+import { useGridOverlay } from '@/modules/common/graph-editor/useGridOverlay'
+import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
@@ -73,7 +77,7 @@ import FloatingHintRight from '@/modules/common/hints/FloatingHintRight.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
-import { EntryState, type PhysicsMode } from '@/modules/common/main-menu/types'
+import { EntryState } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 import { useTheme } from '@/modules/common/theme/useTheme'
@@ -83,6 +87,8 @@ import { useTheme } from '@/modules/common/theme/useTheme'
 // if multiple instances are used on the same site.
 const graphComponentId = useId()
 const graphComponentRef = useTemplateRef('graph-component')
+const containerRef = useTemplateRef<HTMLDivElement>('container')
+const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
 
 const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false } = defineProps<{
   state: GraphEditorState
@@ -110,9 +116,6 @@ const linkNamesEnumeration = computed(
 )
 const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
-const physicsMode = ref<PhysicsMode>('off')
-let settleTimerId: ReturnType<typeof setTimeout> | null = null
-let settlePointerCleanup: (() => void) | undefined
 
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
@@ -217,26 +220,20 @@ const emit = defineEmits<{
 let idGenerator = new IdGenerator()
 let idMapping = new IdMapping<number, number>()
 
-function computeLabelFontSize(label: string): string {
-  const len = label.length
-  if (len <= 3) return '1rem'
-  if (len <= 5) return '0.8rem'
-  if (len <= 8) return '0.65rem'
-  if (len <= 12) return '0.55rem'
-  return '0.45rem'
-}
+const stateRef = toRef(() => state)
 
-function adjustNodeLabelFontSize(internalId: number, label: string) {
-  const el = graphComponentRef.value?.$el as Element | undefined
-  if (!el) return
-  const nodeEl = el.querySelector(`#${CSS.escape(`${graphComponentId}-node-${internalId}`)}`)
-  const labelDiv = nodeEl
-    ?.closest('.graph-controller__node-container')
-    ?.querySelector<HTMLElement>('.graph-controller__node-label, .graph-controller__node-label-placeholder')
-  if (labelDiv) {
-    labelDiv.style.fontSize = computeLabelFontSize(label)
-  }
-}
+const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics, enablePhysics, alignNodesToSimulationCenter } = usePhysics({
+  graphComponentRef: graphComponentRef as any,
+  getIdMapping: () => idMapping,
+  containerRef,
+})
+const { showGrid, injectGrid, removeGrid } = useGridOverlay(containerRef, graphComponentId)
+const { extensionHighlightRef, serialisationHighlightRef } = useHighlight({
+  graphComponentRef: graphComponentRef as any,
+  getIdMapping: () => idMapping,
+  stateRef,
+  effectiveStyle,
+})
 
 function* argumentNames() {
   for (const { label } of state.nodes) {
@@ -246,45 +243,6 @@ function* argumentNames() {
 
 function getNextArgumentName() {
   return getNextName(argumentNames())
-}
-
-function hasMoreThenOneEntry<T>(array: T[]): array is [T, T, ...T[]] & [...T[], T, T] {
-  return array.length > 1
-}
-
-function parseHyperLinkId(hyperLinkId: string) {
-  const dashIdx = hyperLinkId.lastIndexOf('-')
-  const sourcesPart = hyperLinkId.slice(0, dashIdx)
-  const targetPart = hyperLinkId.slice(dashIdx + 1)
-  const sourceIds = sourcesPart.split(',').map(Number)
-  const targetId = parseInt(targetPart)
-  if (sourceIds.some((id) => !Number.isSafeInteger(id)))
-    throw new Error(`HyperLink with ID \`${hyperLinkId}\` has invalid source IDs.`)
-  if (!Number.isSafeInteger(targetId))
-    throw new Error(`HyperLink with ID \`${hyperLinkId}\` has invalid target ID ${targetId}.`)
-  return { sourceIds, targetId }
-}
-
-function parseLinkId(linkId: string) {
-  const linkParts = linkId.split('-')
-  if (!hasMoreThenOneEntry(linkParts)) {
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Seperator \`-\` is not contained.`)
-  }
-  if (linkParts.length > 2) {
-    throw new Error(
-      `Link with ID \`${linkId}\` is not valid: Seperator \`-\` is contained more then once.`,
-    )
-  }
-  const sourceId = parseInt(linkParts[0])
-  const tragetId = parseInt(linkParts[1])
-  if (!Number.isSafeInteger(sourceId))
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid source node ID ${sourceId}.`)
-  if (!Number.isSafeInteger(tragetId))
-    throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid target node ID ${tragetId}.`)
-  return {
-    sourceId: sourceId,
-    targetId: tragetId,
-  }
 }
 
 function onNodeCreated(
@@ -323,7 +281,7 @@ function onNodeCreated(
   nextTick(() => {
     graphComponentRef.value!.setLabel(name, node.id)
     graphComponentRef.value!.setColor(effectiveStyle.value.nodeColor, node.id)
-    adjustNodeLabelFontSize(node.id, name)
+    adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, node.id, name)
   })
 }
 function onNodeDeleted(
@@ -454,6 +412,60 @@ function onNodesMoved(positions: PositionSnapshot[]) {
   emit('nodesMoved', data)
 }
 
+function setupZoomAndDragObservers() {
+  zoomObserver?.disconnect()
+  dragObserver?.disconnect()
+
+  const zoomGroup = containerRef.value?.querySelector(
+    '.graph-controller__graph-canvas > g',
+  ) as SVGGElement | null
+  if (!zoomGroup || !overlayGroupRef.value) return
+
+  removeGrid()
+  if (showGrid.value) injectGrid(zoomGroup)
+
+  const syncTransform = () => {
+    const transform = zoomGroup.getAttribute('transform')
+    if (overlayGroupRef.value) {
+      overlayGroupRef.value.setAttribute('transform', transform ?? '')
+    }
+  }
+  syncTransform()
+  zoomObserver = new MutationObserver(syncTransform)
+  zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
+
+  const nodeIdPrefix = `${graphComponentId}-node-`
+  dragObserver = new MutationObserver((mutations) => {
+    const updated = new Map(liveNodePositions.value)
+    let changed = false
+    for (const mutation of mutations) {
+      if (mutation.attributeName !== 'transform') continue
+      const container = mutation.target as Element
+      if (!container.classList.contains('graph-controller__node-container')) continue
+      const circle = container.querySelector(`[id^="${nodeIdPrefix}"]`)
+      if (!circle) continue
+      const domId = circle.getAttribute('id')
+      if (!domId) continue
+      const internalId = parseInt(domId.slice(nodeIdPrefix.length))
+      if (!Number.isFinite(internalId) || !idMapping.has(internalId)) continue
+      const publicId = idMapping.getOrFail(internalId)
+      const transform = (container as SVGGElement).getAttribute('transform')
+      if (!transform) continue
+      const match = /translate\(([^,]+),([^)]+)\)/.exec(transform)
+      if (!match) continue
+      const x = parseFloat(match[1]!)
+      const y = parseFloat(match[2]!)
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue
+      updated.set(publicId, { x, y })
+      changed = true
+    }
+    if (changed) {
+      liveNodePositions.value = updated
+    }
+  })
+  dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
+}
+
 onMounted(() => {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) {
@@ -485,51 +497,7 @@ onMounted(() => {
 
   renderNewState(state, true)
 
-  const zoomGroup = containerRef.value?.querySelector(
-    '.graph-controller__graph-canvas > g',
-  ) as SVGGElement | null
-  if (zoomGroup && overlayGroupRef.value) {
-    const syncTransform = () => {
-      const transform = zoomGroup.getAttribute('transform')
-      if (overlayGroupRef.value) {
-        overlayGroupRef.value.setAttribute('transform', transform ?? '')
-      }
-    }
-    syncTransform()
-    zoomObserver = new MutationObserver(syncTransform)
-    zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
-
-    const nodeIdPrefix = `${graphComponentId}-node-`
-    dragObserver = new MutationObserver((mutations) => {
-      const updated = new Map(liveNodePositions.value)
-      let changed = false
-      for (const mutation of mutations) {
-        if (mutation.attributeName !== 'transform') continue
-        const container = mutation.target as Element
-        if (!container.classList.contains('graph-controller__node-container')) continue
-        const circle = container.querySelector(`[id^="${nodeIdPrefix}"]`)
-        if (!circle) continue
-        const domId = circle.getAttribute('id')
-        if (!domId) continue
-        const internalId = parseInt(domId.slice(nodeIdPrefix.length))
-        if (!Number.isFinite(internalId) || !idMapping.has(internalId)) continue
-        const publicId = idMapping.getOrFail(internalId)
-        const transform = (container as SVGGElement).getAttribute('transform')
-        if (!transform) continue
-        const match = /translate\(([^,]+),([^)]+)\)/.exec(transform)
-        if (!match) continue
-        const x = parseFloat(match[1]!)
-        const y = parseFloat(match[2]!)
-        if (!Number.isFinite(x) || !Number.isFinite(y)) continue
-        updated.set(publicId, { x, y })
-        changed = true
-      }
-      if (changed) {
-        liveNodePositions.value = updated
-      }
-    })
-    dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
-  }
+  setupZoomAndDragObservers()
 
   // The graph-component host has `touch-action: none` which prevents the browser
   // from generating synthetic dblclick events from double-tap. We detect double-tap
@@ -548,7 +516,9 @@ onMounted(() => {
         now - lastTap.time < 300 &&
         Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
       ) {
-        svgCanvas.dispatchEvent(new MouseEvent('dblclick', {
+        // Query fresh — setGraph recreates the SVG element so a captured reference goes stale.
+        const currentSvgCanvas = containerRef.value?.querySelector('.graph-controller__graph-canvas')
+        currentSvgCanvas?.dispatchEvent(new MouseEvent('dblclick', {
           clientX: touch.clientX,
           clientY: touch.clientY,
           bubbles: true,
@@ -617,94 +587,12 @@ onMounted(() => {
       // Updating the transform attribute triggers the MutationObserver that syncs the SVG overlay
       g.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`)
     }
-    ;(svgCanvas as HTMLElement).addEventListener('auxclick', handleMiddleClick)
-    middleClickCleanup = () => (svgCanvas as HTMLElement).removeEventListener('auxclick', handleMiddleClick)
-
-    let nodePointerDown = false
-    const handleSettlePointerDown = (event: PointerEvent) => {
-      if (physicsMode.value !== 'settle') return
-      if (!(event.target as Element).closest('.graph-controller__node-container')) return
-      nodePointerDown = true
-      graphComponentRef.value?.toggleNodePhysics(true)
-      if (settleTimerId !== null) { clearTimeout(settleTimerId); settleTimerId = null }
-    }
-    const handleSettlePointerUp = () => {
-      if (!nodePointerDown) return
-      nodePointerDown = false
-      if (physicsMode.value === 'settle') triggerSettle()
-    }
-    graphHost.addEventListener('pointerdown', handleSettlePointerDown, true)
-    graphHost.addEventListener('pointerup', handleSettlePointerUp, true)
-    graphHost.addEventListener('pointercancel', handleSettlePointerUp, true)
-    settlePointerCleanup = () => {
-      graphHost.removeEventListener('pointerdown', handleSettlePointerDown, true)
-      graphHost.removeEventListener('pointerup', handleSettlePointerUp, true)
-      graphHost.removeEventListener('pointercancel', handleSettlePointerUp, true)
-    }
+    // Attach to graphHost (not svgCanvas) — setGraph recreates the SVG element so a
+    // listener on svgCanvas would be on a detached element after the first redraw.
+    graphHost.addEventListener('auxclick', handleMiddleClick)
+    middleClickCleanup = () => graphHost.removeEventListener('auxclick', handleMiddleClick)
   }
 })
-
-function enablePhysics() {
-  const gc = graphComponentRef.value!
-  // Before enabling physics, center nodes at the SVG element's midpoint so the
-  // simulation's centering forces don't cause the cluster to drift on screen.
-  const el = gc.$el as HTMLElement
-  const graphHost = (el.querySelector('.graph-controller__graph-host') ?? el) as HTMLElement
-  const svgCenterX = graphHost.clientWidth / 2
-  const svgCenterY = graphHost.clientHeight / 2
-  let sumX = 0, sumY = 0, count = 0
-  for (const node of state.nodes) {
-    if (!idMapping.hasReverse(node.id)) continue
-    const pos = gc.getNodePosition(idMapping.getOrFailReverse(node.id))
-    sumX += pos.x
-    sumY += pos.y
-    count++
-  }
-  if (count > 0) {
-    const dx = svgCenterX - sumX / count
-    const dy = svgCenterY - sumY / count
-    for (const node of state.nodes) {
-      if (!idMapping.hasReverse(node.id)) continue
-      const internalId = idMapping.getOrFailReverse(node.id)
-      const pos = gc.getNodePosition(internalId)
-      gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
-    }
-  }
-  gc.toggleNodePhysics(true)
-  const margin = ARGUMENT_RADIUS_IN_PX * 2
-  gc.centerView({ top: margin, right: margin, bottom: margin, left: margin }, undefined, 1)
-}
-
-function disablePhysics() {
-  graphComponentRef.value?.toggleNodePhysics(false)
-}
-
-function triggerSettle() {
-  if (physicsMode.value !== 'settle') return
-  graphComponentRef.value?.toggleNodePhysics(true)
-  if (settleTimerId !== null) clearTimeout(settleTimerId)
-  settleTimerId = setTimeout(() => {
-    settleTimerId = null
-    if (physicsMode.value === 'settle') disablePhysics()
-  }, 500)
-}
-
-function toggleNodePhysics() {
-  if (physicsMode.value === 'off') {
-    physicsMode.value = 'settle'
-  } else if (physicsMode.value === 'settle') {
-    if (settleTimerId !== null) {
-      clearTimeout(settleTimerId)
-      settleTimerId = null
-    }
-    disablePhysics()
-    physicsMode.value = 'on'
-    enablePhysics()
-  } else {
-    physicsMode.value = 'off'
-    disablePhysics()
-  }
-}
 
 function toArrowType(linkType: LinkType): ArrowType {
   const override = linkConfigs[linkType]?.arrowType
@@ -739,16 +627,34 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   if (graphComponent === null) {
     throw new Error('Graph component is not rendered.')
   }
+  // When physics is active, nodes may have drifted from their stored model positions.
+  // Capture current visual positions before resetting so nodes don't snap back.
+  const preservedPositions = new Map<number, { x: number; y: number }>()
+  if (physicsMode.value !== 'off') {
+    for (const internalId of idMapping.inputIds()) {
+      preservedPositions.set(idMapping.getOrFail(internalId), graphComponent.getNodePosition(internalId))
+    }
+  }
+  // Capture the D3 zoom state before setGraph destroys and recreates the SVG canvas.
+  // setGraph resets D3 zoom to identity; restoring it keeps the graph visually stable.
+  // Only for in-place redraws (center=false) — initial renders should use the library defaults.
+  const savedZoom = center ? null : (() => {
+    const z = (containerRef.value?.querySelector('.graph-controller__graph-canvas') as (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null)?.__zoom
+    return z != null ? { k: z.k, x: z.x, y: z.y } : null
+  })()
   idGenerator = new IdGenerator()
   idMapping = new IdMapping()
   liveNodePositions.value = new Map()
-  const nodes: jsonNode[] = state.nodes.map((node) => ({
-    id: node.id,
-    label: node.label,
-    x: node.x,
-    y: node.y,
-    color: effectiveStyle.value.nodeColor,
-  }))
+  const nodes: jsonNode[] = state.nodes.map((node) => {
+    const preserved = preservedPositions.get(node.id)
+    return {
+      id: node.id,
+      label: node.label,
+      x: preserved?.x ?? node.x,
+      y: preserved?.y ?? node.y,
+      color: effectiveStyle.value.nodeColor,
+    }
+  })
   const links: jsonLink[] = state.links.map((link) => ({
     sourceId: link.sourceId,
     targetId: link.targetId,
@@ -793,7 +699,29 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     }
     for (const importedNode of importedNodes) {
       const node = state.nodes.find((n) => n.id === importedNode.idImported)
-      if (node?.label) adjustNodeLabelFontSize(importedNode.id, node.label)
+      if (node?.label) adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, importedNode.id, node.label)
+    }
+    // setGraph recreates the SVG canvas and resets D3 zoom to identity. Restore the
+    // captured zoom so node visual positions don't jump after an in-place redraw.
+    if (savedZoom !== null) {
+      const newSvgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+        (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null
+      const newG = newSvgEl?.querySelector(':scope > g') as SVGGElement | null
+      if (newSvgEl && newG && newSvgEl.__zoom != null) {
+        const newZoom = Object.create(Object.getPrototypeOf(newSvgEl.__zoom))
+        newZoom.k = savedZoom.k
+        newZoom.x = savedZoom.x
+        newZoom.y = savedZoom.y
+        newSvgEl.__zoom = newZoom
+        newG.setAttribute('transform', `translate(${savedZoom.x},${savedZoom.y}) scale(${savedZoom.k})`)
+      }
+    }
+    // setGraph rebuilds the graph DOM, potentially replacing the zoom group element that
+    // zoomObserver and dragObserver are watching. Reconnect them to the current element
+    // so that the overlay transform sync and live drag positions keep working.
+    setupZoomAndDragObservers()
+    if (physicsMode.value === 'on') {
+      graphComponentRef.value?.toggleNodePhysics(true)
     }
   })
 
@@ -840,7 +768,7 @@ function onLabelEdited(
   }
   const publicId = idMapping.getOrFail(privateId)
   emit('nodeLabelEdited', { id: publicId, label: label })
-  nextTick(() => adjustNodeLabelFontSize(privateId, label))
+  nextTick(() => adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, privateId, label))
 }
 
 const arrowSwitcherTarget = shallowRef<
@@ -851,20 +779,6 @@ const arrowSwitcherTarget = shallowRef<
   | undefined
 >(undefined)
 
-const containerRef = useTemplateRef<HTMLDivElement>('container')
-const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
-
-const isTabVisible = useElementVisibility(containerRef)
-watch(isTabVisible, (visible) => {
-  if (!visible) {
-    if (settleTimerId !== null) {
-      clearTimeout(settleTimerId)
-      settleTimerId = null
-    }
-    disablePhysics()
-    physicsMode.value = 'off'
-  }
-})
 const nodesWithWeights = computed(() =>
   nodeWeights
     ? state.nodes.filter((n) => nodeWeights.has(n.id))
@@ -883,7 +797,6 @@ let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
 let doubleTapCleanup: (() => void) | undefined
 let middleClickCleanup: (() => void) | undefined
-
 // Live node positions updated on every D3 tick during drag, so the overlay
 // doesn't lag behind until nodes-moved fires on mouseup.
 const liveNodePositions = shallowRef<Map<NodeId, { x: number; y: number }>>(new Map())
@@ -911,75 +824,15 @@ onUnmounted(() => {
   dragObserver?.disconnect()
   doubleTapCleanup?.()
   middleClickCleanup?.()
-  settlePointerCleanup?.()
-  if (settleTimerId !== null) clearTimeout(settleTimerId)
-})
-
-const extensionHighlightRef = ref<Highlight | undefined>(undefined)
-const serialisationHighlightRef = ref<Highlight | undefined>(undefined)
-const highlightToShow = computed(() => extensionHighlightRef.value ?? serialisationHighlightRef.value)
-
-watchEffect(() => {
-  const graphComponent = graphComponentRef.value
-  if (graphComponent === null) {
-    return
-  }
-
-  const highlight = highlightToShow.value
-  const groups = highlight?.groups ?? []
-
-  // Collect all nodes explicitly covered by a group
-  const coveredNodes = new Set<NodeId>()
-  for (const group of groups) {
-    for (const id of group.nodes) coveredNodes.add(id)
-  }
-
-  // Compute nodes attacked by the first group (if requested)
-  const attackedNodes = new Set<NodeId>()
-  if (highlight?.attackedByFirst !== undefined && groups.length > 0) {
-    const firstNodes = groups[0]!.nodes
-    for (const link of state.links) {
-      if (firstNodes.has(link.sourceId) && !coveredNodes.has(link.targetId)) {
-        attackedNodes.add(link.targetId)
-      }
-    }
-  }
-
-  // Categorize all graph nodes into their output buckets
-  const groupBuckets: number[][] = groups.map(() => [])
-  const attackedBucket: number[] = []
-  const defaultBucket: number[] = []
-  for (const { id } of state.nodes) {
-    if (!idMapping.hasReverse(id)) continue
-    const internalId = idMapping.getOrFailReverse(id)
-    let placed = false
-    for (let i = 0; i < groups.length; i++) {
-      if (groups[i]!.nodes.has(id)) {
-        groupBuckets[i]!.push(internalId)
-        placed = true
-        break
-      }
-    }
-    if (!placed) {
-      if (attackedNodes.has(id)) attackedBucket.push(internalId)
-      else defaultBucket.push(internalId)
-    }
-  }
-
-  // Apply colors
-  for (let i = 0; i < groups.length; i++) {
-    graphComponent.setColor(groups[i]!.color, groupBuckets[i]!)
-  }
-  if (highlight?.attackedByFirst !== undefined) {
-    graphComponent.setColor(highlight.attackedByFirst, attackedBucket)
-  }
-  graphComponent.setColor(effectiveStyle.value.nodeColor, defaultBucket)
 })
 
 function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
     return
   }
+  const wasPhysicsOn = physicsMode.value === 'on'
+  if (wasPhysicsOn) disablePhysics()
+
   const nodes = [...state.nodes]
     .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
     .map((node) => node.id)
@@ -997,12 +850,16 @@ function doLayout(layout: Layout) {
   }
   emit('nodesMoved', newPositions)
 
-  const margin = ARGUMENT_RADIUS_IN_PX * 2
-  graphComponentRef.value.centerView(
-    { top: margin, right: margin, bottom: margin, left: margin },
-    undefined,
-    1,
-  )
+  if (wasPhysicsOn) {
+    enablePhysics()
+  } else {
+    const margin = ARGUMENT_RADIUS_IN_PX * 2
+    graphComponentRef.value.centerView(
+      { top: margin, right: margin, bottom: margin, left: margin },
+      undefined,
+      1,
+    )
+  }
 }
 
 const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
@@ -1068,7 +925,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       v-if="state.nodes.length === 0"
     >
       <div class="m-auto w-fit">
-        <HelpControls :link-names="linkNames" />
+        <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
       </div>
     </div>
     <ArrowSwitcher
@@ -1111,6 +968,8 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           :show-physics="EntryState.ENABLE"
           :physics-mode="physicsMode"
           @toggle-physics="toggleNodePhysics"
+          :show-grid="showGrid"
+          @toggle-grid="showGrid = !showGrid"
           @help="isHelpOpened = !isHelpOpened"
           />
           <div ref="mainMenuBottom" class="h-0"></div>
@@ -1138,7 +997,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="emit('open-extension-window')"
               title="Extension Semantics"
             >
-              <VariableIcon class="size-6 opacity-70" />
+              <ExtensionSetIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasRankingSlot"
@@ -1146,7 +1005,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="emit('open-ranking-window')"
               title="Ranking Semantics"
             >
-              <BarsArrowUpIcon class="size-6 opacity-70" />
+              <PreceqIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasSerialisationSlot"
@@ -1184,6 +1043,11 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               </li>
               <li v-else>
                 <p class="mb-1"><kbd class="kbd kbd-sm">Hold and drag</kbd> from an argument towards another to create an {{ linkNames.join('/') }} edge</p>
+              </li>
+              <li v-if="allowHyperLinkCreation && !isTouchDevice">
+                <p class="mb-1">
+                  <kbd class="kbd kbd-sm">Shift</kbd>+<kbd class="kbd kbd-sm">Left-click</kbd> on 2 or more arguments to select sources for a collective attack, then drag to the target
+                </p>
               </li>
               <li v-if="enableLinkSwitching">
                 Switch between {{ linkNamesEnumeration }} for existing links
@@ -1250,7 +1114,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       name="evaluationSerialisation"
       :on-highlight="(h: Highlight | undefined) => { serialisationHighlightRef = h }"
     ></slot>
-    <WindowHelp :link-names="linkNames" v-model:open="isHelpOpened" />
+    <WindowHelp :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" v-model:open="isHelpOpened" />
   </div>
 </template>
 <style>

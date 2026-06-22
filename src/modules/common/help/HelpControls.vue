@@ -21,13 +21,14 @@ import { computed } from 'vue'
 
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
-const { linkNames } = defineProps<{
+const props = defineProps<{
   linkNames: string[]
+  allowHyperLinkCreation?: boolean
 }>()
 
-const linkNamesSlashSeperated = computed(() => linkNames.join('/'))
+const linkNamesSlashSeperated = computed(() => props.linkNames.join('/'))
 const linkNamesEnumeration = computed(
-  () => linkNames.slice(0, -1).join(', ') + ' and ' + linkNames[linkNames.length - 1],
+  () => props.linkNames.slice(0, -1).join(', ') + ' and ' + props.linkNames[props.linkNames.length - 1],
 )
 </script>
 <template>
@@ -40,49 +41,13 @@ const linkNamesEnumeration = computed(
     </thead>
     <tbody>
       <tr>
-        <td>Undo</td>
-        <td>
-          <div class="flex gap-1">
-            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
-            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
-            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
-            <kbd class="kbd">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
-          </div>
-        </td>
-      </tr>
-
-      <tr>
-        <td>Redo</td>
-        <td>
-          <div class="flex gap-1">
-            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
-            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
-            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
-
-            <kbd class="kbd">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
-          </div>
-        </td>
-      </tr>
-
-      <tr>
-        <td>Pan</td>
-        <td><kbd class="kbd">Left-click</kbd> on canvas, hold and drag</td>
-      </tr>
-      <tr>
-        <td>Zoom in/out</td>
-        <td><kbd class="kbd">Scroll wheel</kbd> on canvas</td>
+        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">Arguments &amp; Attacks</td>
       </tr>
       <tr>
         <td>Create argument</td>
         <td><kbd class="kbd">Left double-click</kbd> on canvas</td>
       </tr>
-      <tr>
-        <td>Rename argument</td>
-        <td>
-          <kbd class="kbd">Left-click</kbd> on argument, enter new name and use
-          <kbd class="kbd">Return</kbd> to confirm
-        </td>
-      </tr>
+
       <tr>
         <td>Move argument</td>
         <td><kbd class="kbd">Left-click</kbd> on argument, hold and drag</td>
@@ -95,7 +60,14 @@ const linkNamesEnumeration = computed(
         <td>Create {{ linkNamesSlashSeperated }}</td>
         <td><kbd class="kbd">Right-click</kbd> on argument, hold and drag towards argument</td>
       </tr>
-      <tr v-if="linkNames.length > 1">
+      <tr v-if="props.allowHyperLinkCreation">
+        <td>Create collective attack</td>
+        <td>
+          <kbd class="kbd">Shift</kbd>+<kbd class="kbd">Left-click</kbd> on 2 or more arguments to select sources, then
+          <kbd class="kbd">Right-click</kbd> on a selected source, hold and drag towards the target argument
+        </td>
+      </tr>
+      <tr v-if="props.linkNames.length > 1">
         <td>Switch between {{ linkNamesEnumeration }}</td>
         <td>
           <kbd class="kbd">Left-click</kbd> on {{ linkNamesSlashSeperated }} and select new type
@@ -104,6 +76,48 @@ const linkNamesEnumeration = computed(
       <tr>
         <td>Delete {{ linkNamesSlashSeperated }}</td>
         <td><kbd class="kbd">Right-click</kbd> on {{ linkNamesSlashSeperated }} and hold</td>
+      </tr>
+
+      <tr>
+        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">Navigation</td>
+      </tr>
+      <tr>
+        <td>Pan</td>
+        <td><kbd class="kbd">Left-click</kbd> on canvas, hold and drag</td>
+      </tr>
+      <tr>
+        <td>Zoom in/out</td>
+        <td><kbd class="kbd">Scroll wheel</kbd> on canvas</td>
+      </tr>
+      <tr>
+        <td>Center view</td>
+        <td><kbd class="kbd">Middle-click</kbd> on canvas</td>
+      </tr>
+
+      <tr>
+        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">General</td>
+      </tr>
+      <tr>
+        <td>Undo</td>
+        <td>
+          <div class="flex gap-1">
+            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
+            <kbd class="kbd" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
+            <kbd class="kbd">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>Redo</td>
+        <td>
+          <div class="flex gap-1">
+            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
+            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
+            <kbd class="kbd" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
+            <kbd class="kbd">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
+          </div>
+        </td>
       </tr>
     </tbody>
   </table>

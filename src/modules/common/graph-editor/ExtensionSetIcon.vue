@@ -16,29 +16,23 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<script setup lang="ts">
-import HelpControls from '@/modules/common/help/HelpControls.vue'
-import HelpLinks from '@/modules/common/help/HelpLinks.vue'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
-
-const props = defineProps<{
-  linkNames: string[]
-  allowHyperLinkCreation?: boolean
-}>()
-
-const open = defineModel('open', { required: true })
-</script>
-
 <template>
-  <FloatingWindow
-    v-model:open="open"
-    title="Help"
-    :initial-position="{ x: 256, y: 256 }"
-    :intitalSize="{ width: 576, height: 448 }"
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    data-slot="icon"
   >
-    <div class="p-4">
-      <HelpLinks />
-      <HelpControls :link-names="props.linkNames" :allow-hyper-link-creation="props.allowHyperLinkCreation" />
-    </div>
-  </FloatingWindow>
+    <text
+      x="12"
+      y="12"
+      text-anchor="middle"
+      dominant-baseline="central"
+      font-size="15"
+      font-weight="350"
+      font-family="ui-monospace, monospace"
+      fill="currentColor"
+      stroke="none"
+    >{a}</text>
+  </svg>
 </template>

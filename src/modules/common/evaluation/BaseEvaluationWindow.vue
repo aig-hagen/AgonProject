@@ -116,7 +116,6 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
     <template #default="{ compact }">
       <div class="p-4">
         <fieldset v-if="!compact" class="fieldset">
-          <legend class="fieldset-legend">Parameters</legend>
           <div class="flex gap-2 flex-wrap">
             <slot name="parameters" :compact="compact" />
           </div>
