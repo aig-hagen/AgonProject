@@ -22,6 +22,7 @@ import { useElementVisibility } from '@vueuse/core'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { PhysicsMode } from '@/modules/common/main-menu/types'
 import type { IdMapping } from '@/modules/common/ids'
+import { useSettings } from '@/modules/common/settings/useSettings'
 
 interface PhysicsCapable {
   $el: unknown
@@ -44,7 +45,8 @@ export function usePhysics({
   getIdMapping: () => IdMapping<number, number>
   containerRef: Ref<HTMLDivElement | null>
 }) {
-  const physicsMode = ref<PhysicsMode>('off')
+  const { defaultPhysicsMode } = useSettings()
+  const physicsMode = ref<PhysicsMode>(defaultPhysicsMode.value)
   let settleTimerId: ReturnType<typeof setTimeout> | null = null
   let settlePointerCleanup: (() => void) | undefined
 
@@ -143,7 +145,12 @@ export function usePhysics({
         settleTimerId = null
       }
       disablePhysics()
-      physicsMode.value = 'off'
+      // Preserve physicsMode so it can be restored when the tab is shown again
+    } else {
+      if (physicsMode.value === 'on') {
+        enablePhysics()
+      }
+      // 'settle' is interaction-triggered — mode is preserved, no need to restart
     }
   })
 

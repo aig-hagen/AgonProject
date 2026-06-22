@@ -29,11 +29,11 @@ import {
 } from '@aig-hagen/graph-component/lib'
 import {
   ArrowLongRightIcon,
+  BarsArrowUpIcon,
   PhotoIcon,
   QueueListIcon,
+  VariableIcon,
 } from '@heroicons/vue/24/outline'
-import ExtensionSetIcon from '@/modules/common/graph-editor/ExtensionSetIcon.vue'
-import PreceqIcon from '@/modules/common/graph-editor/PreceqIcon.vue'
 import { useMediaQuery } from '@vueuse/core'
 import {
   computed,
@@ -50,7 +50,6 @@ import {
 } from 'vue'
 import { adjustNodeLabelFontSize, parseHyperLinkId, parseLinkId } from '@/modules/common/graph-editor/graphEditorUtils'
 import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
-import { useGridOverlay } from '@/modules/common/graph-editor/useGridOverlay'
 import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
@@ -66,6 +65,9 @@ import {
 import {
   GRAPH_STYLE_DARK,
   GRAPH_STYLE_DEFAULT,
+  GRAPH_STYLE_HIGH_CONTRAST,
+  GRAPH_STYLE_LIBRARY,
+  GRAPH_STYLE_MINIMAL,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
@@ -80,6 +82,8 @@ import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+import { useSettings } from '@/modules/common/settings/useSettings'
+import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
 import { useTheme } from '@/modules/common/theme/useTheme'
 
 // The `GraphComponent` is implemented in away,
@@ -102,9 +106,15 @@ const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCrea
 }>()
 
 const { isDark } = useTheme()
+const { graphStyle: graphStyleSetting, defaultShowGrid, defaultGridType, showHints } = useSettings()
 const effectiveStyle = computed<GraphStyle>(() => {
   if (graphStyle !== undefined) return graphStyle
-  return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
+  switch (graphStyleSetting.value) {
+    case 'high-contrast': return GRAPH_STYLE_HIGH_CONTRAST
+    case 'minimal': return GRAPH_STYLE_MINIMAL
+    case 'library': return GRAPH_STYLE_LIBRARY
+    default: return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
+  }
 })
 
 const linkNames = computed(() =>
@@ -227,7 +237,10 @@ const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics, enablePhy
   getIdMapping: () => idMapping,
   containerRef,
 })
-const { showGrid, injectGrid, removeGrid } = useGridOverlay(containerRef, graphComponentId)
+const showGrid = ref<boolean>(defaultShowGrid.value)
+const settingsDialog = useTemplateRef<InstanceType<typeof WindowSettings>>('settings-dialog')
+watch(showGrid, (show) => { graphComponentRef.value?.setShowGrid(show) })
+watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
 const { extensionHighlightRef, serialisationHighlightRef } = useHighlight({
   graphComponentRef: graphComponentRef as any,
   getIdMapping: () => idMapping,
@@ -421,9 +434,6 @@ function setupZoomAndDragObservers() {
   ) as SVGGElement | null
   if (!zoomGroup || !overlayGroupRef.value) return
 
-  removeGrid()
-  if (showGrid.value) injectGrid(zoomGroup)
-
   const syncTransform = () => {
     const transform = zoomGroup.getAttribute('transform')
     if (overlayGroupRef.value) {
@@ -475,6 +485,7 @@ onMounted(() => {
   graphComponent.toggleNodePhysics(false)
   graphComponent.toggleCollisionDetection(false)
   graphComponent.toggleHyperLinkCreationViaGUI(allowHyperLinkCreation)
+  graphComponent.setGridCellSize(ARGUMENT_RADIUS_IN_PX * 2)
   graphComponent.setDefaults({
     nodeAutoGrowToLabelSize: false,
     nodeProps: {
@@ -720,8 +731,13 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     // zoomObserver and dragObserver are watching. Reconnect them to the current element
     // so that the overlay transform sync and live drag positions keep working.
     setupZoomAndDragObservers()
+    graphComponentRef.value?.setShowGrid(showGrid.value)
+    graphComponentRef.value?.setGridType(defaultGridType.value)
     if (physicsMode.value === 'on') {
+      if (center) alignNodesToSimulationCenter()
       graphComponentRef.value?.toggleNodePhysics(true)
+    } else if (physicsMode.value === 'settle' && center) {
+      triggerSettle()
     }
   })
 
@@ -922,7 +938,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
     </svg>
     <div
       class="pointer-events-none w-full opacity-50 absolute inset-0 flex items-center"
-      v-if="state.nodes.length === 0"
+      v-if="state.nodes.length === 0 && showHints"
     >
       <div class="m-auto w-fit">
         <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
@@ -971,6 +987,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           :show-grid="showGrid"
           @toggle-grid="showGrid = !showGrid"
           @help="isHelpOpened = !isHelpOpened"
+          @settings="settingsDialog?.open()"
           />
           <div ref="mainMenuBottom" class="h-0"></div>
         </div>
@@ -997,7 +1014,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="emit('open-extension-window')"
               title="Extension Semantics"
             >
-              <ExtensionSetIcon class="size-6 opacity-70" />
+              <VariableIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasRankingSlot"
@@ -1005,7 +1022,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="emit('open-ranking-window')"
               title="Ranking Semantics"
             >
-              <PreceqIcon class="size-6 opacity-70" />
+              <BarsArrowUpIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasSerialisationSlot"
@@ -1027,7 +1044,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
         </div>
       </div>
       <div class="flex flex-1 items-end pointer-events-none">
-        <template v-if="!historyState.canUndo && !historyState.canRedo">
+        <template v-if="!historyState.canUndo && !historyState.canRedo && showHints">
           <FloatingHintBottom :reference="mainMenuBottomRef" :offset-y="48" placement="bottom-start"
             ><ul class="list-disc">
               <li v-if="!isTouchDevice">
@@ -1065,7 +1082,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
         </template>
       </div>
     </div>
-    <template v-if="historyState.possibleUndos === 1 && !historyState.canRedo">
+    <template v-if="historyState.possibleUndos === 1 && !historyState.canRedo && showHints">
       <FloatingHintRight
         v-if="linkSwitchButtonRef !== null && enableLinkSwitching"
         :reference="linkSwitchButtonRef"
@@ -1115,6 +1132,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       :on-highlight="(h: Highlight | undefined) => { serialisationHighlightRef = h }"
     ></slot>
     <WindowHelp :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" v-model:open="isHelpOpened" />
+    <WindowSettings ref="settings-dialog" />
   </div>
 </template>
 <style>

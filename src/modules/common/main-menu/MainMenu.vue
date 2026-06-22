@@ -26,9 +26,9 @@ import {
   BoltIcon,
   CheckIcon,
   ChevronRightIcon,
+  Cog6ToothIcon,
   FolderOpenIcon,
   ShareIcon,
-  MoonIcon,
   PhotoIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
@@ -42,9 +42,6 @@ import { computed } from 'vue'
 import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
 import { EntryState, type PhysicsMode } from '@/modules/common/main-menu/types'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
-import { useTheme } from '@/modules/common/theme/useTheme'
-
-const { isDark } = useTheme()
 
 const {
   showSave = EntryState.HIDE,
@@ -84,6 +81,7 @@ const emit = defineEmits<{
   togglePhysics: []
   toggleGrid: []
   help: []
+  settings: []
 }>()
 
 function onClickLayout(layout: Layout) {
@@ -299,12 +297,7 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
         </a>
       </li>
       <li>
-        <a @click="isDark = !isDark" class="flex justify-between gap-8">
-          <span class="flex items-center gap-2">
-            <MoonIcon class="size-5 opacity-70" />Dark mode
-          </span>
-          <CheckIcon v-if="isDark" class="size-4 opacity-70" />
-        </a>
+        <a @click="emit('settings')"><Cog6ToothIcon class="size-5 opacity-70" />Settings...</a>
       </li>
       <li>
         <a @click="emit('help')"><QuestionMarkCircleIcon class="size-5 opacity-70" />Help</a>
