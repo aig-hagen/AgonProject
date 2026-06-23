@@ -18,16 +18,19 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, watch } from 'vue'
 
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
 } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { availableExports } from '@/modules/bipolar-argumentation/export'
+import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import { bipolarBasicsTutorial } from '@/modules/bipolar-argumentation/tutorials/bipolar-basics'
 import { bipolarEvaluationTutorial } from '@/modules/bipolar-argumentation/tutorials/bipolar-evaluation'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -43,6 +46,7 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { state, historyState, documentId } = defineProps<{
   state: DocumentState<BipoloarArgumentation<ArgumentData>>
@@ -216,7 +220,10 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   )
 }
 
-const bipolarTutorials = [bipolarBasicsTutorial, bipolarEvaluationTutorial]
+// Make the bipolar glossary available to tutorial steps that reference terms (e.g. BAF).
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...bipolarArgumentationGlossary })
+
+const bipolarTutorials = [bipolarBasicsTutorial, bipolarEvaluationTutorial, ...commonTutorials]
 
 const evaluationCount = ref(0)
 const highlightCount = ref(0)

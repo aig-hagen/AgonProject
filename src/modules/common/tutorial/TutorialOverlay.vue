@@ -20,7 +20,8 @@
 import { autoUpdate, offset, useFloating } from '@floating-ui/vue'
 import { computed, onMounted, useTemplateRef, watchEffect } from 'vue'
 
-import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
+import type { Tutorial, TutorialBodyPart, TutorialContext } from '@/modules/common/tutorial/types'
 import { useTutorial } from '@/modules/common/tutorial/useTutorial'
 
 const {
@@ -64,7 +65,7 @@ onMounted(() => {
 
 watchEffect(() => {
   if (!isActive.value || !currentStep.value) return
-  if (currentStep.value.advanceOn !== 'action') return
+  if (resolvedAdvanceOn.value !== 'action') return
   if (!currentStep.value.advanceCondition) return
   if (!baselineContext.value) return
   if (currentStep.value.advanceCondition(context, baselineContext.value)) {
@@ -79,10 +80,17 @@ const anchorRef = computed<HTMLElement | null>(() => {
 
 const isAnchored = computed(() => anchorRef.value !== null)
 
-const stepBody = computed(() => {
-  if (!currentStep.value) return ''
+const resolvedAdvanceOn = computed<'button' | 'action'>(() => {
+  const a = currentStep.value?.advanceOn
+  if (!a) return 'button'
+  return typeof a === 'function' ? a(isTouchDevice) : a
+})
+
+const bodyParts = computed<TutorialBodyPart[]>(() => {
+  if (!currentStep.value) return []
   const body = currentStep.value.body
-  return typeof body === 'function' ? body(isTouchDevice) : body
+  const resolved = typeof body === 'function' ? body(isTouchDevice) : body
+  return typeof resolved === 'string' ? [resolved] : resolved
 })
 
 const nextTutorial = computed(() => {
@@ -136,7 +144,12 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
             ></progress>
           </div>
           <h3 class="card-title text-sm">{{ currentStep.title }}</h3>
-          <div class="text-sm text-base-content/80 leading-relaxed" v-html="stepBody"></div>
+          <div class="text-sm text-base-content/80 leading-relaxed">
+            <template v-for="(part, i) in bodyParts" :key="i">
+              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
+              <span v-else class="contents" v-html="part"></span>
+            </template>
+          </div>
           <div class="flex items-center justify-between gap-2 pt-1">
             <button
               v-if="activeStepIndex > 0"
@@ -157,7 +170,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
                 <button class="btn btn-primary btn-xs" @click="handleDone">Done</button>
               </template>
               <button
-                v-else-if="currentStep.advanceOn === 'button'"
+                v-else-if="resolvedAdvanceOn === 'button'"
                 class="btn btn-primary btn-xs"
                 @click="handleNext"
               >Next →</button>
@@ -186,7 +199,12 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
             ></progress>
           </div>
           <h3 class="card-title text-sm">{{ currentStep.title }}</h3>
-          <div class="text-sm text-base-content/80 leading-relaxed" v-html="stepBody"></div>
+          <div class="text-sm text-base-content/80 leading-relaxed">
+            <template v-for="(part, i) in bodyParts" :key="i">
+              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
+              <span v-else class="contents" v-html="part"></span>
+            </template>
+          </div>
           <div class="flex items-center justify-between gap-2 pt-1">
             <button
               v-if="activeStepIndex > 0"
@@ -207,7 +225,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
                 <button class="btn btn-primary btn-xs" @click="handleDone">Done</button>
               </template>
               <button
-                v-else-if="currentStep.advanceOn === 'button'"
+                v-else-if="resolvedAdvanceOn === 'button'"
                 class="btn btn-primary btn-xs"
                 @click="handleNext"
               >Next →</button>

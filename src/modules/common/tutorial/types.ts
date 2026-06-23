@@ -27,6 +27,16 @@ export interface TutorialContext {
   evaluationCount: number
   /** Monotonic count of result highlights — compare against baseline to detect a new one */
   highlightCount: number
+  /** Monotonic count of acceptance condition edits — compare against baseline to detect a change */
+  conditionEditCount: number
+  /** Monotonic count of condition editor opens — compare against baseline to detect a new open */
+  conditionEditorOpenCount: number
+  /** Monotonic count of pan gestures */
+  panCount: number
+  /** Monotonic count of zoom gestures */
+  zoomCount: number
+  /** Monotonic count of center-view (middle-click) actions */
+  centerCount: number
 }
 
 export type StepPlacement =
@@ -39,17 +49,27 @@ export type StepPlacement =
   | 'top-start'
   | 'top-end'
 
+/**
+ * A piece of step body content. Plain strings are rendered as HTML (use <kbd>, <strong>, …).
+ * The `{ text, tooltipId }` form renders an inline glossary hover tooltip — same convention as
+ * `ResultsHeaderPart` in the evaluation windows.
+ */
+export type TutorialBodyPart = string | { text: string; tooltipId: string }
+
+/** A full step body: either a single HTML string, or a sequence of parts that may include tooltips. */
+export type TutorialBody = string | TutorialBodyPart[]
+
 export interface TutorialStep {
   id: string
   title: string
-  /** HTML string rendered via v-html — use <kbd> for key hints */
-  body: string | ((isTouchDevice: boolean) => string)
+  /** Step body. Plain strings render as HTML; use the parts array to embed glossary tooltips. */
+  body: TutorialBody | ((isTouchDevice: boolean) => TutorialBody)
   /** Key into the refs map passed to TutorialOverlay. Absent = fixed top-right. */
   anchor?: string
   placement?: StepPlacement
   /** Offset in px from anchor element. Default: 64 */
   offsetPx?: number
-  advanceOn: 'button' | 'action'
+  advanceOn: 'button' | 'action' | ((isTouchDevice: boolean) => 'button' | 'action')
   /** Only for advanceOn:'action' — auto-advances when true. Receives both current and baseline context. */
   advanceCondition?: (ctx: TutorialContext, baseline: TutorialContext) => boolean
   /** ID of tutorial to offer as follow-up on the final step */

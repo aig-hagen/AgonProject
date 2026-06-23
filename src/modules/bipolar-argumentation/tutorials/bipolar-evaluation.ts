@@ -21,18 +21,18 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const bipolarEvaluationTutorial: Tutorial = {
   id: 'bipolar-evaluation',
   name: 'Evaluation Tutorial',
-  description: 'Learn how supports are interpreted and how to compute extension semantics.',
+  description: 'Learn about different support interpretations and how to compute extension-based semantics for BAFs.',
   steps: [
     {
       id: 'intro',
-      title: 'Evaluating your framework',
-      body: 'Evaluation computes which arguments are <em>accepted</em> under a chosen semantics. In a bipolar framework, <strong>support</strong> relations also influence the outcome — and how exactly depends on the chosen support interpretation.',
+      title: 'Evaluating the BAF',
+      body: 'Extension-based semantics compute which sets of arguments are <em>acceptable</em> under a chosen semantics. In a BAF, <strong>support</strong> relations also influence the outcome - and how exactly depends on the chosen support interpretation.',
       advanceOn: 'button',
     },
     {
       id: 'open-eval',
       title: 'Open the evaluation panel',
-      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) to open the evaluation window.',
+      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) on the left to open an evaluation window.',
       anchor: 'evaluationButtons',
       placement: 'right-start',
       offsetPx: 64,
@@ -42,13 +42,25 @@ export const bipolarEvaluationTutorial: Tutorial = {
     {
       id: 'support-interpretation',
       title: 'Choose a support interpretation',
-      body: 'The <strong>Support</strong> selector determines how support relations are reduced to attacks — for example <em>deductive</em>, <em>necessary</em>, or <em>none</em>. Different interpretations can lead to different results for the same framework.',
+      body: [
+        'The <strong>Support</strong> selector determines how support relations are reduced to attacks - for example ',
+        { text: 'deductive', tooltipId: 'deductiveSupport' },
+        ' or ',
+        { text: 'necessary', tooltipId: 'necessarySupport' },
+        '. Different interpretations can lead to different results for the same framework.',
+      ],
       advanceOn: 'button',
     },
     {
       id: 'pick-semantics',
       title: 'Pick a semantics and evaluate',
-      body: 'Select a <strong>semantics</strong> (e.g. <em>Complete</em>) and a <strong>mode</strong> (e.g. <em>Credulous</em> or <em>Skeptical</em>), then press <strong>Evaluate</strong> to compute the result.',
+      body: [
+        'Select a <strong>semantics</strong> (e.g. <em>Complete</em>) and a <strong>mode</strong> (e.g. ',
+        { text: 'Credulous', tooltipId: 'credulousAcceptance' },
+        ' or ',
+        { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
+        '), then press <strong>Evaluate</strong> to compute the result.',
+      ],
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
     },
@@ -64,7 +76,7 @@ export const bipolarEvaluationTutorial: Tutorial = {
     {
       id: 'read-results',
       title: 'Reading the results',
-      body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured by their status:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — accepted</li><li><span class="text-info font-medium">Blue</span> — undecided</li><li><span class="text-error font-medium">Red</span> — rejected</li></ul>',
+      body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured depending on their status:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — accepted</li><li><span class="text-info font-medium">Blue</span> — undecided</li><li><span class="text-error font-medium">Red</span> — rejected</li></ul>',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,
     },

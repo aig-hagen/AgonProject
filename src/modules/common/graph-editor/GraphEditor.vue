@@ -127,6 +127,10 @@ const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
 const isTutorialWindowOpen = ref<boolean>(false)
 
+const tutorialPanCount = ref(0)
+const tutorialZoomCount = ref(0)
+const tutorialCenterCount = ref(0)
+
 const tutorialContext = computed<TutorialContext>(() => ({
   nodeCount: state.nodes.length,
   linkCount: state.links.length,
@@ -135,6 +139,11 @@ const tutorialContext = computed<TutorialContext>(() => ({
   isExtensionWindowOpen: tutorialContextExtra?.isExtensionWindowOpen ?? false,
   evaluationCount: tutorialContextExtra?.evaluationCount ?? 0,
   highlightCount: tutorialContextExtra?.highlightCount ?? 0,
+  conditionEditCount: tutorialContextExtra?.conditionEditCount ?? 0,
+  conditionEditorOpenCount: tutorialContextExtra?.conditionEditorOpenCount ?? 0,
+  panCount: tutorialPanCount.value,
+  zoomCount: tutorialZoomCount.value,
+  centerCount: tutorialCenterCount.value,
 }))
 
 const slots = useSlots()
@@ -455,10 +464,24 @@ function setupZoomAndDragObservers() {
   ) as SVGGElement | null
   if (!zoomGroup || !overlayGroupRef.value) return
 
+  let prevTransformScale = 1
+  let prevTransformTx = 0
+  let prevTransformTy = 0
+
   const syncTransform = () => {
     const transform = zoomGroup.getAttribute('transform')
     if (overlayGroupRef.value) {
       overlayGroupRef.value.setAttribute('transform', transform ?? '')
+    }
+    // Track pan vs zoom for tutorial context
+    if (transform) {
+      const m = /translate\(([^,]+),([^)]+)\)\s*scale\(([^)]+)\)/.exec(transform)
+      if (m) {
+        const tx = parseFloat(m[1]!); const ty = parseFloat(m[2]!); const k = parseFloat(m[3]!)
+        if (Math.abs(k - prevTransformScale) > 0.001) tutorialZoomCount.value++
+        else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5) tutorialPanCount.value++
+        prevTransformScale = k; prevTransformTx = tx; prevTransformTy = ty
+      }
     }
   }
   syncTransform()
@@ -618,6 +641,7 @@ onMounted(() => {
       }
 
       // Updating the transform attribute triggers the MutationObserver that syncs the SVG overlay
+      tutorialCenterCount.value++
       g.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`)
     }
     // Attach to graphHost (not svgCanvas) — setGraph recreates the SVG element so a

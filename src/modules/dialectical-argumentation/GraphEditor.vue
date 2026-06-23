@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -41,7 +41,11 @@ import {
   type ExtensionWindowInstanceState,
 } from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/dialectical-argumentation/export'
+import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import { adfBasicsTutorial } from '@/modules/dialectical-argumentation/tutorials/adf-basics'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowInterpretations from '@/modules/dialectical-argumentation/WindowInterpretations.vue'
 
 const { state, historyState, documentId } = defineProps<{
@@ -154,6 +158,8 @@ function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
 // Condition editor
 const selectedNodeId = ref<NodeId | null>(null)
 const editorAnchor = ref<{ x: number; y: number }>({ x: 0, y: 0 })
+const conditionEditCount = ref(0)
+const conditionEditorOpenCount = ref(0)
 
 const argNameMap = computed(() => {
   const map = new Map<number, string>()
@@ -171,6 +177,7 @@ function getConditionString(nodeId: NodeId): string {
 
 function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
   selectedNodeId.value = nodeId
+  conditionEditorOpenCount.value++
   const svgEl = (event.currentTarget as SVGElement).ownerSVGElement!
   const rect = svgEl.getBoundingClientRect()
   editorAnchor.value = {
@@ -183,6 +190,7 @@ function onConditionChanged(formula: FormulaNode) {
   if (selectedNodeId.value === null) return
   const id = selectedNodeId.value
   createNewState((draft) => draft.setCondition(id, formula), true)
+  conditionEditCount.value++
 }
 
 // --- Multi-instance window management ---
@@ -206,6 +214,15 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     i.id === updated.id ? updated : i,
   )
 }
+
+provide(TOOLTIP_REGISTRY_KEY, dialecticalArgumentationGlossary)
+
+const adfTutorials = [adfBasicsTutorial, ...commonTutorials]
+
+const tutorialContextExtra = computed(() => ({
+  conditionEditCount: conditionEditCount.value,
+  conditionEditorOpenCount: conditionEditorOpenCount.value,
+}))
 </script>
 <template>
   <GraphEditor
@@ -221,6 +238,9 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     :allow-link-deletion="false"
     :state="editorState"
     :history-state="historyState"
+    :tutorials="adfTutorials"
+    default-tutorial-id="adf-basics"
+    :tutorial-context-extra="tutorialContextExtra"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"

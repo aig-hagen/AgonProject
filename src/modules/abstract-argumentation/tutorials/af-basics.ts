@@ -50,6 +50,17 @@ export const afBasicsTutorial: Tutorial = {
       advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
     },
     {
+      id: 'delete',
+      title: 'Delete an argument or attack',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? '<strong>Long-press</strong> on an argument or attack to delete it.'
+          : '<strong>Right-click and hold</strong> on an argument or attack to delete it.',
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.nodeCount < baseline.nodeCount || ctx.linkCount < baseline.linkCount,
+    },
+    {
       id: 'undo-redo',
       title: 'Undo & Redo',
       body: (isTouchDevice) =>

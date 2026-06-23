@@ -36,6 +36,7 @@ import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { afBasicsTutorial } from '@/modules/abstract-argumentation/tutorials/af-basics'
 import { afEvaluationTutorial } from '@/modules/abstract-argumentation/tutorials/af-evaluation'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
 import WindowSerialisation from '@/modules/abstract-argumentation/WindowSerialisation.vue'
@@ -249,7 +250,7 @@ function updateSerialisationInstance(updated: SerialisationWindowInstanceState) 
   )
 }
 
-const afTutorials = [afBasicsTutorial, afEvaluationTutorial]
+const afTutorials = [afBasicsTutorial, afEvaluationTutorial, ...commonTutorials]
 
 const evaluationCount = ref(0)
 const highlightCount = ref(0)

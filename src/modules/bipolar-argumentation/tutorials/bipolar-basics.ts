@@ -26,7 +26,10 @@ export const bipolarBasicsTutorial: Tutorial = {
     {
       id: 'welcome',
       title: 'Welcome to Bipolar Argumentation!',
-      body: 'Bipolar frameworks extend abstract argumentation with a second relation: besides <strong>attacks</strong>, arguments can also <strong>support</strong> one another. This tutorial shows you how to work with both. You can skip it at any time and restart it from the <strong>Tutorials</strong> menu.',
+      body: [
+        { text: 'Bipolar argumentation frameworks (BAFs)', tooltipId: 'BAF' },
+        ' extend abstract argumentation with a second relation: besides <strong>attacks</strong>, arguments can also <strong>support</strong> one another. This tutorial shows you how to create and interact with BAFs. You can skip it at any time and restart it from the <strong>Tutorials</strong> menu.',
+      ],
       advanceOn: 'button',
     },
     {
@@ -49,24 +52,25 @@ export const bipolarBasicsTutorial: Tutorial = {
       advanceOn: 'button',
     },
     {
-      id: 'create-attack',
-      title: 'Draw an attack',
-      body: (isTouchDevice) =>
-        isTouchDevice
-          ? 'With <strong>Attack</strong> selected, <strong>hold and drag</strong> from one argument towards another to create an attack.'
-          : 'With <strong>Attack</strong> selected, <strong>right-click</strong> on an argument, hold, and drag towards another argument to create an attack.',
-      advanceOn: 'action',
-      advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
-    },
-    {
       id: 'create-support',
       title: 'Draw a support',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? 'Now select <strong>Support</strong> in the toolbar, then <strong>hold and drag</strong> from one argument to another to create a support relation.'
-          : 'Now select <strong>Support</strong> in the toolbar, then <strong>right-click</strong> and drag from one argument to another to create a support relation.',
+          ? 'After selecting <strong>Support</strong> in the toolbar, <strong>hold and drag</strong> from one argument to another to create a support relation.'
+          : 'After selecting <strong>Support</strong> in the toolbar, <strong>right-click</strong> and drag from one argument to another to create a support relation.',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
+    },
+    {
+      id: 'delete',
+      title: 'Delete an argument or relation',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? '<strong>Long-press</strong> on an argument or relation to delete it.'
+          : '<strong>Right-click and hold</strong> on an argument or relation to delete it.',
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.nodeCount < baseline.nodeCount || ctx.linkCount < baseline.linkCount,
     },
     {
       id: 'switch-link-type',
@@ -80,7 +84,7 @@ export const bipolarBasicsTutorial: Tutorial = {
     {
       id: 'done',
       title: 'You\'re all set!',
-      body: 'You can now build bipolar frameworks with both attacks and supports. Next, try the <strong>Evaluation Tutorial</strong> to see how supports affect which arguments are accepted.',
+      body: 'You can now build bipolar argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how supports affect which arguments are accepted.',
       advanceOn: 'button',
       nextTutorialId: 'bipolar-evaluation',
     },
