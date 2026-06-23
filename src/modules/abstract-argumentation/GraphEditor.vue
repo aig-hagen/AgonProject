@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, shallowRef, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 
 import {
   createDefaultExtensionWindowInstance,
@@ -34,6 +34,8 @@ import {
 } from '@/modules/abstract-argumentation/evaluation/serialisationWindowState'
 import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import { afBasicsTutorial } from '@/modules/abstract-argumentation/tutorials/af-basics'
+import { afEvaluationTutorial } from '@/modules/abstract-argumentation/tutorials/af-evaluation'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
 import WindowSerialisation from '@/modules/abstract-argumentation/WindowSerialisation.vue'
@@ -246,6 +248,17 @@ function updateSerialisationInstance(updated: SerialisationWindowInstanceState) 
     i.id === updated.id ? updated : i,
   )
 }
+
+const afTutorials = [afBasicsTutorial, afEvaluationTutorial]
+
+const evaluationCount = ref(0)
+const highlightCount = ref(0)
+
+const tutorialContextExtra = computed(() => ({
+  isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationCount: evaluationCount.value,
+  highlightCount: highlightCount.value,
+}))
 </script>
 <template>
   <GraphEditor
@@ -266,6 +279,9 @@ function updateSerialisationInstance(updated: SerialisationWindowInstanceState) 
     @save="emit('save')"
     @share="emit('share')"
     :history-state="historyState"
+    :tutorials="afTutorials"
+    default-tutorial-id="af-basics"
+    :tutorial-context-extra="tutorialContextExtra"
     @open-extension-window="addExtensionInstance()"
     @open-ranking-window="addRankingInstance()"
     @open-serialisation-window="addSerialisationInstance()"
@@ -279,7 +295,8 @@ function updateSerialisationInstance(updated: SerialisationWindowInstanceState) 
         :instance-offset="index"
         :storage-key="`abstract-argumentation:${documentId}:${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="onHighlight"
+        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>

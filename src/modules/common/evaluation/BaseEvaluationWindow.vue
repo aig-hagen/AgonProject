@@ -46,6 +46,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
   focus: []
+  evaluate: []
 }>()
 
 const evaluateContinuously = defineModel<boolean>('evaluateContinuously', { required: true })
@@ -57,6 +58,10 @@ const isCompact = ref(false)
 watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
 
 const { status, error, isPending, isLoading, isError, refetch } = props.query
+
+watch(isLoading, (loading, wasLoading) => {
+  if (loading && !wasLoading) emit('evaluate')
+})
 
 const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
 

@@ -18,29 +18,27 @@
 -->
 <script setup lang="ts">
 import {
+  AcademicCapIcon,
   ArrowDownTrayIcon,
   ArrowsUpDownIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   Bars3Icon,
-  BoltIcon,
-  CheckIcon,
   ChevronRightIcon,
   Cog6ToothIcon,
   FolderOpenIcon,
-  ShareIcon,
   PhotoIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
+  ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
-  TableCellsIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
 
 import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
-import { EntryState, type GridVisibility, type PhysicsMode } from '@/modules/common/main-menu/types'
+import { EntryState } from '@/modules/common/main-menu/types'
 import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
 const {
@@ -50,9 +48,6 @@ const {
   showExport = EntryState.HIDE,
   showShare = EntryState.HIDE,
   showEvaluate = EntryState.HIDE,
-  showPhysics = EntryState.HIDE,
-  physicsMode = 'off' as PhysicsMode,
-  showGrid = 'off' as GridVisibility,
   layoutsToShow = [],
 } = defineProps<{
   showSave?: EntryState
@@ -61,9 +56,6 @@ const {
   showExport?: EntryState
   showShare?: EntryState
   showEvaluate?: EntryState
-  showPhysics?: EntryState
-  physicsMode?: PhysicsMode
-  showGrid?: GridVisibility
   layoutsToShow?: Layout[]
 }>()
 
@@ -78,10 +70,9 @@ const emit = defineEmits<{
   share: []
   evaluate: []
   generate: []
-  togglePhysics: []
-  toggleGrid: []
   help: []
   settings: []
+  tutorial: []
 }>()
 
 function onClickLayout(layout: Layout) {
@@ -189,24 +180,6 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
           </div>
         </li>
       </template>
-      <template v-if="showPhysics !== EntryState.HIDE">
-        <li class="disabled"><hr class="mt-2 border-base-300" /></li>
-        <li>
-          <a
-            :class="{
-              'opacity-50 pointer-events-none': showPhysics === EntryState.DISABLE,
-            }"
-            @click="emit('togglePhysics')"
-            class="flex justify-between gap-8"
-          >
-            <span class="flex items-center gap-2">
-              <BoltIcon class="size-5 opacity-70" />Node Physics
-            </span>
-            <CheckIcon v-if="physicsMode === 'on'" class="size-4 opacity-70" />
-            <SparklesIcon v-else-if="physicsMode === 'settle'" class="size-4 opacity-70" />
-          </a>
-        </li>
-      </template>
       <template v-if="showUndo !== EntryState.HIDE || showRedo !== EntryState.HIDE">
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
         <li v-if="showUndo !== EntryState.HIDE">
@@ -289,16 +262,10 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
       </template>
       <li class="disabled"><hr class="mt-2 border-base-300" /></li>
       <li>
-        <a @click="emit('toggleGrid')" class="flex justify-between gap-8">
-          <span class="flex items-center gap-2">
-            <TableCellsIcon class="size-5 opacity-70" />Show grid
-          </span>
-          <CheckIcon v-if="showGrid === 'on'" class="size-4 opacity-70" />
-          <SparklesIcon v-else-if="showGrid === 'auto'" class="size-4 opacity-70" />
-        </a>
+        <a @click="emit('settings')"><Cog6ToothIcon class="size-5 opacity-70" />Settings...</a>
       </li>
       <li>
-        <a @click="emit('settings')"><Cog6ToothIcon class="size-5 opacity-70" />Settings...</a>
+        <a @click="emit('tutorial')"><AcademicCapIcon class="size-5 opacity-70" />Tutorials...</a>
       </li>
       <li>
         <a @click="emit('help')"><QuestionMarkCircleIcon class="size-5 opacity-70" />Help</a>

@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, shallowRef, watch } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 
 import {
   createDefaultExtensionWindowInstance,
@@ -26,6 +26,8 @@ import {
 } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/bipolar-argumentation/export'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import { bipolarBasicsTutorial } from '@/modules/bipolar-argumentation/tutorials/bipolar-basics'
+import { bipolarEvaluationTutorial } from '@/modules/bipolar-argumentation/tutorials/bipolar-evaluation'
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -213,6 +215,17 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     i.id === updated.id ? updated : i,
   )
 }
+
+const bipolarTutorials = [bipolarBasicsTutorial, bipolarEvaluationTutorial]
+
+const evaluationCount = ref(0)
+const highlightCount = ref(0)
+
+const tutorialContextExtra = computed(() => ({
+  isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationCount: evaluationCount.value,
+  highlightCount: highlightCount.value,
+}))
 </script>
 <template>
   <GraphEditor
@@ -229,6 +242,9 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     :link-configs="linkConfig"
     :state="editorState"
     :history-state="historyState"
+    :tutorials="bipolarTutorials"
+    default-tutorial-id="bipolar-basics"
+    :tutorial-context-extra="tutorialContextExtra"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
@@ -244,7 +260,8 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
         :instance-offset="index"
         :storage-key="`bipolar-argumentation:${documentId}:${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="onHighlight"
+        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>

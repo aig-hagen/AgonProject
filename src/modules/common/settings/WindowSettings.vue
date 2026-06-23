@@ -22,10 +22,12 @@ import { useTemplateRef } from 'vue'
 
 import { useSettings } from '@/modules/common/settings/useSettings'
 import { useTheme } from '@/modules/common/theme/useTheme'
+import { useTutorial } from '@/modules/common/tutorial/useTutorial'
 
 const dialog = useTemplateRef('dialog')
 const { isDark } = useTheme()
 const { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints } = useSettings()
+const { resetAllTutorials } = useTutorial()
 
 function open() {
   dialog.value?.showModal()
@@ -106,14 +108,18 @@ defineExpose({ open })
           </div>
         </section>
 
-        <!-- Hints -->
+        <!-- Tutorials -->
         <section>
-          <h4 class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3">Hints</h4>
+          <h4 class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3">Tutorials</h4>
           <div class="flex flex-col gap-3">
             <label class="flex items-center justify-between gap-4">
-              <span class="text-sm">Show onboarding hints</span>
+              <span class="text-sm">Show tutorials</span>
               <input type="checkbox" class="toggle toggle-sm" v-model="showHints" />
             </label>
+            <div class="flex items-center justify-between gap-4">
+              <span class="text-sm">Tutorial progress</span>
+              <button class="btn btn-ghost btn-xs" @click="resetAllTutorials">Reset</button>
+            </div>
           </div>
         </section>
       </div>

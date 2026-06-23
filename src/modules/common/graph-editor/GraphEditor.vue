@@ -48,9 +48,6 @@ import {
   useTemplateRef,
   watch,
 } from 'vue'
-import { adjustNodeLabelFontSize, parseHyperLinkId, parseLinkId } from '@/modules/common/graph-editor/graphEditorUtils'
-import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
-import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
@@ -62,6 +59,7 @@ import {
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
+import { adjustNodeLabelFontSize, parseHyperLinkId, parseLinkId } from '@/modules/common/graph-editor/graphEditorUtils'
 import {
   GRAPH_STYLE_DARK,
   GRAPH_STYLE_DEFAULT,
@@ -72,19 +70,21 @@ import {
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
+import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
+import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
-import FloatingHintBottom from '@/modules/common/hints/FloatingHintBottom.vue'
-import FloatingHintRight from '@/modules/common/hints/FloatingHintRight.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState, type GridVisibility } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
-import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
 import { useTheme } from '@/modules/common/theme/useTheme'
+import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
+import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
+import WindowTutorials from '@/modules/common/tutorial/WindowTutorials.vue'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
@@ -94,7 +94,7 @@ const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
 
-const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false } = defineProps<{
+const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false, tutorials, defaultTutorialId, tutorialContextExtra } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
@@ -103,6 +103,9 @@ const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCrea
   allowLinkCreation?: boolean
   allowLinkDeletion?: boolean
   allowHyperLinkCreation?: boolean
+  tutorials?: Tutorial[]
+  defaultTutorialId?: string
+  tutorialContextExtra?: Partial<TutorialContext>
 }>()
 
 const { isDark } = useTheme()
@@ -120,12 +123,19 @@ const effectiveStyle = computed<GraphStyle>(() => {
 const linkNames = computed(() =>
   Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
 )
-const linkNamesEnumeration = computed(
-  () =>
-    linkNames.value.slice(0, -1).join(', ') + ' and ' + linkNames.value[linkNames.value.length - 1],
-)
 const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
+const isTutorialWindowOpen = ref<boolean>(false)
+
+const tutorialContext = computed<TutorialContext>(() => ({
+  nodeCount: state.nodes.length,
+  linkCount: state.links.length,
+  canUndo: historyState.canUndo,
+  canRedo: historyState.canRedo,
+  isExtensionWindowOpen: tutorialContextExtra?.isExtensionWindowOpen ?? false,
+  evaluationCount: tutorialContextExtra?.evaluationCount ?? 0,
+  highlightCount: tutorialContextExtra?.highlightCount ?? 0,
+}))
 
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
@@ -232,7 +242,7 @@ let idMapping = new IdMapping<number, number>()
 
 const stateRef = toRef(() => state)
 
-const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics, enablePhysics, alignNodesToSimulationCenter } = usePhysics({
+const { physicsMode, triggerSettle, disablePhysics, enablePhysics, alignNodesToSimulationCenter } = usePhysics({
   graphComponentRef: graphComponentRef as any,
   getIdMapping: () => idMapping,
   containerRef,
@@ -244,11 +254,6 @@ function applyGridVisibility(visibility: GridVisibility) {
   const effective = snapMode.value && visibility === 'off' ? 'auto' : visibility
   graphComponentRef.value?.setShowGrid(effective === 'on')
   graphComponentRef.value?.setAutoShowGrid(effective === 'auto')
-}
-function cycleGridVisibility() {
-  if (showGrid.value === 'off') showGrid.value = 'auto'
-  else if (showGrid.value === 'auto') showGrid.value = 'on'
-  else showGrid.value = 'off'
 }
 watch(showGrid, applyGridVisibility)
 watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
@@ -1063,13 +1068,9 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           @undo="emit('undo')"
           :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
           @redo="emit('redo')"
-          :show-physics="EntryState.ENABLE"
-          :physics-mode="physicsMode"
-          @toggle-physics="toggleNodePhysics"
-          :show-grid="showGrid"
-          @toggle-grid="cycleGridVisibility"
           @help="isHelpOpened = !isHelpOpened"
           @settings="settingsDialog?.open()"
+          @tutorial="isTutorialWindowOpen = !isTutorialWindowOpen"
           />
           <div ref="mainMenuBottom" class="h-0"></div>
         </div>
@@ -1125,84 +1126,8 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
           </button>
         </div>
       </div>
-      <div class="flex flex-1 items-end pointer-events-none">
-        <template v-if="!historyState.canUndo && !historyState.canRedo && showHints">
-          <FloatingHintBottom :reference="mainMenuBottomRef" :offset-y="48" placement="bottom-start"
-            ><ul class="list-disc">
-              <li v-if="!isTouchDevice">
-                <p class="mb-1">Use <kbd class="kbd kbd-sm">Left double-click</kbd> to create a new argument</p>
-              </li>
-              <li v-else>
-                <p class="mb-1"><kbd class="kbd kbd-sm">Double-tap</kbd> on canvas to create a new argument</p>
-              </li>
-              <li v-if="!isTouchDevice">
-                <p class="mb-1"> Press <kbd class="kbd kbd-sm">Right-click</kbd> on an argument, hold and drag towards
-                  another argument to create an {{ linkNames.join('/') }} edge
-                </p>
-              </li>
-              <li v-else>
-                <p class="mb-1"><kbd class="kbd kbd-sm">Hold and drag</kbd> from an argument towards another to create an {{ linkNames.join('/') }} edge</p>
-              </li>
-              <li v-if="allowHyperLinkCreation && !isTouchDevice">
-                <p class="mb-1">
-                  <kbd class="kbd kbd-sm">Shift</kbd>+<kbd class="kbd kbd-sm">Left-click</kbd> on 2 or more arguments to select sources for a collective attack, then drag to the target
-                </p>
-              </li>
-              <li v-if="enableLinkSwitching">
-                Switch between {{ linkNamesEnumeration }} for existing links
-                <p class="mb-1"><kbd class="kbd kbd-sm">{{ isTouchDevice ? 'Tap' : 'Right-click' }}</kbd> on link</p>
-              </li>
-              <li>Open menu to show more actions</li>
-            </ul>
-          </FloatingHintBottom>
-          <FloatingHintRight :reference="evaluationButtonsRef" :offset-x="64" placement="right-start"
-            >Semantical Evaluation
-          </FloatingHintRight>
-          <FloatingHintRight :reference="exportButtonRef" :offset-x="64" placement="right-start"
-            >Export AF to LaTeX/TikZ or as image
-          </FloatingHintRight>
-        </template>
-      </div>
+      <div class="flex flex-1 items-end pointer-events-none"></div>
     </div>
-    <template v-if="historyState.possibleUndos === 1 && !historyState.canRedo && showHints">
-      <FloatingHintRight
-        v-if="linkSwitchButtonRef !== null && enableLinkSwitching"
-        :reference="linkSwitchButtonRef"
-        :offset-x="64"
-        placement="right-start"
-        >Switch between {{ linkNamesEnumeration }} for new links
-      </FloatingHintRight>
-      <FloatingHintBottom :reference="mainMenuBottomRef" :offset-y="48" placement="bottom-start">
-        <ul class="list-disc">
-          <template v-if="!isTouchDevice">
-            <li>
-              <div class="flex justify-between">
-                <div class="mr-2">Redo</div>
-                <div>
-                  <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
-                  <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.meta">⌘</kbd>
-                  <kbd class="kbd kbd-sm mr-1" v-if="UNDO_SHORTCUT.modifiers.shift">Shift</kbd>
-                  <kbd class="kbd kbd-sm">{{ UNDO_SHORTCUT.key.toUpperCase() }}</kbd>
-                </div>
-              </div>
-            </li>
-            <li>
-              <div class="flex justify-between">
-                <div class="mr-2">Undo</div>
-                <div>
-                  <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.ctrl">Ctrl</kbd>
-                  <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.meta">⌘</kbd>
-                  <kbd class="kbd kbd-sm mr-1" v-if="REDO_SHORTCUT.modifiers.shift">Shift</kbd>
-                  <kbd class="kbd kbd-sm">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
-                </div>
-              </div>
-            </li>
-          </template>
-          <li v-else>Undo/redo via the menu</li>
-          <li>Open help to see more controls</li>
-        </ul>
-      </FloatingHintBottom>
-    </template>
     <slot
       name="evaluationExtensions"
       :on-highlight="(h: Highlight | undefined) => { extensionHighlightRef = h }"
@@ -1213,6 +1138,25 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       name="evaluationSerialisation"
       :on-highlight="(h: Highlight | undefined) => { serialisationHighlightRef = h }"
     ></slot>
+    <TutorialOverlay
+      v-if="tutorials && showHints"
+      :tutorials="tutorials"
+      :default-tutorial-id="defaultTutorialId"
+      :is-touch-device="isTouchDevice"
+      :refs="{
+        mainMenuBottom: mainMenuBottomRef,
+        evaluationButtons: evaluationButtonsRef,
+        exportButton: exportButtonRef,
+        linkSwitchButton: linkSwitchButtonRef,
+      }"
+      :context="tutorialContext"
+    />
+    <WindowTutorials
+      v-if="tutorials"
+      :tutorials="tutorials"
+      :context="tutorialContext"
+      v-model:open="isTutorialWindowOpen"
+    />
     <WindowHelp :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" v-model:open="isHelpOpened" />
     <WindowSettings ref="settings-dialog" />
   </div>

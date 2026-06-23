@@ -49,6 +49,7 @@ const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
   close: []
+  evaluate: []
 }>()
 
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...bipolarArgumentationGlossary })
@@ -138,6 +139,7 @@ const windowTitle = computed(() => {
     :storage-key="storageKey"
     @close="emit('close')"
     @focus="onWindowFocus"
+    @evaluate="emit('evaluate')"
   >
     <template #parameters>
       <label class="select select-sm w-fit">
