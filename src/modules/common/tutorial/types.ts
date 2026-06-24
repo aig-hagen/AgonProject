@@ -43,6 +43,14 @@ export interface TutorialContext {
   zoomCount: number
   /** Monotonic count of center-view (middle-click) actions */
   centerCount: number
+  /** Monotonic count of physics mode toggles */
+  physicsToggleCount: number
+  /** Monotonic count of grid visibility toggles */
+  gridToggleCount: number
+  /** Monotonic count of completed ctrl+snap gestures */
+  ctrlSnapCount: number
+  /** Whether the export panel is currently open */
+  isExportOpened: boolean
 }
 
 export type StepPlacement =

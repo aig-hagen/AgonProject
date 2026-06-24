@@ -135,6 +135,9 @@ const isTutorialWindowOpen = ref<boolean>(false)
 const tutorialPanCount = ref(0)
 const tutorialZoomCount = ref(0)
 const tutorialCenterCount = ref(0)
+const tutorialPhysicsToggleCount = ref(0)
+const tutorialGridToggleCount = ref(0)
+const tutorialCtrlSnapCount = ref(0)
 
 const tutorialContext = computed<TutorialContext>(() => ({
   nodeCount: state.nodes.length,
@@ -152,6 +155,10 @@ const tutorialContext = computed<TutorialContext>(() => ({
   panCount: tutorialPanCount.value,
   zoomCount: tutorialZoomCount.value,
   centerCount: tutorialCenterCount.value,
+  physicsToggleCount: tutorialPhysicsToggleCount.value,
+  gridToggleCount: tutorialGridToggleCount.value,
+  ctrlSnapCount: tutorialCtrlSnapCount.value,
+  isExportOpened: isExportOpened.value,
 }))
 
 const slots = useSlots()
@@ -259,7 +266,7 @@ let idMapping = new IdMapping<number, number>()
 
 const stateRef = toRef(() => state)
 
-const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics, enablePhysics, alignNodesToSimulationCenter } = usePhysics({
+const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics } = usePhysics({
   graphComponentRef: graphComponentRef as any,
   getIdMapping: () => idMapping,
   containerRef,
@@ -277,6 +284,8 @@ function applyGridVisibility(visibility: GridVisibility) {
   graphComponentRef.value?.setShowGrid(effective === 'on')
   graphComponentRef.value?.setAutoShowGrid(effective === 'auto')
 }
+watch(physicsMode, () => { tutorialPhysicsToggleCount.value++ })
+watch(showGrid, () => { tutorialGridToggleCount.value++ })
 watch(showGrid, applyGridVisibility)
 watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
 watch(gridCellScale, (scale) => { graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * scale) })
@@ -678,9 +687,9 @@ onMounted(() => {
       if (ctrlSnapNodeId === null) return
       graphComponentRef.value?.setNodeSnapToGrid(undefined, ctrlSnapNodeId)
       ctrlSnapNodeId = null
+      tutorialCtrlSnapCount.value++
       applyGridVisibility(showGrid.value)
-      if (physicsMode.value === 'on') enablePhysics()
-      else if (physicsMode.value === 'settle') triggerSettle()
+      if (physicsMode.value === 'on') triggerSettle()
     }
 
     const handleCtrlSnapPointerDown = (event: PointerEvent) => {
@@ -866,10 +875,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     graphComponentRef.value?.setGridType(defaultGridType.value)
     graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
     graphComponentRef.value?.setSnapToGrid(snapMode.value)
-    if (physicsMode.value === 'on') {
-      if (center) alignNodesToSimulationCenter()
-      graphComponentRef.value?.toggleNodePhysics(true)
-    } else if (physicsMode.value === 'settle' && center) {
+    if (physicsMode.value === 'on' && center) {
       triggerSettle()
     }
   })
@@ -1003,7 +1009,7 @@ function doLayout(layout: Layout) {
   emit('nodesMoved', newPositions)
 
   if (wasPhysicsOn) {
-    enablePhysics()
+    triggerSettle()
   } else {
     const margin = ARGUMENT_RADIUS_IN_PX * 2
     graphComponentRef.value.centerView(

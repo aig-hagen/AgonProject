@@ -22,5 +22,5 @@ export enum EntryState {
   DISABLE,
 }
 
-export type PhysicsMode = 'off' | 'settle' | 'on'
+export type PhysicsMode = 'off' | 'on'
 export type GridVisibility = 'off' | 'auto' | 'on'

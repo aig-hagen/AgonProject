@@ -110,20 +110,19 @@ export function usePhysics({
   }
 
   function triggerSettle() {
-    if (physicsMode.value !== 'settle') return
+    if (physicsMode.value !== 'on') return
     alignNodesToSimulationCenter()
     graphComponentRef.value?.toggleNodePhysics(true)
     if (settleTimerId !== null) clearTimeout(settleTimerId)
     settleTimerId = setTimeout(() => {
       settleTimerId = null
-      if (physicsMode.value === 'settle') disablePhysics()
+      if (physicsMode.value === 'on') disablePhysics()
     }, 500)
   }
 
   function toggleNodePhysics() {
     if (physicsMode.value === 'off') {
       physicsMode.value = 'on'
-      enablePhysics()
     } else {
       if (settleTimerId !== null) {
         clearTimeout(settleTimerId)
@@ -143,12 +142,8 @@ export function usePhysics({
       }
       disablePhysics()
       // Preserve physicsMode so it can be restored when the tab is shown again
-    } else {
-      if (physicsMode.value === 'on') {
-        enablePhysics()
-      }
-      // 'settle' is interaction-triggered — mode is preserved, no need to restart
     }
+    // 'on' (settle) is interaction-triggered — no restart needed when tab becomes visible
   })
 
   onMounted(() => {
@@ -157,7 +152,7 @@ export function usePhysics({
 
     let nodePointerDown = false
     const handleSettlePointerDown = (event: PointerEvent) => {
-      if (physicsMode.value !== 'settle') return
+      if (physicsMode.value !== 'on') return
       if (event.button !== 0) return  // right-click starts edge creation — don't shift coordinates mid-gesture
       if (!(event.target as Element).closest('.graph-controller__node-container')) return
       nodePointerDown = true
@@ -168,7 +163,7 @@ export function usePhysics({
     const handleSettlePointerUp = () => {
       if (!nodePointerDown) return
       nodePointerDown = false
-      if (physicsMode.value === 'settle') triggerSettle()
+      if (physicsMode.value === 'on') triggerSettle()
     }
 
     graphHost.addEventListener('pointerdown', handleSettlePointerDown, true)

@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { editorAdvancedTutorial } from '@/modules/common/tutorial/editor-advanced'
+import { editorExportTutorial } from '@/modules/common/tutorial/editor-export'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const editorNavigationTutorial: Tutorial = {
@@ -63,4 +65,4 @@ export const editorNavigationTutorial: Tutorial = {
 }
 
 /** Common tutorials available in all modules. Spread into each module's tutorial list. */
-export const commonTutorials: Tutorial[] = [editorNavigationTutorial]
+export const commonTutorials: Tutorial[] = [editorNavigationTutorial, editorAdvancedTutorial, editorExportTutorial]
