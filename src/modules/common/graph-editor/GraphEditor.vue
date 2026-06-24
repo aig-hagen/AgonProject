@@ -40,6 +40,7 @@ import {
   nextTick,
   onMounted,
   onUnmounted,
+  provide,
   ref,
   shallowRef,
   toRef,
@@ -84,12 +85,14 @@ import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
 import { useTheme } from '@/modules/common/theme/useTheme'
 import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
+import { TUTORIAL_INSTANCE_KEY } from '@/modules/common/tutorial/useTutorial'
 import WindowTutorials from '@/modules/common/tutorial/WindowTutorials.vue'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
 // if multiple instances are used on the same site.
 const graphComponentId = useId()
+provide(TUTORIAL_INSTANCE_KEY, graphComponentId)
 const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
@@ -134,8 +137,10 @@ const tutorialCenterCount = ref(0)
 const tutorialContext = computed<TutorialContext>(() => ({
   nodeCount: state.nodes.length,
   linkCount: state.links.length,
+  hyperLinkCount: state.hyperLinks?.length ?? 0,
   canUndo: historyState.canUndo,
   canRedo: historyState.canRedo,
+  uncertainNodeCount: tutorialContextExtra?.uncertainNodeCount ?? 0,
   isExtensionWindowOpen: tutorialContextExtra?.isExtensionWindowOpen ?? false,
   evaluationCount: tutorialContextExtra?.evaluationCount ?? 0,
   highlightCount: tutorialContextExtra?.highlightCount ?? 0,

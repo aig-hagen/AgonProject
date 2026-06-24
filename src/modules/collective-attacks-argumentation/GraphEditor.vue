@@ -18,14 +18,18 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, watch } from 'vue'
 
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
 } from '@/modules/collective-attacks-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/collective-attacks-argumentation/export'
+import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import { setafBasicsTutorial } from '@/modules/collective-attacks-argumentation/tutorials/setaf-basics'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowExtensions from '@/modules/collective-attacks-argumentation/WindowExtensions.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
@@ -187,6 +191,19 @@ function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => voi
 function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   extensionInstances.value = extensionInstances.value.map((i) => (i.id === updated.id ? updated : i))
 }
+
+provide(TOOLTIP_REGISTRY_KEY, collectiveAttacksArgumentationGlossary)
+
+const setafTutorials = [setafBasicsTutorial, ...commonTutorials]
+
+const evaluationCount = ref(0)
+const highlightCount = ref(0)
+
+const tutorialContextExtra = computed(() => ({
+  isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationCount: evaluationCount.value,
+  highlightCount: highlightCount.value,
+}))
 </script>
 <template>
   <GraphEditor
@@ -211,6 +228,9 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     @save="emit('save')"
     @share="emit('share')"
     :history-state="historyState"
+    :tutorials="setafTutorials"
+    default-tutorial-id="setaf-basics"
+    :tutorial-context-extra="tutorialContextExtra"
     @open-extension-window="addExtensionInstance"
   >
     <template #export="{ isOpen, onIsOpen }">
@@ -231,7 +251,8 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
         :instance-offset="index"
         :storage-key="`collective-attacks-argumentation:${documentId}:${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="onHighlight"
+        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>

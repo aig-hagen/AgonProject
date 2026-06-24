@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -40,7 +40,11 @@ import {
   type ExtensionWindowInstanceState,
 } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/incomplete-argumentation/export'
+import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import { iafBasicsTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-basics'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowExtensions from '@/modules/incomplete-argumentation/WindowExtensions.vue'
 
 const { state, historyState, documentId } = defineProps<{
@@ -197,6 +201,20 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     i.id === updated.id ? updated : i,
   )
 }
+
+provide(TOOLTIP_REGISTRY_KEY, { ...incompleteArgumentationGlossary })
+
+const iafTutorials = [iafBasicsTutorial, ...commonTutorials]
+
+const evaluationCount = ref(0)
+const highlightCount = ref(0)
+
+const tutorialContextExtra = computed(() => ({
+  uncertainNodeCount: [...renderedState.value.current.content.uncertainArguments()].length,
+  isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationCount: evaluationCount.value,
+  highlightCount: highlightCount.value,
+}))
 </script>
 
 <template>
@@ -214,6 +232,9 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
     :link-configs="linkConfig"
     :state="editorState"
     :history-state="historyState"
+    :tutorials="iafTutorials"
+    default-tutorial-id="iaf-basics"
+    :tutorial-context-extra="tutorialContextExtra"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
@@ -281,7 +302,8 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
         :instance-offset="index"
         :storage-key="`incomplete-argumentation:${documentId}:${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="onHighlight"
+        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>

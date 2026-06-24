@@ -18,11 +18,11 @@
 -->
 <script setup lang="ts">
 import { autoUpdate, offset, useFloating } from '@floating-ui/vue'
-import { computed, onMounted, useTemplateRef, watchEffect } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, useTemplateRef, watchEffect } from 'vue'
 
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import type { Tutorial, TutorialBodyPart, TutorialContext } from '@/modules/common/tutorial/types'
-import { useTutorial } from '@/modules/common/tutorial/useTutorial'
+import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 
 const {
   tutorials,
@@ -43,6 +43,7 @@ const {
   currentStep,
   stepCount,
   activeStepIndex,
+  activeOwnerId,
   baselineContext,
   isActive,
   isLastStep,
@@ -53,18 +54,31 @@ const {
   completeTutorial,
 } = useTutorial()
 
+const instanceId = inject(TUTORIAL_INSTANCE_KEY, '')
+
+// This overlay only renders if no other tab owns the active tutorial.
+const isOwner = computed(() => !isActive.value || activeOwnerId.value === instanceId)
+
 onMounted(() => {
   if (!hasSeenWelcome.value && defaultTutorialId) {
     const tutorial = tutorials.find((t) => t.id === defaultTutorialId)
     if (tutorial) {
-      startTutorial(tutorial, context)
-      hasSeenWelcome.value = true
+      nextTick(() => {
+        startTutorial(tutorial, context, instanceId)
+        hasSeenWelcome.value = true
+      })
     }
   }
 })
 
+onUnmounted(() => {
+  if (activeOwnerId.value === instanceId) {
+    skipTutorial()
+  }
+})
+
 watchEffect(() => {
-  if (!isActive.value || !currentStep.value) return
+  if (!isOwner.value || !isActive.value || !currentStep.value) return
   if (resolvedAdvanceOn.value !== 'action') return
   if (!currentStep.value.advanceCondition) return
   if (!baselineContext.value) return
@@ -114,7 +128,7 @@ function handleStartNext() {
   const next = nextTutorial.value
   if (!next) return
   completeTutorial()
-  startTutorial(next, context)
+  startTutorial(next, context, instanceId)
 }
 
 // Floating-ui setup for anchored steps
@@ -128,7 +142,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
 </script>
 
 <template>
-  <template v-if="isActive && currentStep">
+  <template v-if="isOwner && isActive && currentStep">
     <!-- Anchored step: floats next to a UI element -->
     <div v-if="isAnchored" ref="floating" :style="floatingStyles" class="z-50 pointer-events-auto">
       <div class="card bg-base-100 shadow-xl w-72 border border-base-300">

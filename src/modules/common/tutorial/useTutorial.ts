@@ -18,9 +18,16 @@
  */
 import { useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
-import { computed, ref } from 'vue'
+import { type InjectionKey, computed, ref } from 'vue'
 
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
+
+/**
+ * Each GraphEditor instance provides its own unique ID under this key so that
+ * TutorialOverlay and WindowTutorials in the same tab can identify themselves
+ * as belonging to the same editor, and overlays in other tabs can stay silent.
+ */
+export const TUTORIAL_INSTANCE_KEY: InjectionKey<string> = Symbol('tutorialInstance')
 
 export const useTutorial = createSharedComposable(() => {
   const completedTutorials = useStorage<string[]>('tutorial:completed', [])
@@ -29,6 +36,8 @@ export const useTutorial = createSharedComposable(() => {
   const activeTutorial = ref<Tutorial | null>(null)
   const activeStepIndex = ref(0)
   const baselineContext = ref<TutorialContext | null>(null)
+  /** ID of the GraphEditor instance that currently owns the active tutorial. */
+  const activeOwnerId = ref<string | null>(null)
 
   const currentStep = computed(() => {
     if (!activeTutorial.value) return null
@@ -43,10 +52,11 @@ export const useTutorial = createSharedComposable(() => {
     return completedTutorials.value.includes(id)
   }
 
-  function startTutorial(tutorial: Tutorial, ctx?: TutorialContext): void {
+  function startTutorial(tutorial: Tutorial, ctx?: TutorialContext, ownerId?: string): void {
     activeTutorial.value = tutorial
     activeStepIndex.value = 0
     baselineContext.value = ctx ?? null
+    if (ownerId !== undefined) activeOwnerId.value = ownerId
   }
 
   function nextStep(currentCtx: TutorialContext): void {
@@ -69,6 +79,7 @@ export const useTutorial = createSharedComposable(() => {
     activeTutorial.value = null
     activeStepIndex.value = 0
     baselineContext.value = null
+    activeOwnerId.value = null
   }
 
   function completeTutorial(): void {
@@ -80,6 +91,7 @@ export const useTutorial = createSharedComposable(() => {
     activeTutorial.value = null
     activeStepIndex.value = 0
     baselineContext.value = null
+    activeOwnerId.value = null
   }
 
   function resetAllTutorials(): void {
@@ -93,6 +105,7 @@ export const useTutorial = createSharedComposable(() => {
     activeTutorial,
     activeStepIndex,
     baselineContext,
+    activeOwnerId,
     currentStep,
     stepCount,
     isActive,

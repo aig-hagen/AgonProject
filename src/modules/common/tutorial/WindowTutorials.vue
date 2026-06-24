@@ -19,8 +19,10 @@
 <script setup lang="ts">
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 
+import { inject } from 'vue'
+
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
-import { useTutorial } from '@/modules/common/tutorial/useTutorial'
+import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 const { tutorials, context } = defineProps<{
@@ -32,10 +34,11 @@ const open = defineModel('open', { required: true })
 
 const emit = defineEmits<{ close: [] }>()
 
+const instanceId = inject(TUTORIAL_INSTANCE_KEY, '')
 const { isTutorialDone, startTutorial } = useTutorial()
 
 function launch(tutorial: Tutorial) {
-  startTutorial(tutorial, context)
+  startTutorial(tutorial, context, instanceId)
   open.value = false
   emit('close')
 }

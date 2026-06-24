@@ -27,6 +27,10 @@ export interface TutorialContext {
   evaluationCount: number
   /** Monotonic count of result highlights — compare against baseline to detect a new one */
   highlightCount: number
+  /** Count of uncertain arguments currently in the framework — compare against baseline */
+  uncertainNodeCount: number
+  /** Count of hyper-links (collective attacks) currently in the framework — compare against baseline */
+  hyperLinkCount: number
   /** Monotonic count of acceptance condition edits — compare against baseline to detect a change */
   conditionEditCount: number
   /** Monotonic count of condition editor opens — compare against baseline to detect a new open */

@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const adfBasicsTutorial: Tutorial = {
   id: 'adf-basics',
-  name: 'Basic Tutorial',
+  name: 'Basic ADF Tutorial',
   description: 'Learn how to create arguments and define acceptance conditions in ADFs.',
   steps: [
     {
@@ -74,15 +74,16 @@ export const adfBasicsTutorial: Tutorial = {
       body: (isTouchDevice) =>
         isTouchDevice
           ? '<strong>Long-press</strong> on an argument to delete it.'
-          : '<strong>Right-click and hold</strong> on an argument to delete it.',
+          : '<strong>Right-click and hold</strong> on an argument to delete it. The argument will then also be removed from any acceptance conditions that reference it.',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.nodeCount < baseline.nodeCount,
     },
     {
       id: 'done',
       title: 'You\'re all set!',
-      body: 'You\'ve learned the basics of Abstract Dialectical Frameworks. Use the <strong>Tutorials</strong> menu to explore more.',
+      body: 'You\'ve learned the basics of Abstract Dialectical Frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how ADF semantics work.',
       advanceOn: 'button',
+      nextTutorialId: 'adf-evaluation',
     },
   ],
 }

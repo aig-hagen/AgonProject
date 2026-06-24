@@ -44,6 +44,7 @@ import { availableExports } from '@/modules/dialectical-argumentation/export'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import { adfBasicsTutorial } from '@/modules/dialectical-argumentation/tutorials/adf-basics'
+import { adfEvaluationTutorial } from '@/modules/dialectical-argumentation/tutorials/adf-evaluation'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowInterpretations from '@/modules/dialectical-argumentation/WindowInterpretations.vue'
@@ -160,6 +161,8 @@ const selectedNodeId = ref<NodeId | null>(null)
 const editorAnchor = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const conditionEditCount = ref(0)
 const conditionEditorOpenCount = ref(0)
+const evaluationCount = ref(0)
+const highlightCount = ref(0)
 
 const argNameMap = computed(() => {
   const map = new Map<number, string>()
@@ -217,11 +220,14 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
 
 provide(TOOLTIP_REGISTRY_KEY, dialecticalArgumentationGlossary)
 
-const adfTutorials = [adfBasicsTutorial, ...commonTutorials]
+const adfTutorials = [adfBasicsTutorial, adfEvaluationTutorial, ...commonTutorials]
 
 const tutorialContextExtra = computed(() => ({
+  isExtensionWindowOpen: extensionInstances.value.length > 0,
   conditionEditCount: conditionEditCount.value,
   conditionEditorOpenCount: conditionEditorOpenCount.value,
+  evaluationCount: evaluationCount.value,
+  highlightCount: highlightCount.value,
 }))
 </script>
 <template>
@@ -272,7 +278,8 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :storage-key="`dialectical-argumentation:${documentId}:${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="onHighlight"
+        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
       <ConditionEditorBar

@@ -49,6 +49,7 @@ const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
   close: []
+  evaluate: []
 }>()
 
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...dialecticalArgumentationGlossary })
@@ -225,7 +226,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
           <button
             class="btn btn-sm btn-soft mt-2"
             :disabled="!userCanTriggerFetch"
-            @click="() => refetch()"
+            @click="() => { refetch(); emit('evaluate') }"
           >
             Evaluate
           </button>

@@ -33,12 +33,13 @@ const TYPE_KEY = 'type'
 const SET_AF_V1_TYPE = 'set-af-v1'
 
 const initialSetAF = new SetAF<SetAfArgumentData>()
-initialSetAF.addArgument(0, { name: 'a', x: 0, y: 0 })
-initialSetAF.addArgument(1, { name: 'b', x: 0, y: 200 })
-initialSetAF.addArgument(2, { name: 'c', x: 100, y: 100 })
-initialSetAF.addArgument(3, { name: 'd', x: 200, y: 0 })
+initialSetAF.addArgument(0, { name: 'a', x: -150, y: -100 })
+initialSetAF.addArgument(1, { name: 'b', x: -155, y: 67 })
+initialSetAF.addArgument(2, { name: 'c', x: -30, y: -13 })
+initialSetAF.addArgument(3, { name: 'd', x: -15, y: 122 })
 initialSetAF.addCollectiveAttack([0, 1], 2)
 initialSetAF.addCollectiveAttack([2, 3], 1)
+initialSetAF.addCollectiveAttack([2], 0)
 
 export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgumentData>> = {
   newNamePrefix: 'SetAF',
