@@ -35,6 +35,8 @@ export interface TutorialContext {
   conditionEditCount: number
   /** Monotonic count of condition editor opens — compare against baseline to detect a new open */
   conditionEditorOpenCount: number
+  /** Monotonic count of probability edits (argument or attack) */
+  probabilityEditCount: number
   /** Monotonic count of pan gestures */
   panCount: number
   /** Monotonic count of zoom gestures */

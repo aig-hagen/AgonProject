@@ -19,8 +19,9 @@
 <script setup lang="ts">
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
 import { useLocalStorage } from '@vueuse/core'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -35,13 +36,18 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import {
   createDefaultPafWindowInstance,
   type PafWindowInstanceState,
 } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/probabilistic-argumentation/export'
+import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
 import ProbabilityEditor from '@/modules/probabilistic-argumentation/ProbabilityEditor.vue'
+import { pafBasicsTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-basics'
+import { pafEvaluationTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-evaluation'
 import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
 
 const { state, historyState, documentId } = defineProps<{
@@ -152,10 +158,12 @@ function onChangeArgumentProbability(id: number, probability: number) {
   createNewState((draft) => {
     draft.getArgument(id).probability = probability
   })
+  probabilityEditCount.value++
 }
 
 function onChangeAttackProbability(sourceId: number, targetId: number, probability: number) {
   createNewState((draft) => draft.addAttack(sourceId, targetId, probability))
+  probabilityEditCount.value++
 }
 
 // ── Probability overlay labels ──────────────────────────────────────────────
@@ -260,6 +268,24 @@ function updateEvaluationInstance(updated: PafWindowInstanceState) {
   )
 }
 
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...probabilisticArgumentationGlossary })
+
+const pafTutorials = [pafBasicsTutorial, pafEvaluationTutorial, ...commonTutorials]
+
+const probabilityButtonRef = useTemplateRef<HTMLElement>('probabilityButton')
+const probabilityEditCount = ref(0)
+const evaluationCount = ref(0)
+
+const tutorialContextExtra = computed(() => ({
+  isExtensionWindowOpen: evaluationInstances.value.length > 0,
+  evaluationCount: evaluationCount.value,
+  probabilityEditCount: probabilityEditCount.value,
+}))
+
+const tutorialRefs = computed(() => ({
+  probabilityButton: probabilityButtonRef.value ?? null,
+}))
+
 // ── Inline editing popup ────────────────────────────────────────────────────
 
 const editingLabel = shallowRef<(ProbabilityLabel & { screenX: number; screenY: number }) | null>(null)
@@ -311,6 +337,10 @@ function onPopupKeydown(event: KeyboardEvent) {
       :state="editorState"
       :node-weights="nodeWeights"
       :history-state="historyState"
+      :tutorials="pafTutorials"
+      default-tutorial-id="paf-basics"
+      :tutorial-context-extra="tutorialContextExtra"
+      :tutorial-refs="tutorialRefs"
       @undo="emit('undo')"
       @redo="emit('redo')"
       @save="emit('save')"
@@ -327,12 +357,14 @@ function onPopupKeydown(event: KeyboardEvent) {
           :storage-key="`probabilistic-argumentation:${documentId}:${instance.id}:window`"
           @update:instance-state="updateEvaluationInstance($event)"
           @set-weights="onSetWeights"
+          @evaluate="evaluationCount++"
           @close="removeEvaluationInstance(instance.id)"
         />
       </template>
 
       <template #toolbar>
         <button
+          ref="probabilityButton"
           class="btn btn-square btn-sm"
           :class="{ 'btn-active': isProbabilitiesOpen }"
           title="Probabilities"

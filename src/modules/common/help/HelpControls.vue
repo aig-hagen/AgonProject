@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+import { REDO_SHORTCUT, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 
 const props = defineProps<{
   linkNames: string[]
@@ -118,6 +118,14 @@ const linkNamesEnumeration = computed(
             <kbd class="kbd">{{ REDO_SHORTCUT.key.toUpperCase() }}</kbd>
           </div>
         </td>
+      </tr>
+      <tr>
+        <td>Toggle grid</td>
+        <td><kbd class="kbd">{{ TOGGLE_GRID_SHORTCUT.key.toUpperCase() }}</kbd></td>
+      </tr>
+      <tr>
+        <td>Toggle physics</td>
+        <td><kbd class="kbd">{{ TOGGLE_PHYSICS_SHORTCUT.key.toUpperCase() }}</kbd></td>
       </tr>
     </tbody>
   </table>

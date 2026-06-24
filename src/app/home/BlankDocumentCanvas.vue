@@ -69,12 +69,12 @@ function openContent(content: DocumentT, newNamePrefix: string) {
       <div class="divider"></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
-          class="card bg-base-200 shadow-sm"
+          class="card bg-base-200 shadow-sm h-80"
           :class="{ 'opacity-50': moduleCard.underConstruction }"
           v-for="(moduleCard, index) in moduleCards"
           :key="index"
         >
-          <div class="card-body flex flex-col">
+          <div class="card-body flex flex-col h-full">
             <div class="flex items-start justify-between gap-2">
               <h3 class="card-title">{{ moduleCard.displayNameSingular }}</h3>
               <PublicationsTooltip
@@ -82,27 +82,29 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                 :publications="moduleCard.publications"
               />
             </div>
-            <p v-if="moduleCard.description" class="text-sm text-base-content/60">{{ moduleCard.description }}</p>
+            <div class="h-15 overflow-hidden">
+              <p v-if="moduleCard.description" class="text-sm text-base-content/60 line-clamp-3">{{ moduleCard.description }}</p>
+            </div>
             <template v-if="moduleCard.underConstruction">
               <div class="flex-1"></div>
               <p class="text-sm text-base-content/50 italic">Under Construction</p>
             </template>
             <template v-else>
-              <div class="flex-1">
+              <div class="flex-1" :class="moduleCard.examples.length > 4 ? 'overflow-y-auto min-h-0' : ''">
                 <template v-if="moduleCard.examples.length !== 0">
                   <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
                     Open Example
                   </h4>
-                  <ul class="menu menu-sm p-0 -mx-2 pl-2 grid grid-cols-2 gap-x-8">
+                  <ul class="list-none p-0 m-0 grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]">
                     <li v-for="(example, index) in moduleCard.examples" :key="index">
                       <span
                         v-if="example.description"
-                        class="tooltip tooltip-right"
+                        class="tooltip tooltip-bottom"
                         :data-tip="example.description"
                       >
-                        <a @click="openExample(example, example.name)">{{ example.name }}</a>
+                        <a class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer" @click="openExample(example, example.name)">{{ example.name }}</a>
                       </span>
-                      <a v-else @click="openExample(example, example.name)">{{ example.name }}</a>
+                      <a v-else class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer" @click="openExample(example, example.name)">{{ example.name }}</a>
                     </li>
                   </ul>
                 </template>

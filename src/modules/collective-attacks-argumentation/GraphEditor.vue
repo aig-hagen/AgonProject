@@ -28,6 +28,8 @@ import { availableExports } from '@/modules/collective-attacks-argumentation/exp
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import { setafBasicsTutorial } from '@/modules/collective-attacks-argumentation/tutorials/setaf-basics'
+import { setafEvaluationTutorial } from '@/modules/collective-attacks-argumentation/tutorials/setaf-evaluation'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowExtensions from '@/modules/collective-attacks-argumentation/WindowExtensions.vue'
@@ -192,9 +194,9 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   extensionInstances.value = extensionInstances.value.map((i) => (i.id === updated.id ? updated : i))
 }
 
-provide(TOOLTIP_REGISTRY_KEY, collectiveAttacksArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...collectiveAttacksArgumentationGlossary })
 
-const setafTutorials = [setafBasicsTutorial, ...commonTutorials]
+const setafTutorials = [setafBasicsTutorial, setafEvaluationTutorial, ...commonTutorials]
 
 const evaluationCount = ref(0)
 const highlightCount = ref(0)

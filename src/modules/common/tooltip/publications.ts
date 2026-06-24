@@ -182,7 +182,7 @@ export const CL05: Publication = {
 export const CL10: Publication = {
   shortLabel: 'Cayrol & Lagasquie-Schiex (2010)',
   label: 'Cayrol, C. & Lagasquie-Schiex, M.-C. (2010). Coalitions of Arguments: A Tool for Handling Bipolar Argumentation Frameworks. International Journal of Intelligent Systems, 25(1).',
-  href: 'https://doi.org/10.1002/int.20403',
+  href: 'https://doi.org/10.1002/int.20389',
 }
 
 export const CCL21: Publication = {

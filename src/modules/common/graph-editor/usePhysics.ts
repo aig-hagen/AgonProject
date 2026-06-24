@@ -122,16 +122,13 @@ export function usePhysics({
 
   function toggleNodePhysics() {
     if (physicsMode.value === 'off') {
-      physicsMode.value = 'settle'
-    } else if (physicsMode.value === 'settle') {
+      physicsMode.value = 'on'
+      enablePhysics()
+    } else {
       if (settleTimerId !== null) {
         clearTimeout(settleTimerId)
         settleTimerId = null
       }
-      disablePhysics()
-      physicsMode.value = 'on'
-      enablePhysics()
-    } else {
       physicsMode.value = 'off'
       disablePhysics()
     }

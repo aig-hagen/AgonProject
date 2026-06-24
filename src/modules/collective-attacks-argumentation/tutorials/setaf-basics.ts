@@ -81,8 +81,9 @@ export const setafBasicsTutorial: Tutorial = {
     {
       id: 'done',
       title: 'You\'re all set!',
-      body: 'You\'ve learned the basics of argumentation with collective attacks. Use the <strong>Tutorials</strong> menu to explore more.',
+      body: 'You\'ve learned the basics of argumentation with collective attacks. Next, try the <strong>Evaluation Tutorial</strong> to see how collective attacks affect which arguments are accepted.',
       advanceOn: 'button',
+      nextTutorialId: 'setaf-evaluation',
     },
   ],
 }

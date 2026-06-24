@@ -43,6 +43,8 @@ import { availableExports } from '@/modules/incomplete-argumentation/export'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import { iafBasicsTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-basics'
+import { iafEvaluationTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-evaluation'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowExtensions from '@/modules/incomplete-argumentation/WindowExtensions.vue'
@@ -202,9 +204,9 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   )
 }
 
-provide(TOOLTIP_REGISTRY_KEY, { ...incompleteArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...incompleteArgumentationGlossary })
 
-const iafTutorials = [iafBasicsTutorial, ...commonTutorials]
+const iafTutorials = [iafBasicsTutorial, iafEvaluationTutorial, ...commonTutorials]
 
 const evaluationCount = ref(0)
 const highlightCount = ref(0)

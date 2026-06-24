@@ -48,7 +48,27 @@ export const REDO_SHORTCUT: Shortcut = {
   },
 }
 
-export const shortcuts = [UNDO_SHORTCUT, REDO_SHORTCUT]
+export const TOGGLE_GRID_SHORTCUT: Shortcut = {
+  name: 'Toggle Grid',
+  key: 'g',
+  modifiers: {
+    meta: false,
+    ctrl: false,
+    shift: false,
+  },
+}
+
+export const TOGGLE_PHYSICS_SHORTCUT: Shortcut = {
+  name: 'Toggle Physics',
+  key: 'p',
+  modifiers: {
+    meta: false,
+    ctrl: false,
+    shift: false,
+  },
+}
+
+export const shortcuts = [UNDO_SHORTCUT, REDO_SHORTCUT, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT]
 
 export function isShortcut(shortcut: Shortcut, event: KeyboardEvent) {
   return (

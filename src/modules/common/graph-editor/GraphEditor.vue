@@ -34,7 +34,7 @@ import {
   QueueListIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
-import { useMediaQuery } from '@vueuse/core'
+import { useElementVisibility, useMediaQuery } from '@vueuse/core'
 import {
   computed,
   nextTick,
@@ -73,6 +73,7 @@ import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
+import { isShortcut, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT } from '@/modules/common/shortcuts'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
@@ -109,6 +110,7 @@ const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCrea
   tutorials?: Tutorial[]
   defaultTutorialId?: string
   tutorialContextExtra?: Partial<TutorialContext>
+  tutorialRefs?: Record<string, HTMLElement | null>
 }>()
 
 const { isDark } = useTheme()
@@ -146,6 +148,7 @@ const tutorialContext = computed<TutorialContext>(() => ({
   highlightCount: tutorialContextExtra?.highlightCount ?? 0,
   conditionEditCount: tutorialContextExtra?.conditionEditCount ?? 0,
   conditionEditorOpenCount: tutorialContextExtra?.conditionEditorOpenCount ?? 0,
+  probabilityEditCount: tutorialContextExtra?.probabilityEditCount ?? 0,
   panCount: tutorialPanCount.value,
   zoomCount: tutorialZoomCount.value,
   centerCount: tutorialCenterCount.value,
@@ -256,12 +259,17 @@ let idMapping = new IdMapping<number, number>()
 
 const stateRef = toRef(() => state)
 
-const { physicsMode, triggerSettle, disablePhysics, enablePhysics, alignNodesToSimulationCenter } = usePhysics({
+const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics, enablePhysics, alignNodesToSimulationCenter } = usePhysics({
   graphComponentRef: graphComponentRef as any,
   getIdMapping: () => idMapping,
   containerRef,
 })
 const showGrid = ref<GridVisibility>(defaultShowGrid.value)
+const isVisible = useElementVisibility(containerRef)
+
+function toggleGrid() {
+  showGrid.value = showGrid.value === 'off' ? 'on' : 'off'
+}
 const settingsDialog = useTemplateRef<InstanceType<typeof WindowSettings>>('settings-dialog')
 
 function applyGridVisibility(visibility: GridVisibility) {
@@ -693,8 +701,20 @@ onMounted(() => {
       draggingNodeId = null
     }
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Control' || draggingNodeId === null) return
-      enableSnap(draggingNodeId)
+      if (event.key === 'Control') {
+        if (draggingNodeId !== null) enableSnap(draggingNodeId)
+        return
+      }
+      if (!isVisible.value) return
+      const target = event.target as Element
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.getAttribute('contenteditable') === 'true') return
+      if (isShortcut(TOGGLE_GRID_SHORTCUT, event)) {
+        event.preventDefault()
+        toggleGrid()
+      } else if (isShortcut(TOGGLE_PHYSICS_SHORTCUT, event)) {
+        event.preventDefault()
+        toggleNodePhysics()
+      }
     }
     const handleKeyUp = (event: KeyboardEvent) => {
       if (event.key !== 'Control') return
@@ -1177,6 +1197,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
         evaluationButtons: evaluationButtonsRef,
         exportButton: exportButtonRef,
         linkSwitchButton: linkSwitchButtonRef,
+        ...tutorialRefs,
       }"
       :context="tutorialContext"
     />

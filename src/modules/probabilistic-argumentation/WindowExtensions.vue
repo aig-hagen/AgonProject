@@ -45,6 +45,7 @@ const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
 const emit = defineEmits<{
   'update:instanceState': [state: PafWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
+  evaluate: []
   close: []
 }>()
 
@@ -112,6 +113,7 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     :query="query"
     :results-header="resultsHeader"
     :storage-key="storageKey"
+    @evaluate="emit('evaluate')"
     @close="emit('close')"
   >
     <template #parameters>
