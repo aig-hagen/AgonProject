@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const setafBasicsTutorial: Tutorial = {
   id: 'setaf-basics',
-  name: 'Basic Tutorial',
+  name: 'Basic SetAF Tutorial',
   description: 'Learn how to create arguments and collective attacks in SetAFs.',
   steps: [
     {

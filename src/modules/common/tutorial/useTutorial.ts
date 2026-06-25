@@ -31,7 +31,7 @@ export const TUTORIAL_INSTANCE_KEY: InjectionKey<string> = Symbol('tutorialInsta
 
 export const useTutorial = createSharedComposable(() => {
   const completedTutorials = useStorage<string[]>('tutorial:completed', [])
-  const hasSeenWelcome = useStorage<boolean>('tutorial:hasSeenWelcome', false)
+  const autoStartedTutorials = useStorage<string[]>('tutorial:autoStarted', [])
 
   const activeTutorial = ref<Tutorial | null>(null)
   const activeStepIndex = ref(0)
@@ -96,12 +96,12 @@ export const useTutorial = createSharedComposable(() => {
 
   function resetAllTutorials(): void {
     completedTutorials.value = []
-    hasSeenWelcome.value = false
+    autoStartedTutorials.value = []
   }
 
   return {
     completedTutorials,
-    hasSeenWelcome,
+    autoStartedTutorials,
     activeTutorial,
     activeStepIndex,
     baselineContext,

@@ -86,7 +86,7 @@ import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
 import { useTheme } from '@/modules/common/theme/useTheme'
 import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
-import { TUTORIAL_INSTANCE_KEY } from '@/modules/common/tutorial/useTutorial'
+import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 import WindowTutorials from '@/modules/common/tutorial/WindowTutorials.vue'
 
 // The `GraphComponent` is implemented in away,
@@ -160,6 +160,18 @@ const tutorialContext = computed<TutorialContext>(() => ({
   ctrlSnapCount: tutorialCtrlSnapCount.value,
   isExportOpened: isExportOpened.value,
 }))
+
+const { startTutorial, autoStartedTutorials, isTutorialDone, isActive } = useTutorial()
+
+watch(isExportOpened, (opened) => {
+  if (!opened || !showHints.value || isActive.value) return
+  const id = 'editor-export'
+  if (autoStartedTutorials.value.includes(id) || isTutorialDone(id)) return
+  const tutorial = tutorials?.find((t) => t.id === id)
+  if (!tutorial) return
+  autoStartedTutorials.value = [...autoStartedTutorials.value, id]
+  startTutorial(tutorial, tutorialContext.value, graphComponentId)
+})
 
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)

@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const bipolarBasicsTutorial: Tutorial = {
   id: 'bipolar-basics',
-  name: 'Basic Tutorial',
+  name: 'Basic BAF Tutorial',
   description: 'Learn how to create arguments and connect them with attack and support relations.',
   steps: [
     {

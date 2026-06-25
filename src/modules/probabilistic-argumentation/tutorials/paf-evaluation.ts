@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const pafEvaluationTutorial: Tutorial = {
   id: 'paf-evaluation',
-  name: 'Evaluation Tutorial',
+  name: 'Evaluation PAF Tutorial',
   description: 'Learn how to compute acceptance probabilities under various semantics using the constellation approach.',
   steps: [
     {

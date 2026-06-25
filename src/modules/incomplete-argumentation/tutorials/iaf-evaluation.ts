@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const iafEvaluationTutorial: Tutorial = {
   id: 'iaf-evaluation',
-  name: 'Evaluation Tutorial',
+  name: 'Evaluation iAF Tutorial',
   description: 'Learn about necessary and possible acceptance and how to evaluate incomplete AFs under extension-based semantics.',
   steps: [
     {

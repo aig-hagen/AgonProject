@@ -39,7 +39,8 @@ const {
 }>()
 
 const {
-  hasSeenWelcome,
+  autoStartedTutorials,
+  isTutorialDone,
   currentStep,
   stepCount,
   activeStepIndex,
@@ -60,12 +61,12 @@ const instanceId = inject(TUTORIAL_INSTANCE_KEY, '')
 const isOwner = computed(() => !isActive.value || activeOwnerId.value === instanceId)
 
 onMounted(() => {
-  if (!hasSeenWelcome.value && defaultTutorialId) {
+  if (defaultTutorialId && !autoStartedTutorials.value.includes(defaultTutorialId) && !isTutorialDone(defaultTutorialId)) {
     const tutorial = tutorials.find((t) => t.id === defaultTutorialId)
     if (tutorial) {
       nextTick(() => {
+        autoStartedTutorials.value = [...autoStartedTutorials.value, defaultTutorialId]
         startTutorial(tutorial, context, instanceId)
-        hasSeenWelcome.value = true
       })
     }
   }

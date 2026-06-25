@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const setafEvaluationTutorial: Tutorial = {
   id: 'setaf-evaluation',
-  name: 'Evaluation Tutorial',
+  name: 'Evaluation SetAF Tutorial',
   description: 'Learn how to compute extension-based semantics for argumentation frameworks with collective attacks.',
   steps: [
     {

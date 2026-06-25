@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const afBasicsTutorial: Tutorial = {
   id: 'af-basics',
-  name: 'Basic Tutorial',
+  name: 'Basic AF Tutorial',
   description: 'Learn how to create arguments and attacks, use undo/redo, and apply layout algorithms.',
   steps: [
     {

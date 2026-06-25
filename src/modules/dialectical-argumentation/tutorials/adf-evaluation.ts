@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const adfEvaluationTutorial: Tutorial = {
   id: 'adf-evaluation',
-  name: 'Evaluation Tutorial',
+  name: 'Evaluation ADF Tutorial',
   description: 'Learn how to compute and interpret ADF semantics using three-valued models.',
   steps: [
     {

@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const afEvaluationTutorial: Tutorial = {
   id: 'af-evaluation',
-  name: 'Evaluation Tutorial',
+  name: 'Evaluation AF Tutorial',
   description: 'Learn how to compute and interpret extension semantics for argumentation frameworks.',
   steps: [
     {

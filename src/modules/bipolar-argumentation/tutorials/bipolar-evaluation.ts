@@ -20,7 +20,7 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const bipolarEvaluationTutorial: Tutorial = {
   id: 'bipolar-evaluation',
-  name: 'Evaluation Tutorial',
+  name: 'Evaluation BAF Tutorial',
   description: 'Learn about different support interpretations and how to compute extension-based semantics for BAFs.',
   steps: [
     {
