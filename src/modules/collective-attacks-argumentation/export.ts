@@ -18,37 +18,23 @@
  */
 import type { SetAF, SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
-  buildArgumentPlacementText,
+  exportLatexArgumentationCommon,
   latexExportCommonConfig,
 } from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
-import { renderSvg } from '@/modules/common/export/renderSvg'
+
+function* emptyIterator(): IterableIterator<[number, number]> {}
 
 const exportLatexSetAF: ExportConfig<SetAF<SetAfArgumentData>> = {
   ...latexExportCommonConfig(),
   export(document, styleOptions?: ExportStyleOptions) {
-    const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
-    const nameStyle = styleOptions?.nameStyle ?? 'math'
-    const attackStyle = styleOptions?.attackStyle ?? 'standard'
-    const afOptions = `[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle}]`
-
-    const argText = buildArgumentPlacementText(document.arguments(), styleOptions)
-
-    let attackText = ''
-    for (const attack of document.attacks()) {
-      if (attack.attackers.length === 1) {
-        attackText += `  \\attack{a${attack.attackers[0]}}{a${attack.target}}\r\n`
-      } else {
-        const attackerList = attack.attackers.map((id) => `a${id}`).join(',')
-        attackText += `  \\setattack{${attackerList}}{a${attack.target}}\r\n`
-      }
-    }
-
-    const body = `\\begin{af}\r\n${argText}${attackText}\\end{af}`
-    return {
-      text: body,
-      svg: renderSvg(body.replace('\\begin{af}', `\\begin{af}${afOptions}`)),
-    }
+    return exportLatexArgumentationCommon(
+      document.arguments(),
+      emptyIterator(),
+      emptyIterator(),
+      styleOptions,
+      { setAttacks: document.attacks() },
+    )
   },
 }
 

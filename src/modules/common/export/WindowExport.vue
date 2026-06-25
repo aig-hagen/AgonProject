@@ -299,7 +299,7 @@ watchEffect(() => {
                 text
               </ButtonCopy>
             </div>
-            <div class="min-w-58" ref="soureView"></div>
+            <div class="min-w-58 bg-white rounded" ref="soureView"></div>
           </fieldset>
         </div>
         <div v-if="exportResult?.svg !== undefined" v-show="exportResult !== undefined">
@@ -323,7 +323,7 @@ watchEffect(() => {
               <div v-if="svgText === undefined" role="alert" class="alert alert-info alert-soft">
                 <span>Rendering SVG</span>
               </div>
-              <div v-else v-html="svgText" class="w-58 min-h-58"></div>
+              <div v-else v-html="svgText" class="w-fit bg-white rounded p-1"></div>
             </div>
           </fieldset>
         </div>
@@ -331,3 +331,18 @@ watchEffect(() => {
     </div>
   </FloatingWindow>
 </template>
+<style scoped>
+:deep(.cm-editor) {
+  background-color: white;
+  color: black;
+}
+:deep(.cm-content) {
+  color: black;
+}
+:deep(.cm-gutters) {
+  background-color: white;
+}
+:deep(.cm-tooltip) {
+  display: none;
+}
+</style>

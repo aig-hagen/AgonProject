@@ -91,11 +91,17 @@ function rankCompressionNormalizer(epsilon: number = 0.75, step: number = 1): Co
   }
 }
 
+export interface SetAttack {
+  attackers: number[]
+  target: number
+}
+
 export interface ExportHooks {
   argumentOptions?: (id: number) => string
   attackOptions?: (sourceId: number, targetId: number) => string
   attackSuffix?: (sourceId: number, targetId: number) => string
   argumentAnnotation?: (id: number) => string | undefined
+  setAttacks?: Iterable<SetAttack>
 }
 
 function buildOpts(...parts: string[]): string {
@@ -254,6 +260,15 @@ export function exportLatexArgumentationCommon(
   // Step 3: Emit argument, link placements and annotations
   text += placementGenerator(nodeMap, snapToGrid, hooks?.argumentOptions)
   text += emitLinks(processLinks(attacks, supports), hooks?.attackOptions, hooks?.attackSuffix)
+  if (hooks?.setAttacks) {
+    for (const { attackers, target } of hooks.setAttacks) {
+      if (attackers.length === 1) {
+        text += `  \\attack{a${attackers[0]}}{a${target}}\r\n`
+      } else {
+        text += `  \\setattack{${attackers.map((id) => `a${id}`).join(',')}}{a${target}}\r\n`
+      }
+    }
+  }
   text += emitAnnotations(nodeMap, hooks?.argumentAnnotation)
   text += `\\end{af}`
   return {
