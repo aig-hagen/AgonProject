@@ -133,6 +133,12 @@ export function usePhysics({
     }
   }
 
+  watch(defaultPhysicsMode, (mode) => {
+    if (settleTimerId !== null) { clearTimeout(settleTimerId); settleTimerId = null }
+    disablePhysics()
+    physicsMode.value = mode
+  })
+
   const isTabVisible = useElementVisibility(containerRef)
   watch(isTabVisible, (visible) => {
     if (!visible) {

@@ -296,10 +296,12 @@ function applyGridVisibility(visibility: GridVisibility) {
   graphComponentRef.value?.setShowGrid(effective === 'on')
   graphComponentRef.value?.setAutoShowGrid(effective === 'auto')
 }
+watch(defaultShowGrid, (v) => { showGrid.value = v })
+watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
+watch(graphStyleSetting, () => { setGraph(state, false) })
 watch(physicsMode, () => { tutorialPhysicsToggleCount.value++ })
 watch(showGrid, () => { tutorialGridToggleCount.value++ })
 watch(showGrid, applyGridVisibility)
-watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
 watch(gridCellScale, (scale) => { graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * scale) })
 watch(snapMode, (enabled) => {
   graphComponentRef.value?.setSnapToGrid(enabled)
