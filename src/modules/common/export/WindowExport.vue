@@ -27,6 +27,7 @@ import { computed, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
+import { useSettings } from '@/modules/common/settings/useSettings'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 import type { ExportConfig, ExportFileData } from '.'
@@ -44,12 +45,14 @@ const emit = defineEmits<{
 const soureViewRef = useTemplateRef('soureView')
 const editorView = shallowRef<EditorView | undefined>(undefined)
 
+const { gridCellScale } = useSettings()
+
 const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exportConfigs[0])
 const selectedArgumentStyle = shallowRef<string>('colored')
 const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
 const selectedSupportStyle = shallowRef<string>('double')
-const selectedSnapToGrid = shallowRef<boolean>(false)
+const selectedNodeDistance = shallowRef<number>(1.5)
 
 const isBipolarDocument = computed(() => {
   const maybeSupports = (input as unknown as { supports?: unknown }).supports
@@ -61,7 +64,7 @@ const usePackageLine = computed(() => {
   const opts = [
     `argumentstyle=${selectedArgumentStyle.value}`,
     `namestyle=${selectedNameStyle.value}`,
-    `attackstyle=${selectedAttackStyle.value}`,
+    ...(selectedAttackStyle.value !== 'standard' ? [`attackstyle=${selectedAttackStyle.value}`] : []),
   ]
   if (isBipolarDocument.value) opts.push(`supportstyle=${selectedSupportStyle.value}`)
   return `\\usepackage[${opts.join(',')}]{argumentation}`
@@ -89,7 +92,8 @@ const exportResult = computed(() => {
     nameStyle: selectedNameStyle.value,
     attackStyle: selectedAttackStyle.value,
     supportStyle: selectedSupportStyle.value,
-    snapToGrid: selectedSnapToGrid.value,
+    nodeDistance: selectedNodeDistance.value,
+    gridCellScale: gridCellScale.value,
   })
 })
 
@@ -256,30 +260,31 @@ watchEffect(() => {
                 </select>
               </label>
             </div>
-            <div class="mt-4">
-              <label class="label cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm mr-2" v-model="selectedSnapToGrid" />
-                <span>Snap to Grid</span>
+            <div class="mt-4 flex flex-wrap gap-4 items-center">
+              <label class="label gap-2">
+                <span>Node Distance</span>
+                <input type="range" class="range range-sm w-28" min="0.5" max="4" step="0.25" v-model.number="selectedNodeDistance" />
+                <span class="text-sm w-6 text-right opacity-60">{{ selectedNodeDistance }}</span>
               </label>
-            </div>
-            <div class="relative mt-4 w-96">
-              <input
-                type="text"
-                class="input input-xs font-mono w-96 pr-8"
-                readonly
-                :value="usePackageLine"
-              />
-              <button
-                class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-xs btn-ghost btn-square"
-                :disabled="usePackageLine === undefined"
-                @click="copyPackageLine"
-              >
-                <ClipboardDocumentCheckIcon v-if="packageLineCopied" class="size-3.5" />
-                <ClipboardDocumentIcon v-else class="size-3.5" />
-              </button>
             </div>
           </div>
         </details>
+        <div class="relative mt-2 w-md">
+          <input
+            type="text"
+            class="input input-xs font-mono w-md pr-8"
+            readonly
+            :value="usePackageLine"
+          />
+          <button
+            class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-xs btn-ghost btn-square"
+            :disabled="usePackageLine === undefined"
+            @click="copyPackageLine"
+          >
+            <ClipboardDocumentCheckIcon v-if="packageLineCopied" class="size-3.5" />
+            <ClipboardDocumentIcon v-else class="size-3.5" />
+          </button>
+        </div>
       </fieldset>
       <div class="flex gap-2 flex-wrap">
         <div class="grow max-w-80">

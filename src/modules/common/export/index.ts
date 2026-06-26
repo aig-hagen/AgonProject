@@ -24,7 +24,8 @@ export interface ExportStyleOptions {
   attackStyle?: string
   supportStyle?: string
   snapToGrid?: boolean
-  coordinateNormalization?: 'clamp' | 'rank'
+  nodeDistance?: number
+  gridCellScale?: number
   shortenNames?: boolean
 }
 

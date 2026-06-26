@@ -46,50 +46,12 @@ export function latexExportCommonConfig(): {
     ],
   }
 }
+
 interface NodeExportInfo {
   name: string
   x: number
   y: number
   latexId: number
-}
-
-type CoordinateNormalizer = (nodes: Map<number, NodeExportInfo>) => void
-
-function clampDistancesNormalizer(): CoordinateNormalizer {
-  return (nodes) => {
-    const limitAxis = (coordinate: 'x' | 'y') => {
-      const sorted = [...nodes.entries()].sort(([, a], [, b]) => a[coordinate] - b[coordinate])
-      let prev: number | null = null
-      for (const [, node] of sorted) {
-        if (prev === null) {
-          prev = node[coordinate]
-          continue
-        }
-        const delta = node[coordinate] - prev
-        if (Math.abs(delta) > 2) {
-          node[coordinate] = prev + Math.sign(delta) * 2
-        }
-        prev = node[coordinate]
-      }
-    }
-    limitAxis('x')
-    limitAxis('y')
-  }
-}
-
-function rankCompressionNormalizer(epsilon: number = 0.75, step: number = 1): CoordinateNormalizer {
-  return (nodes) => {
-    for (const axis of ['x', 'y'] as const) {
-      const sorted = [...nodes.entries()].sort(([, a], [, b]) => a[axis] - b[axis])
-      let rank = 0
-      let prev = sorted[0]?.[1][axis] ?? 0
-      for (const [, node] of sorted) {
-        if (node[axis] - prev > epsilon) rank++
-        prev = node[axis]
-        node[axis] = rank * step
-      }
-    }
-  }
 }
 
 export interface SetAttack {
@@ -110,79 +72,18 @@ function buildOpts(...parts: string[]): string {
   return joined ? `[${joined}]` : ''
 }
 
-type ArgumentPlacementGenerator = (
+function absolutePlacement(
   nodeMap: Map<number, NodeExportInfo>,
   snapToGrid: boolean,
   argumentOptions?: (id: number) => string,
-) => string
-
-function absolutePlacementGenerator(): ArgumentPlacementGenerator {
-  return (nodeMap, snapToGrid, argumentOptions) => {
-    let text = ''
-    for (const [id, node] of nodeMap.entries()) {
-      const x = snapToGrid ? Math.round(node.x).toFixed(1) : node.x.toFixed(1)
-      const y = snapToGrid ? Math.round(node.y).toFixed(1) : node.y.toFixed(1)
-      text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.name}} at (${x},${y})\r\n`
-    }
-    return text
+): string {
+  let text = ''
+  for (const [id, node] of nodeMap.entries()) {
+    const x = snapToGrid ? Math.round(node.x).toFixed(1) : node.x.toFixed(2)
+    const y = snapToGrid ? Math.round(node.y).toFixed(1) : node.y.toFixed(2)
+    text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.name}} at (${x},${y})\r\n`
   }
-}
-
-function relativePlacementGenerator(): ArgumentPlacementGenerator {
-  return (nodeMap, _snapToGrid, argumentOptions) => {
-    // Process bottom-to-top, left-to-right so earlier nodes serve as anchors
-    const sorted = [...nodeMap.entries()].sort(([, a], [, b]) => a.y !== b.y ? a.y - b.y : a.x - b.x)
-    let text = ''
-    const placed = new Map<number, NodeExportInfo>()
-
-    for (const [id, node] of sorted) {
-      const extraOpts = argumentOptions?.(id) ?? ''
-      if (placed.size === 0) {
-        text += `  \\argument${buildOpts(extraOpts)}(a${node.latexId}){${node.name}} at (0,0)\r\n`
-        placed.set(id, node)
-        continue
-      }
-
-      // Prefer axis-aligned references; among those, pick the closest
-      let bestRef: [number, NodeExportInfo] | null = null
-      let bestScore = Infinity
-      for (const ref of placed.entries()) {
-        const dx = node.x - ref[1].x
-        const dy = node.y - ref[1].y
-        const score = (dx === 0 || dy === 0 ? 0 : 1e6) + Math.abs(dx) + Math.abs(dy)
-        if (score < bestScore) {
-          bestScore = score
-          bestRef = ref
-        }
-      }
-
-      if (bestRef !== null) {
-        const [, refNode] = bestRef
-        const dx = node.x - refNode.x
-        const dy = node.y - refNode.y
-        if (dy === 0 && dx > 0) {
-          text += `  \\argument${buildOpts(`right=${dx.toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        } else if (dy === 0 && dx < 0) {
-          text += `  \\argument${buildOpts(`left=${(-dx).toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        } else if (dx === 0 && dy > 0) {
-          text += `  \\argument${buildOpts(`above=${dy.toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        } else if (dx === 0 && dy < 0) {
-          text += `  \\argument${buildOpts(`below=${(-dy).toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        } else if (dx > 0 && dy > 0) {
-          text += `  \\argument${buildOpts(`above right=${dy.toFixed(1)} and ${dx.toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        } else if (dx < 0 && dy > 0) {
-          text += `  \\argument${buildOpts(`above left=${dy.toFixed(1)} and ${(-dx).toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        } else if (dx > 0 && dy < 0) {
-          text += `  \\argument${buildOpts(`below right=${(-dy).toFixed(1)} and ${dx.toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        } else {
-          text += `  \\argument${buildOpts(`below left=${(-dy).toFixed(1)} and ${(-dx).toFixed(1)} of a${refNode.latexId}`, extraOpts)}(a${node.latexId}){${node.name}}\r\n`
-        }
-      }
-      placed.set(id, node)
-    }
-
-    return text
-  }
+  return text
 }
 
 function shortenNameToLetter(name: string): string {
@@ -190,38 +91,27 @@ function shortenNameToLetter(name: string): string {
   return match ? match[0] : name
 }
 
-export function buildArgumentPlacementText(
+function buildNodeMap(
   args: IterableIterator<[id: number, data: ArgumentData]>,
   styleOptions?: ExportStyleOptions,
-  argumentOptions?: (id: number) => string,
-  argumentAnnotation?: (id: number) => string | undefined,
-): string {
-  const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2.4
-  const snapToGrid = styleOptions?.snapToGrid ?? false
+): Map<number, NodeExportInfo> {
+  const nodeDistance = styleOptions?.nodeDistance ?? 1.5
+  const gridCellScale = styleOptions?.gridCellScale ?? 3
+  const pixelsPerUnit = (2 * ARGUMENT_RADIUS_IN_PX * gridCellScale) / nodeDistance
   const shortenNames = styleOptions?.shortenNames ?? true
-  const coordinateNormalization = styleOptions?.coordinateNormalization ?? 'clamp'
-  const normalizer: CoordinateNormalizer =
-    coordinateNormalization === 'rank' ? rankCompressionNormalizer() : clampDistancesNormalizer()
-  const placementGenerator: ArgumentPlacementGenerator =
-    coordinateNormalization === 'rank' ? relativePlacementGenerator() : absolutePlacementGenerator()
-
   const nodeMap = new Map<number, NodeExportInfo>()
   let latexCounter = 0
   for (const [argumentId, argumentData] of args) {
     const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
     const displayName = shortenNames ? shortenNameToLetter(nameEscaped) : nameEscaped
-    const rawX = argumentData.x / inverseScaleFactor
-    const rawY = (argumentData.y / inverseScaleFactor) * -1
-    nodeMap.set(argumentId, { name: displayName, x: rawX, y: rawY, latexId: ++latexCounter })
+    nodeMap.set(argumentId, {
+      name: displayName,
+      x: argumentData.x / pixelsPerUnit,
+      y: (argumentData.y / pixelsPerUnit) * -1,
+      latexId: ++latexCounter,
+    })
   }
-
-  offsetNodesToOrigin(nodeMap)
-  normalizer(nodeMap)
-
-  const getLatexId = (id: number) => nodeMap.get(id)!.latexId
-  let text = placementGenerator(nodeMap, snapToGrid, argumentOptions)
-  text += emitAnnotations(nodeMap, getLatexId, argumentAnnotation)
-  return text
+  return nodeMap
 }
 
 export function exportLatexArgumentationCommon(
@@ -231,40 +121,18 @@ export function exportLatexArgumentationCommon(
   styleOptions?: ExportStyleOptions,
   hooks?: ExportHooks,
 ): ExportResult {
-  const inverseScaleFactor = ARGUMENT_RADIUS_IN_PX * 2.4
   const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
   const nameStyle = styleOptions?.nameStyle ?? 'math'
   const attackStyle = styleOptions?.attackStyle ?? 'standard'
   const supportStyle = styleOptions?.supportStyle ?? 'double'
-  const snapToGrid = styleOptions?.snapToGrid ?? false
-  const shortenNames = styleOptions?.shortenNames ?? true
-  const coordinateNormalization = styleOptions?.coordinateNormalization ?? 'clamp'
-  const normalizer: CoordinateNormalizer =
-    coordinateNormalization === 'rank' ? rankCompressionNormalizer() : clampDistancesNormalizer()
-  const placementGenerator: ArgumentPlacementGenerator =
-    coordinateNormalization === 'rank' ? relativePlacementGenerator() : absolutePlacementGenerator()
 
-  const afOptions = `[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]`
-  let text = '\\begin{af}\r\n'
-  // Step 1: Collect all nodes and their coordinates in a mapping
-  const nodeMap = new Map<number, NodeExportInfo>()
-  let latexCounter = 0
-  for (const [argumentId, argumentData] of args) {
-    const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
-    const displayName = shortenNames ? shortenNameToLetter(nameEscaped) : nameEscaped
-    const rawX = argumentData.x / inverseScaleFactor
-    const rawY = (argumentData.y / inverseScaleFactor) * -1
-    nodeMap.set(argumentId, { name: displayName, x: rawX, y: rawY, latexId: ++latexCounter })
-  }
-
-  // Step 2: Normalize coordinates to fit within LaTeX's limitations and optionally snap to grid
+  const nodeMap = buildNodeMap(args, styleOptions)
   offsetNodesToOrigin(nodeMap)
-  normalizer(nodeMap)
 
   const getLatexId = (id: number) => nodeMap.get(id)!.latexId
 
-  // Step 3: Emit argument, link placements and annotations
-  text += placementGenerator(nodeMap, snapToGrid, hooks?.argumentOptions)
+  let text = '\\begin{af}\r\n'
+  text += absolutePlacement(nodeMap, styleOptions?.snapToGrid ?? false, hooks?.argumentOptions)
   text += emitLinks(processLinks(attacks, supports), getLatexId, hooks?.attackOptions, hooks?.attackSuffix)
   if (hooks?.setAttacks) {
     for (const { attackers, target } of hooks.setAttacks) {
@@ -275,8 +143,10 @@ export function exportLatexArgumentationCommon(
       }
     }
   }
-  text += emitAnnotations(nodeMap, getLatexId, hooks?.argumentAnnotation)
+  text += emitAnnotations(nodeMap.keys(), getLatexId, hooks?.argumentAnnotation)
   text += `\\end{af}`
+
+  const afOptions = `[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]`
   return {
     text,
     svg: renderSvg(text.replace('\\begin{af}', `\\begin{af}${afOptions}`)),
@@ -298,24 +168,24 @@ enum ProcessedLinkType {
 }
 
 function offsetNodesToOrigin(nodes: Map<number, NodeExportInfo>): void {
-  const firstNode = nodes.values().next().value
-  if (firstNode === undefined) return
-  const offsetX = firstNode.x
-  const offsetY = firstNode.y
-  for (const node of nodes.values()) {
-    node.x -= offsetX
-    node.y -= offsetY
+  if (nodes.size === 0) return
+  const vals = [...nodes.values()]
+  const minX = Math.min(...vals.map((n) => n.x))
+  const minY = Math.min(...vals.map((n) => n.y))
+  for (const node of vals) {
+    node.x -= minX
+    node.y -= minY
   }
 }
 
 function emitAnnotations(
-  nodeMap: Map<number, NodeExportInfo>,
+  ids: IterableIterator<number>,
   getLatexId: (id: number) => number,
   argumentAnnotation?: (id: number) => string | undefined,
 ): string {
   if (!argumentAnnotation) return ''
   let text = ''
-  for (const id of nodeMap.keys()) {
+  for (const id of ids) {
     const annotation = argumentAnnotation(id)
     if (annotation !== undefined) {
       text += `  \\annotation[yshift=-10pt]{a${getLatexId(id)}}{${annotation}}\r\n`
