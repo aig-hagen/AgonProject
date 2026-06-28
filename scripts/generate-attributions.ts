@@ -4,7 +4,7 @@ import { execSync } from 'child_process'
 import { readdir, readFile, writeFile } from 'fs/promises'
 import checker, { type InitOpts, type ModuleInfo, type ModuleInfos } from 'license-checker'
 
-import { type Attribution } from '../src/modules/common/attributions/types.ts'
+import { type Attribution } from '../src/modules/common/attributions/types'
 
 const TWEETY_VERSION = getVersionFromGit('third-party/TweetyProjectTeam/TweetyProject')
 const XAI_CA_VERSION = await getVersionFromDirName('third-party/xai-ca/xray')
@@ -293,7 +293,7 @@ async function writeCtanPackagesAttributionsJson() {
   )
 }
 
-async function mapPackageToAttribution(pkg: { name: string; version?: string }): Attribution {
+async function mapPackageToAttribution(pkg: { name: string; version?: string }): Promise<Attribution> {
   const response = await fetchJsonOk(`https://www.ctan.org/json/2.0/pkg/${pkg.name}`)
   const [license, licenseText] = await getLicense(response)
   const publisher = await getPublisher(response)
@@ -307,7 +307,8 @@ async function mapPackageToAttribution(pkg: { name: string; version?: string }):
   }
 }
 
-async function getPublisher(responseObject) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getPublisher(responseObject: any) {
   if (responseObject.copyright.length !== 0) {
     return responseObject.copyright.map((copyright) => `${copyright.year} ${copyright.owner}`).join('; ')
   }
@@ -323,7 +324,8 @@ async function getPublisher(responseObject) {
   throw new Error('Could not determin authors: ' + responseObject)
 }
 
-async function getLicense(responseObject) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getLicense(responseObject: any) {
   const license = responseObject.license
   let spdxKey
   if (license === 'lppl1.3') {
@@ -348,9 +350,9 @@ async function getLicense(responseObject) {
   return [spdxKey, licenseText]
 }
 
-const bySpdxKeyLicenseText = {}
+const bySpdxKeyLicenseText: Record<string, string> = {}
 
-async function getLicenseText(spdxKey) {
+async function getLicenseText(spdxKey: string) {
   let licenseText = bySpdxKeyLicenseText[spdxKey]
   if (licenseText == undefined) {
     const response = await fetchJsonOk(`https://spdx.org/licenses/${spdxKey}.json`)
@@ -360,7 +362,7 @@ async function getLicenseText(spdxKey) {
   return licenseText
 }
 
-async function fetchTextOk(url) {
+async function fetchTextOk(url: string) {
   const response = await fetch(url)
   if (!response.ok) {
     throw Error('Could not fetch ' + url + ': ' + response.status)
@@ -368,7 +370,7 @@ async function fetchTextOk(url) {
   return await response.text()
 }
 
-async function fetchJsonOk(url) {
+async function fetchJsonOk(url: string) {
   const response = await fetch(url)
   if (!response.ok) {
     throw Error('Could not fetch ' + url + ': ' + response.status)
