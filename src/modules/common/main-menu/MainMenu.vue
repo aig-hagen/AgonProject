@@ -24,6 +24,7 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   Bars3Icon,
+  BookOpenIcon,
   ChevronRightIcon,
   Cog6ToothIcon,
   FolderOpenIcon,
@@ -36,6 +37,7 @@ import {
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
 
 import { Layout, type LayoutData, layoutDatas } from '@/modules/common/main-menu/layouting'
 import { EntryState } from '@/modules/common/main-menu/types'
@@ -122,7 +124,7 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
         <a @click="emit('load')"><FolderOpenIcon class="size-5 opacity-70" />Open...</a>
       </li>
       <li>
-        <a @click="emit('generate')"><Squares2X2Icon class="size-5 opacity-70" />Generate...</a>
+        <a @click="emit('generate')"><Squares2X2Icon class="size-5 opacity-70" />Generate</a>
       </li>
       <li v-if="showSave !== EntryState.HIDE">
         <a
@@ -238,7 +240,7 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
               'opacity-50 pointer-events-none': showEvaluate === EntryState.DISABLE,
             }"
             @click="emit('evaluate')"
-            ><VariableIcon class="size-5 opacity-70" />Evaluate...</a
+            ><VariableIcon class="size-5 opacity-70" />Evaluate</a
           >
         </li>
         <li>
@@ -265,7 +267,10 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
         <a @click="emit('settings')"><Cog6ToothIcon class="size-5 opacity-70" />Settings...</a>
       </li>
       <li>
-        <a @click="emit('tutorial')"><AcademicCapIcon class="size-5 opacity-70" />Tutorials...</a>
+        <a @click="emit('tutorial')"><AcademicCapIcon class="size-5 opacity-70" />Tutorials</a>
+      </li>
+      <li>
+        <RouterLink to="/glossary"><BookOpenIcon class="size-5 opacity-70" />Glossary</RouterLink>
       </li>
       <li>
         <a @click="emit('help')"><QuestionMarkCircleIcon class="size-5 opacity-70" />Help</a>

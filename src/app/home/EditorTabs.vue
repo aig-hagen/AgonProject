@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="DocumentT extends Objectish">
-import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { CheckIcon, LinkIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
 import { nextTick, useAttrs, useTemplateRef } from 'vue'
@@ -35,6 +35,8 @@ defineProps<{
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<DocumentT>[]
   showCreate?: boolean
+  sharing?: boolean
+  shareCopied?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -44,6 +46,7 @@ const emit = defineEmits<{
   create: []
   save: [id: number]
   clearAll: []
+  quickShare: []
 }>()
 
 const clearAllModal = useTemplateRef('clearAllModal')
@@ -78,7 +81,17 @@ function openClearAllModal() {
         </button>
       </div>
     </div>
-    <div v-if="data.length > 0" class="flex items-center px-1 shrink-0 border-b border-base-300">
+    <div v-if="data.length > 0" class="flex items-center px-1 gap-0.5 shrink-0 border-b border-base-300">
+      <button
+        class="btn btn-square btn-xs btn-ghost"
+        :disabled="sharing"
+        @click="emit('quickShare')"
+        title="Copy share link"
+      >
+        <span v-if="sharing" class="loading loading-spinner loading-xs" />
+        <CheckIcon v-else-if="shareCopied" class="size-4 text-success" />
+        <LinkIcon v-else class="size-4" />
+      </button>
       <button
         class="btn btn-square btn-xs btn-ghost text-error"
         @click="openClearAllModal"

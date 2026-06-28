@@ -37,6 +37,7 @@ import { saveToFile } from '@/modules/common/export/saveFile'
 import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
+import copy from 'copy-to-clipboard'
 import ShareModal from '@/modules/common/share/ShareModal.vue'
 import { uploadShare } from '@/modules/common/share/useShare'
 import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
@@ -296,6 +297,32 @@ async function shareDocument(documentId: number) {
   }
 }
 
+const isSharing = ref(false)
+const shareCopied = ref(false)
+let shareCopiedTimer: ReturnType<typeof setTimeout> | undefined
+
+async function quickShareDocument() {
+  if (selectedDocumentId.value === undefined || isSharing.value) return
+  const documentId = selectedDocumentId.value
+  const metadata = documents.value.find((d) => d.id === documentId)
+  const [state, module] = await loadDocumentState(db, modules, documentId)
+  if (state === undefined || module === undefined) return
+  const content = module.getSaveString(state.current.content, metadata?.name ?? '')
+  isSharing.value = true
+  try {
+    const result = await uploadShare(content)
+    copy(result.url)
+    shareCopied.value = true
+    clearTimeout(shareCopiedTimer)
+    shareCopiedTimer = setTimeout(() => { shareCopied.value = false }, 2_000)
+    addSuccessNotification('Share link copied to clipboard')
+  } catch {
+    addErrorNotification('Failed to create share link')
+  } finally {
+    isSharing.value = false
+  }
+}
+
 async function saveAsFile(documentId: number) {
   const metadata = documents.value.find((document) => document.id === documentId)
   if (metadata === undefined) {
@@ -348,6 +375,9 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
       :modules="modules"
       @save="saveAsFile($event)"
       :show-create="showCreate"
+      :sharing="isSharing"
+      :share-copied="shareCopied"
+      @quick-share="quickShareDocument"
     />
     <main class="border-t -mt-px border-base-300 editor flex-1 overflow-hidden">
       <div class="relative h-full w-full">

@@ -19,6 +19,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import GenerateView from '@/app/generate/GenerateView.vue'
+import GlossaryView from '@/app/glossary/GlossaryView.vue'
 import HomeView from '@/app/home/HomeView.vue'
 import ShareView from '@/app/share/ShareView.vue'
 import ThirdPartyView from '@/app/third-party/ThirdPartyView.vue'
@@ -33,6 +34,10 @@ const router = createRouter({
     {
       path: '/generate',
       component: GenerateView,
+    },
+    {
+      path: '/glossary',
+      component: GlossaryView,
     },
     {
       path: '/share/:id',
