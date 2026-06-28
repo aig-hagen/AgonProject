@@ -24,6 +24,20 @@ export class EvaluationTimeoutError extends Error {
   }
 }
 
+export class RateLimitError extends Error {
+  constructor() {
+    super('Too many requests')
+    this.name = 'RateLimitError'
+  }
+}
+
+export class ServiceUnavailableError extends Error {
+  constructor() {
+    super('Service unavailable')
+    this.name = 'ServiceUnavailableError'
+  }
+}
+
 export function throwIfTimeout(answer: string | null, status?: string | null): void {
   if (status === 'TIMEOUT') throw new EvaluationTimeoutError()
   if (answer === null) throw new Error('Evaluation failed')

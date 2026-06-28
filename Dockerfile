@@ -13,7 +13,10 @@ RUN --mount=type=cache,target=/root/.m2  \
     -pl org-tweetyproject-web \
     package spring-boot:repackage
 
-FROM --platform=linux/amd64 caddy:latest AS caddy
+FROM --platform=linux/amd64 caddy:builder AS caddy
+RUN xcaddy build \
+    --with github.com/mholt/caddy-rate-limit \
+    --output /usr/bin/caddy
 
 # runtime
 FROM --platform=linux/amd64 eclipse-temurin:25-jre

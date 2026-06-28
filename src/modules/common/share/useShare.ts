@@ -24,6 +24,7 @@ export async function uploadShare(content: string): Promise<{ id: string; url: s
     body: JSON.stringify({ content }),
   })
   if (!response.ok) {
+    if (response.status === 429) throw new Error('Too many uploads — please wait a moment before trying again')
     const body = (await response.json().catch(() => ({}))) as { error?: string }
     throw new Error(body.error ?? `Upload failed (${response.status})`)
   }

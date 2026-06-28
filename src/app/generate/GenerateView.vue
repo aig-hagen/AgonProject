@@ -237,6 +237,8 @@ async function generate() {
       signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
     })
     if (!response.ok) {
+      if (response.status === 429) throw new Error('Too many requests — please wait a moment before generating again')
+      if (response.status === 502 || response.status === 503) throw new Error('The server is temporarily unavailable — please try again in a moment')
       const detail = await response.json().catch(() => ({}))
       throw new Error((detail as { detail?: string }).detail ?? `HTTP ${response.status}`)
     }

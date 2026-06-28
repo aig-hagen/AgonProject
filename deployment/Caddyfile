@@ -24,12 +24,26 @@ http://:8080 {
 
 	@backend path /dung /bipolar /rankings /adf /serialisation /paf /iaf
 	handle @backend {
+		rate_limit {
+			zone tweety {
+				key {remote_host}
+				events 30
+				window 1m
+			}
+		}
 		# log_append proxy_target http://localhost:8081
 		reverse_proxy http://localhost:8081
 	}
 
 	@graph-gen path /graph-gen/*
 	handle @graph-gen {
+		rate_limit {
+			zone graph_gen {
+				key {remote_host}
+				events 20
+				window 1m
+			}
+		}
 		uri strip_prefix /graph-gen
 		reverse_proxy http://localhost:8082
 	}

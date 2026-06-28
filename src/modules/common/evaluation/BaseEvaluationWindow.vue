@@ -64,6 +64,8 @@ watch(isLoading, (loading, wasLoading) => {
 })
 
 const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
+const isRateLimit = computed(() => error.value?.name === 'RateLimitError')
+const isServiceUnavailable = computed(() => error.value?.name === 'ServiceUnavailableError')
 
 const floatingWindow = useTemplateRef<InstanceType<typeof FloatingWindow>>('floatingWindow')
 
@@ -152,7 +154,13 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
               </template>
             </span>
           </legend>
-          <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
+          <div v-if="isServiceUnavailable" role="alert" class="alert alert-warning alert-soft">
+            <span>The server is temporarily unavailable — please try again in a moment</span>
+          </div>
+          <div v-else-if="isRateLimit" role="alert" class="alert alert-warning alert-soft">
+            <span>Too many requests — please wait a moment before evaluating again</span>
+          </div>
+          <div v-else-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
             <span>Evaluation timed out</span>
           </div>
           <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
