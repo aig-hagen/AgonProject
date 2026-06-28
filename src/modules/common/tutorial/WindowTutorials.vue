@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -18,7 +18,6 @@
 -->
 <script setup lang="ts">
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
-
 import { inject } from 'vue'
 
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'

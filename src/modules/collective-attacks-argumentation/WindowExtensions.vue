@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -19,13 +19,13 @@
 <script setup lang="ts">
 import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ExtensionWindowInstanceState } from '@/modules/collective-attacks-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
   type Semantics,
   useSetAfEvaluationQuery,
 } from '@/modules/collective-attacks-argumentation/evaluation/tweetyProject'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'

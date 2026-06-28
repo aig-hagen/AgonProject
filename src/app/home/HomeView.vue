@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -17,6 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="DocumentT extends Objectish">
+import copy from 'copy-to-clipboard'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
 import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
@@ -37,7 +38,6 @@ import { saveToFile } from '@/modules/common/export/saveFile'
 import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
-import copy from 'copy-to-clipboard'
 import ShareModal from '@/modules/common/share/ShareModal.vue'
 import { uploadShare } from '@/modules/common/share/useShare'
 import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'

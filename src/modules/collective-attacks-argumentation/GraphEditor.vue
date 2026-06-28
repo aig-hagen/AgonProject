@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -20,6 +20,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { computed, provide, ref, shallowRef, watch } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
@@ -29,9 +30,6 @@ import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-att
 import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import { setafBasicsTutorial } from '@/modules/collective-attacks-argumentation/tutorials/setaf-basics'
 import { setafEvaluationTutorial } from '@/modules/collective-attacks-argumentation/tutorials/setaf-evaluation'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
-import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
-import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowExtensions from '@/modules/collective-attacks-argumentation/WindowExtensions.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
@@ -47,6 +45,8 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 
 const { state, historyState, documentId } = defineProps<{
   state: DocumentState<SetAF<SetAfArgumentData>>

@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -20,6 +20,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { computed, provide, ref, shallowRef, watch } from 'vue'
 
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
@@ -35,6 +36,8 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
@@ -44,9 +47,6 @@ import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentat
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
 import { iafBasicsTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-basics'
 import { iafEvaluationTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-evaluation'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
-import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
-import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowExtensions from '@/modules/incomplete-argumentation/WindowExtensions.vue'
 
 const { state, historyState, documentId } = defineProps<{

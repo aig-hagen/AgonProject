@@ -1,5 +1,5 @@
 /*
- * Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+ * AgonProject - The platform to explore different approaches to formal argumentation.
  *
  * Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
  *
@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { onMounted, onUnmounted, ref, watch } from 'vue'
-import type { Ref } from 'vue'
 import { useElementVisibility } from '@vueuse/core'
+import type { Ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
-import type { PhysicsMode } from '@/modules/common/main-menu/types'
 import type { IdMapping } from '@/modules/common/ids'
+import type { PhysicsMode } from '@/modules/common/main-menu/types'
 import { useSettings } from '@/modules/common/settings/useSettings'
 
 interface PhysicsCapable {

@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -60,7 +60,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
     <div class="min-h-full flex items-center justify-center">
     <div class="max-w-5xl w-full p-4 sm:p-8">
       <h2 class="text-2xl sm:text-4xl font-bold mb-2">
-        Argumentation Toolbox
+        AgonProject
         <div class="text-lg font-normal text-base-content/70">
           Create, Analyse and Visualise Different Approaches to Formal Argumentation
         </div>

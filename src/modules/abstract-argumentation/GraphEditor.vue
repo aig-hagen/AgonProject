@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -36,7 +36,6 @@ import { availableExports } from '@/modules/abstract-argumentation/export'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { afBasicsTutorial } from '@/modules/abstract-argumentation/tutorials/af-basics'
 import { afEvaluationTutorial } from '@/modules/abstract-argumentation/tutorials/af-evaluation'
-import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.vue'
 import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
 import WindowSerialisation from '@/modules/abstract-argumentation/WindowSerialisation.vue'
@@ -54,6 +53,7 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 
 const { state, historyState, documentId } = defineProps<{
   state: DocumentState<AbstractArgumentation<ArgumentData>>

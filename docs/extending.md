@@ -1,15 +1,22 @@
 # Extending
 
-The argumentation toolbox is still in early development.
+The AgonProject is still in early development.
 Extension points are yet to be fully figured out, and no plugin mechanism exists.
 
-Still, extending some common parts of the application is possible more simply than others. Those parts are bescribed below.
+Still, extending some common parts of the application is possible more simply than others. Those parts are described below.
 
 ## Add new argumentation types
 
-Currently, abstract argumentation and bipolar abstract argumentation are the available argumentation types. You are actually not limited to argumentation types, but any type of document as long as you provide an appropriate editor.
+You are not limited to argumentation types — any type of document can be added as long as you provide an appropriate editor.
 
-If you want to add another argumentation in the future, create a[`ModuleConfig`](/src/app/home/moduleConfig.ts) similiar to the [`abstractArgumentationModule`](/src/modules/abstract-argumentation/moduleConfig.ts) and [`bipoloarArgumentationModule`](/src/modules/bipolar-argumentation/moduleConfig.ts).
+If you want to add a new module, create a [`ModuleConfig`](/src/app/home/moduleConfig.ts) similar to the existing ones:
+
+- [`abstractArgumentationModule`](/src/modules/abstract-argumentation/moduleConfig.ts) (AF)
+- [`bipoloarArgumentationModule`](/src/modules/bipolar-argumentation/moduleConfig.ts) (BAF)
+- [`dialecticalArgumentationModule`](/src/modules/dialectical-argumentation/moduleConfig.ts) (ADF)
+- [`incompleteArgumentationModule`](/src/modules/incomplete-argumentation/moduleConfig.ts) (IAF)
+- [`probabilisticArgumentationModule`](/src/modules/probabilistic-argumentation/moduleConfig.ts) (PAF)
+- [`collectiveAttacksArgumentationModule`](/src/modules/collective-attacks-argumentation/moduleConfig.ts) (SetAF)
 
 ## Extending an existing argumentation type
 
@@ -33,7 +40,7 @@ The simplest type of export just transforms the given model into text by returni
 
 #### Additional SVGs
 
-In addition to text, an image (as SVG) can be provided by setting `ExportResult.svg.
+In addition to text, an image (as SVG) can be provided by setting `ExportResult.svg`.
 
 ##### LaTeX export
 
@@ -77,7 +84,7 @@ All current layouts use the [`neato` layout from GraphViz](https://graphviz.org/
 You can add new layouting algorithms by:
 
 1. Adding new layouts to [`export const Layout`](/src/modules/common/main-menu/layouting.ts)
-2. Setting the name and icon in `export const layoutDatas`(/src/modules/common/main-menu/layouting.ts)
+2. Setting the name and icon in [`export const layoutDatas`](/src/modules/common/main-menu/layouting.ts)
 3. Enabling them in [`<GraphEditor/>`](/src/modules/common/graph-editor/GraphEditor.vue) by
   - adding them to enabled layouting algorithms in
 
@@ -91,6 +98,10 @@ You can add new layouting algorithms by:
          Layout.BottomToTop,
          Layout.LeftToRight,
          Layout.RightToLeft,
+         Layout.ForceDirected,
+         Layout.Neato,
+         Layout.Circular,
+         Layout.Radial,
        ]"
        @save="emit('save')"
        :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"

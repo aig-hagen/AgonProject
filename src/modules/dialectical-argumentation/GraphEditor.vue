@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -34,6 +34,8 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import { type FormulaNode,formulaToString } from '@/modules/dialectical-argumentation/condition/formula'
 import ConditionEditorBar from '@/modules/dialectical-argumentation/ConditionEditorBar.vue'
 import {
@@ -45,8 +47,6 @@ import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argument
 import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
 import { adfBasicsTutorial } from '@/modules/dialectical-argumentation/tutorials/adf-basics'
 import { adfEvaluationTutorial } from '@/modules/dialectical-argumentation/tutorials/adf-evaluation'
-import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
-import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import WindowInterpretations from '@/modules/dialectical-argumentation/WindowInterpretations.vue'
 
 const { state, historyState, documentId } = defineProps<{

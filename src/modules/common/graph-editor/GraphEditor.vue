@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -73,7 +73,6 @@ import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
-import { isShortcut, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT } from '@/modules/common/shortcuts'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
@@ -83,6 +82,7 @@ import { EntryState, type GridVisibility } from '@/modules/common/main-menu/type
 import { getNextName } from '@/modules/common/nextName'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
+import { isShortcut, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT } from '@/modules/common/shortcuts'
 import { useTheme } from '@/modules/common/theme/useTheme'
 import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'

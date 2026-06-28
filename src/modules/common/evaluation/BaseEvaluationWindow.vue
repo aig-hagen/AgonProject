@@ -1,5 +1,5 @@
 <!--
-  Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+  AgonProject - The platform to explore different approaches to formal argumentation.
 
   Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
 
@@ -19,8 +19,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, type Ref, ref, useTemplateRef, watch } from 'vue'
 
-import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import { TWEETY_TIMEOUT_IN_MS } from '@/modules/common/evaluation/tweety-project/fetch'
+import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 

@@ -1,5 +1,5 @@
 /*
- * Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+ * AgonProject - The platform to explore different approaches to formal argumentation.
  *
  * Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
  *
@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { computed, ref, watchEffect } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
-import type { Highlight, GraphEditorState, NodeId } from '@/modules/common/graph-editor/graphEditor'
+import { computed, ref, watchEffect } from 'vue'
+
+import type { GraphEditorState, Highlight, NodeId } from '@/modules/common/graph-editor/graphEditor'
 import type { GraphStyle } from '@/modules/common/graph-editor/graphStyle'
 import type { IdMapping } from '@/modules/common/ids'
 

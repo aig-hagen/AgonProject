@@ -1,11 +1,11 @@
-# Argumentation Toolbox
+# AgonProject
 
 The platform to explore different approaches to formal argumentation.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-argumentation--toolbox.aig.fernuni--hagen.de-blue)](https://argumentation-toolbox.aig.fernuni-hagen.de/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
-![Screenshot of the Argumentation Toolbox](docs/screenshot.png)
+![Screenshot of the AgonProject landing page](docs/screenshot.png)
 
 ## Supported Frameworks
 

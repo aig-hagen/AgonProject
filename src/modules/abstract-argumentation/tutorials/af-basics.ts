@@ -1,5 +1,5 @@
 /*
- * Argumentation Toolbox - A graphical application to create and inspect argumentation frameworks.
+ * AgonProject - The platform to explore different approaches to formal argumentation.
  *
  * Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
  *
@@ -25,7 +25,7 @@ export const afBasicsTutorial: Tutorial = {
   steps: [
     {
       id: 'welcome',
-      title: 'Welcome to the Argumentation Toolbox!',
+      title: 'Welcome to Abstract Argumentation!',
       body: 'This short tutorial will guide you through the basic features. You can skip it at any time and restart it from the <strong>Tutorials</strong> entry in the menu.',
       advanceOn: 'button',
     },
