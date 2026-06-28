@@ -27,7 +27,6 @@
     "@hpcc-js/wasm-graphviz": "^1.21.2",
     "@interactjs/actions": "^1.10.27",
     "@interactjs/auto-start": "^1.10.27",
-    "@interactjs/dev-tools": "^1.10.27",
     "@interactjs/interact": "^1.10.27",
     "@interactjs/modifiers": "^1.10.27",
     "@tanstack/query-core": "^5.100.10",
@@ -50,6 +49,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@interactjs/dev-tools": "^1.10.27",
     "@playwright/test": "1.59.1",
     "@tailwindcss/vite": "^4.2.0",
     "@tsconfig/node24": "^24.0.4",

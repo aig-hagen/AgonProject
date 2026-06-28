@@ -1,0 +1,14 @@
+services:
+  app:
+    image: ghcr.io/aig-hagen/argumentation-toolbox:latest
+    ports:
+      - "8080:8080"
+    environment:
+      FRONTEND_URL: https://argumentation-toolbox.aig.fernuni-hagen.de
+      ALLOWED_ORIGIN: https://argumentation-toolbox.aig.fernuni-hagen.de
+    volumes:
+      - shares_data:/opt/share-server/data
+    restart: unless-stopped
+
+volumes:
+  shares_data:

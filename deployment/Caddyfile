@@ -3,10 +3,22 @@
 	admin off
 }
 http://:8080 {
-	# log {
-	#	output stdout
-	#	format json
-	# }
+	log {
+		output stdout
+		format json
+	}
+
+	header {
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	request_body {
+		max_size 1MB
+	}
 
 	root * ./dist
 

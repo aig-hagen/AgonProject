@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
@@ -13,12 +14,20 @@ const PORT = parseInt(process.env.PORT ?? '8001', 10)
 const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173'
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*'
 const DB_PATH = process.env.DB_PATH ?? path.join(__dirname, '../../data/shares.db')
+
+if (FRONTEND_URL === 'http://localhost:5173') {
+  console.warn('WARNING: FRONTEND_URL is not set; share URLs in responses will point to localhost')
+}
+if (ALLOWED_ORIGIN === '*') {
+  console.warn('WARNING: ALLOWED_ORIGIN is not set; CORS is open to all origins')
+}
 const MAX_CONTENT_BYTES = 512 * 1024
 const EXPIRY_MS = 365 * 24 * 60 * 60 * 1000
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true })
 
 const db = new DatabaseSync(DB_PATH)
+db.exec('PRAGMA journal_mode=WAL')
 db.exec(`
   CREATE TABLE IF NOT EXISTS shares (
     id TEXT PRIMARY KEY,
@@ -52,7 +61,7 @@ const BASE62 = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 function generateId(): string {
   let id = ''
   for (let i = 0; i < 8; i++) {
-    id += BASE62[Math.floor(Math.random() * BASE62.length)]
+    id += BASE62[randomInt(BASE62.length)]
   }
   return id
 }

@@ -643,7 +643,7 @@ class GenerationRequest(BaseModel):
     algorithm: str
     params: dict[str, Any] = Field(default_factory=dict)
     framework_type: str = "abstract"
-    timeout: int = Field(default=30, ge=1)
+    timeout: int = Field(default=30, ge=1, le=120)
 
 
 class GenerationResponse(BaseModel):

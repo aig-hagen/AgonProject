@@ -47,5 +47,7 @@ COPY /servers/share/src /opt/share-server/src
 COPY /servers/share/tsconfig.json /opt/share-server/tsconfig.json
 RUN mkdir -p /opt/share-server/data && chown www-data:www-data /opt/share-server/data
 COPY --chmod=755 /deployment/wrapper_script.sh wrapper_script.sh
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -sf http://localhost:8080/ > /dev/null || exit 1
 USER www-data
 ENTRYPOINT ["./wrapper_script.sh"]
