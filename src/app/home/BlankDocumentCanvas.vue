@@ -62,7 +62,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
       <h2 class="text-2xl sm:text-4xl font-bold mb-2">
         AgonProject
         <div class="text-lg font-normal text-base-content/70">
-          Create, Analyse and Visualise Different Approaches to Formal Argumentation
+          The platform to explore different approaches to formal argumentation.
         </div>
       </h2>
       <HelpLinks />

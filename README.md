@@ -12,7 +12,7 @@ The platform to explore different approaches to formal argumentation.
 - **Abstract Argumentation (AF)** — the foundational model, with arguments and directed attacks
 - **Bipolar Argumentation (BAF)** — extends AF with support relations between arguments
 - **Dialectical Argumentation (ADF)** — argument acceptance governed by propositional acceptance conditions
-- **Incomplete Argumentation (IAF)** — distinguishes certain and uncertain arguments and attacks
+- **Incomplete Argumentation (iAF)** — distinguishes certain and uncertain arguments and attacks
 - **Probabilistic Argumentation (PAF)** — assigns probability values to arguments and attacks
 
 ## Usage
