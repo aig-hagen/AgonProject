@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.m2  \
 
 FROM --platform=linux/amd64 caddy:builder AS caddy
 RUN xcaddy build \
-    --with github.com/mholt/caddy-rate-limit \
+    --with github.com/mholt/caddy-ratelimit \
     --output /usr/bin/caddy
 
 # runtime
