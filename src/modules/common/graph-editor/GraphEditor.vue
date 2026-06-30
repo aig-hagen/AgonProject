@@ -60,7 +60,12 @@ import {
   LinkType,
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
-import { adjustNodeLabelFontSize, parseHyperLinkId, parseLinkId } from '@/modules/common/graph-editor/graphEditorUtils'
+import {
+  adjustNodeLabelFontSize,
+  parseHyperLinkId,
+  parseLinkId,
+  startNodeLabelEdit,
+} from '@/modules/common/graph-editor/graphEditorUtils'
 import {
   GRAPH_STYLE_DARK,
   GRAPH_STYLE_DEFAULT,
@@ -360,7 +365,9 @@ function onNodeCreated(
   nextTick(() => {
     graphComponentRef.value!.setLabel(name, node.id)
     graphComponentRef.value!.setColor(effectiveStyle.value.nodeColor, node.id)
-    adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, node.id, name)
+    const graphEl = graphComponentRef.value?.$el as Element | undefined
+    adjustNodeLabelFontSize(graphEl, graphComponentId, node.id, name)
+    startNodeLabelEdit(graphEl, graphComponentId, node.id)
   })
 }
 function onNodeDeleted(
@@ -757,6 +764,46 @@ onMounted(() => {
       window.removeEventListener('keyup', handleKeyUp)
     }
   }
+
+  // The graph-component library only commits a node/link label edit on Enter; clicking
+  // away discards it. We force a commit by simulating the same Enter keyup the library
+  // listens for before the click can blur the input out from under it.
+  const renameCommitGraphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+  if (renameCommitGraphHost) {
+    const handleRenameCommitPointerDown = (event: PointerEvent) => {
+      const activeElement = document.activeElement
+      if (!(activeElement instanceof HTMLInputElement)) return
+      if (activeElement.id !== 'node-label-input-field' && activeElement.id !== 'link-label-input-field') return
+      if (activeElement.contains(event.target as Node)) return
+      activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }))
+    }
+    renameCommitGraphHost.addEventListener('pointerdown', handleRenameCommitPointerDown, true)
+
+    // The library focuses the label input it creates but leaves the caret at the end
+    // instead of selecting the existing text. A bubble-phase 'click' listener can't see
+    // this open: the library's own click handler calls stopPropagation() on the click
+    // that creates the input, so it never reaches an ancestor. 'focusin' is a separate
+    // event fired by the library's T.focus() call and isn't affected by that
+    // stopPropagation(), so it reliably catches the moment the input becomes active.
+    const handleRenameOpenFocus = (event: FocusEvent) => {
+      const target = event.target
+      if (!(target instanceof HTMLInputElement)) return
+      if (target.id !== 'node-label-input-field' && target.id !== 'link-label-input-field') return
+      target.select()
+      // Suppress the browser's spellcheck/autocomplete suggestion popover for argument
+      // and link names — they're short labels, not prose, so suggestions are just noise.
+      target.setAttribute('spellcheck', 'false')
+      target.setAttribute('autocomplete', 'off')
+      target.setAttribute('autocorrect', 'off')
+      target.setAttribute('autocapitalize', 'off')
+    }
+    renameCommitGraphHost.addEventListener('focusin', handleRenameOpenFocus)
+
+    renameCommitCleanup = () => {
+      renameCommitGraphHost.removeEventListener('pointerdown', handleRenameCommitPointerDown, true)
+      renameCommitGraphHost.removeEventListener('focusin', handleRenameOpenFocus)
+    }
+  }
 })
 
 function toArrowType(linkType: LinkType): ArrowType {
@@ -967,6 +1014,7 @@ let dragObserver: MutationObserver | undefined
 let doubleTapCleanup: (() => void) | undefined
 let middleClickCleanup: (() => void) | undefined
 let ctrlSnapCleanup: (() => void) | undefined
+let renameCommitCleanup: (() => void) | undefined
 let ctrlSnapNodeId: number | null = null
 // Live node positions updated on every D3 tick during drag, so the overlay
 // doesn't lag behind until nodes-moved fires on mouseup.
@@ -996,6 +1044,7 @@ onUnmounted(() => {
   doubleTapCleanup?.()
   middleClickCleanup?.()
   ctrlSnapCleanup?.()
+  renameCommitCleanup?.()
 })
 
 function doLayout(layout: Layout) {

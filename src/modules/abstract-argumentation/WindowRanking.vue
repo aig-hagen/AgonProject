@@ -30,6 +30,7 @@ import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input } from '@/modules/common/evaluation/types'
+import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -108,6 +109,16 @@ function formatScore(score: number): string {
   return String(parseFloat(score.toPrecision(4)))
 }
 
+const copyText = computed(() => {
+  if (rankGroups.value !== undefined) {
+    return rankGroups.value.map((group) => group.entries.map((e) => e.name).join(', ')).join(' ≻ ')
+  }
+  if (numericalDisplayData.value !== undefined) {
+    return numericalDisplayData.value.map((e) => `${e.name}: ${formatScore(e.score)}`).join('\n')
+  }
+  return undefined
+})
+
 function computeWeights() {
   const d = data.value
   return d === undefined ? [] : d.ranking.map((e) => ({
@@ -170,10 +181,15 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
             </div>
           </div>
         </template>
-        <p class="label">
-          {{ data.rankingType === 'lattice' ? 'Node labels show the ranking level.' : 'Node labels show ranking scores.' }}
-          · {{ data.evaluationDurationInMs }}ms
-        </p>
+        <div class="flex items-center justify-between gap-2">
+          <p class="label">
+            {{ data.rankingType === 'lattice' ? 'Node labels show the ranking level.' : 'Node labels show ranking scores.' }}
+            · {{ data.evaluationDurationInMs }}ms
+          </p>
+          <ButtonCopy v-if="copyText !== undefined" class="btn btn-xs btn-ghost gap-1 ml-auto" :text="copyText">
+            ranking
+          </ButtonCopy>
+        </div>
       </template>
     </template>
   </BaseEvaluationWindow>

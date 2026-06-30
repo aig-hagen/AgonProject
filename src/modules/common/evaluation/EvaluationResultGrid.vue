@@ -19,6 +19,8 @@
 <script setup lang="ts">
 import { computed, nextTick, useTemplateRef, watchEffect } from 'vue'
 
+import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
+
 const selected = defineModel<string | undefined>('selected')
 const props = withDefaults(
   defineProps<{
@@ -36,6 +38,8 @@ const statusLine = computed(() => {
   if (props.evaluationDurationInMs !== undefined) parts.push(props.evaluationDurationInMs + 'ms')
   return parts.join(' · ')
 })
+
+const copyText = computed(() => props.items.map((item) => item.label).join(', '))
 
 const containerRef = useTemplateRef('container')
 const itemRefs = useTemplateRef('item-refs')
@@ -79,7 +83,16 @@ watchEffect(async () => {
       {{ item.label }}
     </button>
   </div>
-  <p v-if="statusLine" class="label">{{ statusLine }}</p>
+  <div v-if="statusLine || props.items.length > 0" class="flex items-center justify-between gap-2">
+    <p v-if="statusLine" class="label">{{ statusLine }}</p>
+    <ButtonCopy
+      v-if="props.items.length > 0"
+      class="btn btn-xs btn-ghost gap-1 ml-auto"
+      :text="copyText"
+    >
+      results
+    </ButtonCopy>
+  </div>
 </template>
 
 <style scoped>

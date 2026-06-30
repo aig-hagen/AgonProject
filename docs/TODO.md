@@ -9,3 +9,9 @@ Very hard to have nodes aligned (might even be impossible right now). Need to co
 
 ### Interact with edge to Make them bend
 That could be useful in combination with the LaTeX export
+
+### Layout Options
+Add the possibility to have have symmetric attacks be collapsed to a single bidirectional arrow
+
+### Copy button for extensions
+Possibly with option in settings to switch between latex and plain text

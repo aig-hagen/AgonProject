@@ -26,20 +26,41 @@ export function computeLabelFontSize(label: string): string {
   return '0.45rem'
 }
 
+function findNodeLabelDiv(
+  graphEl: Element | null | undefined,
+  graphComponentId: string,
+  internalId: number,
+): HTMLElement | null | undefined {
+  const nodeEl = graphEl?.querySelector(`#${CSS.escape(`${graphComponentId}-node-${internalId}`)}`)
+  return nodeEl
+    ?.closest('.graph-controller__node-container')
+    ?.querySelector<HTMLElement>('.graph-controller__node-label, .graph-controller__node-label-placeholder')
+}
+
 export function adjustNodeLabelFontSize(
   graphEl: Element | null | undefined,
   graphComponentId: string,
   internalId: number,
   label: string,
 ): void {
-  if (!graphEl) return
-  const nodeEl = graphEl.querySelector(`#${CSS.escape(`${graphComponentId}-node-${internalId}`)}`)
-  const labelDiv = nodeEl
-    ?.closest('.graph-controller__node-container')
-    ?.querySelector<HTMLElement>('.graph-controller__node-label, .graph-controller__node-label-placeholder')
+  const labelDiv = findNodeLabelDiv(graphEl, graphComponentId, internalId)
   if (labelDiv) {
     labelDiv.style.fontSize = computeLabelFontSize(label)
   }
+}
+
+/**
+ * The graph-component library only enters label-edit mode in response to a real
+ * `click` on the node's label element (there is no public API for it), so we
+ * simulate that click to make a freshly created node's name immediately editable.
+ */
+export function startNodeLabelEdit(
+  graphEl: Element | null | undefined,
+  graphComponentId: string,
+  internalId: number,
+): void {
+  const labelDiv = findNodeLabelDiv(graphEl, graphComponentId, internalId)
+  labelDiv?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
 }
 
 function hasMoreThanOneEntry<T>(array: T[]): array is [T, T, ...T[]] {
