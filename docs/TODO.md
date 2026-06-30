@@ -15,3 +15,6 @@ Add the possibility to have have symmetric attacks be collapsed to a single bidi
 
 ### Copy button for extensions
 Possibly with option in settings to switch between latex and plain text
+
+### Set Attacks in Layout algorithms
+They are currently ignored for that

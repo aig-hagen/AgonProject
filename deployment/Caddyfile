@@ -22,7 +22,7 @@ http://:8080 {
 
 	root * ./dist
 
-	@backend path /dung /bipolar /rankings /adf /serialisation /paf /iaf
+	@backend path /dung /setaf /bipolar /rankings /adf /serialisation /paf /iaf
 	handle @backend {
 		rate_limit {
 			zone tweety {
