@@ -16,7 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { exportLatexArgumentationCommon, latexExportCommonConfig } from '@/modules/common/argumentation/export'
+import {
+  buildIccmaText,
+  exportLatexArgumentationCommon,
+  latexExportCommonConfig,
+} from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import { IdMapping } from '@/modules/common/ids'
 import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
@@ -49,11 +53,45 @@ const exportLatexPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> 
   },
 }
 
+const exportICCMA: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> = {
+  name: 'ICCMA',
+  references: [
+    {
+      label: 'ICCMA 2025 Rules (extended for PAF)',
+      url: 'https://argumentationcompetition.org/2025/rules.html',
+    },
+  ],
+  extension: 'paf',
+  export(document) {
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<number, number>()
+    for (const [id] of document.arguments()) {
+      idMapping.add(id, ++numberOfArguments)
+    }
+
+    function* lines(): IterableIterator<string> {
+      for (const [id, data] of document.arguments()) {
+        if (data.probability < 1) {
+          yield `w ${idMapping.getOrFail(id)} ${data.probability}`
+        }
+      }
+      for (const [sourceId, targetId, probability] of document.attacks()) {
+        const s = idMapping.getOrFail(sourceId)
+        const t = idMapping.getOrFail(targetId)
+        yield probability < 1 ? `w ${s} ${t} ${probability}` : `${s} ${t}`
+      }
+    }
+
+    return { text: buildIccmaText('paf', numberOfArguments, lines()) }
+  },
+}
+
 const exportTGFPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
   references: [
     { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
   ],
+  extension: 'tgf',
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<number, number>()
@@ -80,5 +118,6 @@ const exportTGFPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> = 
 
 export const availableExports: ExportConfig<ProbabilisticArgumentation<PafArgumentData>>[] = [
   exportLatexPaf,
+  exportICCMA,
   exportTGFPaf,
 ]

@@ -18,10 +18,12 @@
  */
 import type { SetAF, SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
+  buildIccmaText,
   exportLatexArgumentationCommon,
   latexExportCommonConfig,
 } from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
+import { IdMapping } from '@/modules/common/ids'
 
 function* emptyIterator(): IterableIterator<[number, number]> {}
 
@@ -38,4 +40,58 @@ const exportLatexSetAF: ExportConfig<SetAF<SetAfArgumentData>> = {
   },
 }
 
-export const availableExports = [exportLatexSetAF]
+const exportICCMA: ExportConfig<SetAF<SetAfArgumentData>> = {
+  name: 'ICCMA',
+  references: [
+    {
+      label: 'ICCMA 2025 Rules (extended for SETAF)',
+      url: 'https://argumentationcompetition.org/2025/rules.html',
+    },
+  ],
+  extension: 'setaf',
+  export(document) {
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<number, number>()
+    for (const [id] of document.arguments()) {
+      idMapping.add(id, ++numberOfArguments)
+    }
+
+    function* lines(): IterableIterator<string> {
+      for (const { attackers, target } of document.attacks()) {
+        const attackerNumbers = attackers.map((id) => idMapping.getOrFail(id)).sort((a, b) => a - b)
+        yield [...attackerNumbers, idMapping.getOrFail(target)].join(' ')
+      }
+    }
+
+    return { text: buildIccmaText('setaf', numberOfArguments, lines()) }
+  },
+}
+
+const exportTGFSetAF: ExportConfig<SetAF<SetAfArgumentData>> = {
+  name: 'Trivial Graph Format (TGF)',
+  references: [
+    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
+  ],
+  extension: 'tgf',
+  export(document) {
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<number, number>()
+    for (const [id] of document.arguments()) {
+      idMapping.add(id, ++numberOfArguments)
+    }
+
+    let text = ''
+    for (const [id] of document.arguments()) {
+      text += `${idMapping.getOrFail(id)}\r\n`
+    }
+    text += '#\r\n'
+    for (const { attackers, target } of document.attacks()) {
+      const attackerNumbers = attackers.map((id) => idMapping.getOrFail(id)).sort((a, b) => a - b)
+      text += `${[...attackerNumbers, idMapping.getOrFail(target)].join(' ')}\r\n`
+    }
+    text = text.trimEnd()
+    return { text }
+  },
+}
+
+export const availableExports = [exportLatexSetAF, exportICCMA, exportTGFSetAF]

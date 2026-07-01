@@ -30,6 +30,7 @@ const exportICCMA: ExportConfig<AbstractArgumentation<ArgumentData>> = {
   references: [
     { label: 'ICCMA 2025 Rules', url: 'https://argumentationcompetition.org/2025/rules.html' },
   ],
+  extension: 'af',
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<ArgumentId, number>()
@@ -56,6 +57,7 @@ const exportTGF: ExportConfig<AbstractArgumentation<ArgumentData>> = {
   references: [
     { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
   ],
+  extension: 'tgf',
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<ArgumentId, number>()

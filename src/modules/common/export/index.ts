@@ -41,6 +41,8 @@ export interface ExportConfig<DocumentT> {
     extensions: Extension[]
   }
   references?: ExportReference[]
+  /** File extension (without dot) to use when saving this export's output. */
+  extension?: string
 }
 
 export interface ExportResult {

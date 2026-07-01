@@ -101,12 +101,7 @@ const saveFiledataText = computed(() => {
   if (exportResult.value === undefined) {
     return
   }
-  let extension = 'tex'
-  if (selectedExportConfig.value?.name === 'ICCMA') {
-    extension = 'af'
-  } else if (selectedExportConfig.value?.name === 'Trivial Graph Format (TGF)') {
-    extension = 'tgf'
-  }
+  const extension = selectedExportConfig.value?.extension ?? 'tex'
   return {
     content: exportResult.value.text,
     ending: extension,

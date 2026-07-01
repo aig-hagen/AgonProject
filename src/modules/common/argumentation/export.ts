@@ -29,6 +29,7 @@ export function latexExportCommonConfig(): {
     extensions: Extension[]
   }
   references: { label: string; url: string }[]
+  extension: string
 } {
   return {
     name: 'LaTeX (argumentation)',
@@ -44,7 +45,28 @@ export function latexExportCommonConfig(): {
     references: [
       { label: 'CTAN Package', url: 'https://ctan.org/pkg/argumentation' },
     ],
+    extension: 'tex',
   }
+}
+
+/**
+ * Builds ICCMA-style plain-text export output: a `p <type> <n>` problem line
+ * followed by one line per relation/annotation. Only the AF format (`p af n`
+ * with bare `<source> <target>` attack lines) is an official ICCMA format;
+ * other types here are extensions of that style, using a leading qualifier
+ * letter on a line only where it's needed to disambiguate from other line
+ * kinds (mirroring how ICCMA's own ABA format uses `a`/`c`/`r`).
+ */
+export function buildIccmaText(
+  type: string,
+  numberOfArguments: number,
+  lines: Iterable<string>,
+): string {
+  let text = `p ${type} ${numberOfArguments}\r\n`
+  for (const line of lines) {
+    text += `${line}\r\n`
+  }
+  return text.trimEnd()
 }
 
 interface NodeExportInfo {

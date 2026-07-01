@@ -18,6 +18,7 @@
  */
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import {
+  buildIccmaText,
   exportLatexArgumentationCommon,
   latexExportCommonConfig,
 } from '@/modules/common/argumentation/export'
@@ -35,11 +36,41 @@ const exportLatexBipolarArgumentation: ExportConfig<BipoloarArgumentation<Argume
   },
 }
 
+const exportICCMA: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
+  name: 'ICCMA',
+  references: [
+    {
+      label: 'ICCMA 2025 Rules (extended for BAF)',
+      url: 'https://argumentationcompetition.org/2025/rules.html',
+    },
+  ],
+  extension: 'baf',
+  export(document) {
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<ArgumentId, number>()
+    for (const [id] of document.arguments()) {
+      idMapping.add(id, ++numberOfArguments)
+    }
+
+    function* lines(): IterableIterator<string> {
+      for (const [sourceId, targetId] of document.attacks()) {
+        yield `${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)}`
+      }
+      for (const [sourceId, targetId] of document.supports()) {
+        yield `s ${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)}`
+      }
+    }
+
+    return { text: buildIccmaText('baf', numberOfArguments, lines()) }
+  },
+}
+
 const exportTGFBipolarArgumentation: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
   references: [
     { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
   ],
+  extension: 'tgf',
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<ArgumentId, number>()
@@ -63,4 +94,8 @@ const exportTGFBipolarArgumentation: ExportConfig<BipoloarArgumentation<Argument
   },
 }
 
-export const availableExports = [exportLatexBipolarArgumentation, exportTGFBipolarArgumentation]
+export const availableExports = [
+  exportLatexBipolarArgumentation,
+  exportICCMA,
+  exportTGFBipolarArgumentation,
+]

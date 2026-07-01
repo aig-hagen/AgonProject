@@ -16,7 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { exportLatexArgumentationCommon, latexExportCommonConfig } from '@/modules/common/argumentation/export'
+import {
+  buildIccmaText,
+  exportLatexArgumentationCommon,
+  latexExportCommonConfig,
+} from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import { IdMapping } from '@/modules/common/ids'
 import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
@@ -44,11 +48,44 @@ const exportLatexIncompleteArgumentation: ExportConfig<IncompleteArgumentation<I
   },
 }
 
+const exportICCMA: ExportConfig<IncompleteArgumentation<IafArgumentData>> = {
+  name: 'ICCMA',
+  references: [
+    {
+      label: 'ICCMA 2025 Rules (extended for IAF)',
+      url: 'https://argumentationcompetition.org/2025/rules.html',
+    },
+  ],
+  extension: 'iaf',
+  export(document) {
+    let numberOfArguments = 0
+    const idMapping = new IdMapping<number, number>()
+    for (const [id] of document.arguments()) {
+      idMapping.add(id, ++numberOfArguments)
+    }
+
+    function* lines(): IterableIterator<string> {
+      for (const [id] of document.uncertainArguments()) {
+        yield `u ${idMapping.getOrFail(id)}`
+      }
+      for (const [sourceId, targetId] of document.definiteAttacks()) {
+        yield `${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)}`
+      }
+      for (const [sourceId, targetId] of document.uncertainAttacks()) {
+        yield `u ${idMapping.getOrFail(sourceId)} ${idMapping.getOrFail(targetId)}`
+      }
+    }
+
+    return { text: buildIccmaText('iaf', numberOfArguments, lines()) }
+  },
+}
+
 const exportTGFIncompleteArgumentation: ExportConfig<IncompleteArgumentation<IafArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
   references: [
     { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
   ],
+  extension: 'tgf',
   export(document) {
     let numberOfArguments = 0
     const idMapping = new IdMapping<number, number>()
@@ -78,5 +115,6 @@ const exportTGFIncompleteArgumentation: ExportConfig<IncompleteArgumentation<Iaf
 
 export const availableExports: ExportConfig<IncompleteArgumentation<IafArgumentData>>[] = [
   exportLatexIncompleteArgumentation,
+  exportICCMA,
   exportTGFIncompleteArgumentation,
 ]

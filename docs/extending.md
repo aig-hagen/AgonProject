@@ -28,7 +28,7 @@ You can modify the examples provided for each argumentation by changing the list
 
 The available exports and how they are exposed to the user, are managed by the `ModuleConfig.editorComponent`. Currently they are registered when creating the [`<WindowExport/>`](/src/modules/common/export/WindowExport.vue) by passing [`ExportConfig`s](/src/modules/common/export/index.ts).
 
-When adding new exports, you can follow the [exports provided for abstract argumentation](/src/modules/abstract-argumentation/export.ts).
+When adding new exports, you can follow the [exports provided for abstract argumentation](/src/modules/abstract-argumentation/export.ts). If you're adding or extending an ICCMA-style plain-text export, see [the ICCMA format spec](./iccma-format.md) for the conventions those exports follow.
 
 #### Text
 
