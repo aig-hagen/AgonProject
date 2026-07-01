@@ -2,7 +2,7 @@
 
 The platform to explore different approaches to formal argumentation.
 
-[![Website](https://img.shields.io/badge/Live%20Demo-argumentation--toolbox.aig.fernuni--hagen.de-blue)](https://agonproject.aig.fernuni-hagen.de/)
+[![Website](https://img.shields.io/badge/Website-agonproject.aig.fernuni--hagen.de-blue)](https://agonproject.aig.fernuni-hagen.de/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
 ![Screenshot of the AgonProject landing page](docs/images/screenshot.png)
@@ -18,7 +18,7 @@ The platform to explore different approaches to formal argumentation.
 
 ## Features
 
-- **Interactive graph editor** — create and connect arguments visually, with undo/redo and auto-layouting
+- **Interactive graph editor** — create and connect arguments visually, with undo/redo, auto-layouting and grid-aligned placement
 - **Semantical evaluation** — compute extensions/interpretations under a wide range of semantics, with results highlighted directly on the graph
 - **Argument-ranking semantics** — compute argument-ranking semantics for abstract argumentation
 - **Serialisation sequences** — step through how admissible sets are built up incrementally via Serialisability
