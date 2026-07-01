@@ -22,7 +22,7 @@ import { EvaluationTimeoutError, RateLimitError, ServiceUnavailableError } from 
 
 const sourceTree = import.meta.env.VITE_APP_SOURCE_TREE
 
-export const USER_ID = `argumentation-toolbox.aig.fernuni-hagen.de/${sourceTree}`
+export const USER_ID = `agonproject.aig.fernuni-hagen.de/${sourceTree}`
 
 export const TWEETY_TIMEOUT_IN_MS = 30000
 export const TWEETY_TIMEOUT_UNIT_MS = 'ms' as const

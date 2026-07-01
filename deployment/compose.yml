@@ -1,11 +1,11 @@
 services:
-  argumentation-toolbox:
+  agonproject:
     image: ghcr.io/aig-hagen/AgonProject:latest
     ports:
       - '8082:8080'
     environment:
-      FRONTEND_URL: https://argumentation-toolbox.aig.fernuni-hagen.de
-      ALLOWED_ORIGIN: https://argumentation-toolbox.aig.fernuni-hagen.de
+      FRONTEND_URL: https://agonproject.aig.fernuni-hagen.de
+      ALLOWED_ORIGIN: https://agonproject.aig.fernuni-hagen.de
     volumes:
       - shares_data:/opt/share-server/data
     restart: unless-stopped

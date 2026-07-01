@@ -2,7 +2,7 @@
 
 The platform to explore different approaches to formal argumentation.
 
-[![Website](https://img.shields.io/badge/Live%20Demo-argumentation--toolbox.aig.fernuni--hagen.de-blue)](https://argumentation-toolbox.aig.fernuni-hagen.de/)
+[![Website](https://img.shields.io/badge/Live%20Demo-argumentation--toolbox.aig.fernuni--hagen.de-blue)](https://agonproject.aig.fernuni-hagen.de/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
 ![Screenshot of the AgonProject landing page](docs/images/screenshot.png)
@@ -31,7 +31,7 @@ The platform to explore different approaches to formal argumentation.
 
 ### Public Deployment
 
-Try it out at https://argumentation-toolbox.aig.fernuni-hagen.de/
+Try it out at https://agonproject.aig.fernuni-hagen.de/
 
 ### OCI Image
 
