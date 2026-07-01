@@ -1057,7 +1057,12 @@ function doLayout(layout: Layout) {
   const nodes = [...state.nodes]
     .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
     .map((node) => node.id)
-  const links: [number, number][] = state.links.map((link) => [link.sourceId, link.targetId])
+  const links: [number, number][] = [
+    ...state.links.map((link) => [link.sourceId, link.targetId] as [number, number]),
+    ...(state.hyperLinks ?? []).flatMap((hl) =>
+      hl.sourceIds.map((sourceId) => [sourceId, hl.targetId] as [number, number]),
+    ),
+  ]
   const positions = getNodePositions(nodes, links, layout)
   const newPositions = []
   for (const nodeId of nodes) {

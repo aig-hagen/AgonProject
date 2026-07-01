@@ -54,8 +54,8 @@ export const TERMINATION_FUNCTIONS: SerialisationFunction[] = [
   { key: 'ST', displayName: 'Stable', tooltipId: 'termFnST' },
 ]
 
-export const KEY_DEFAULT_SELECTION_FUNCTION = 'UC'
-export const KEY_DEFAULT_TERMINATION_FUNCTION = 'UC'
+export const KEY_DEFAULT_SELECTION_FUNCTION = 'ADM'
+export const KEY_DEFAULT_TERMINATION_FUNCTION = 'PR'
 
 export type SequenceStep = { id: ArgumentId; name: string }[]
 export type Sequence = SequenceStep[]

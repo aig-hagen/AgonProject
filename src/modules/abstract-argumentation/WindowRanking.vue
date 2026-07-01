@@ -173,11 +173,11 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
             <div
               v-for="entry in numericalDisplayData"
               :key="entry.id"
-              class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm"
+              class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm min-w-0"
               :style="{ backgroundColor: entry.bgColor, borderColor: entry.borderColor }"
             >
-              <span class="font-medium">{{ entry.name }}</span>
-              <span class="font-mono text-xs tabular-nums opacity-60">{{ formatScore(entry.score) }}</span>
+              <span class="font-medium truncate" :title="entry.name">{{ entry.name }}</span>
+              <span class="font-mono text-xs tabular-nums opacity-60 shrink-0">{{ formatScore(entry.score) }}</span>
             </div>
           </div>
         </template>
