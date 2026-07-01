@@ -49,7 +49,7 @@ export const bipolarArgumentationGlossary: TooltipRegistry = {
   coalitionGraph: {
     label: 'coalition graph',
     title: 'Coalition Graph',
-    content: ['The coalition graph $F_B^{\\mathsf{Coal}}$ for some ', { ref: 'BAF' }, ' B is defined as the ', { ref: 'AF'}, ' $F^{\\mathsf{Coal}}_B = (\\mathsf{Coal}(B), R\')$, where $\\mathsf{Coal}(B)$ is the ', { ref: 'coalitions', label: 'set of coalitions'},' of $B$ and we have $(S_1, S_2) \\in R\'$ iff there are $a \\in S_1$ and $b\\in S_2$ with $(a,b)\\in R$, for all $S_1,S_2 \\in \\mathsf{Coal}(B)$.'],
+    content: ['The coalition graph $F_B^{\\mathsf{Coal}}$ for some ', { ref: 'BAF' }, ' B is defined as the ', { ref: 'AF'}, ' $F^{\\mathsf{Coal}}_B = (\\mathsf{Coal}(B), R\')$, where $\\mathsf{Coal}(B)$ is the ', { ref: 'coalition', label: 'set of coalitions'},' of $B$ and we have $(S_1, S_2) \\in R\'$ iff there are $a \\in S_1$ and $b\\in S_2$ with $(a,b)\\in R$, for all $S_1,S_2 \\in \\mathsf{Coal}(B)$.'],
     reference: CL10,
   },
 

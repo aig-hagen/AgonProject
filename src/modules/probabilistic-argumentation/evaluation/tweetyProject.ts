@@ -67,6 +67,7 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
       { key: 'STG',  displayName: 'Stage' },
       { key: 'STG2', displayName: 'Stage2' },
       { key: 'CF2',  displayName: 'CF2' },
+      { key: 'SCF2', displayName: 'SCF2' },
       { key: 'UD',   displayName: 'Undisputed' },
       { key: 'SUD',  displayName: 'Strongly Undisputed' },
     ],

@@ -26,7 +26,11 @@ export const afBasicsTutorial: Tutorial = {
     {
       id: 'welcome',
       title: 'Welcome to Abstract Argumentation!',
-      body: 'This short tutorial will guide you through the basic features. You can skip it at any time and restart it from the <strong>Tutorials</strong> entry in the menu.',
+      body: [
+        'An ',
+        { text: 'argumentation framework (AF)', tooltipId: 'AF' },
+        ' consists of <strong>arguments</strong> and <strong>attacks</strong> between them. This short tutorial will guide you through the basic features. You can skip it at any time and restart it from the <strong>Tutorials</strong> entry in the menu.',
+      ],
       advanceOn: 'button',
     },
     {
@@ -67,18 +71,12 @@ export const afBasicsTutorial: Tutorial = {
         isTouchDevice
           ? 'Made a mistake? Use the <strong>Undo</strong> and <strong>Redo</strong> buttons in the menu to step backward or forward through your changes.'
           : 'Made a mistake? Press <kbd class="kbd kbd-sm">Ctrl Z</kbd> to undo and <kbd class="kbd kbd-sm">Ctrl Shift Z</kbd> to redo. You can also use the buttons in the menu.',
-      anchor: 'mainMenuBottom',
-      placement: 'bottom-start',
-      offsetPx: 48,
       advanceOn: 'button',
     },
     {
       id: 'layout',
       title: 'Auto-layout',
       body: 'The <strong>Layout</strong> option in the menu lets you automatically arrange your framework using various graph layout algorithms — useful when arguments overlap or the structure is hard to read.',
-      anchor: 'mainMenuBottom',
-      placement: 'bottom-start',
-      offsetPx: 48,
       advanceOn: 'button',
     },
     {

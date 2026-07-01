@@ -115,6 +115,12 @@ export const T23: Publication = {
   href: 'https://doi.org/10.1609/aaai.v37i5.25805',
 }
 
+export const CT19: Publication = {
+  shortLabel: 'Cramer & van der Torre (2019)',
+  label: 'Cramer, M. & van der Torre, L. (2019). SCF2 - an Argumentation Semantics for Rational Human Judgments on Argument Acceptability. In: Proceedings of the 8th Workshop on Dynamics of Knowledge and Belief (DKB-2019) and the 7th Workshop KI & Kognition (KIK-2019), CEUR Workshop Proceedings, Vol. 2445, pp. 24–35.',
+  href: 'https://ceur-ws.org/Vol-2445/paper_3.pdf',
+}
+
 // ── Ranking Semantics ──────────────────────────────────────────────────
 
 export const BDKM16: Publication = {

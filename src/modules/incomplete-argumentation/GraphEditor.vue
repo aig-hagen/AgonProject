@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, provide, ref, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
@@ -217,6 +217,12 @@ const tutorialContextExtra = computed(() => ({
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
 }))
+
+const argumentModeButtonRef = useTemplateRef<HTMLElement>('argumentModeButton')
+
+const tutorialRefs = computed(() => ({
+  argumentModeButton: argumentModeButtonRef.value ?? null,
+}))
 </script>
 
 <template>
@@ -237,6 +243,7 @@ const tutorialContextExtra = computed(() => ({
     :tutorials="iafTutorials"
     default-tutorial-id="iaf-basics"
     :tutorial-context-extra="tutorialContextExtra"
+    :tutorial-refs="tutorialRefs"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
@@ -244,7 +251,7 @@ const tutorialContextExtra = computed(() => ({
     @open-extension-window="addExtensionInstance()"
   >
     <template #toolbar>
-      <div class="join join-vertical mb-2" title="Argument type">
+      <div ref="argumentModeButton" class="join join-vertical mb-2" title="Argument type">
         <button
           class="join-item btn btn-square btn-sm"
           :class="{ 'btn-active': isDefiniteArgumentMode }"

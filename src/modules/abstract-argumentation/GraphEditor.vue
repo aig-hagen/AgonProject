@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, watch } from 'vue'
 
 import {
   createDefaultExtensionWindowInstance,
@@ -33,6 +33,7 @@ import {
   type SerialisationWindowInstanceState,
 } from '@/modules/abstract-argumentation/evaluation/serialisationWindowState'
 import { availableExports } from '@/modules/abstract-argumentation/export'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { afBasicsTutorial } from '@/modules/abstract-argumentation/tutorials/af-basics'
 import { afEvaluationTutorial } from '@/modules/abstract-argumentation/tutorials/af-evaluation'
@@ -53,6 +54,7 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 
 const { state, historyState, documentId } = defineProps<{
@@ -249,6 +251,8 @@ function updateSerialisationInstance(updated: SerialisationWindowInstanceState) 
     i.id === updated.id ? updated : i,
   )
 }
+
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
 const afTutorials = [afBasicsTutorial, afEvaluationTutorial, ...commonTutorials]
 

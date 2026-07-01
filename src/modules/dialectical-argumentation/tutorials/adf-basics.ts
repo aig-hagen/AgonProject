@@ -65,7 +65,11 @@ export const adfBasicsTutorial: Tutorial = {
     {
       id: 'links',
       title: 'Links from conditions',
-      body: 'Links between arguments are drawn <strong>automatically</strong> — whenever a condition references another argument, a link appears from that argument. You never draw links manually in an ADF.',
+      body: [
+        'Links between arguments are drawn <strong>automatically</strong> — whenever a condition references another argument, a link appears from that argument, making it a ',
+        { text: 'parent', tooltipId: 'parents' },
+        ' of the argument being edited. You never draw links manually in an ADF.',
+      ],
       advanceOn: 'button',
     },
     {

@@ -39,7 +39,7 @@ export const iafBasicsTutorial: Tutorial = {
         isTouchDevice
           ? 'Make sure the <strong>solid circle</strong> button is active in the toolbar, then <strong>double-tap</strong> on the canvas to create a certain argument.'
           : 'Make sure the <strong>solid circle</strong> button is active in the toolbar, then <strong>double-click</strong> on the canvas to create a certain argument.',
-      anchor: 'linkSwitchButton',
+      anchor: 'argumentModeButton',
       placement: 'right-start',
       offsetPx: 64,
       advanceOn: 'action',
@@ -52,7 +52,7 @@ export const iafBasicsTutorial: Tutorial = {
         isTouchDevice
           ? 'Click the <strong>dashed circle</strong> button in the toolbar to switch to uncertain argument mode, then <strong>double-tap</strong> on the canvas to create an uncertain argument. It will appear with a dashed border.'
           : 'Click the <strong>dashed circle</strong> button in the toolbar to switch to uncertain argument mode, then <strong>double-click</strong> on the canvas. It will appear with a dashed border.',
-      anchor: 'linkSwitchButton',
+      anchor: 'argumentModeButton',
       placement: 'right-start',
       offsetPx: 64,
       advanceOn: 'action',

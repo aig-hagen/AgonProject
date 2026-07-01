@@ -4,6 +4,11 @@
 ### The LaTeX export coordinate computation needs work
 Very hard to have nodes aligned (might even be impossible right now). Need to completely rework this.
 
+### Missing glossary entries (content: ['TODO'])
+The following glossary entries have placeholder content and need to be written:
+- `abstract-argumentation/glossary.ts`: `CO` (Counting Ranking), `IGD` (Iterated Graded Defense Ranking), `strategyGame` (Two-person zero-sum Strategic Game)
+- `bipolar-argumentation/glossary.ts`: `b-cf` (Conflict-Free BAF), `b-coh` (Coherent), `b-ad` (Coherent Admissible)
+
 
 ## Potential Features
 

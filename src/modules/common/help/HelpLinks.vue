@@ -22,7 +22,7 @@ import { ArrowUpRightIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
 import GithubMarkIcon from '@/modules/common/help/GithubMarkIcon.vue'
 
 const sourceTree = import.meta.env.VITE_APP_SOURCE_TREE
-const sourceLink = `https://github.com/aig-hagen/argumentation-toolbox/tree/${sourceTree}`
+const sourceLink = `https://github.com/aig-hagen/AgonProject/tree/${sourceTree}`
 </script>
 <template>
   <div class="my-4 gap-2 flex flex-wrap">

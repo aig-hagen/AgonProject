@@ -27,6 +27,7 @@ import {
   C07,
   C14,
   CL05b,
+  CT19,
   D95,
   DD17,
   DG16,
@@ -90,7 +91,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   selFn: {
     label: 'selection function',
     title: 'Selection Function $\\alpha$',
-    content: ['TODO'],
+    content: ['A selection function $\\alpha$ is any function $\\alpha : 2^{2^A} \\times 2^{2^A} \\times 2^{2^A} \\mapsto 2^{2^A}$, such that $\\alpha(X,Y,Z)\\subseteq X\\cup Y\\cup Z$ for all $X,Y,Z\\subseteq 2^{2^A}$.'],
     reference: T22,
   },
   selFnADM: {
@@ -116,7 +117,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   termFn: {
     label: 'termination function',
     title: 'Termination Function $\\beta$',
-    content: ['TODO'],
+    content: ['A termination function $\\beta$ is any function $\\beta : \\mathbb{F}\\times 2^{\\mathbb{A}}\\mapsto \\{0,1\\}$.'],
     reference: T22,
   },
   termFnADM: {
@@ -322,6 +323,18 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     title: 'CF2 Semantics',
     content: ['The CF2-extensions are defined via the ', { ref: 'sccRecursive' }, ' with the ', { ref: 'NA' }, ' semantics as the base function.'],
     reference: BGG05,
+  },
+  SCF2: {
+    label: 'SCF2',
+    title: 'SCF2 Semantics',
+    content: ['The SCF2-extensions are defined via the ', { ref: 'sccRecursive' }, ' with the ', { ref: 'NA' }, ' semantics under the ', { ref: 'SCOOC', label: 'SCOOC-principle' }, ' as the base function.'],
+    reference: CT19,
+  },
+  SCOOC: {
+    label: 'SCOOC',
+    title: 'Strong Completeness Outside Odd Cycles (SCOOC) Principle',
+    content: ['A semantics $\\sigma$ satisfies the SCOOC-principle iff for any extension $E$ and every argument $a \\in A$ it holds that if neither $a$ nor any $b \\in$ ',{ ref: 'attackersSet', label: ' $a^-$' },' are in an odd cycle and $a \\notin $', { ref: 'attackedSet', label: ' $E^+$' }, ', then $a \\in E$.'],
+    reference: CT19,
   },
   UD: {
     label: 'undisputed',
