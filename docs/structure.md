@@ -9,7 +9,7 @@ This is an overview of how the repository is laid out. For how to set up a dev e
 - [`third-party/TweetyProjectTeam/TweetyProject`](/third-party/TweetyProjectTeam/TweetyProject) — Git submodule providing the semantics-evaluation backend
 - [`deployment/`](/deployment/) — Docker Compose, Caddyfile, and deploy scripts for running the app as one container
 - [`Dockerfile`](/Dockerfile) — builds the combined production image (frontend + TweetyProject + graph-gen + share server, fronted by Caddy)
-- [`docs/`](/docs/) — this documentation, plus a Bruno request collection under [`requests/`](./requests/) and the [ICCMA export format spec](./iccma-format.md)
+- [`docs/`](/docs/) — this documentation, plus a Bruno request collection under [`requests/`](./requests/), the [ICCMA export format spec](./iccma-format.md), and the [native save file format spec](./save-format.md)
 - [`scripts/`](/scripts/) — dev tooling (`dev.sh` to run everything locally, license header checks, attribution generation)
 - [`e2e/`](/e2e/) — Playwright end-to-end tests
 

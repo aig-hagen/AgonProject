@@ -22,7 +22,57 @@ If you want to add a new module, create a [`ModuleConfig`](/src/app/home/moduleC
 
 ### Modify examples
 
-You can modify the examples provided for each argumentation by changing the list of `ModuleConfig.examples` of the associated module config.
+You can modify the examples provided for each argumentation by changing the list of `ModuleConfig.examples` of the associated module config. Bundled example files are plain instances of the [native save file format](./save-format.md), with the optional `name`/`description`/`layoutType` fields set.
+
+### Add a tutorial
+
+Tutorials aren't part of `ModuleConfig` — they're wired up directly inside each module's `GraphEditor.vue`. By convention, each module has two: `src/modules/<module>/tutorials/<name>-basics.ts` and `<name>-evaluation.ts`, following [`af-basics.ts`](/src/modules/abstract-argumentation/tutorials/af-basics.ts) / [`af-evaluation.ts`](/src/modules/abstract-argumentation/tutorials/af-evaluation.ts).
+
+A tutorial is a [`Tutorial`](/src/modules/common/tutorial/types.ts) object: `id`, `name`, `description`, and a `steps` array. Each `TutorialStep` has:
+
+- `body` — an HTML string, an array of parts (plain strings, or `{ text, tooltipId }` to render an inline glossary tooltip — see below), or a function of `isTouchDevice` for touch-specific wording.
+- `anchor` (optional) — a key into the refs map passed to `TutorialOverlay`; omit for a fixed top-right step.
+- `advanceOn: 'button' | 'action'` — whether the user clicks "Next" or the step auto-advances.
+- `advanceCondition?: (ctx, baseline) => boolean` — for `'action'` steps, compared against [`TutorialContext`](/src/modules/common/tutorial/types.ts) counters like `nodeCount`, `linkCount`, `canUndo`, `evaluationCount`, `highlightCount`. Modules with extra concepts add their own counters (e.g. `uncertainNodeCount` for IAF, `hyperLinkCount` for SetAF, `conditionEditCount`/`conditionEditorOpenCount` for ADF, `probabilityEditCount` for PAF) via the `tutorialContextExtra` prop on the shared `<GraphEditor>`.
+
+To register your tutorials, import them in your module's `GraphEditor.vue` and pass them to the shared `<GraphEditor>`:
+
+```ts
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
+
+const xTutorials = [xBasicsTutorial, xEvaluationTutorial, ...commonTutorials]
+```
+
+```vue
+<GraphEditor :tutorials="xTutorials" default-tutorial-id="x-basics" :tutorial-context-extra="tutorialContextExtra" />
+```
+
+`commonTutorials` (navigation, advanced editing, export) is generic and gets appended to every module's list automatically — you don't need to write those yourself. Tutorial progress is persisted in `localStorage` by [`useTutorial.ts`](/src/modules/common/tutorial/useTutorial.ts); the picker is [`WindowTutorials.vue`](/src/modules/common/tutorial/WindowTutorials.vue), opened from the hamburger menu.
+
+If your evaluation tutorial needs to auto-advance when the user runs an evaluation or sees a highlighted result, your module's `WindowExtensions.vue` needs an `evaluate: []` emit forwarded from `<BaseEvaluationWindow @evaluate="emit('evaluate')">` — see [`abstract-argumentation/WindowExtensions.vue`](/src/modules/abstract-argumentation/WindowExtensions.vue). Then in `GraphEditor.vue`, bump `evaluationCount`/`highlightCount` refs on those events and expose them through `tutorialContextExtra`, matching the AF module.
+
+### Add glossary entries
+
+Each module exports a `TooltipRegistry` from `src/modules/<module>/glossary.ts` — a `Record<string, TooltipDefinition>` (see [`tooltipRegistry.ts`](/src/modules/common/tooltip/tooltipRegistry.ts)). Each entry has a `label` (used when referenced inline from elsewhere), an optional `title`, `content` (an array of plain strings — which may contain `$...$` LaTeX rendered via KaTeX — or `{ ref: 'otherEntryId' }` to nest another entry's tooltip inline), and an optional `reference: Publication` pointing at a citation from [`publications.ts`](/src/modules/common/tooltip/publications.ts).
+
+```ts
+export const xGlossary: TooltipRegistry = {
+  AF: {
+    label: 'AF',
+    title: 'Argumentation Framework (AF)',
+    content: ['An argumentation framework $F = (A, R)$ ...'],
+    reference: D95,
+  },
+}
+```
+
+Wiring is a single line in your module's `GraphEditor.vue`:
+
+```ts
+provide(TOOLTIP_REGISTRY_KEY, xGlossary)
+```
+
+Everything else — hover tooltips in the editor, `{ text, tooltipId }` parts in tutorial step bodies, and `ResultsHeaderPart`s in evaluation result windows — injects `TOOLTIP_REGISTRY_KEY` to resolve a `tooltipId` against whichever registry the current module provided.
 
 ### Modify exports
 
