@@ -284,7 +284,7 @@ let idMapping = new IdMapping<number, number>()
 const stateRef = toRef(() => state)
 
 const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics } = usePhysics({
-  graphComponentRef: graphComponentRef as any,
+  graphComponentRef,
   getIdMapping: () => idMapping,
   containerRef,
 })
@@ -313,7 +313,7 @@ watch(snapMode, (enabled) => {
   applyGridVisibility(showGrid.value)
 })
 const { extensionHighlightRef, serialisationHighlightRef } = useHighlight({
-  graphComponentRef: graphComponentRef as any,
+  graphComponentRef,
   getIdMapping: () => idMapping,
   stateRef,
   effectiveStyle,

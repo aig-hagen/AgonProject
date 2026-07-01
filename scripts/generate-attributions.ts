@@ -310,7 +310,7 @@ async function mapPackageToAttribution(pkg: { name: string; version?: string }):
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getPublisher(responseObject: any) {
   if (responseObject.copyright.length !== 0) {
-    return responseObject.copyright.map((copyright: any) => `${copyright.year} ${copyright.owner}`).join('; ')
+    return responseObject.copyright.map((copyright: { year: string; owner: string }) => `${copyright.year} ${copyright.owner}`).join('; ')
   }
   if (responseObject.authors.length !== 0) {
     const authors = []

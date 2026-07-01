@@ -34,7 +34,7 @@ const content = useTemplateRef('content')
 const header = useTemplateRef('header')
 const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
-const compact = defineModel('compact', { default: false })
+const compact = defineModel<boolean>('compact', { default: false })
 const emit = defineEmits<{ focus: [] }>()
 const { title, initialPosition, intitalSize, compactable = false, minimizable = true, instanceOffset = 0, storageKey } = defineProps<{
   title: string
