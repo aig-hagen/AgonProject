@@ -17,7 +17,8 @@ Returns:
     "attacks":              [[int, int], ...],     # definite attacks (or all attacks for abstract)
     "supports":             [[int, int], ...],     # bipolar only
     "uncertain_arguments":  [int, ...],            # incomplete only
-    "uncertain_attacks":    [[int, int], ...]      # incomplete only
+    "uncertain_attacks":    [[int, int], ...],     # incomplete only
+    "collective_attacks":   [{"attackers": [int, ...], "target": int}, ...]  # setaf only
   }
 
 Type-specific params (passed in the flat "params" dict):
@@ -26,6 +27,14 @@ Type-specific params (passed in the flat "params" dict):
   incomplete:
     uncertainArgPerc     float [0, 1]  fraction of arguments marked uncertain (default 0.2)
     uncertainAttackPerc  float [0, 1]  fraction of attacks marked uncertain    (default 0.2)
+  setaf:
+    groupingProb    float [0, 1]  probability each additional attacker of a target joins the
+                                  current set instead of forming its own attack (default 0.3)
+
+  All framework types additionally accept (applied after the algorithm runs,
+  regardless of which algorithm was used):
+    selfLoopProb    float [0, 1]   probability that any given argument gets a self-attack
+                                   (default 0.0, i.e. no self-attacks)
 
 Binary convention:
   Each algorithm is backed by a binary or script that receives its parameters as a
@@ -100,11 +109,30 @@ class FrameworkTypeConfig:
 # ---------------------------------------------------------------------------
 
 
+def _orient_edges(g: nx.Graph, rng: random.Random, allow_symmetric_attacks: bool) -> list[list[int]]:
+    """Assign a direction to each undirected edge, 1-indexing the endpoints.
+
+    By default each edge becomes exactly one attack, chosen at random. When
+    `allow_symmetric_attacks` is set, each direction is drawn independently,
+    so both a -> b and b -> a may end up in the result.
+    """
+    attacks = []
+    for u, v in g.edges():
+        forward = rng.random() < 0.5
+        backward = rng.random() < 0.5 if allow_symmetric_attacks else not forward
+        if not forward and not backward:
+            forward = True
+        if forward:
+            attacks.append([u + 1, v + 1])
+        if backward:
+            attacks.append([v + 1, u + 1])
+    return attacks
+
+
 def _erdos_renyi(params: dict[str, Any]) -> dict[str, Any]:
     n: int = params["n"]
     p: float = params["p"]
     seed: int | None = params.get("seed", None)
-    allow_self_loops: bool = params.get("allowSelfLoops", False)
 
     if n < 0:
         raise ValueError("n must be non-negative")
@@ -113,15 +141,13 @@ def _erdos_renyi(params: dict[str, Any]) -> dict[str, Any]:
 
     g = nx.gnp_random_graph(n, p, seed=seed, directed=True)
     attacks = [[u + 1, v + 1] for u, v in g.edges()]
-    if allow_self_loops:
-        rng = random.Random(seed)
-        attacks += [[i + 1, i + 1] for i in range(n) if rng.random() < p]
     return {"nr_of_arguments": n, "attacks": attacks}
 
 
 def _barabasi_albert(params: dict[str, Any]) -> dict[str, Any]:
     n: int = params["n"]
     m: int = params["m"]
+    allow_symmetric_attacks: bool = params.get("allowSymmetricAttacks", True)
     seed: int | None = params.get("seed", None)
 
     if n < 1:
@@ -131,12 +157,7 @@ def _barabasi_albert(params: dict[str, Any]) -> dict[str, Any]:
 
     g = nx.barabasi_albert_graph(n, m, seed=seed)
     rng = random.Random(seed)
-    attacks = []
-    for u, v in g.edges():
-        if rng.random() < 0.5:
-            attacks.append([u + 1, v + 1])
-        else:
-            attacks.append([v + 1, u + 1])
+    attacks = _orient_edges(g, rng, allow_symmetric_attacks)
     return {"nr_of_arguments": n, "attacks": attacks}
 
 
@@ -145,7 +166,6 @@ def _scale_free(params: dict[str, Any]) -> dict[str, Any]:
     alpha: float = params.get("alpha", 0.41)
     beta: float = params.get("beta", 0.54)
     gamma: float = params.get("gamma", 0.05)
-    allow_self_loops: bool = params.get("allowSelfLoops", False)
     seed: int | None = params.get("seed", None)
 
     if n < 1:
@@ -157,7 +177,7 @@ def _scale_free(params: dict[str, Any]) -> dict[str, Any]:
     seen: set[tuple[int, int]] = set()
     attacks = []
     for u, v in g.edges():
-        if u == v and not allow_self_loops:
+        if u == v:
             continue
         if (u, v) not in seen:
             seen.add((u, v))
@@ -169,7 +189,6 @@ def _random_k_out(params: dict[str, Any]) -> dict[str, Any]:
     n: int = params["n"]
     k: int = params["k"]
     alpha: float = params["alpha"]
-    allow_self_loops: bool = params.get("allowSelfLoops", False)
     seed: int | None = params.get("seed", None)
 
     if n < 1:
@@ -179,7 +198,7 @@ def _random_k_out(params: dict[str, Any]) -> dict[str, Any]:
     if alpha <= 0:
         raise ValueError("alpha must be positive")
 
-    g = nx.random_k_out_graph(n, k, alpha, self_loops=allow_self_loops, seed=seed)
+    g = nx.random_k_out_graph(n, k, alpha, self_loops=False, seed=seed)
     seen: set[tuple[int, int]] = set()
     attacks = []
     for u, v in g.edges():
@@ -193,6 +212,7 @@ def _watts_strogatz(params: dict[str, Any]) -> dict[str, Any]:
     n: int = params["n"]
     k: int = params["k"]
     p: float = params["p"]
+    allow_symmetric_attacks: bool = params.get("allowSymmetricAttacks", True)
     seed: int | None = params.get("seed", None)
 
     if n < k:
@@ -202,18 +222,14 @@ def _watts_strogatz(params: dict[str, Any]) -> dict[str, Any]:
 
     g = nx.watts_strogatz_graph(n, k, p, seed=seed)
     rng = random.Random(seed)
-    attacks = []
-    for u, v in g.edges():
-        if rng.random() < 0.5:
-            attacks.append([u + 1, v + 1])
-        else:
-            attacks.append([v + 1, u + 1])
+    attacks = _orient_edges(g, rng, allow_symmetric_attacks)
     return {"nr_of_arguments": n, "attacks": attacks}
 
 
 def _random_regular(params: dict[str, Any]) -> dict[str, Any]:
     n: int = params["n"]
     d: int = params["d"]
+    allow_symmetric_attacks: bool = params.get("allowSymmetricAttacks", True)
     seed: int | None = params.get("seed", None)
 
     if n < 1:
@@ -225,12 +241,7 @@ def _random_regular(params: dict[str, Any]) -> dict[str, Any]:
 
     g = nx.random_regular_graph(d, n, seed=seed)
     rng = random.Random(seed)
-    attacks = []
-    for u, v in g.edges():
-        if rng.random() < 0.5:
-            attacks.append([u + 1, v + 1])
-        else:
-            attacks.append([v + 1, u + 1])
+    attacks = _orient_edges(g, rng, allow_symmetric_attacks)
     return {"nr_of_arguments": n, "attacks": attacks}
 
 
@@ -238,6 +249,7 @@ def _powerlaw_cluster(params: dict[str, Any]) -> dict[str, Any]:
     n: int = params["n"]
     m: int = params["m"]
     p: float = params["p"]
+    allow_symmetric_attacks: bool = params.get("allowSymmetricAttacks", True)
     seed: int | None = params.get("seed", None)
 
     if n < 1:
@@ -249,12 +261,7 @@ def _powerlaw_cluster(params: dict[str, Any]) -> dict[str, Any]:
 
     g = nx.powerlaw_cluster_graph(n, m, p, seed=seed)
     rng = random.Random(seed)
-    attacks = []
-    for u, v in g.edges():
-        if rng.random() < 0.5:
-            attacks.append([u + 1, v + 1])
-        else:
-            attacks.append([v + 1, u + 1])
+    attacks = _orient_edges(g, rng, allow_symmetric_attacks)
     return {"nr_of_arguments": n, "attacks": attacks}
 
 
@@ -293,7 +300,6 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         params_schema=[
             ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("p", "float", "Attack probability per ordered pair", required=True, default=0.3, min=0.0, max=1.0, step=0.01),
-            ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
         handler=_erdos_renyi,
@@ -304,6 +310,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         params_schema=[
             ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=2, max=100, step=1),
             ParamSchema("m", "int", "Number of attacks to attach from each new node", required=True, default=2, min=1, max=50, step=1),
+            ParamSchema("allowSymmetricAttacks", "bool", "Whether both directions of an attack (a->b and b->a) may occur", required=False, default=True),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
         handler=_barabasi_albert,
@@ -316,7 +323,6 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
             ParamSchema("alpha", "float", "Prob. of adding edge from new node to existing (α + β + γ = 1)", required=False, default=0.41),
             ParamSchema("beta", "float", "Prob. of adding edge between two existing nodes (α + β + γ = 1)", required=False, default=0.54),
             ParamSchema("gamma", "float", "Prob. of adding edge from existing node to new (α + β + γ = 1)", required=False, default=0.05),
-            ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
         handler=_scale_free,
@@ -328,7 +334,6 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
             ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("k", "int", "Number of out-attacks per argument", required=True, default=3, min=1, max=50, step=1),
             ParamSchema("alpha", "float", "Preferential attachment concentration (higher = more uniform)", required=True, default=1.0),
-            ParamSchema("allowSelfLoops", "bool", "Whether self-attacks are allowed", required=False, default=False),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
         handler=_random_k_out,
@@ -340,6 +345,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
             ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("k", "int", "Each argument is initially connected to k nearest neighbours", required=True, default=4, min=2, max=50, step=1),
             ParamSchema("p", "float", "Probability of rewiring each edge", required=True, default=0.1, min=0.0, max=1.0, step=0.01),
+            ParamSchema("allowSymmetricAttacks", "bool", "Whether both directions of an attack (a->b and b->a) may occur", required=False, default=True),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
         handler=_watts_strogatz,
@@ -350,6 +356,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
         params_schema=[
             ParamSchema("n", "int", "Number of arguments (n × d must be even)", required=True, default=10, min=2, max=100, step=1),
             ParamSchema("d", "int", "Degree of each argument", required=True, default=3, min=1, max=50, step=1),
+            ParamSchema("allowSymmetricAttacks", "bool", "Whether both directions of an attack (a->b and b->a) may occur", required=False, default=True),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
         handler=_random_regular,
@@ -361,6 +368,7 @@ _ALGORITHMS: dict[str, AlgorithmConfig] = {
             ParamSchema("n", "int", "Number of arguments", required=True, default=10, min=1, max=100, step=1),
             ParamSchema("m", "int", "Number of edges to attach from each new node", required=True, default=2, min=1, max=50, step=1),
             ParamSchema("p", "float", "Probability of triangle formation after each edge addition", required=True, default=0.5, min=0.0, max=1.0, step=0.01),
+            ParamSchema("allowSymmetricAttacks", "bool", "Whether both directions of an attack (a->b and b->a) may occur", required=False, default=True),
             ParamSchema("seed", "int", "Random seed for reproducibility", required=False, default=None),
         ],
         handler=_powerlaw_cluster,
@@ -389,6 +397,29 @@ def _postprocess_seed(base_seed: int | None) -> int | None:
     if base_seed is None:
         return None
     return (base_seed ^ 0xDEADBEEF) & 0x7FFFFFFF
+
+
+def _add_self_loops(
+    base: dict[str, Any],
+    params: dict[str, Any],
+    seed: int | None,
+) -> dict[str, Any]:
+    """Independent of algorithm, roll each argument for a self-attack."""
+    self_loop_prob: float = params.get("selfLoopProb", 0.0)
+    if not (0.0 <= self_loop_prob <= 1.0):
+        raise ValueError("selfLoopProb must be between 0.0 and 1.0")
+    if self_loop_prob == 0.0:
+        return base
+
+    rng = random.Random(seed)
+    n = base["nr_of_arguments"]
+    existing = {tuple(edge) for edge in base["attacks"]}
+    attacks = list(base["attacks"])
+    for i in range(1, n + 1):
+        if (i, i) not in existing and rng.random() < self_loop_prob:
+            attacks.append([i, i])
+
+    return {**base, "attacks": attacks}
 
 
 def _combine_nodes(nodes: list[dict], rng: random.Random) -> dict:
@@ -506,6 +537,48 @@ def _apply_incomplete(
     }
 
 
+def _apply_setaf(
+    base: dict[str, Any],
+    params: dict[str, Any],
+    seed: int | None,
+) -> dict[str, Any]:
+    grouping_prob: float = params.get("groupingProb", 0.3)
+    if not (0.0 <= grouping_prob <= 1.0):
+        raise ValueError("groupingProb must be between 0.0 and 1.0")
+
+    rng = random.Random(seed)
+    n = base["nr_of_arguments"]
+
+    attackers_by_target: dict[int, list[int]] = {v: [] for v in range(1, n + 1)}
+    for src, tgt in base["attacks"]:
+        attackers_by_target[tgt].append(src)
+
+    collective_attacks: list[dict[str, Any]] = []
+    for tgt in range(1, n + 1):
+        attackers = attackers_by_target[tgt]
+        if not attackers:
+            continue
+        rng.shuffle(attackers)
+        group: list[int] = []
+        for attacker in attackers:
+            if group and rng.random() < grouping_prob:
+                group.append(attacker)
+            else:
+                if group:
+                    collective_attacks.append({"attackers": group, "target": tgt})
+                group = [attacker]
+        collective_attacks.append({"attackers": group, "target": tgt})
+
+    return {
+        "nr_of_arguments": n,
+        "attacks": base["attacks"],   # kept so the frontend can report link count
+        "collective_attacks": collective_attacks,
+        "supports": [],
+        "uncertain_arguments": [],
+        "uncertain_attacks": [],
+    }
+
+
 def _apply_probabilistic(
     base: dict[str, Any],
     params: dict[str, Any],
@@ -541,11 +614,28 @@ def _apply_probabilistic(
     }
 
 
+# Shared across every framework type: how strongly self-attacks are added,
+# independent of the algorithm used to build the base graph. A probability of
+# 0 (the default) means no self-attacks are added.
+_SELF_LOOP_PARAMS: list[ParamSchema] = [
+    ParamSchema(
+        "selfLoopProb",
+        "float",
+        "Probability that any given argument gets a self-attack",
+        required=False,
+        default=0.0,
+        min=0.0,
+        max=1.0,
+        step=0.01,
+    ),
+]
+
+
 _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
     "abstract": FrameworkTypeConfig(
         id="abstract",
         description="Standard abstract argumentation framework with directed attacks between arguments.",
-        params_schema=[],
+        params_schema=[*_SELF_LOOP_PARAMS],
     ),
     "bipolar": FrameworkTypeConfig(
         id="bipolar",
@@ -561,6 +651,7 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
                 max=1.0,
                 step=0.01,
             ),
+            *_SELF_LOOP_PARAMS,
         ],
     ),
     "incomplete": FrameworkTypeConfig(
@@ -587,6 +678,7 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
                 max=1.0,
                 step=0.01,
             ),
+            *_SELF_LOOP_PARAMS,
         ],
     ),
     "probabilistic": FrameworkTypeConfig(
@@ -613,6 +705,7 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
                 max=1.0,
                 step=0.01,
             ),
+            *_SELF_LOOP_PARAMS,
         ],
     ),
     "adf": FrameworkTypeConfig(
@@ -629,6 +722,24 @@ _FRAMEWORK_TYPES: dict[str, FrameworkTypeConfig] = {
                 max=1.0,
                 step=0.01,
             ),
+            *_SELF_LOOP_PARAMS,
+        ],
+    ),
+    "setaf": FrameworkTypeConfig(
+        id="setaf",
+        description="Sets of arguments can jointly (collectively) attack a target argument.",
+        params_schema=[
+            ParamSchema(
+                "groupingProb",
+                "float",
+                "Probability that each additional attacker of a target joins the current set instead of forming its own attack",
+                required=False,
+                default=0.3,
+                min=0.0,
+                max=1.0,
+                step=0.01,
+            ),
+            *_SELF_LOOP_PARAMS,
         ],
     ),
 }
@@ -646,6 +757,11 @@ class GenerationRequest(BaseModel):
     timeout: int = Field(default=30, ge=1, le=120)
 
 
+class CollectiveAttackOut(BaseModel):
+    attackers: list[int]
+    target: int
+
+
 class GenerationResponse(BaseModel):
     time: float
     framework_type: str
@@ -657,6 +773,7 @@ class GenerationResponse(BaseModel):
     argument_probabilities: list[float] = Field(default_factory=list)
     attack_probabilities: list[float] = Field(default_factory=list)
     conditions: list[dict] = Field(default_factory=list)
+    collective_attacks: list[CollectiveAttackOut] = Field(default_factory=list)
 
 
 class ParamSchemaOut(BaseModel):
@@ -816,6 +933,7 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
     # Apply framework-type post-processing
     post_seed = _postprocess_seed(req.params.get("seed"))
     try:
+        base_output = _add_self_loops(base_output, req.params, post_seed)
         if req.framework_type == "bipolar":
             output = _apply_bipolar(base_output, req.params, post_seed)
         elif req.framework_type == "incomplete":
@@ -824,6 +942,8 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
             output = _apply_probabilistic(base_output, req.params, post_seed)
         elif req.framework_type == "adf":
             output = _apply_adf(base_output, req.params, post_seed)
+        elif req.framework_type == "setaf":
+            output = _apply_setaf(base_output, req.params, post_seed)
         else:
             output = {
                 "nr_of_arguments": base_output["nr_of_arguments"],
@@ -846,4 +966,5 @@ async def generate(req: GenerationRequest) -> GenerationResponse:
         argument_probabilities=output.get("argument_probabilities", []),
         attack_probabilities=output.get("attack_probabilities", []),
         conditions=output.get("conditions", []),
+        collective_attacks=output.get("collective_attacks", []),
     )

@@ -87,6 +87,7 @@ function absolutePlacement(
 }
 
 function shortenNameToLetter(name: string): string {
+  if (name.length <= 3) return name
   const match = name.match(/[a-zA-Z0-9]/)
   return match ? match[0] : name
 }

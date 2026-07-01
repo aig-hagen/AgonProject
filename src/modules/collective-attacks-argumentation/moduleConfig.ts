@@ -21,7 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/collective-attacks-argumentation/examples'
 import GraphEditor from '@/modules/collective-attacks-argumentation/GraphEditor.vue'
-import { SetAF,type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import { SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
   canLoadFromObject,
   loadFromString,
@@ -88,6 +88,7 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   getSaveString(document, _name) {
     return saveAsString(document)
   },
+  generateHref: '/generate?type=setaf',
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
   publications: [NP06, BCDFP21],
 }

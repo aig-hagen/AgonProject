@@ -31,6 +31,8 @@ import { abstractArgumentationModule } from '@/modules/abstract-argumentation/mo
 import { availableExports as bipolarExports } from '@/modules/bipolar-argumentation/export'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import { bipoloarArgumentationModule } from '@/modules/bipolar-argumentation/moduleConfig'
+import { SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import { collectiveAttacksArgumentationModule } from '@/modules/collective-attacks-argumentation/moduleConfig'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import { useDocumentMetadata } from '@/modules/common/documents/useDocuments'
@@ -75,6 +77,7 @@ type GeneratedFramework =
   | IncompleteArgumentation<IafArgumentData>
   | ProbabilisticArgumentation<PafArgumentData>
   | DialecticalArgumentation<AdfArgumentData>
+  | SetAF<SetAfArgumentData>
 
 // Both props are passed through attr fallthrough from App (same pattern as HomeView).
 // modules is declared to prevent Vue from warning about unrecognized attrs.
@@ -92,6 +95,7 @@ const { documents, createDocument, deleteDocument } = useDocumentMetadata(db, [
   incompleteArgumentationModule,
   probabilisticArgumentationModule,
   dialecticalArgumentationModule,
+  collectiveAttacksArgumentationModule,
 ] as unknown as ModuleConfig<Objectish>[])
 
 function getNextName(prefix: string): string {
@@ -108,7 +112,7 @@ const GENERATE_TIMEOUT_MS = 5_000
 // --- Framework type from URL ---
 const frameworkTypeId = computed<string>(() => {
   const t = route.query.type
-  if (t === 'bipolar' || t === 'incomplete' || t === 'probabilistic' || t === 'adf') return t
+  if (t === 'bipolar' || t === 'incomplete' || t === 'probabilistic' || t === 'adf' || t === 'setaf') return t
   return 'abstract'
 })
 
@@ -253,6 +257,7 @@ async function generate() {
       argument_probabilities: number[]
       attack_probabilities: number[]
       conditions: FormulaNode[]
+      collective_attacks: { attackers: number[]; target: number }[]
     }
 
     const n = data.nr_of_arguments
@@ -313,6 +318,14 @@ async function generate() {
       }
       generated.value = adf
       stats.value = { nArgs: n, nAttacks: data.attacks.length }
+    } else if (data.framework_type === 'setaf') {
+      const setaf = new SetAF<SetAfArgumentData>()
+      for (let i = 0; i < n; i++) setaf.addArgument(i, { name: String(i + 1), ...circularPos(i) })
+      for (const { attackers, target } of data.collective_attacks) {
+        setaf.addCollectiveAttack(attackers.map((a) => a - 1), target - 1)
+      }
+      generated.value = setaf
+      stats.value = { nArgs: n, nAttacks: data.collective_attacks.length }
     } else {
       const af = new AbstractArgumentation<ArgumentData>()
       for (let i = 0; i < n; i++) af.addArgument(i, { name: String(i + 1), ...circularPos(i) })
@@ -649,6 +662,10 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
             Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
             with <strong>{{ stats.nAttacks }}</strong> link{{ stats.nAttacks === 1 ? '' : 's' }}.
           </p>
+          <p v-else-if="frameworkTypeId === 'setaf'" class="text-sm text-base-content/70">
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            with <strong>{{ stats.nAttacks }}</strong> collective attack{{ stats.nAttacks === 1 ? '' : 's' }}.
+          </p>
           <div class="flex flex-wrap gap-2">
             <span
               class="tooltip tooltip-top"
@@ -668,7 +685,7 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
               Download ICCMA
             </button>
             <button
-              v-if="frameworkTypeId !== 'adf'"
+              v-if="frameworkTypeId !== 'adf' && frameworkTypeId !== 'setaf'"
               class="btn btn-sm btn-soft"
               @click="downloadTGF"
             >
