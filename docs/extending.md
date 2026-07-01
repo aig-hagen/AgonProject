@@ -55,14 +55,14 @@ Rendering the LaTeX source to an SVG is done by running a stripped-down TeX dist
 1. Transform LaTeX source to an SVG with @drgrice1/tikzjax
 2. Transform `<text/>` to `<path/>` so the SVG works even when the special fonts are not available in a viewer.
 
-New LaTeX exports might require TeX packages that are not yet bundled by @drgrice1/tikzjax. In this case you have to add them to the bundle like we did for [`tikz-argumentation](/third-party/ctan.org/pkg/argumentation/):
+New LaTeX exports might require TeX packages that are not yet bundled by @drgrice1/tikzjax. In this case you have to add them to the bundle like we did for [`tikz-argumentation`](/third-party/ctan.org/pkg/argumentation/):
 
 1. Create a folder (preferably with the official package name) under [/third-party/ctan.org/pkg/](/third-party/ctan.org/pkg/)
 2. In that folder, create a folder with the version of the package.  
-   e.g., [/third-party/ctan.org/pkg/argumentation/1.6 2026-07-31/](/third-party/ctan.org/pkg/argumentation/1.6%202026-07-31/)
+   e.g., [/third-party/ctan.org/pkg/argumentation/1.7 2026-06-20/](/third-party/ctan.org/pkg/argumentation/1.7%202026-06-20/)
 3. There you have to put the content of the package.  
    You can download it, for example, from [CTAN](https://ctan.org/)
-4. Extends the configuration of `viteStaticCopy` in the [vite.config.ts](/vite.config.ts) to copy the newly added files to `node_modules/@drgrice1/tikzjax/dist/tex_files/`
+4. Extend the configuration of `viteStaticCopy` in the [vite.config.ts](/vite.config.ts) to copy the newly added files to `node_modules/@drgrice1/tikzjax/dist/tex_files/`
 5. Add the package to `script.dataset.texPackages` in the [code for rendering SVGs](/src/modules/common/export/renderSvg.ts).
 
 ### Modify evaluations
@@ -73,7 +73,7 @@ All new evaluations would require new implementation.
 You can look at [`tweetyProject.ts`](/src/modules/abstract-argumentation/evaluation/tweetyProject.ts) for how to do a request to a backend (or local evaluation library) or how to add different kinds of evaluation.
 Depending on what backends or evaluations are a added in the future, common interfaces for evaluation might arise.
 
-In addition to evaluation logic, a UI like [<WindowExtensions/>](/src/modules/abstract-argumentation/WindowExtensions.vue).
+In addition to evaluation logic, a UI is needed to display the results, like [`<WindowExtensions/>`](/src/modules/abstract-argumentation/WindowExtensions.vue).
 
 ## Extend Layouting
 
@@ -85,36 +85,22 @@ You can add new layouting algorithms by:
 
 1. Adding new layouts to [`export const Layout`](/src/modules/common/main-menu/layouting.ts)
 2. Setting the name and icon in [`export const layoutDatas`](/src/modules/common/main-menu/layouting.ts)
-3. Enabling them in [`<GraphEditor/>`](/src/modules/common/graph-editor/GraphEditor.vue) by
-  - adding them to enabled layouting algorithms in
+3. Enabling them by adding them to the `:layouts-to-show` array passed to `<MainMenu>` inside the shared [`<GraphEditor/>`](/src/modules/common/graph-editor/GraphEditor.vue), e.g.:
 
      ```vue
-     <MainMenu
-       @new="emit('new')"
-       @load="emit('load')"
-       :show-save="EntryState.ENABLE"
-       :layouts-to-show="[
-         Layout.TopToBottom,
-         Layout.BottomToTop,
-         Layout.LeftToRight,
-         Layout.RightToLeft,
-         Layout.ForceDirected,
-         Layout.Neato,
-         Layout.Circular,
-         Layout.Radial,
-       ]"
-       @save="emit('save')"
-       :show-evaluate="isExtensionsOpened ? EntryState.DISABLE : EntryState.ENABLE"
-       @evaluate="isExtensionsOpened = !isExtensionsOpened"
-       :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
-       @export="isExportOpened = !isExportOpened"
-       @layout="doLayout($event)"
-       :show-undo="canUndo ? EntryState.ENABLE : EntryState.DISABLE"
-       @undo="emit('undo')"
-       :show-redo="canRedo ? EntryState.ENABLE : EntryState.DISABLE"
-       @redo="emit('redo')"
-     />
+     :layouts-to-show="[
+       Layout.TopToBottom,
+       Layout.BottomToTop,
+       Layout.LeftToRight,
+       Layout.RightToLeft,
+       Layout.ForceDirected,
+       Layout.Neato,
+       Layout.Circular,
+       Layout.Radial,
+     ]"
      ```
 
-   - and implementing how to handle them in `doLayout`.
+   - and implementing how to handle them in `doLayout`, in the same file.
+
+   Note that `<MainMenu>` is only instantiated once, inside the shared `<GraphEditor/>` — not per module — so this array applies to every argumentation type.
 

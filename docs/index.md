@@ -1,5 +1,7 @@
 # Development Documentation
 
+See [structure.md](./structure.md) for an overview of how the repository is structured.
+
 ## Required Tools
 
 - [Node.js](https://nodejs.org/en)
