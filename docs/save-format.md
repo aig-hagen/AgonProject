@@ -17,7 +17,7 @@ Every format is a JSON object with:
 - one or more relation fields (name varies per format — see below).
 - Bundled examples only: optional `name`, `description`, `layoutType` (added via the shared `ExampleSaveExtension`, stripped back out before constructing the in-memory model).
 
-All schemas are `zod` `strictObject`s — unknown keys are rejected, not ignored. Relation arrays are cross-validated against `arguments` (`validateLinks` in [`common/argumentation/save/saveFormat.ts`](/src/modules/common/argumentation/save/saveFormat.ts)): every referenced ID must exist, and the same `(source, target)` pair can't appear twice, even across different relation kinds (e.g. as both an attack and a support in BAF).
+All schemas are `zod` `strictObject` — unknown keys are rejected, not ignored. Relation arrays are cross-validated against `arguments` (`validateLinks` in [`common/argumentation/save/saveFormat.ts`](/src/modules/common/argumentation/save/saveFormat.ts)): every referenced ID must exist, and the same `(source, target)` pair can't appear twice, even across different relation kinds (e.g. as both an attack and a support in BAF).
 
 Versioning: bump the `/v<n>` suffix when a schema change would break existing files, and keep the old version loadable. There's currently no migration code anywhere — every format is still at `v1`.
 
