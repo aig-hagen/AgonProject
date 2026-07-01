@@ -93,7 +93,7 @@ mvn spring-boot:run -pl org-tweetyproject-web
 
 ### Running the Graph Generation Server
 
-Only needed if you're working on the random framework generation feature ([`GenerateView.vue`](/src/app/generate/GenerateView.vue)) — other development doesn't require it.
+Only needed if you're working on the random framework generation feature ([`GenerateView.vue`](/src/app/generate/GenerateView.vue)) — other development doesn't require it. See [servers/graph-gen/README.md](/servers/graph-gen/README.md) for its API.
 
 During development, this server is expected to run locally on port 8000, per the `/graph-gen` entry in the [Vite config](/vite.config.ts) `server.proxy` option.
 
@@ -107,7 +107,7 @@ uvicorn server:app --port 8000
 
 ### Running the Share Server
 
-Only needed if you're working on the sharing feature — other development doesn't require it.
+Only needed if you're working on the sharing feature — other development doesn't require it. See [servers/share/README.md](/servers/share/README.md) for its API.
 
 During development, this server is expected to run locally on port 8001, per the `/shares` entry in the [Vite config](/vite.config.ts) `server.proxy` option, which is also the default in `servers/share/.env.example`.
 
