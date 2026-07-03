@@ -1,14 +1,13 @@
-name: New semantics
-description: Propose a new semantics/extension-based evaluation to support
-labels: ["enhancement", "new semantics"]
+name: New example
+description: Propose an example to bundle with a framework, shown on the home screen
+labels: ["enhancement", "new example"]
 type: Feature
 body:
   - type: dropdown
     id: framework
     attributes:
       label: Framework
-      description: Which argumentation framework(s) does this apply to?
-      multiple: true
+      description: Which framework is this example for?
       options:
         - Abstract Argumentation (AF)
         - Bipolar Argumentation (BAF)
@@ -20,18 +19,19 @@ body:
       required: true
 
   - type: textarea
-    id: definition
+    id: description
     attributes:
-      label: Formal definition
-      description: The formal definition of the semantics.
+      label: What does this example illustrate?
+      description: Why would this be a good example to include, e.g. what concept, scenario or edge case does it showcase?
     validations:
       required: true
 
   - type: textarea
-    id: reference
+    id: content
     attributes:
-      label: References
-      description: Links to publications introducing this semantics
+      label: Example content
+      description: The example as a native save file (see the save format documentation). You can also attach an exported file instead.
+      render: json
     validations:
       required: true
 

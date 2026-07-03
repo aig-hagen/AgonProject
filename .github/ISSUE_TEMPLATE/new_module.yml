@@ -1,6 +1,7 @@
 name: New argumentation module
 description: Propose a new argumentation formalism to support
 labels: ["enhancement", "new module"]
+type: Feature
 body:
   - type: textarea
     id: definition
