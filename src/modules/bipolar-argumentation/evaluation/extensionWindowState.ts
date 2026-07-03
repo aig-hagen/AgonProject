@@ -18,7 +18,7 @@
  */
 import { KEY_DEFAULT_SEMANTIC } from '@/modules/bipolar-argumentation/evaluation/tweetyProject'
 
-export const KEY_DEFAULT_SUPPORT_TYPE = 'none'
+export const KEY_DEFAULT_SUPPORT_TYPE = 'ded'
 
 export interface ExtensionWindowInstanceState {
   id: string

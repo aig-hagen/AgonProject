@@ -141,6 +141,12 @@ export const PLZL14: Publication = {
   href: 'https://doi.org/10.1007/978-3-319-12096-6_26',
 }
 
+export const PLZL15: Publication = {
+  shortLabel: 'Pu et al. (2015)',
+  label: 'Pu, F., Luo, J., Zhang, Y. & Luo, G. (2015). Attacker and Defender Counting Approach for Abstract Argumentation. In: Proceedings of the 37th Annual Meeting of the Cognitive Science Society (CogSci 2015).',
+  href: 'https://escholarship.org/uc/item/0r80h6vf',
+}
+
 export const AB13: Publication = {
   shortLabel: 'Amgoud & Ben-Naim (2013)',
   label: 'Amgoud, L. & Ben-Naim, J. (2013). Ranking-Based Semantics for Argumentation Frameworks. In: Scalable Uncertainty Management – SUM 2013, LNCS 8078, pp. 134–147. Springer.',

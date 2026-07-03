@@ -31,24 +31,9 @@ import { type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_BIPOLAR_ARGUMENTATION = '/bipolar'
 
-export const KEY_DEFAULT_SEMANTIC = 'BCF'
-export const KEY_NONE_INTERPRETATION_GROUP = 'none-interpretation'
+export const KEY_DEFAULT_SEMANTIC = 'PR'
 
 export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
-  {
-    key: 'none-interpretation',
-    displayName: 'None Interpretation',
-    semantics: [
-      { key: 'BCF',  displayName: 'Conflict-free',        tooltipId: 'b-cf' },
-      { key: 'BCOH', displayName: 'Coherent',             tooltipId: 'b-coh' },
-      { key: 'BAD',  displayName: 'Coherent Admissible',  tooltipId: 'b-ad' },
-      { key: 'CAD',  displayName: 'Coalition-Admissible', tooltipId: 'b-coal-ad' },
-      { key: 'CCO',  displayName: 'Coalition-Complete',   tooltipId: 'b-coal-co' },
-      { key: 'CGR',  displayName: 'Coalition-Grounded',   tooltipId: 'b-coal-gr' },
-      { key: 'CPR',  displayName: 'Coalition-Preferred',  tooltipId: 'b-coal-pr' },
-      { key: 'CST',  displayName: 'Coalition-Stable',     tooltipId: 'b-coal-st' },
-    ],
-  },
   {
     key: 'classical',
     displayName: 'Classical Semantics',

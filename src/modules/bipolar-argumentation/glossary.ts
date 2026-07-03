@@ -53,58 +53,10 @@ export const bipolarArgumentationGlossary: TooltipRegistry = {
     reference: CL10,
   },
 
-  // ── None Interpretation ──────────────────────────────────────────────────────
-
-  'b-cf': {
-    label: 'conflict-free',
-    title: 'Conflict-Free (BAF)',
-    content: ['TODO'],
-  },
-
-  'b-coh': {
-    label: 'coherent',
-    title: 'Coherent',
-    content: ['TODO'],
-  },
-
-  'b-ad': {
-    label: 'coherent admissible',
-    title: 'Coherent Admissible',
-    content: ['TODO'],
-  },
-
-  'b-coal-ad': {
-    label: 'coalition-admissible',
-    title: 'Coalition-Admissible Semantics',
-    content: ['A set of arguments $E$ is coalition-admissible in $B$ iff there is an ', { ref: 'ADM', label: 'admissible set' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
-    reference: CL10,
-  },
-
-  'b-coal-co': {
-    label: 'coalition-complete',
-    title: 'Coalition-Complete Semantics',
-    content: ['A set of arguments $E$ is coalition-complete in $B$ iff there is an ', { ref: 'CO', label: 'complete extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
-    reference: CL10,
-  },
-
-  'b-coal-gr': {
-    label: 'coalition-grounded',
-    title: 'Coalition-Grounded Semantics',
-    content: ['A set of arguments $E$ is coalition-grounded in $B$ iff there is an ', { ref: 'GR', label: 'grounded extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
-    reference: CL10,
-  },
-
-  'b-coal-pr': {
-    label: 'coalition-preferred',
-    title: 'Coalition-Preferred Semantics',
-    content: ['A set of arguments $E$ is coalition-preferred in $B$ iff there is an ', { ref: 'PR', label: 'preferred extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
-    reference: CL10,
-  },
-
-  'b-coal-st': {
-    label: 'coalition-stable',
-    title: 'Coalition-Stable Semantics',
-    content: ['A set of arguments $E$ is coalition-stable in $B$ iff there is an ', { ref: 'ST', label: 'stable extension' }, ' $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
+  'coalitionSemantics': {
+    label: 'coalition-based semantics',
+    title: 'Coalition-based Semantics',
+    content: ['A set of arguments $E$ is a coalition-$\\sigma$-extension in $B$ iff there is a $\\sigma$-extension $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
     reference: CL10,
   },
 

@@ -17,12 +17,11 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, provide, ref, shallowRef, toRef, watch, watchEffect } from 'vue'
+import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import {
-  KEY_NONE_INTERPRETATION_GROUP,
   KNOWN_SEMANTIC_GROUPS,
   type Semantics,
   useExtensionEvaluationQuery,
@@ -55,31 +54,16 @@ const emit = defineEmits<{
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...bipolarArgumentationGlossary })
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
-const noneGroups = semanticGroups.filter((g) => g.key === KEY_NONE_INTERPRETATION_GROUP)
-const afGroups = semanticGroups.filter((g) => g.key !== KEY_NONE_INTERPRETATION_GROUP)
 
-function resolveSemanticFromKey(key: string, supportType: string): Semantics {
-  const groups = supportType === 'none' ? noneGroups : afGroups
-  const found = groups.flatMap((g) => g.semantics).find((s) => s.key === key)
-  return found ?? groups[0]!.semantics[0]!
+function resolveSemanticFromKey(key: string): Semantics {
+  const found = semanticGroups.flatMap((g) => g.semantics).find((s) => s.key === key)
+  return found ?? semanticGroups[0]!.semantics[0]!
 }
 
 const selectedSupportType = ref<string>(instanceState.supportTypeKey)
-const selectedSemantics = shallowRef<Semantics>(
-  resolveSemanticFromKey(instanceState.semanticKey, instanceState.supportTypeKey),
-)
+const selectedSemantics = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
-
-const visibleGroups = computed(() =>
-  selectedSupportType.value === 'none' ? noneGroups : afGroups,
-)
-
-watchEffect(() => {
-  const validSemantics = visibleGroups.value.flatMap((g) => g.semantics)
-  const currentKey = selectedSemantics.value.key
-  selectedSemantics.value = validSemantics.find((s) => s.key === currentKey) ?? validSemantics[0]!
-})
 
 watch([selectedSemantics, selectedSupportType, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
@@ -112,19 +96,22 @@ const {
 watch(currentHighlight, (h) => emit('highlight', h))
 function onWindowFocus() { emit('highlight', currentHighlight.value) }
 
+const supportTypeTooltipId = computed(() => {
+  const support = selectedSupportType.value
+  return support === 'ded' ? 'deductiveSupport' : support === 'nec' ? 'necessarySupport' : 'coalitionSemantics'
+})
+
 const resultsHeader = computed((): ResultsHeaderPart[] => {
   const support = selectedSupportType.value
-  if (support === 'none') return baseResultsHeader.value
-  const tooltipId = support === 'ded' ? 'deductiveSupport' : 'necessarySupport'
-  const label = support === 'ded' ? 'deductive' : 'necessary'
-  return [...baseResultsHeader.value, ' under ', { text: `${label} support`, tooltipId }]
+  const label = support === 'ded' ? 'deductive' : support === 'nec' ? 'necessary' : 'coalition'
+  return [...baseResultsHeader.value, ' under ', { text: `${label} support`, tooltipId: supportTypeTooltipId.value }]
 })
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
     : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
-  const supportLabel = selectedSupportType.value === 'none' ? 'None'
-    : selectedSupportType.value === 'ded' ? 'Deductive' : 'Necessary'
+  const supportLabel = selectedSupportType.value === 'ded' ? 'Deductive'
+    : selectedSupportType.value === 'nec' ? 'Necessary' : 'Coalition'
   return `Extensions: ${supportLabel} · ${selectedSemantics.value.displayName} · ${modeLabel}`
 })
 </script>
@@ -145,7 +132,7 @@ const windowTitle = computed(() => {
       <label class="select select-sm w-fit">
         <span class="label">Support</span>
         <select v-model="selectedSupportType">
-          <option value="none">None</option>
+          <option value="coalition">Coalition</option>
           <option value="ded">Deductive</option>
           <option value="nec">Necessary</option>
         </select>
@@ -153,7 +140,7 @@ const windowTitle = computed(() => {
       <label class="select select-sm w-fit">
         <span class="label">Semantics</span>
         <select v-model="selectedSemantics">
-          <optgroup v-for="group in visibleGroups" :key="group.key" :label="group.displayName">
+          <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
             <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
               {{ semantic.displayName }}
             </option>
@@ -170,6 +157,7 @@ const windowTitle = computed(() => {
       </label>
     </template>
     <template #parameters-footer>
+      <TermDefinitionBlock :id="supportTypeTooltipId" />
       <TermDefinitionBlock :id="selectedSemantics.tooltipId ?? selectedSemantics.key" />
     </template>
     <template #results>

@@ -36,6 +36,7 @@ import {
   LM11,
   MT08,
   PLZL14,
+  PLZL15,
   T22,
   T23,
   V96,
@@ -456,7 +457,8 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
   CO: {
     label: 'counting',
     title: 'Counting Ranking',
-    content: ['TODO'],
+    content: ['The counting ranking compares arguments by counting the number of their attackers and defenders in form of a dialogue game where proponents are defenders and opponents are attackers.'],
+    reference: PLZL15,
   },
 
   DB: {
