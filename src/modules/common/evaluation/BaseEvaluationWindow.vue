@@ -41,6 +41,7 @@ const props = defineProps<{
   resultsHeader?: ResultsHeaderPart[]
   query: EvaluationWindowQuery
   storageKey?: string
+  active?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -116,6 +117,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
     :intitalSize="size"
     :instance-offset="offset"
     :storage-key="props.storageKey"
+    :active="props.active"
     compactable
     :minimizable="false"
     @focus="emit('focus')"

@@ -36,17 +36,19 @@ import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary })
 
-const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey, suppressed = false } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: RankingWindowInstanceState
   instanceOffset?: number
   storageKey?: string
+  suppressed?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:instanceState': [state: RankingWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
   close: []
+  focus: []
 }>()
 
 function resolveSemanticFromKey(key: string): RankingSemantic {
@@ -129,7 +131,9 @@ function computeWeights() {
 
 watch(data, () => emit('setWeights', computeWeights()), { immediate: true })
 
-function onWindowFocus() { emit('setWeights', computeWeights()) }
+function onWindowFocus() { emit('setWeights', computeWeights()); emit('focus') }
+
+const isActive = computed(() => !suppressed && data.value !== undefined)
 </script>
 
 <template>
@@ -142,6 +146,7 @@ function onWindowFocus() { emit('setWeights', computeWeights()) }
     :query="query"
     :results-header="[`${selectedSemantic.displayName} ranking`]"
     :storage-key="storageKey"
+    :active="isActive"
     @close="emit('close')"
     @focus="onWindowFocus"
   >

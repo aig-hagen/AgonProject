@@ -36,7 +36,7 @@ const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
 const compact = defineModel<boolean>('compact', { default: false })
 const emit = defineEmits<{ focus: [] }>()
-const { title, initialPosition, intitalSize, compactable = false, minimizable = true, instanceOffset = 0, storageKey } = defineProps<{
+const { title, initialPosition, intitalSize, compactable = false, minimizable = true, instanceOffset = 0, storageKey, active = false } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
   intitalSize: { width: number; height: number }
@@ -44,6 +44,7 @@ const { title, initialPosition, intitalSize, compactable = false, minimizable = 
   minimizable?: boolean
   instanceOffset?: number
   storageKey?: string
+  active?: boolean
 }>()
 
 const position = { ...initialPosition }
@@ -329,7 +330,14 @@ watchEffect(async () => {
       class="floating-window-header bg-base-200 flex justify-between py-1 pl-4 pr-2"
       :class="{ 'border-b border-base-300': !minimized }"
     >
-      <div class="flex-1 mr-2 self-center" :class="{ truncate: !minimized }">{{ title }}</div>
+      <div class="flex-1 mr-2 self-center flex items-center gap-1.5" :class="{ truncate: !minimized }">
+        <span
+          v-if="active"
+          class="inline-block size-1.5 rounded-full bg-success shrink-0"
+          title="Currently highlighted on canvas"
+        ></span>
+        <span class="truncate">{{ title }}</span>
+      </div>
       <div class="flex gap-0.5">
         <button
           v-if="compactable && minimizable"

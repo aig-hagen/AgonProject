@@ -158,6 +158,19 @@ function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
   nodeWeights.value = new Map(weights.map(({ id, weight }) => [id, weight]))
 }
 
+// --- Highlight/weight visibility across evaluation window types ---
+// Only the most recently focused window's result is shown on the canvas, so
+// e.g. an Extension selection and a Ranking don't render on top of each other.
+type HighlightSource = 'extension' | 'ranking' | 'serialisation'
+const activeSource = ref<HighlightSource | undefined>(undefined)
+
+const extensionSuppressed = computed(() => activeSource.value === 'ranking' || activeSource.value === 'serialisation')
+const serialisationSuppressed = computed(() => activeSource.value === 'ranking' || activeSource.value === 'extension')
+const rankingSuppressed = computed(() => activeSource.value === 'extension' || activeSource.value === 'serialisation')
+const visibleNodeWeights = computed(() =>
+  rankingSuppressed.value ? new Map() : nodeWeights.value,
+)
+
 function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   createNewState((draft) => {
     draft.getArgument(data.id).name = data.label
@@ -204,7 +217,10 @@ function addExtensionInstance() {
 }
 
 function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (extensionInstances.value.length === 1) onHighlight(undefined)
+  if (extensionInstances.value.length === 1) {
+    onHighlight(undefined)
+    if (activeSource.value === 'extension') activeSource.value = undefined
+  }
   extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
 }
 
@@ -219,7 +235,10 @@ function addRankingInstance() {
 }
 
 function removeRankingInstance(id: string) {
-  if (rankingInstances.value.length === 1) nodeWeights.value = new Map()
+  if (rankingInstances.value.length === 1) {
+    nodeWeights.value = new Map()
+    if (activeSource.value === 'ranking') activeSource.value = undefined
+  }
   rankingInstances.value = rankingInstances.value.filter((i) => i.id !== id)
 }
 
@@ -242,7 +261,10 @@ function addSerialisationInstance() {
 }
 
 function removeSerialisationInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (serialisationInstances.value.length === 1) onHighlight(undefined)
+  if (serialisationInstances.value.length === 1) {
+    onHighlight(undefined)
+    if (activeSource.value === 'serialisation') activeSource.value = undefined
+  }
   serialisationInstances.value = serialisationInstances.value.filter((i) => i.id !== id)
 }
 
@@ -278,7 +300,7 @@ const tutorialContextExtra = computed(() => ({
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :state="editorState"
-    :node-weights="nodeWeights"
+    :node-weights="visibleNodeWeights"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
@@ -299,8 +321,10 @@ const tutorialContextExtra = computed(() => ({
         :instance-state="instance"
         :instance-offset="index"
         :storage-key="`abstract-argumentation:${documentId}:${instance.id}:window`"
+        :suppressed="extensionSuppressed"
         @update:instance-state="updateExtensionInstance($event)"
         @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @focus="activeSource = 'extension'"
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
@@ -322,8 +346,10 @@ const tutorialContextExtra = computed(() => ({
         :instance-state="instance"
         :instance-offset="index"
         :storage-key="`abstract-argumentation:${documentId}:${instance.id}:window`"
+        :suppressed="rankingSuppressed"
         @update:instance-state="updateRankingInstance($event)"
         @set-weights="onSetWeights"
+        @focus="activeSource = 'ranking'"
         @close="removeRankingInstance(instance.id)"
       />
     </template>
@@ -335,8 +361,10 @@ const tutorialContextExtra = computed(() => ({
         :instance-state="instance"
         :instance-offset="index"
         :storage-key="`abstract-argumentation:${documentId}:${instance.id}:window`"
+        :suppressed="serialisationSuppressed"
         @update:instance-state="updateSerialisationInstance($event)"
         @highlight="onHighlight"
+        @focus="activeSource = 'serialisation'"
         @close="removeSerialisationInstance(instance.id, onHighlight)"
       />
     </template>

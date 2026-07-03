@@ -203,6 +203,18 @@ export const CCL21: Publication = {
   href: 'https://www.collegepublications.co.uk/downloads/handbooks00006.pdf',
 }
 
+export const BGTV10: Publication = {
+  shortLabel: 'Boella et al. (2010)',
+  label: 'Boella, G., Gabbay, D.M., van der Torre, L.W.N. & Villata, S. (2010). Support in Abstract Argumentation. In: Computational Models of Argument – Proceedings of COMMA 2010, Frontiers in Artificial Intelligence and Applications, Vol. 216, pp. 111–122. IOS Press.',
+  href: 'https://doi.org/10.3233/978-1-60750-619-5-111',
+}
+
+export const NR10: Publication = {
+  shortLabel: 'Nouioua & Risch (2010)',
+  label: 'Nouioua, F. & Risch, V. (2010). Bipolar Argumentation Frameworks with Specialized Supports. In: 22nd IEEE International Conference on Tools with Artificial Intelligence (ICTAI 2010), Vol. 1, pp. 215–218. IEEE Computer Society.',
+  href: 'https://doi.org/10.1109/ICTAI.2010.37',
+}
+
 // ── Probabilistic Argumentation ───────────────────────────────────────────────
 
 export const LON11: Publication = {

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { CL05, CL10 } from '@/modules/common/tooltip/publications'
+import { BGTV10, CL05, CL10, NR10 } from '@/modules/common/tooltip/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const bipolarArgumentationGlossary: TooltipRegistry = {
@@ -31,12 +31,14 @@ export const bipolarArgumentationGlossary: TooltipRegistry = {
     label: 'deductive support',
     title: 'Deductive Support',
     content: ['Under the deductive support interpretation, an argument $a$ supports an argument $b$ if the acceptance of $a$ logically implies the acceptance of $b$.'],
+    reference: BGTV10,
   },
 
   necessarySupport: {
     label: 'necessary support',
     title: 'Necessary Support',
     content: ['Under the necessary support interpretation, an argument $a$ supports an argument $b$ if the acceptance of $a$ is a necessary condition for the acceptance of $b$.'],
+    reference: NR10,
   },
 
   coalition: {

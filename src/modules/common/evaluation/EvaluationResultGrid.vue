@@ -77,7 +77,7 @@ watchEffect(async () => {
         'btn-soft': selected === item.key,
         'btn-ghost': selected !== item.key,
       }"
-      @click="selected = item.key"
+      @click="selected = selected === item.key ? undefined : item.key"
       ref="item-refs"
     >
       {{ item.label }}

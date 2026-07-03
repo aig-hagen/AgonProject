@@ -122,6 +122,11 @@ const selectionHint = computed(() =>
     ? 'Select model to highlight.'
     : 'Select acceptable argument to highlight.',
 )
+const emptyMessage = computed(() =>
+  selectedMode.value === 'enumerate'
+    ? 'No models exist.'
+    : 'No acceptable arguments exist.',
+)
 
 const formattedData = computed(() => {
   if (data.value === undefined) return undefined
@@ -258,7 +263,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
           <EvaluationResultGrid
             v-model:selected="selectedKey"
             :items="resultItems"
-            empty-message="No interpretations exist."
+            :empty-message="emptyMessage"
             :selection-hint="selectionHint"
             :evaluation-duration-in-ms="formattedData.evaluationDurationInMs"
           />

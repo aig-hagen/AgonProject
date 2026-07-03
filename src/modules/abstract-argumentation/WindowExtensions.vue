@@ -36,11 +36,12 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey, suppressed = false } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
   storageKey?: string
+  suppressed?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -48,6 +49,7 @@ const emit = defineEmits<{
   highlight: [highlight?: Highlight]
   close: []
   evaluate: []
+  focus: []
 }>()
 
 provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
@@ -89,8 +91,11 @@ const {
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantic.value.displayName))
 
-watch(currentHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('highlight', currentHighlight.value) }
+const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
+const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
+
+watch(emittedHighlight, (h) => emit('highlight', h))
+function onWindowFocus() { emit('focus') }
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
@@ -104,6 +109,7 @@ const windowTitle = computed(() => {
     v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
+    :active="isActive"
     :query="query"
     :results-header="resultsHeader"
     :storage-key="storageKey"

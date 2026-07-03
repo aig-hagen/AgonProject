@@ -40,17 +40,19 @@ import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vu
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
-const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
+const { input, instanceState, instanceOffset = 0, storageKey, suppressed = false } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: SerialisationWindowInstanceState
   instanceOffset?: number
   storageKey?: string
+  suppressed?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:instanceState': [state: SerialisationWindowInstanceState]
   highlight: [highlight?: Highlight]
   close: []
+  focus: []
 }>()
 
 provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
@@ -279,8 +281,11 @@ const currentHighlight = computed<Highlight | undefined>(() => {
   }
 })
 
-watch(currentHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('highlight', currentHighlight.value) }
+const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
+const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
+
+watch(emittedHighlight, (h) => emit('highlight', h))
+function onWindowFocus() { emit('focus') }
 </script>
 
 <template>
@@ -292,6 +297,7 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
     :intital-size="{ width: 576, height: 480 }"
     :instance-offset="instanceOffset"
     :storage-key="storageKey"
+    :active="isActive"
     compactable
     :minimizable="false"
     @focus="onWindowFocus"
