@@ -2,14 +2,6 @@ name: New argumentation module
 description: Propose a new argumentation formalism to support
 labels: ["enhancement", "new module"]
 body:
-  - type: input
-    id: name
-    attributes:
-      label: Name
-      description: What is the framework called?
-    validations:
-      required: true
-
   - type: textarea
     id: definition
     attributes:

@@ -2,14 +2,6 @@ name: New semantics
 description: Propose a new semantics/extension-based evaluation to support
 labels: ["enhancement", "new semantics"]
 body:
-  - type: input
-    id: name
-    attributes:
-      label: Name
-      description: What is the semantics called?
-    validations:
-      required: true
-
   - type: dropdown
     id: framework
     attributes:
