@@ -43,7 +43,7 @@ docker run -p 8080:8080 ghcr.io/aig-hagen/AgonProject:latest
 
 ## Acknowledgments
 
-### [TweetyProject](https://tweetyproject.org/)
+### <img src="public/tweety-logo.png" alt="TweetyProject logo" width="24" /> [TweetyProject](https://tweetyproject.org/)
 
 Semantic evaluation is powered by TweetyProject — a collection of Java libraries for argumentation and non-monotonic reasoning, developed by Matthias Thimm and contributors.
 
