@@ -1,0 +1,50 @@
+name: New semantics
+description: Propose a new semantics/extension-based evaluation to support
+labels: ["enhancement", "new semantics"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: What is the semantics called?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Framework
+      description: Which argumentation framework(s) does this apply to?
+      multiple: true
+      options:
+        - Abstract Argumentation (AF)
+        - Bipolar Argumentation (BAF)
+        - Dialectical Argumentation (ADF)
+        - Incomplete Argumentation (iAF)
+        - Probabilistic Argumentation (PAF)
+        - Collective Attacks (SetAF)
+    validations:
+      required: true
+
+  - type: textarea
+    id: definition
+    attributes:
+      label: Formal definition
+      description: The formal definition of the semantics.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: References
+      description: Links to publications introducing this semantics
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional comments
+    validations:
+      required: false

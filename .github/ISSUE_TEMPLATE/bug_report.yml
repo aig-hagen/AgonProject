@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a problem with the AgonProject app
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can the issue be reproduced?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: false
+
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Framework
+      description: Which argumentation framework is affected, if applicable?
+      multiple: true
+      options:
+        - Abstract Argumentation (AF)
+        - Bipolar Argumentation (BAF)
+        - Dialectical Argumentation (ADF)
+        - Incomplete Argumentation (iAF)
+        - Probabilistic Argumentation (PAF)
+        - Collective Attacks (SetAF)
+        - Not applicable / general
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Environment used, browser and OS, if relevant.
+      placeholder: e.g. Firefox 128 on Linux
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Screenshots, save files, console errors, etc.
+    validations:
+      required: false

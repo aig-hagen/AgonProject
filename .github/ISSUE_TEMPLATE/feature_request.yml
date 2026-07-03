@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest an idea or enhancement for AgonProject
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like to see?
+      description: Describe the feature or idea.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Framework
+      description: Which argumentation framework does this relate to, if applicable?
+      multiple: true
+      options:
+        - Abstract Argumentation (AF)
+        - Bipolar Argumentation (BAF)
+        - Dialectical Argumentation (ADF)
+        - Incomplete Argumentation (iAF)
+        - Probabilistic Argumentation (PAF)
+        - Collective Attacks (SetAF)
+        - Not applicable / general
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+    validations:
+      required: false

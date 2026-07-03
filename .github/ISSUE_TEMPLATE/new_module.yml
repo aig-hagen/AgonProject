@@ -1,0 +1,50 @@
+name: New argumentation module
+description: Propose a new argumentation formalism to support
+labels: ["enhancement", "new module"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      description: What is the framework called?
+    validations:
+      required: true
+
+  - type: textarea
+    id: definition
+    attributes:
+      label: Formal definition
+      description: The structure of the framework (arguments, relations, any extra components).
+    validations:
+      required: true
+
+  - type: textarea
+    id: semantics
+    attributes:
+      label: Semantics of interest
+      description: Which semantics/extensions should be computable for this framework?
+    validations:
+      required: false
+
+  - type: textarea
+    id: existing-implementation
+    attributes:
+      label: Existing implementation
+      description: Is this already implemented somewhere, e.g. in TweetyProject?
+    validations:
+      required: false
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: References
+      description: Links to publications introducing this framework
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional comments
+    validations:
+      required: false
