@@ -30,8 +30,7 @@ body:
     id: content
     attributes:
       label: Example content
-      description: The example as a native save file (see the save format documentation). You can also attach an exported file instead.
-      render: json
+      description: The example in plain text, or ideally in the native save file format. You can also attach an exported file instead.
     validations:
       required: true
 
