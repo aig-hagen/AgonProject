@@ -84,7 +84,7 @@ const exportLatexDialecticalArgumentation: ExportConfig<DialecticalArgumentation
         {
           argumentAnnotation: (id) => {
             const formula = formulaToLatexRaw(dataMap.get(id)!.condition, latexNameMap)
-            return `{\\scriptsize $${formula}$}`
+            return `$${formula}$`
           },
         },
       )

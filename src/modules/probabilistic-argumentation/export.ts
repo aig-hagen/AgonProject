@@ -42,11 +42,11 @@ const exportLatexPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> 
       {
         argumentAnnotation: (id) => {
           const prob = document.getArgument(id).probability
-          return prob < 1 ? `{\\scriptsize $${prob}$}` : undefined
+          return prob < 1 ? `$${prob}$` : undefined
         },
         attackSuffix: (s, t) => {
           const prob = document.getAttackProbability(s, t)
-          return prob < 1 ? `({\\scriptsize $${prob}$})` : ''
+          return prob < 1 ? `($${prob}$)` : ''
         },
       },
     )

@@ -48,7 +48,7 @@ const editorView = shallowRef<EditorView | undefined>(undefined)
 const { gridCellScale } = useSettings()
 
 const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exportConfigs[0])
-const selectedArgumentStyle = shallowRef<string>('colored')
+const selectedArgumentStyle = shallowRef<string>('standard')
 const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
 const selectedSupportStyle = shallowRef<string>('double')
@@ -62,7 +62,7 @@ const isBipolarDocument = computed(() => {
 const usePackageLine = computed(() => {
   if (selectedExportConfig.value?.name !== 'LaTeX (argumentation)') return undefined
   const opts = [
-    `argumentstyle=${selectedArgumentStyle.value}`,
+    ...(selectedArgumentStyle.value !== 'standard' ? [`argumentstyle=${selectedArgumentStyle.value}`] : []),
     `namestyle=${selectedNameStyle.value}`,
     ...(selectedAttackStyle.value !== 'standard' ? [`attackstyle=${selectedAttackStyle.value}`] : []),
   ]
@@ -264,10 +264,10 @@ watchEffect(() => {
             </div>
           </div>
         </details>
-        <div class="relative mt-2 w-md">
+        <div class="relative mt-2 w-fit max-w-md">
           <input
             type="text"
-            class="input input-xs font-mono w-md pr-8"
+            class="input input-xs font-mono max-w-md pr-8 field-sizing-content"
             readonly
             :value="usePackageLine"
           />
