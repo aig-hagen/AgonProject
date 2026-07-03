@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { QueryClient } from '@tanstack/vue-query'
-import { Font, parse as parseOpentypeFont } from 'opentype.js'
+import { Font, parse as parseOpentypeFont, type PathCommand } from 'opentype.js'
 
 const RENDER_SVG_CONTAINER_ID = 'render-svg-container'
 const RENDER_SVG_CONTAINER = document.getElementById(RENDER_SVG_CONTAINER_ID)
@@ -104,6 +104,37 @@ RENDER_SVG_CONTAINER.addEventListener('tikzjax-load-finished', async (event) => 
   scriptWrapper.remove()
 })
 
+// opentype.js's own Path#toPathData/toDOMElement decide whether to insert a separating
+// space between numbers based on the sign of the *unrounded* value. A value that's a small
+// negative number (e.g. -0.001) rounds to "0" (no sign), so it can end up concatenated onto
+// the previous number with no separator at all (e.g. "-44.57" + "0" -> "-44.570"), producing
+// an invalid `d` attribute. Serialize commands ourselves with unambiguous, always-present
+// separators to sidestep that bug.
+function pathDataFromCommands(commands: PathCommand[], decimalPlaces: number): string {
+  let d = ''
+  for (const cmd of commands) {
+    const format = (v: number) => v.toFixed(decimalPlaces)
+    switch (cmd.type) {
+      case 'M':
+        d += `M${format(cmd.x)} ${format(cmd.y)}`
+        break
+      case 'L':
+        d += `L${format(cmd.x)} ${format(cmd.y)}`
+        break
+      case 'C':
+        d += `C${format(cmd.x1)} ${format(cmd.y1)} ${format(cmd.x2)} ${format(cmd.y2)} ${format(cmd.x)} ${format(cmd.y)}`
+        break
+      case 'Q':
+        d += `Q${format(cmd.x1)} ${format(cmd.y1)} ${format(cmd.x)} ${format(cmd.y)}`
+        break
+      case 'Z':
+        d += 'Z'
+        break
+    }
+  }
+  return d
+}
+
 async function processSvg(unprocessedSvg: SVGSVGElement): Promise<string> {
   const texts = [...unprocessedSvg.getElementsByTagName('text')]
   for (const text of texts) {
@@ -128,8 +159,8 @@ async function processSvg(unprocessedSvg: SVGSVGElement): Promise<string> {
     const y = parseFloat(yText)
     const font = await queryFontCached(fontFamily)
     const textPath = font.getPath(text.textContent, x, y, fontSize)
-    const textPathSvg = textPath.toDOMElement(2)
-    // textPathSvg.setAttribute('fill', 'black');
+    const textPathSvg = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    textPathSvg.setAttribute('d', pathDataFromCommands(textPath.commands, 2))
     text.replaceWith(textPathSvg)
   }
   const serializer = new XMLSerializer()
