@@ -211,7 +211,7 @@ function emitAnnotations(
   for (const id of ids) {
     const annotation = argumentAnnotation(id)
     if (annotation !== undefined) {
-      text += `  \\annotation[yshift=0pt]{a${getLatexId(id)}}{${annotation}}\r\n`
+      text += `  \\annotation{a${getLatexId(id)}}{${annotation}}\r\n`
     }
   }
   return text
