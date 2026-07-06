@@ -174,11 +174,11 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
           </div>
         </template>
         <template v-else>
-          <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr))">
+          <div class="flex flex-wrap gap-2">
             <div
               v-for="entry in numericalDisplayData"
               :key="entry.id"
-              class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm min-w-0 text-neutral-900"
+              class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm min-w-18 max-w-full text-neutral-900"
               :style="{ backgroundColor: entry.bgColor, borderColor: entry.borderColor }"
             >
               <span class="font-medium truncate" :title="entry.name">{{ entry.name }}</span>
