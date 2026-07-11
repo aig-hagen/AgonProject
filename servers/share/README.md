@@ -2,7 +2,7 @@
 
 A small Express service that lets a framework instance be shared via a short link: the frontend POSTs the serialized document and gets back an id, and anyone with that id's link can fetch the content back.
 
-For how to run this locally alongside the rest of the app, see [../../docs/index.md](../../docs/index.md#running-the-share-server).
+For how to run this locally alongside the rest of the app, see [../../docs/DEVELOPMENT.md](../../docs/DEVELOPMENT.md#running-the-share-server).
 
 ## API
 

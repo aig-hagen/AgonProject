@@ -57,7 +57,7 @@ It is developed by the Artificial Intelligence Group of the University of Hagen 
 
 ## Development
 
-Checkout the [development documentation](/docs/index.md) for working on this project.
+Checkout the [development documentation](/docs/DEVELOPMENT.md) for working on this project.
 
 ## License
 

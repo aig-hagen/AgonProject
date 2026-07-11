@@ -1,6 +1,6 @@
 # Project Structure
 
-This is an overview of how the repository is laid out. For how to set up a dev environment, see [index.md](./index.md); for how to extend the app, see [extending.md](./extending.md).
+This is an overview of how the repository is laid out. For how to set up a dev environment, see [DEVELOPMENT.md](./DEVELOPMENT.md); for how to extend the app, see [extending.md](./extending.md).
 
 ## Top level
 
@@ -54,7 +54,7 @@ Used by every module above instead of being reimplemented per type:
 
 ## `servers/` — auxiliary backend services
 
-The frontend talks to three backends in development (see [index.md](./index.md) for how to run them), proxied via `vite.config.ts`:
+The frontend talks to three backends in development (see [DEVELOPMENT.md](./DEVELOPMENT.md) for how to run them), proxied via `vite.config.ts`:
 
 - TweetyProject web server (Java, submodule under `third-party/`) — semantics evaluation, port 8080
 - [`graph-gen/`](/servers/graph-gen/) (Python/FastAPI) — random framework generation, port 8000

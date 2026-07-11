@@ -2,7 +2,7 @@
 
 A FastAPI service that generates random argumentation frameworks for the "Generate" feature in the frontend, using algorithms from [NetworkX](https://networkx.org/) and other graph-generation binaries/scripts.
 
-For how to run this locally alongside the rest of the app, see [../../docs/index.md](../../docs/index.md#running-the-graph-generation-server). For the full request/response schema and the binary/algorithm convention, see the module docstring at the top of [`server.py`](./server.py) — this file only summarizes it.
+For how to run this locally alongside the rest of the app, see [../../docs/DEVELOPMENT.md](../../docs/DEVELOPMENT.md#running-the-graph-generation-server). For the full request/response schema and the binary/algorithm convention, see the module docstring at the top of [`server.py`](./server.py) — this file only summarizes it.
 
 ## API
 
