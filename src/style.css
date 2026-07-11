@@ -22,7 +22,11 @@
 }
 
 .graph-controller__graph-canvas {
-  background-color: var(--color-base-100) !important;
+  background-color: var(--color-base-100);
+}
+
+.graph-controller__grid-line {
+  stroke: var(--color-base-300, #ddd);
 }
 
 
@@ -67,8 +71,36 @@
   background-color: #3e6a8a;
 }
 
-.graph-controller__node-label {
+.graph-controller__node-label,
+.graph-controller__annotation-label,
+.graph-controller__badge-label {
   font-family: 'JetBrains Mono', 'Fira Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+
+.graph-controller__badge {
+  fill: var(--color-base-100);
+  stroke: var(--graph-node-color, #5a87a8);
+}
+
+.graph-controller__badge-label {
+  fill: var(--color-base-content);
+}
+
+.graph-controller__annotation-label {
+  fill: var(--color-base-content);
+  stroke: var(--color-base-100);
+}
+
+.graph-controller__link-label {
+  fill: var(--color-base-content);
+}
+
+.paf-graph .graph-controller__annotation-label {
+  font-size: 10px;
+}
+
+.adf-graph .graph-controller__annotation-label {
+  font-size: 12px;
 }
 
 .graph-controller__label-input {

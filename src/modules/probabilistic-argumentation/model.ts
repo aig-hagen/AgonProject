@@ -27,6 +27,7 @@ export interface PafArgumentData {
   x: number
   y: number
   probability: number
+  probabilityAnnotationPosition?: { angle: number; distance: number }
 }
 
 export class ProbabilisticArgumentation<ArgumentDataT extends PafArgumentData> {

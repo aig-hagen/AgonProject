@@ -17,7 +17,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { onClickOutside } from '@vueuse/core'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import type { NodeId } from '@/modules/common/graph-editor/graphEditor'
@@ -41,10 +40,7 @@ const emit = defineEmits<{
 }>()
 
 const inputRef = useTemplateRef<HTMLInputElement>('input')
-const rootRef = useTemplateRef<HTMLElement>('root')
 const isFocused = ref(false)
-
-onClickOutside(rootRef, () => emit('close'))
 
 const argNameMap = computed(() => {
   const map = new Map<number, string>()
@@ -129,9 +125,9 @@ function insertAtCursor(text: string, cursorOffset?: number) {
 
 <template>
   <div
-    ref="root"
-    class="absolute bg-base-100 border border-base-300 shadow-md rounded-xl pointer-events-auto min-w-72"
+    class="absolute z-50 bg-base-100 border border-base-300 shadow-md rounded-xl pointer-events-auto min-w-72"
     :style="{ left: x + 'px', top: y + 'px', transform: 'translateY(calc(-100% - 8px))' }"
+    @click.stop
     @keydown.esc.stop="emit('close')"
     @keydown.enter.stop="emit('close')"
   >

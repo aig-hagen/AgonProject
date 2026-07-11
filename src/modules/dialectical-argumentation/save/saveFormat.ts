@@ -33,6 +33,11 @@ import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialec
 
 const API_VERSION = 'dialectical-argumentation-framework/v1' as const
 
+const AnnotationPositionSaveSchema = z.strictObject({
+  angle: z.number(),
+  distance: z.number(),
+})
+
 // Links are fully derived from conditions, so only arguments are saved.
 // condition is validated separately via FormulaNodeSchema after schema parse.
 const AdfArgumentsSaveSchema = z.record(
@@ -42,6 +47,7 @@ const AdfArgumentsSaveSchema = z.record(
     x: z.number(),
     y: z.number(),
     condition: z.unknown(),
+    conditionAnnotationPosition: AnnotationPositionSaveSchema.optional(),
   }),
 )
 
@@ -53,14 +59,14 @@ export const SaveSchema = z.object({
 export type Save = z.infer<typeof SaveSchema>
 
 export function saveAsString(adf: DialecticalArgumentation<AdfArgumentData>): string {
-  const argumentsSave: Record<string, { name: string; x: number; y: number; condition: FormulaNode }> =
-    Object.create(null)
+  const argumentsSave: Record<string, AdfArgumentData> = Object.create(null)
   for (const [argumentId, argumentData] of adf.arguments()) {
     argumentsSave[argumentId] = {
       name: argumentData.name,
       x: argumentData.x,
       y: argumentData.y,
       condition: argumentData.condition,
+      conditionAnnotationPosition: argumentData.conditionAnnotationPosition,
     }
   }
   return toFormatedJsonString({
@@ -88,6 +94,7 @@ export function loadFromString(
         x: argumentData.x,
         y: argumentData.y,
         condition,
+        conditionAnnotationPosition: argumentData.conditionAnnotationPosition,
       })
     }
 
@@ -116,6 +123,7 @@ export function loadExampleFromJson(json: unknown) {
         x: argumentData.x,
         y: argumentData.y,
         condition,
+        conditionAnnotationPosition: argumentData.conditionAnnotationPosition,
       })
     }
     for (const [id] of adf.arguments()) {

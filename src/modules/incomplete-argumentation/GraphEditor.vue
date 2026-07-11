@@ -20,8 +20,9 @@
 import { useLocalStorage } from '@vueuse/core'
 import { computed, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
+import { NodeOutline } from '@aig-hagen/graph-component/lib'
+
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
-import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -115,12 +116,12 @@ const linkConfig = {
   DOUBLE: { displayName: 'Uncertain Attack', arrowType: 'SINGLE' as const, dashArray: '8 4', icon: ArrowLongRightDashedIcon },
 }
 
-const uncertainArgumentIds = computed(() => {
-  const ids = new Set<number>()
+const argumentOutlines = computed(() => {
+  const outlines = new Map<NodeId, NodeOutline>()
   for (const [id] of renderedState.value.current.content.uncertainArguments()) {
-    ids.add(id)
+    outlines.set(id, NodeOutline.DASHED)
   }
-  return ids
+  return outlines
 })
 
 function createNewState(recipe: (draft: IncompleteArgumentation<IafArgumentData>) => void) {
@@ -238,6 +239,7 @@ const tutorialRefs = computed(() => ({
     @link-changed="onLinkChanged"
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
+    :node-outlines="argumentOutlines"
     :state="editorState"
     :history-state="historyState"
     :tutorials="iafTutorials"
@@ -288,19 +290,6 @@ const tutorialRefs = computed(() => ({
           </svg>
         </button>
       </div>
-    </template>
-    <template #nodeOverlay="{ nodes }">
-      <circle
-        v-for="node in nodes.filter((n) => uncertainArgumentIds.has(n.id))"
-        :key="node.id"
-        :cx="node.x"
-        :cy="node.y"
-        :r="ARGUMENT_RADIUS_IN_PX"
-        fill="none"
-        stroke="var(--color-base-content)"
-        stroke-dasharray="5,4"
-        stroke-width="2.5"
-      />
     </template>
     <template #evaluationExtensions="{ onHighlight }">
       <WindowExtensions

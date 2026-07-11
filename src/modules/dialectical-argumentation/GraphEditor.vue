@@ -17,10 +17,10 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import type { AnnotationPosition } from '@aig-hagen/graph-component/lib'
 import { useLocalStorage } from '@vueuse/core'
 import { computed, provide, ref, shallowRef, watch } from 'vue'
 
-import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -177,6 +177,16 @@ function getConditionString(nodeId: NodeId): string {
   return formulaToString(condition, argNameMap.value)
 }
 
+const conditionAnnotations = computed(() => {
+  const annotations = new Map<NodeId, { content: string; position?: AnnotationPosition }>()
+  for (const [id, data] of renderedState.value.current.content.arguments()) {
+    annotations.set(id, {
+      content: getConditionString(id),
+      position: data.conditionAnnotationPosition,
+    })
+  }
+  return annotations
+})
 
 function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
   selectedNodeId.value = nodeId
@@ -187,6 +197,19 @@ function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
     x: event.clientX - rect.left,
     y: event.clientY - rect.top,
   }
+}
+
+function onAnnotationClicked(data: { id: NodeId; content: string }, event: PointerEvent) {
+  event.stopPropagation()
+  openConditionEditor(data.id, event)
+}
+
+function onAnnotationMoved(data: { id: NodeId; position: AnnotationPosition }[]) {
+  createNewState((draft) => {
+    for (const { id, position } of data) {
+      draft.getArgument(id).conditionAnnotationPosition = position
+    }
+  })
 }
 
 function onConditionChanged(formula: FormulaNode) {
@@ -233,16 +256,20 @@ const tutorialContextExtra = computed(() => ({
 <template>
   <GraphEditor
     v-if="editorState"
+    class="adf-graph"
     @new="emit('new')"
     @load="emit('load')"
     @node-created="onNodeCreated"
     @node-deleted="onNodeDeleted"
     @node-label-edited="onNodeLabelEdited"
     @nodes-moved="onNodesMoved"
+    @annotation-clicked="onAnnotationClicked"
+    @annotation-moved="onAnnotationMoved"
     :link-configs="linkConfig"
     :allow-link-creation="false"
     :allow-link-deletion="false"
     :state="editorState"
+    :node-annotations="conditionAnnotations"
     :history-state="historyState"
     :tutorials="adfTutorials"
     default-tutorial-id="adf-basics"
@@ -253,22 +280,6 @@ const tutorialContextExtra = computed(() => ({
     @share="emit('share')"
     @open-extension-window="addExtensionInstance()"
   >
-    <template #nodeOverlay="{ nodes }">
-      <template v-for="node in nodes" :key="node.id">
-        <text
-          :x="node.x + ARGUMENT_RADIUS_IN_PX + 6"
-          :y="node.y - ARGUMENT_RADIUS_IN_PX + 9"
-          font-size="13"
-          font-family="monospace"
-          stroke="white"
-          stroke-width="3"
-          paint-order="stroke fill"
-          pointer-events="auto"
-          style="cursor: pointer; user-select: none"
-          @click.stop="openConditionEditor(node.id, $event)"
-        >{{ getConditionString(node.id) }}</text>
-      </template>
-    </template>
     <template #evaluationExtensions="{ onHighlight }">
       <WindowInterpretations
         v-for="(instance, index) in extensionInstances"
@@ -282,6 +293,13 @@ const tutorialContextExtra = computed(() => ({
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
+      <Teleport to="body">
+        <div
+          v-if="selectedNodeId !== null"
+          class="fixed inset-0 z-40"
+          @click="selectedNodeId = null"
+        />
+      </Teleport>
       <ConditionEditorBar
         v-if="selectedNodeId !== null"
         :argument-id="selectedNodeId"

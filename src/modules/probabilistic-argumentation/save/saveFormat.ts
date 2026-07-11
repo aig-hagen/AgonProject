@@ -36,6 +36,11 @@ const API_VERSION = 'probabilistic-argumentation-framework/v1' as const
 
 const ProbabilitySchema = z.number().min(0).max(1)
 
+const AnnotationPositionSaveSchema = z.strictObject({
+  angle: z.number(),
+  distance: z.number(),
+})
+
 const PafArgumentsSaveSchema = z.record(
   ArgumentIdSaveSchema,
   z.strictObject({
@@ -43,6 +48,7 @@ const PafArgumentsSaveSchema = z.record(
     x: z.number(),
     y: z.number(),
     probability: ProbabilitySchema,
+    probabilityAnnotationPosition: AnnotationPositionSaveSchema.optional(),
   }),
 )
 
@@ -92,6 +98,7 @@ export function saveAsString(
       x: data.x,
       y: data.y,
       probability: data.probability,
+      probabilityAnnotationPosition: data.probabilityAnnotationPosition,
     }
   }
   const attacksSave: [number, number, number][] = []
@@ -119,6 +126,7 @@ export function loadFromString(
         x: argumentData.x,
         y: argumentData.y,
         probability: argumentData.probability,
+        probabilityAnnotationPosition: argumentData.probabilityAnnotationPosition,
       })
     }
     for (const [sourceId, targetId, prob] of data.attacks) {
@@ -139,6 +147,7 @@ export function loadExampleFromJson(json: unknown) {
         x: argumentData.x,
         y: argumentData.y,
         probability: argumentData.probability,
+        probabilityAnnotationPosition: argumentData.probabilityAnnotationPosition,
       })
     }
     for (const [sourceId, targetId, prob] of data.attacks) {

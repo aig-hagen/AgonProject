@@ -21,9 +21,12 @@ import {
   ArrowType,
   EVENT_CAUSE,
   GraphComponent,
+  type AnnotationPosition,
+  type AnnotationPositionSnapshot,
   type jsonHyperLink,
   type jsonLink,
   type jsonNode,
+  NodeOutline,
   NodeShape,
   type PositionSnapshot,
 } from '@aig-hagen/graph-component/lib'
@@ -103,11 +106,13 @@ const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
 
-const { state, linkConfigs, historyState, nodeWeights, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false, tutorials, defaultTutorialId, tutorialContextExtra } = defineProps<{
+const { state, linkConfigs, historyState, nodeWeights, nodeOutlines, nodeAnnotations, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false, tutorials, defaultTutorialId, tutorialContextExtra } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
   nodeWeights?: Map<NodeId, number>
+  nodeOutlines?: Map<NodeId, NodeOutline>
+  nodeAnnotations?: Map<NodeId, { content: string; position?: AnnotationPosition }>
   graphStyle?: GraphStyle
   allowLinkCreation?: boolean
   allowLinkDeletion?: boolean
@@ -268,6 +273,19 @@ const emit = defineEmits<{
       sourceIds: NodeId[]
       targetId: NodeId
     },
+  ]
+  annotationClicked: [
+    data: {
+      id: NodeId
+      content: string
+    },
+    event: PointerEvent,
+  ]
+  annotationMoved: [
+    data: {
+      id: NodeId
+      position: AnnotationPosition
+    }[],
   ]
   undo: []
   redo: []
@@ -581,6 +599,7 @@ onMounted(() => {
       radius: ARGUMENT_RADIUS_IN_PX,
     },
     allowNodeCreationViaGUI: true,
+    allowAnnotationDragging: false,
     nodeGUIEditability: {
       fixedPosition: { x: false, y: false },
       deletable: true,
@@ -865,6 +884,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
       x: preserved?.x ?? node.x,
       y: preserved?.y ?? node.y,
       color: effectiveStyle.value.nodeColor,
+      outline: nodeOutlines?.get(node.id),
     }
   })
   const links: jsonLink[] = state.links.map((link) => ({
@@ -895,6 +915,15 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   }
 
   void nextTick(() => {
+    previousBadgeInternalIds = new Set()
+    applyNodeWeights(nodeWeights)
+    previousAnnotationContent = new Map()
+    for (const [publicId, annotation] of nodeAnnotations ?? []) {
+      if (!idMapping.hasReverse(publicId)) continue
+      const internalId = idMapping.getOrFailReverse(publicId)
+      graphComponent.createAnnotation(internalId, annotation.content, annotation.position)
+      previousAnnotationContent.set(publicId, annotation.content)
+    }
     for (const link of state.links) {
       const internalSourceId = idMapping.getOrFailReverse(link.sourceId)
       const internalTargetId = idMapping.getOrFailReverse(link.targetId)
@@ -995,18 +1024,65 @@ const arrowSwitcherTarget = shallowRef<
   | undefined
 >(undefined)
 
-const nodesWithWeights = computed(() =>
-  nodeWeights
-    ? state.nodes.filter((n) => nodeWeights.has(n.id))
-    : []
-)
-
 function formatWeight(w: number): string {
   return Number.isInteger(w) ? String(w) : w.toFixed(2)
 }
 
-function formatWeightFontSize(w: number): number {
-  return Number.isInteger(w) ? 10 : 8
+let previousBadgeInternalIds = new Set<number>()
+
+function applyNodeWeights(weights: Map<NodeId, number> | undefined) {
+  const graphComponent = graphComponentRef.value
+  if (!graphComponent) return
+  const activeInternalIds = new Set<number>()
+  for (const [publicId, weight] of weights ?? []) {
+    if (!idMapping.hasReverse(publicId)) continue
+    const internalId = idMapping.getOrFailReverse(publicId)
+    graphComponent.setNodeBadge(internalId, formatWeight(weight))
+    activeInternalIds.add(internalId)
+  }
+  for (const internalId of previousBadgeInternalIds) {
+    if (!activeInternalIds.has(internalId)) graphComponent.setNodeBadge(internalId, undefined)
+  }
+  previousBadgeInternalIds = activeInternalIds
+}
+
+watch(() => nodeWeights, (weights) => applyNodeWeights(weights))
+
+let previousAnnotationContent = new Map<NodeId, string>()
+
+// Content-only updates (e.g. a probability value changing) go through the annotation's own
+// setter rather than a full setGraph() redraw, so routine edits don't reset zoom/physics.
+// Position is deliberately never pushed from here - it flows app -> library once at creation
+// (via setGraph below) and library -> app via the annotation-moved event, so a user's drag
+// isn't immediately overwritten by this watcher reacting to its own resulting state change.
+function applyAnnotationContentUpdates(
+  annotations: Map<NodeId, { content: string; position?: AnnotationPosition }> | undefined,
+) {
+  const graphComponent = graphComponentRef.value
+  if (!graphComponent) return
+  const nextContent = new Map<NodeId, string>()
+  for (const [publicId, annotation] of annotations ?? []) {
+    nextContent.set(publicId, annotation.content)
+    if (previousAnnotationContent.get(publicId) === annotation.content) continue
+    if (!idMapping.hasReverse(publicId)) continue
+    graphComponent.setAnnotationContent(idMapping.getOrFailReverse(publicId), annotation.content)
+  }
+  previousAnnotationContent = nextContent
+}
+
+watch(() => nodeAnnotations, (annotations) => applyAnnotationContentUpdates(annotations))
+
+function onAnnotationClicked(annotation: { anchorId: number; content: string }, event: PointerEvent) {
+  if (!idMapping.has(annotation.anchorId)) return
+  const publicId = idMapping.getOrFail(annotation.anchorId)
+  emit('annotationClicked', { id: publicId, content: annotation.content }, event)
+}
+
+function onAnnotationMoved(annotations: AnnotationPositionSnapshot[]) {
+  const data = annotations
+    .filter((a) => idMapping.has(a.anchorId))
+    .map((a) => ({ id: idMapping.getOrFail(a.anchorId), position: a.position }))
+  emit('annotationMoved', data)
 }
 
 let zoomObserver: MutationObserver | undefined
@@ -1116,33 +1192,17 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       @hyper-link-deleted="onHyperLinkDeleted"
       @nodes-moved="onNodesMoved"
       @label-edited="onLabelEdited"
+      @annotation-clicked="onAnnotationClicked"
+      @annotation-moved="onAnnotationMoved"
       :id="graphComponentId"
       ref="graph-component"
     />
     <svg
-      v-show="nodesWithWeights.length > 0 || !!slots.nodeOverlay"
+      v-show="!!slots.nodeOverlay"
       class="absolute inset-0 w-full h-full pointer-events-none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <g ref="overlay-group">
-        <g v-for="node in nodesWithWeights" :key="node.id">
-          <circle
-            :cx="node.x + ARGUMENT_RADIUS_IN_PX * 0.7"
-            :cy="node.y - ARGUMENT_RADIUS_IN_PX * 0.7"
-            r="12"
-            fill="var(--color-base-100)"
-            :stroke="effectiveStyle.nodeColor"
-            stroke-width="1.5"
-          />
-          <text
-            :x="node.x + ARGUMENT_RADIUS_IN_PX * 0.7"
-            :y="node.y - ARGUMENT_RADIUS_IN_PX * 0.7"
-            text-anchor="middle"
-            dominant-baseline="central"
-            :font-size="formatWeightFontSize(nodeWeights!.get(node.id)!)"
-            fill="var(--color-base-content)"
-          >{{ formatWeight(nodeWeights!.get(node.id)!) }}</text>
-        </g>
         <slot name="nodeOverlay" :nodes="overlayNodes" />
       </g>
     </svg>

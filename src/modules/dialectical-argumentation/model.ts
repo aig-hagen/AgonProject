@@ -32,6 +32,7 @@ export interface AdfArgumentData {
   x: number
   y: number
   condition: FormulaNode
+  conditionAnnotationPosition?: { angle: number; distance: number }
 }
 
 export class DialecticalArgumentation<ArgumentDataT extends AdfArgumentData> {

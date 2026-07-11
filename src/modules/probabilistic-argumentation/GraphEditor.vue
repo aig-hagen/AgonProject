@@ -17,13 +17,13 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import type { AnnotationPosition } from '@aig-hagen/graph-component/lib'
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
 import { useLocalStorage } from '@vueuse/core'
 import { computed, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
-import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -166,7 +166,10 @@ function onChangeAttackProbability(sourceId: number, targetId: number, probabili
   probabilityEditCount.value++
 }
 
-// ── Probability overlay labels ──────────────────────────────────────────────
+// ── Attack probability overlay labels ───────────────────────────────────────
+// Argument-level probability is rendered as a native library annotation (see
+// argumentAnnotations below) - only edge-anchored attack probability still uses this
+// overlay path, since edge-relative annotation positioning isn't part of the library yet.
 
 interface ProbabilityLabel {
   key: string
@@ -181,26 +184,13 @@ interface ProbabilityLabel {
 
 const MUTUAL_ATTACK_LABEL_OFFSET = 12
 
-function getProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityLabel[] {
+function getAttackProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityLabel[] {
   const positions = new Map(nodes.map((n) => [n.id, { x: n.x, y: n.y }]))
   const labels: ProbabilityLabel[] = []
 
   const attackSet = new Set<string>()
   for (const [sourceId, targetId] of renderedState.value.current.content.attacks()) {
     attackSet.add(`${sourceId}-${targetId}`)
-  }
-
-  for (const [id, data] of renderedState.value.current.content.arguments()) {
-    const pos = positions.get(id)
-    if (pos === undefined) continue
-    labels.push({
-      key: `arg-${id}`,
-      x: pos.x,
-      y: pos.y + ARGUMENT_RADIUS_IN_PX + 12,
-      value: data.probability,
-      type: 'argument',
-      id,
-    })
   }
 
   for (const [sourceId, targetId, prob] of renderedState.value.current.content.attacks()) {
@@ -238,6 +228,42 @@ function getProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityLabel[]
   }
 
   return labels
+}
+
+// ── Argument probability annotation ─────────────────────────────────────────
+
+const argumentAnnotations = computed(() => {
+  const annotations = new Map<NodeId, { content: string; position?: AnnotationPosition }>()
+  for (const [id, data] of renderedState.value.current.content.arguments()) {
+    annotations.set(id, {
+      content: data.probability.toFixed(2),
+      position: data.probabilityAnnotationPosition,
+    })
+  }
+  return annotations
+})
+
+function onAnnotationClicked(data: { id: NodeId; content: string }, event: PointerEvent) {
+  event.stopPropagation()
+  editingLabel.value = {
+    key: `arg-${data.id}`,
+    x: 0,
+    y: 0,
+    value: parseFloat(data.content),
+    type: 'argument',
+    id: data.id,
+    screenX: event.clientX,
+    screenY: event.clientY,
+  }
+  editingValue.value = parseFloat(data.content)
+}
+
+function onAnnotationMoved(data: { id: NodeId; position: AnnotationPosition }[]) {
+  createNewState((draft) => {
+    for (const { id, position } of data) {
+      draft.getArgument(id).probabilityAnnotationPosition = position
+    }
+  })
 }
 
 // ── Evaluation window management ───────────────────────────────────────────
@@ -323,6 +349,7 @@ function onPopupKeydown(event: KeyboardEvent) {
   <div class="h-full w-full relative">
     <GraphEditor
       v-if="editorState"
+      class="paf-graph"
       @new="emit('new')"
       @load="emit('load')"
       @generate="emit('generate')"
@@ -332,10 +359,13 @@ function onPopupKeydown(event: KeyboardEvent) {
       @nodes-moved="onNodesMoved"
       @link-created="onLinkCreated"
       @link-deleted="onLinkDeleted"
+      @annotation-clicked="onAnnotationClicked"
+      @annotation-moved="onAnnotationMoved"
 
       :link-configs="linkConfig"
       :state="editorState"
       :node-weights="nodeWeights"
+      :node-annotations="argumentAnnotations"
       :history-state="historyState"
       :tutorials="pafTutorials"
       default-tutorial-id="paf-basics"
@@ -376,13 +406,13 @@ function onPopupKeydown(event: KeyboardEvent) {
 
       <template #nodeOverlay="{ nodes }">
         <text
-          v-for="label in getProbabilityLabels(nodes)"
+          v-for="label in getAttackProbabilityLabels(nodes)"
           :key="label.key"
           :x="label.x"
           :y="label.y"
           text-anchor="middle"
           dominant-baseline="central"
-          font-size="9"
+          font-size="10"
           font-family="monospace"
           stroke="white"
           stroke-width="3"
