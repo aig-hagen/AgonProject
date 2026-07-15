@@ -26,7 +26,6 @@ export interface ExtensionWindowInstanceState {
   semanticKey: string
   args: Record<string, string>
   mode: string
-  evaluateContinuously: boolean
 }
 
 export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceState {
@@ -35,6 +34,5 @@ export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceS
     semanticKey: KEY_DEFAULT_SEMANTIC,
     args: defaultArgsForSemantics(KEY_DEFAULT_SEMANTIC),
     mode: 'enumerate',
-    evaluateContinuously: false,
   }
 }

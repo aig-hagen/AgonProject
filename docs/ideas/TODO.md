@@ -1,5 +1,8 @@
 ## Bugs and Issues
 
+- on drag to create edge: the arrow tip does sometimes not line up with mouse cursor
+- PAF: arg probs do not show for new created arguments
+
 ## Features
 
 ### add tags to AF types

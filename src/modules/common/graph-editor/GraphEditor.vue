@@ -970,6 +970,8 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   void nextTick(() => {
     previousBadgeInternalIds = new Set()
     applyNodeWeights(nodeWeights)
+    // Outlines were already applied wholesale as node props by setGraph above.
+    previousNodeOutlines = new Map(nodeOutlines ?? [])
     previousAnnotationContent = new Map()
     for (const [publicId, annotation] of nodeAnnotations ?? []) {
       if (!idMapping.hasReverse(publicId)) continue
@@ -1101,6 +1103,32 @@ function applyNodeWeights(weights: Map<NodeId, number> | undefined) {
 
 watch(() => nodeWeights, (weights) => applyNodeWeights(weights))
 
+let previousNodeOutlines = new Map<NodeId, NodeOutline>()
+
+// Like annotations below, outlines are applied wholesale on a full setGraph import;
+// this watcher covers changes between imports (e.g. an uncertain iAF argument created
+// interactively, or an existing one toggled), including clearing an outline when a
+// node no longer has an entry.
+function applyNodeOutlineUpdates(outlines: Map<NodeId, NodeOutline> | undefined) {
+  const graphComponent = graphComponentRef.value
+  if (!graphComponent) return
+  const next = new Map<NodeId, NodeOutline>()
+  for (const [publicId, outline] of outlines ?? []) {
+    next.set(publicId, outline)
+    if (previousNodeOutlines.get(publicId) === outline) continue
+    if (!idMapping.hasReverse(publicId)) continue
+    graphComponent.setNodeOutline(outline, idMapping.getOrFailReverse(publicId))
+  }
+  for (const publicId of previousNodeOutlines.keys()) {
+    if (next.has(publicId)) continue
+    if (!idMapping.hasReverse(publicId)) continue
+    graphComponent.setNodeOutline(undefined, idMapping.getOrFailReverse(publicId))
+  }
+  previousNodeOutlines = next
+}
+
+watch(() => nodeOutlines, (outlines) => applyNodeOutlineUpdates(outlines))
+
 let previousAnnotationContent = new Map<NodeId, string>()
 
 // Content-only updates (e.g. a probability value changing) go through the annotation's own
@@ -1118,7 +1146,14 @@ function applyAnnotationContentUpdates(
     nextContent.set(publicId, annotation.content)
     if (previousAnnotationContent.get(publicId) === annotation.content) continue
     if (!idMapping.hasReverse(publicId)) continue
-    graphComponent.setAnnotationContent(idMapping.getOrFailReverse(publicId), annotation.content)
+    const internalId = idMapping.getOrFailReverse(publicId)
+    if (!previousAnnotationContent.has(publicId)) {
+      // Node was created interactively after the last setGraph import, so no
+      // annotation element exists yet - setAnnotationContent would silently no-op.
+      graphComponent.createAnnotation(internalId, annotation.content, annotation.position)
+    } else {
+      graphComponent.setAnnotationContent(internalId, annotation.content)
+    }
   }
   previousAnnotationContent = nextContent
 }

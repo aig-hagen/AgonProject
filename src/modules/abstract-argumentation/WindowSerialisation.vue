@@ -35,6 +35,7 @@ import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/mo
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import type { DocumentId } from '@/modules/common/documents/db'
 import type { Input } from '@/modules/common/evaluation/types'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import { IdMapping } from '@/modules/common/ids'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
@@ -77,61 +78,44 @@ const selectedSelectionFunction = shallowRef<SerialisationFunction>(
 const selectedTerminationFunction = shallowRef<SerialisationFunction>(
   resolveFunction(TERMINATION_FUNCTIONS, instanceState.terminationFunctionKey),
 )
-const evaluateContinuously = ref(instanceState.evaluateContinuously)
 const selectedMode = ref<'sequences' | 'interactive'>(instanceState.mode ?? 'sequences')
 
-watch(
-  [selectedSelectionFunction, selectedTerminationFunction, evaluateContinuously, selectedMode],
-  () => {
-    const state: SerialisationWindowInstanceState = {
-      id: instanceState.id,
-      selectionFunctionKey: selectedSelectionFunction.value.key,
-      terminationFunctionKey: selectedTerminationFunction.value.key,
-      evaluateContinuously: evaluateContinuously.value,
-      mode: selectedMode.value,
-    }
-    emit('update:instanceState', state)
-  },
-)
+watch([selectedSelectionFunction, selectedTerminationFunction, selectedMode], () => {
+  const state: SerialisationWindowInstanceState = {
+    id: instanceState.id,
+    selectionFunctionKey: selectedSelectionFunction.value.key,
+    terminationFunctionKey: selectedTerminationFunction.value.key,
+    mode: selectedMode.value,
+  }
+  emit('update:instanceState', state)
+})
 
 // --- FloatingWindow state ---
 const isOpen = ref(true)
 watch(isOpen, (v) => {
   if (!v) emit('close')
 })
-const isCompact = ref(false)
-watch(isCompact, (v) => {
-  if (v && selectedMode.value === 'sequences') evaluateContinuously.value = true
-})
+const paramsOpen = ref(true)
 
 const windowTitle = computed(() => {
   const sel = selectedSelectionFunction.value.displayName
   const term = selectedTerminationFunction.value.displayName
   const modeLabel = selectedMode.value === 'interactive' ? 'Interactive' : 'Sequences'
-  return `Serialisation · ${sel} / ${term} · ${modeLabel}`
+  return `${sel} · ${term} · ${modeLabel}`
 })
 
 // ──────────────────────────────────────────────────────────────
 // SEQUENCES MODE
 // ──────────────────────────────────────────────────────────────
-const sequencesEnabled = computed(
-  () => selectedMode.value === 'sequences' && evaluateContinuously.value,
-)
+const sequencesEnabled = computed(() => selectedMode.value === 'sequences')
 const query = useSerialisationEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSelectionFunction.value.key),
   computed(() => selectedTerminationFunction.value.key),
   sequencesEnabled,
 )
-const { status, error, isPending, isLoading, isError, refetch, data } = query
+const { error, isLoading, isError, refetch, data } = query
 const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
-const userCanTriggerFetch = computed(
-  () =>
-    selectedMode.value === 'sequences' && !evaluateContinuously.value && status.value !== 'success',
-)
-const sequencesResultsHeader = computed(
-  () => `Serialisation sequences (${data.value?.sequences.length ?? 0})`,
-)
 
 // ──────────────────────────────────────────────────────────────
 // INTERACTIVE MODE
@@ -315,179 +299,143 @@ function onWindowFocus() {
 <template>
   <FloatingWindow
     v-model:open="isOpen"
-    v-model:compact="isCompact"
+    v-model:params-open="paramsOpen"
+    card
     :title="windowTitle"
+    :loading="selectedMode === 'sequences' ? isLoading : interactiveIsLoading"
     :initial-position="{ x: 256 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intital-size="{ width: 576, height: 480 }"
     :instance-offset="instanceOffset"
     :document-id="documentId"
     :state-key="stateKey"
     :active="isActive"
-    compactable
     :minimizable="false"
     @focus="onWindowFocus"
   >
-    <template #default="{ compact }">
-      <div class="p-4 flex flex-col gap-3">
-        <!-- Parameters (hidden in compact) -->
-        <fieldset v-if="!compact" class="fieldset">
-          <legend class="fieldset-legend">Parameters</legend>
-          <div class="flex gap-2 flex-wrap">
-            <label class="select select-sm w-fit" hidden>
-              <span class="label">Solver</span>
-              <select disabled>
-                <option selected>TweetyProject</option>
-              </select>
-            </label>
-            <label class="select select-sm w-fit">
-              <span class="label">Selection</span>
-              <select v-model="selectedSelectionFunction">
-                <option v-for="fn in SELECTION_FUNCTIONS" :key="fn.key" :value="fn">
-                  {{ fn.displayName }}
-                </option>
-              </select>
-            </label>
-            <label class="select select-sm w-fit">
-              <span class="label">Termination</span>
-              <select v-model="selectedTerminationFunction">
-                <option v-for="fn in TERMINATION_FUNCTIONS" :key="fn.key" :value="fn">
-                  {{ fn.displayName }}
-                </option>
-              </select>
-            </label>
-            <label class="select select-sm w-fit">
-              <span class="label">Mode</span>
-              <select v-model="selectedMode">
-                <option value="sequences">Sequences</option>
-                <option value="interactive">Interactive</option>
-              </select>
-            </label>
-          </div>
-        </fieldset>
-
-        <!-- Definitions for selected functions (hidden in compact) -->
-        <div v-if="!compact" class="flex flex-col sm:flex-row gap-3">
-          <TermDefinitionBlock :id="selectedSelectionFunction.tooltipId" class="flex-1" />
-          <TermDefinitionBlock :id="selectedTerminationFunction.tooltipId" class="flex-1" />
-        </div>
-
-        <!-- Sequences mode: evaluate controls (hidden in compact) -->
-        <fieldset v-if="!compact && selectedMode === 'sequences'" class="fieldset">
-          <div class="flex gap-2 flex-wrap">
-            <button class="btn btn-sm btn-soft" :disabled="!userCanTriggerFetch" @click="refetch()">
-              Evaluate
-            </button>
-            <label class="label">
-              <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
-              Evaluate continuously
-            </label>
-          </div>
-        </fieldset>
-
-        <!-- Interactive mode: reset button (hidden in compact) -->
-        <fieldset v-if="!compact && selectedMode === 'interactive'" class="fieldset">
-          <div class="flex gap-2">
-            <button class="btn btn-sm btn-soft" @click="resetInteractive()">Reset</button>
-          </div>
-        </fieldset>
-
-        <!-- ── SEQUENCES RESULTS ── -->
-        <fieldset v-if="selectedMode === 'sequences' && (!isPending || isLoading)" class="fieldset">
-          <legend v-if="!compact" class="fieldset-legend">{{ sequencesResultsHeader }}</legend>
-          <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
-            <span>Evaluation timed out</span>
-          </div>
-          <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
-            <span>Evaluation failed</span>
-          </div>
-          <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-            <span>Evaluating…</span>
-          </div>
-          <template v-if="data !== undefined">
-            <div v-if="data.sequences.length === 0" class="text-sm opacity-60">
-              No serialisation sequences found.
-            </div>
-            <ol v-else class="flex flex-col gap-2">
-              <li
-                v-for="(sequence, seqIndex) in data.sequences"
-                :key="seqIndex"
-                class="flex flex-wrap items-center gap-1 text-sm"
-              >
-                <template v-for="(step, stepIndex) in sequence" :key="stepIndex">
-                  <span v-if="stepIndex > 0" class="select-none opacity-50">&#x2192;</span>
-                  <span class="rounded border px-1.5 py-0.5 font-mono">
-                    <template v-if="step.length === 0">&#x2205;</template>
-                    <template v-else>{{ step.map((a) => a.name).join(', ') }}</template>
-                  </span>
-                </template>
-              </li>
-            </ol>
-            <p class="label mt-1">{{ data.evaluationDurationInMs }}ms</p>
-          </template>
-        </fieldset>
-
-        <!-- ── INTERACTIVE RESULTS ── -->
-        <fieldset v-if="selectedMode === 'interactive'" class="fieldset">
-          <legend v-if="!compact" class="fieldset-legend">Interactive Serialisation</legend>
-
-          <!-- Loading -->
-          <div v-if="interactiveIsLoading" role="alert" class="alert alert-info alert-soft">
-            <span>Evaluating…</span>
-          </div>
-
-          <!-- Error -->
-          <div v-else-if="interactiveError" role="alert" class="alert alert-error alert-soft">
-            <span>Evaluation failed</span>
-          </div>
-
-          <template v-else>
-            <!-- Built sequence so far -->
-            <div
-              v-if="builtSequence.length > 0"
-              class="flex flex-wrap items-center gap-1 text-sm mb-2"
+    <div class="px-3 pb-3 pt-1 flex flex-col gap-2.5 text-xs">
+      <div
+        v-show="paramsOpen"
+        class="rounded-field bg-base-200/60 border border-base-300 p-2.5 flex flex-col gap-2"
+      >
+        <div class="flex flex-wrap gap-3">
+          <ParameterField label="Selection" min-width="9rem">
+            <select v-model="selectedSelectionFunction" class="select select-sm w-full bg-base-200">
+              <option v-for="fn in SELECTION_FUNCTIONS" :key="fn.key" :value="fn">
+                {{ fn.displayName }}
+              </option>
+            </select>
+          </ParameterField>
+          <ParameterField label="Termination" min-width="9rem">
+            <select
+              v-model="selectedTerminationFunction"
+              class="select select-sm w-full bg-base-200"
             >
-              <template v-for="(step, i) in builtSequence" :key="i">
-                <span v-if="i > 0" class="select-none opacity-50">&#x2192;</span>
+              <option v-for="fn in TERMINATION_FUNCTIONS" :key="fn.key" :value="fn">
+                {{ fn.displayName }}
+              </option>
+            </select>
+          </ParameterField>
+          <ParameterField label="Mode" max-width="8rem">
+            <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
+              <option value="sequences">Sequences</option>
+              <option value="interactive">Interactive</option>
+            </select>
+          </ParameterField>
+        </div>
+        <TermDefinitionBlock :id="selectedSelectionFunction.tooltipId" />
+        <TermDefinitionBlock :id="selectedTerminationFunction.tooltipId" />
+      </div>
+
+      <!-- ── SEQUENCES RESULTS ── -->
+      <template v-if="selectedMode === 'sequences'">
+        <div
+          v-if="isError"
+          role="alert"
+          class="alert alert-soft py-1.5"
+          :class="isTimeout ? 'alert-warning' : 'alert-error'"
+        >
+          <span>{{ isTimeout ? 'Evaluation timed out' : 'Evaluation failed' }}</span>
+          <button class="btn btn-xs btn-ghost ml-auto" @click="() => refetch()">Retry</button>
+        </div>
+        <template v-if="data !== undefined">
+          <div v-if="data.sequences.length === 0" class="text-sm opacity-60">
+            No serialisation sequences found.
+          </div>
+          <ol v-else class="flex flex-col gap-2">
+            <li
+              v-for="(sequence, seqIndex) in data.sequences"
+              :key="seqIndex"
+              class="flex flex-wrap items-center gap-1 text-sm"
+            >
+              <template v-for="(step, stepIndex) in sequence" :key="stepIndex">
+                <span v-if="stepIndex > 0" class="select-none opacity-50">&#x2192;</span>
                 <span class="rounded border px-1.5 py-0.5 font-mono">
                   <template v-if="step.length === 0">&#x2205;</template>
                   <template v-else>{{ step.map((a) => a.name).join(', ') }}</template>
                 </span>
               </template>
-            </div>
+            </li>
+          </ol>
+          <p class="label">
+            {{ data.evaluationDurationInMs }}ms · {{ data.sequences.length }} sequences
+          </p>
+        </template>
+        <p v-if="isLoading" class="text-base-content/50">Evaluating…</p>
+      </template>
 
-            <!-- Terminal status -->
-            <div
-              v-if="interactiveIsTerminal !== null"
-              class="flex items-center gap-1.5 text-sm mb-2"
-            >
-              <CheckCircleIcon v-if="interactiveIsTerminal" class="size-4 text-success" />
-              <XCircleIcon v-else class="size-4 text-error" />
-              <span>{{ interactiveIsTerminal ? 'Terminal' : 'Not terminal' }}</span>
-            </div>
+      <!-- ── INTERACTIVE RESULTS ── -->
+      <template v-if="selectedMode === 'interactive'">
+        <div v-if="interactiveError" role="alert" class="alert alert-error alert-soft py-1.5">
+          <span>Evaluation failed</span>
+          <button class="btn btn-xs btn-ghost ml-auto" @click="fetchInteractiveStep()">
+            Retry
+          </button>
+        </div>
 
-            <!-- Step selection (hidden in compact) -->
-            <template v-if="!compact">
-              <div v-if="selectableStepsDisplay.length === 0" class="text-sm opacity-60">
-                No initial sets available.
-              </div>
-              <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">
-                <p class="text-xs opacity-60">Select next initial set:</p>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="(step, i) in selectableStepsDisplay"
-                    :key="i"
-                    class="btn btn-sm btn-outline font-mono"
-                    @click="pickStep(i)"
-                  >
-                    <template v-if="step.length === 0">&#x2205;</template>
-                    <template v-else>{{ '{' + step.map((a) => a.name).join(', ') + '}' }}</template>
-                  </button>
-                </div>
-              </div>
+        <template v-else>
+          <!-- Built sequence so far -->
+          <div v-if="builtSequence.length > 0" class="flex flex-wrap items-center gap-1 text-sm">
+            <template v-for="(step, i) in builtSequence" :key="i">
+              <span v-if="i > 0" class="select-none opacity-50">&#x2192;</span>
+              <span class="rounded border px-1.5 py-0.5 font-mono">
+                <template v-if="step.length === 0">&#x2205;</template>
+                <template v-else>{{ step.map((a) => a.name).join(', ') }}</template>
+              </span>
             </template>
-          </template>
-        </fieldset>
-      </div>
-    </template>
+          </div>
+
+          <!-- Terminal status -->
+          <div v-if="interactiveIsTerminal !== null" class="flex items-center gap-1.5 text-sm">
+            <CheckCircleIcon v-if="interactiveIsTerminal" class="size-4 text-success" />
+            <XCircleIcon v-else class="size-4 text-error" />
+            <span>{{ interactiveIsTerminal ? 'Terminal' : 'Not terminal' }}</span>
+          </div>
+
+          <!-- Step selection -->
+          <div v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading" class="text-sm opacity-60">
+            No initial sets available.
+          </div>
+          <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">
+            <p class="opacity-60">Select next initial set:</p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="(step, i) in selectableStepsDisplay"
+                :key="i"
+                class="btn btn-sm btn-outline font-mono"
+                @click="pickStep(i)"
+              >
+                <template v-if="step.length === 0">&#x2205;</template>
+                <template v-else>{{ '{' + step.map((a) => a.name).join(', ') + '}' }}</template>
+              </button>
+            </div>
+          </div>
+          <p v-if="interactiveIsLoading" class="text-base-content/50">Evaluating…</p>
+        </template>
+
+        <div class="flex">
+          <button class="btn btn-xs btn-soft" @click="resetInteractive()">Reset</button>
+        </div>
+      </template>
+    </div>
   </FloatingWindow>
 </template>

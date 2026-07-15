@@ -23,7 +23,7 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
-import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
+import type { Input } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
@@ -87,15 +87,12 @@ const isApproximate = computed({
     selectedSolver.value = v ? 'montecarlo' : 'simple'
   },
 })
-const evaluateContinuously = ref(instanceState.evaluateContinuously)
-
-watch([selectedSemantic, selectedMode, selectedSolver, evaluateContinuously], () => {
+watch([selectedSemantic, selectedMode, selectedSolver], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantic.value.key,
     mode: selectedMode.value,
     solver: selectedSolver.value,
-    evaluateContinuously: evaluateContinuously.value,
   })
 })
 
@@ -104,7 +101,7 @@ const query = usePafEvaluationQuery(
   computed(() => selectedSemantic.value.key),
   computed(() => selectedMode.value),
   computed(() => selectedSolver.value),
-  evaluateContinuously,
+  true,
 )
 
 const { data } = query
@@ -119,30 +116,17 @@ watch(data, (d) => {
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
   const solverLabel = isApproximate.value ? ' · Approx.' : ''
-  return `Probabilistic: ${selectedSemantic.value.displayName} · ${modeLabel}${solverLabel}`
-})
-
-const resultsHeader = computed((): ResultsHeaderPart[] => {
-  const tooltipId =
-    selectedMode.value === 'skeptical' ? 'skepticalAcceptance' : 'credulousAcceptance'
-  const prefix =
-    selectedMode.value === 'skeptical' ? 'Skeptically accepted' : 'Credulously accepted'
-  return [
-    { text: prefix, tooltipId },
-    ` probabilities wrt ${selectedSemantic.value.displayName.toLowerCase()} semantics`,
-  ]
+  return `${selectedSemantic.value.displayName} · ${modeLabel}${solverLabel}`
 })
 </script>
 
 <template>
   <BaseEvaluationWindow
-    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 400, height: 420 }"
     :query="query"
-    :results-header="resultsHeader"
     :document-id="documentId"
     :state-key="stateKey"
     @evaluate="emit('evaluate')"

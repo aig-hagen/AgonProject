@@ -17,13 +17,10 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, type Ref, ref, useTemplateRef, watch } from 'vue'
+import { computed, onUnmounted, type Ref, ref, watch } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import { TWEETY_TIMEOUT_IN_MS } from '@/modules/common/evaluation/tweety-project/fetch'
-import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
-import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
 export interface EvaluationWindowQuery {
@@ -40,7 +37,6 @@ const props = defineProps<{
   instanceOffset?: number
   initialPositionBase?: { x: number; y: number }
   initialSize?: { width: number; height: number }
-  resultsHeader?: ResultsHeaderPart[]
   query: EvaluationWindowQuery
   documentId?: DocumentId
   stateKey?: string
@@ -53,39 +49,39 @@ const emit = defineEmits<{
   evaluate: []
 }>()
 
-const evaluateContinuously = defineModel<boolean>('evaluateContinuously', { required: true })
-
 const internalOpen = ref(true)
 watch(internalOpen, (v) => {
   if (!v) emit('close')
 })
 
-const isCompact = ref(false)
-watch(isCompact, (v) => {
-  if (v) evaluateContinuously.value = true
-})
+// Persisted by FloatingWindow alongside position/width; new cards start open so
+// the semantics can be picked first.
+const paramsOpen = ref(true)
 
-const { status, error, isPending, isLoading, isError, refetch } = props.query
+const { error, isPending, isLoading, isError, refetch } = props.query
 
 watch(isLoading, (loading, wasLoading) => {
   if (loading && !wasLoading) emit('evaluate')
 })
 
-const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
-const isRateLimit = computed(() => error.value?.name === 'RateLimitError')
-const isServiceUnavailable = computed(() => error.value?.name === 'ServiceUnavailableError')
-
-const floatingWindow = useTemplateRef<InstanceType<typeof FloatingWindow>>('floatingWindow')
-
-watch(isLoading, (loading) => {
-  if (!loading && status.value === 'success') {
-    nextTick(() => floatingWindow.value?.resizeToFitContent())
+// All failure modes share one status strip; only wording and tone differ.
+const statusStrip = computed(() => {
+  if (!isError.value) return undefined
+  switch (error.value?.name) {
+    case 'ServiceUnavailableError':
+      return { kind: 'warning', message: 'Server temporarily unavailable — retrying may help' }
+    case 'RateLimitError':
+      return { kind: 'warning', message: 'Too many requests — please wait a moment' }
+    case 'EvaluationTimeoutError':
+      return { kind: 'warning', message: `Timed out after ${TIMEOUT_S}s` }
+    default:
+      return { kind: 'error', message: 'Evaluation failed' }
   }
 })
 
-const userCanTriggerFetch = computed(
-  () => !evaluateContinuously.value && status.value !== 'success',
-)
+// True only on the very first evaluation, before any result exists — the slot
+// where skeleton chips render. Re-evaluations keep the previous results visible.
+const isInitialLoad = computed(() => isLoading.value && isPending.value)
 
 const TIMEOUT_S = Math.round(TWEETY_TIMEOUT_IN_MS / 1000)
 const remainingSeconds = ref(TIMEOUT_S)
@@ -111,76 +107,51 @@ onUnmounted(() => {
 
 const offset = computed(() => props.instanceOffset ?? 0)
 const basePos = computed(() => props.initialPositionBase ?? { x: 128, y: 64 })
-const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
+const size = computed(() => props.initialSize ?? { width: 400, height: 360 })
 </script>
 
 <template>
   <FloatingWindow
-    ref="floatingWindow"
     v-model:open="internalOpen"
-    v-model:compact="isCompact"
+    v-model:params-open="paramsOpen"
+    card
     :title="title"
+    :loading="isLoading"
     :initial-position="{ x: basePos.x + offset * 24, y: basePos.y + offset * 24 }"
     :intitalSize="size"
     :instance-offset="offset"
     :document-id="props.documentId"
     :state-key="props.stateKey"
     :active="props.active"
-    compactable
     :minimizable="false"
     @focus="emit('focus')"
   >
-    <template #default="{ compact }">
-      <div class="p-4 flex flex-col gap-3">
-        <div v-if="!compact" class="flex flex-wrap gap-3 text-xs">
-          <slot name="parameters" :compact="compact" />
+    <div class="px-3 pb-3 pt-1 flex flex-col gap-2.5 text-xs">
+      <div
+        v-show="paramsOpen"
+        class="rounded-field bg-base-200/60 border border-base-300 p-2.5 flex flex-col gap-2"
+      >
+        <div class="flex flex-wrap gap-3">
+          <slot name="parameters" />
         </div>
-        <slot v-if="!compact" name="parameters-footer" :compact="compact" />
-
-        <div v-if="!compact" class="flex items-center gap-3 pt-2 border-t border-base-300">
-          <span
-            v-if="resultsHeader && (!isPending || isLoading)"
-            class="text-xs font-semibold text-base-content"
-          >
-            <template v-for="(part, i) in resultsHeader" :key="i">
-              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">
-                <KatexInlineElement :text="part.text" />
-              </TermTooltip>
-              <KatexInlineElement v-else :text="part" />
-            </template>
-          </span>
-          <label class="label gap-1.5 text-xs ml-auto">
-            <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-xs" />
-            Continuous
-          </label>
-          <button
-            class="btn btn-xs btn-soft"
-            :disabled="!userCanTriggerFetch"
-            @click="() => refetch()"
-          >
-            Evaluate
-          </button>
-        </div>
-
-        <div v-if="!isPending || isLoading" class="flex flex-col gap-2 text-xs">
-          <div v-if="isServiceUnavailable" role="alert" class="alert alert-warning alert-soft">
-            <span>The server is temporarily unavailable — please try again in a moment</span>
-          </div>
-          <div v-else-if="isRateLimit" role="alert" class="alert alert-warning alert-soft">
-            <span>Too many requests — please wait a moment before evaluating again</span>
-          </div>
-          <div v-else-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
-            <span>Evaluation timed out</span>
-          </div>
-          <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
-            <span>Evaluation failed</span>
-          </div>
-          <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-            <span>Evaluating... ({{ remainingSeconds }}s remaining)</span>
-          </div>
-          <slot name="results" :compact="compact" />
-        </div>
+        <slot name="parameters-footer" />
       </div>
-    </template>
+
+      <div v-if="statusStrip" role="alert" class="alert alert-soft py-1.5" :class="statusStrip.kind === 'error' ? 'alert-error' : 'alert-warning'">
+        <span>{{ statusStrip.message }}</span>
+        <button class="btn btn-xs btn-ghost ml-auto" @click="() => refetch()">Retry</button>
+      </div>
+
+      <div v-if="isInitialLoad" aria-hidden="true" class="flex flex-wrap gap-2">
+        <span class="skeleton h-6 w-24 rounded-full"></span>
+        <span class="skeleton h-6 w-16 rounded-full"></span>
+      </div>
+
+      <slot v-if="!isPending || isLoading" name="results" />
+
+      <p v-if="isLoading" class="text-base-content/50">
+        Evaluating… {{ remainingSeconds }}s
+      </p>
+    </div>
   </FloatingWindow>
 </template>

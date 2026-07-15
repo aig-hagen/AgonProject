@@ -78,7 +78,6 @@ const selectedSemantic = shallowRef<RankingSemantic>(
   resolveSemanticFromKey(instanceState.semanticKey),
 )
 const args = ref<RankingArgs>(instanceState.args ?? defaultRankingArgsFor(instanceState.semanticKey))
-const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
 watch(selectedSemantic, (semantic, previous) => {
   if (previous !== undefined && semantic.key !== previous.key) {
@@ -87,13 +86,12 @@ watch(selectedSemantic, (semantic, previous) => {
 })
 
 watch(
-  [selectedSemantic, args, evaluateContinuously],
+  [selectedSemantic, args],
   () => {
     emit('update:instanceState', {
       id: instanceState.id,
       semanticKey: selectedSemantic.value.key,
       args: args.value,
-      evaluateContinuously: evaluateContinuously.value,
     })
   },
   { deep: true },
@@ -103,7 +101,7 @@ const query = useRankingEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   args,
-  evaluateContinuously,
+  true,
 )
 
 const { data } = query
@@ -177,13 +175,11 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
 
 <template>
   <BaseEvaluationWindow
-    v-model:evaluate-continuously="evaluateContinuously"
-    :title="`Ranking: ${selectedSemantic.displayName}`"
+    :title="`${selectedSemantic.displayName} · Ranking`"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 480, height: 400 }"
     :query="query"
-    :results-header="[`${selectedSemantic.displayName} ranking`]"
     :document-id="documentId"
     :state-key="stateKey"
     :active="isActive"
@@ -198,47 +194,35 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
           </option>
         </select>
       </ParameterField>
-      <details
-        v-if="selectedSemantic.parameters?.length"
-        class="collapse collapse-arrow basis-full"
-      >
-        <summary class="collapse-title fieldset-legend ps-0 min-h-0 py-1 max-w-max">
-          Parameters
-        </summary>
-        <div class="collapse-content px-0 pb-1 pt-1">
-          <div class="flex gap-3 flex-wrap items-end">
-            <template v-for="param in selectedSemantic.parameters" :key="param.key">
-              <div class="flex flex-col gap-0.5">
-                <HoverTooltip class="label text-xs w-fit">{{ param.label }}
-                  <template #content>
-                    <span class="text-xs">{{ param.description }}</span>
-                  </template>
-                </HoverTooltip>
-                <input
-                  v-if="param.type === 'number'"
-                  type="number"
-                  class="input input-xs w-20"
-                  :min="param.min"
-                  :max="param.max"
-                  :step="param.step ?? 'any'"
-                  v-model.number="args[param.key]"
-                />
-                <input
-                  v-else-if="param.type === 'boolean'"
-                  type="checkbox"
-                  class="toggle toggle-xs"
-                  v-model="args[param.key]"
-                />
-                <select v-else class="select select-xs w-fit bg-base-200" v-model="args[param.key]">
-                  <option v-for="o in param.options" :key="o.value" :value="o.value">
-                    {{ o.label }}
-                  </option>
-                </select>
-              </div>
+      <template v-for="param in selectedSemantic.parameters ?? []" :key="param.key">
+        <div class="flex flex-col gap-0.5">
+          <HoverTooltip class="label text-xs w-fit">{{ param.label }}
+            <template #content>
+              <span class="text-xs">{{ param.description }}</span>
             </template>
-          </div>
+          </HoverTooltip>
+          <input
+            v-if="param.type === 'number'"
+            type="number"
+            class="input input-xs w-20"
+            :min="param.min"
+            :max="param.max"
+            :step="param.step ?? 'any'"
+            v-model.number="args[param.key]"
+          />
+          <input
+            v-else-if="param.type === 'boolean'"
+            type="checkbox"
+            class="toggle toggle-xs"
+            v-model="args[param.key]"
+          />
+          <select v-else class="select select-xs w-fit bg-base-200" v-model="args[param.key]">
+            <option v-for="o in param.options" :key="o.value" :value="o.value">
+              {{ o.label }}
+            </option>
+          </select>
         </div>
-      </details>
+      </template>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />
@@ -270,12 +254,12 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
         </template>
         <div class="flex items-center justify-between gap-2">
           <p class="label">
+            {{ data.evaluationDurationInMs }}ms ·
             {{
               data.rankingType === 'lattice'
                 ? 'Node labels show the ranking level'
                 : 'Node labels show ranking scores'
             }}
-            · {{ data.evaluationDurationInMs }}ms
           </p>
           <ButtonCopy
             v-if="copyText !== undefined"

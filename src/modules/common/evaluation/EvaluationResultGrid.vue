@@ -34,8 +34,8 @@ const props = withDefaults(
 
 const statusLine = computed(() => {
   const parts: string[] = []
-  if (props.selectionHint) parts.push(props.selectionHint)
   if (props.evaluationDurationInMs !== undefined) parts.push(props.evaluationDurationInMs + 'ms')
+  if (props.selectionHint) parts.push(props.selectionHint)
   return parts.join(' · ')
 })
 

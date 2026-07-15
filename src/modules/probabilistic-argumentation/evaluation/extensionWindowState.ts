@@ -27,7 +27,6 @@ export interface PafWindowInstanceState {
   semanticKey: string
   mode: string
   solver: string
-  evaluateContinuously: boolean
 }
 
 export function createDefaultPafWindowInstance(): PafWindowInstanceState {
@@ -36,6 +35,5 @@ export function createDefaultPafWindowInstance(): PafWindowInstanceState {
     semanticKey: KEY_DEFAULT_SEMANTIC,
     mode: KEY_DEFAULT_MODE,
     solver: KEY_DEFAULT_SOLVER,
-    evaluateContinuously: false,
   }
 }

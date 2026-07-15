@@ -24,7 +24,7 @@ import { NODE_BLUE, NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
-import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
+import type { Input } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
@@ -83,24 +83,20 @@ function resolveSemanticFromKey(key: string): Semantics {
 
 const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
-const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
+watch([selectedSemantic, selectedMode], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantic.value.key,
     mode: selectedMode.value,
-    evaluateContinuously: evaluateContinuously.value,
   })
 })
-
-const enabled = computed(() => evaluateContinuously.value)
 
 const query = useInterpretationEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   computed(() => selectedMode.value),
-  enabled,
+  true,
 )
 const { data } = query
 
@@ -118,18 +114,6 @@ function formatInterpretation(interp: Interpretation): string {
     .join(', ')
 }
 
-const resultsHeader = computed((): ResultsHeaderPart[] => {
-  const { displayName, tooltipId: semanticTooltipId } = selectedSemantic.value
-  const semanticPart: ResultsHeaderPart = semanticTooltipId
-    ? { text: displayName, tooltipId: semanticTooltipId }
-    : displayName
-  if (selectedMode.value === 'enumerate') return [semanticPart, ' models']
-  const tooltipId =
-    selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
-  const prefix =
-    selectedMode.value === 'credulous' ? 'Credulously accepted' : 'Skeptically accepted'
-  return [{ text: prefix, tooltipId }, ' arguments wrt ', semanticPart, ' semantics']
-})
 const selectionHint = computed(() =>
   selectedMode.value === 'enumerate'
     ? 'Select model to highlight'
@@ -181,7 +165,7 @@ const windowTitle = computed(() => {
       : selectedMode.value === 'credulous'
         ? 'Credulous'
         : 'Skeptical'
-  return `Models: ${selectedSemantic.value.displayName} · ${modeLabel}`
+  return `${selectedSemantic.value.displayName} · ${modeLabel}`
 })
 
 const selectedKey = ref<string | undefined>(undefined)
@@ -215,12 +199,10 @@ function onWindowFocus() {
 
 <template>
   <BaseEvaluationWindow
-    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
     :initial-size="{ width: 400, height: 360 }"
     :query="query"
-    :results-header="resultsHeader"
     :document-id="documentId"
     :state-key="stateKey"
     @close="emit('close')"

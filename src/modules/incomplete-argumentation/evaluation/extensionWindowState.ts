@@ -24,7 +24,6 @@ export interface ExtensionWindowInstanceState {
   semanticKey: string
   type: IafType
   mode: IafMode
-  evaluateContinuously: boolean
 }
 
 export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceState {
@@ -33,6 +32,5 @@ export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceS
     semanticKey: KEY_DEFAULT_SEMANTIC,
     type: 'pos',
     mode: 'enumerate',
-    evaluateContinuously: false,
   }
 }

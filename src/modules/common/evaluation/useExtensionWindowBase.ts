@@ -19,7 +19,6 @@
 import { computed, type Ref,ref } from 'vue'
 
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
-import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import type { UUID } from '@/modules/common/ids'
 
@@ -37,19 +36,8 @@ export interface ExtensionWindowQueryData {
 export function useExtensionWindowBase(
   selectedMode: { readonly value: string },
   query: { data: Readonly<Ref<ExtensionWindowQueryData | undefined>> },
-  selectedSemanticName: { readonly value: string },
 ) {
   const selectedExtension = ref<string | undefined>(undefined)
-
-  const resultsHeader = computed((): ResultsHeaderPart[] => {
-    // LaTeX notation (e.g. "$CO^{PR}$") must keep its abbreviation casing.
-    const rawName = selectedSemanticName.value
-    const name = rawName.includes('$') ? rawName : rawName.toLowerCase()
-    if (selectedMode.value === 'enumerate') return [`${rawName} extensions`]
-    const tooltipId = selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
-    const prefix = selectedMode.value === 'credulous' ? 'Credulously accepted' : 'Skeptically accepted'
-    return [{ text: prefix, tooltipId }, ` arguments wrt ${name} semantics`]
-  })
 
   const selectionHint = computed(() =>
     selectedMode.value === 'enumerate'
@@ -119,7 +107,6 @@ export function useExtensionWindowBase(
 
   return {
     selectedExtension,
-    resultsHeader,
     selectionHint,
     emptyMessage,
     dataExtensionsFormatedAndSorted,

@@ -25,7 +25,6 @@ export interface SerialisationWindowInstanceState {
   id: string
   selectionFunctionKey: string
   terminationFunctionKey: string
-  evaluateContinuously: boolean
   mode: 'sequences' | 'interactive'
 }
 
@@ -34,7 +33,6 @@ export function createDefaultSerialisationWindowInstance(): SerialisationWindowI
     id: crypto.randomUUID(),
     selectionFunctionKey: KEY_DEFAULT_SELECTION_FUNCTION,
     terminationFunctionKey: KEY_DEFAULT_TERMINATION_FUNCTION,
-    evaluateContinuously: false,
     mode: 'sequences',
   }
 }

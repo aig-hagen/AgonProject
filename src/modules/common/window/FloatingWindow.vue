@@ -25,12 +25,13 @@ import '@interactjs/modifiers'
 import {
   AdjustmentsHorizontalIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   ChevronUpIcon,
   XMarkIcon,
 } from '@heroicons/vue/24/solid'
 import interact from '@interactjs/interact'
 import { useEventListener } from '@vueuse/core'
-import { inject, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { inject, nextTick, onMounted, ref, useTemplateRef, watch, watchEffect } from 'vue'
 
 import { type DocumentId, DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
@@ -44,6 +45,7 @@ const header = useTemplateRef('header')
 const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
 const compact = defineModel<boolean>('compact', { default: false })
+const paramsOpen = defineModel<boolean>('paramsOpen', { default: true })
 const emit = defineEmits<{ focus: [] }>()
 const {
   title,
@@ -51,6 +53,8 @@ const {
   intitalSize,
   compactable = false,
   minimizable = true,
+  card = false,
+  loading = false,
   instanceOffset = 0,
   documentId,
   stateKey,
@@ -61,6 +65,8 @@ const {
   intitalSize: { width: number; height: number }
   compactable?: boolean
   minimizable?: boolean
+  card?: boolean
+  loading?: boolean
   instanceOffset?: number
   documentId?: DocumentId
   stateKey?: string
@@ -79,8 +85,12 @@ interface StoredWindowState {
   x: number
   y: number
   width: number
-  height: number
+  // Card windows self-size their height and store paramsOpen instead; classic
+  // windows store height and (if compactable) compact. Both shapes share this type
+  // so a window converted between variants degrades gracefully on load.
+  height?: number
   compact?: boolean
+  paramsOpen?: boolean
 }
 
 function saveWindowState() {
@@ -88,6 +98,15 @@ function saveWindowState() {
   const el = floating.value
   if (!el) return
   const w = parseFloat(el.style.width) || intitalSize.width
+  if (card) {
+    void setUIStateValue<StoredWindowState>(db, documentId, stateKey, {
+      x: position.x,
+      y: position.y,
+      width: w,
+      paramsOpen: paramsOpen.value,
+    })
+    return
+  }
   const h = parseFloat(el.style.height) || intitalSize.height
   void setUIStateValue<StoredWindowState>(db, documentId, stateKey, {
     x: position.x,
@@ -168,7 +187,11 @@ onMounted(async () => {
   el.style.visibility = 'hidden'
 
   const stored = await loadWindowState()
-  if (stored?.compact !== undefined) {
+  if (card) {
+    // Migration: pre-card saves stored `compact`; params visible === not compact.
+    const migrated = stored?.compact !== undefined ? !stored.compact : undefined
+    paramsOpen.value = stored?.paramsOpen ?? migrated ?? paramsOpen.value
+  } else if (stored?.compact !== undefined) {
     compact.value = stored.compact
   }
   const mobile = window.innerWidth < 640
@@ -229,7 +252,10 @@ onMounted(async () => {
     position.y = stored?.y ?? initialPosition.y
     el.style.transform = `translate(${position.x}px, ${position.y}px)`
     el.style.width = (stored?.width ?? intitalSize.width) + 'px'
-    el.style.height = (stored?.height ?? intitalSize.height) + 'px'
+    // Card windows self-size their height to content (capped via max-height class).
+    if (!card) {
+      el.style.height = (stored?.height ?? intitalSize.height) + 'px'
+    }
 
     interactable = interact(el)
       .draggable({
@@ -280,7 +306,7 @@ onMounted(async () => {
         ],
         allowFrom: el,
         invert: 'none',
-        edges: { top: false, left: true, bottom: true, right: true },
+        edges: { top: false, left: true, bottom: !card, right: true },
         listeners: {
           start: startDragOrResize,
           move(event) {
@@ -291,7 +317,9 @@ onMounted(async () => {
 
             event.target.style.transform = `translate(${position.x}px, ${position.y}px)`
             event.target.style.width = `${width}px`
-            event.target.style.height = `${height}px`
+            if (!card) {
+              event.target.style.height = `${height}px`
+            }
           },
           end: endDragOrResize,
         },
@@ -301,7 +329,7 @@ onMounted(async () => {
 })
 
 function resizeToFitContent(maxHeight = Math.min(window.innerHeight * 0.8, 700)) {
-  if (minimized.value || isMobileLayout.value) return
+  if (card || minimized.value || isMobileLayout.value) return
   const el = floating.value
   if (!el) return
   el.style.height = ''
@@ -312,9 +340,16 @@ function resizeToFitContent(maxHeight = Math.min(window.innerHeight * 0.8, 700))
 
 defineExpose({ resizeToFitContent })
 
+watch(paramsOpen, () => {
+  if (card) saveWindowState()
+})
+
 const { zIndex: zIndexValue, focusIn, focusOut } = useZIndex()
 
-useEventListener(floating, 'focus', () => {
+// 'focusin' (not 'focus') so the event also fires when a descendant gains focus —
+// clicking a result chip, a select, or the header button must count as focusing
+// the window; the non-bubbling 'focus' only covers clicks on non-focusable areas.
+useEventListener(floating, 'focusin', () => {
   const style = floating.value?.style
   if (style === undefined) {
     return
@@ -356,11 +391,48 @@ watchEffect(async () => {
     ref="floating"
     tabindex="0"
     class="absolute top-0 left-0 rounded-box bg-base-100 flex flex-col shadow-lg/30 border border-base-300 min-w-3xs floating-window"
+    :class="{ 'max-h-[min(80vh,44rem)]': card }"
     :style="{
       transform: `translate(${position.x}px, ${position.y}px)`,
     }"
   >
     <div
+      v-if="card"
+      ref="header"
+      class="floating-window-header flex items-center gap-2 py-1.5 pl-2.5 pr-1.5"
+    >
+      <span aria-hidden="true" class="grid grid-cols-2 gap-0.5 shrink-0 opacity-40 cursor-grab">
+        <span v-for="i in 6" :key="i" class="size-0.75 rounded-full bg-base-content"></span>
+      </span>
+      <span
+        v-if="loading"
+        class="loading loading-spinner loading-xs text-base-content/50 shrink-0"
+        title="Evaluating"
+      ></span>
+      <span
+        v-else
+        class="inline-block size-1.5 rounded-full shrink-0"
+        :class="active ? 'bg-success' : 'bg-base-content/25'"
+        :title="active ? 'Currently highlighted on canvas' : undefined"
+      ></span>
+      <button
+        type="button"
+        class="flex-1 min-w-0 flex items-center gap-1.5 text-left text-sm cursor-pointer"
+        :title="paramsOpen ? 'Hide parameters' : 'Edit parameters'"
+        @click="paramsOpen = !paramsOpen"
+      >
+        <span class="truncate font-medium">{{ title }}</span>
+        <ChevronRightIcon
+          class="size-3 shrink-0 text-base-content/40 transition-transform"
+          :class="{ 'rotate-90': paramsOpen }"
+        />
+      </button>
+      <button @click="open = false" class="btn btn-square btn-xs btn-ghost shrink-0">
+        <XMarkIcon class="size-4" />
+      </button>
+    </div>
+    <div
+      v-else
       ref="header"
       class="floating-window-header bg-base-200 flex justify-between py-1 pl-4 pr-2"
       :class="{ 'border-b border-base-300': !minimized }"

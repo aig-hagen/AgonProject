@@ -32,7 +32,7 @@ import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
-import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
+import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
@@ -78,15 +78,13 @@ function resolveSemanticFromKey(key: string): Semantics {
 const selectedSupportType = ref<string>(instanceState.supportTypeKey)
 const selectedSemantics = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
-const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantics, selectedSupportType, selectedMode, evaluateContinuously], () => {
+watch([selectedSemantics, selectedSupportType, selectedMode], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantics.value.key,
     supportTypeKey: selectedSupportType.value,
     mode: selectedMode.value,
-    evaluateContinuously: evaluateContinuously.value,
   })
 })
 
@@ -95,22 +93,17 @@ const query = useExtensionEvaluationQuery(
   computed(() => selectedSemantics.value.key),
   selectedSupportType,
   selectedMode,
-  evaluateContinuously,
+  true,
 )
 
 const {
   selectedExtension,
-  resultsHeader: baseResultsHeader,
   selectionHint,
   emptyMessage,
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(
-  selectedMode,
-  query,
-  computed(() => selectedSemantics.value.displayName),
-)
+} = useExtensionWindowBase(selectedMode, query)
 
 watch(currentHighlight, (h) => emit('highlight', h))
 function onWindowFocus() {
@@ -126,16 +119,6 @@ const supportTypeTooltipId = computed(() => {
       : 'coalitionSemantics'
 })
 
-const resultsHeader = computed((): ResultsHeaderPart[] => {
-  const support = selectedSupportType.value
-  const label = support === 'ded' ? 'deductive' : support === 'nec' ? 'necessary' : 'coalition'
-  return [
-    ...baseResultsHeader.value,
-    ' under ',
-    { text: `${label} support`, tooltipId: supportTypeTooltipId.value },
-  ]
-})
-
 const windowTitle = computed(() => {
   const modeLabel =
     selectedMode.value === 'enumerate'
@@ -149,18 +132,16 @@ const windowTitle = computed(() => {
       : selectedSupportType.value === 'nec'
         ? 'Necessary'
         : 'Coalition'
-  return `Extensions: ${supportLabel} · ${selectedSemantics.value.displayName} · ${modeLabel}`
+  return `${supportLabel} · ${selectedSemantics.value.displayName} · ${modeLabel}`
 })
 </script>
 
 <template>
   <BaseEvaluationWindow
-    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
     :initial-size="{ width: 570, height: 400 }"
     :query="query"
-    :results-header="resultsHeader"
     :document-id="documentId"
     :state-key="stateKey"
     @close="emit('close')"

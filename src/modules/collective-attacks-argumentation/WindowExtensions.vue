@@ -82,14 +82,12 @@ function resolveSemanticFromKey(key: string): Semantics {
 
 const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
-const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
+watch([selectedSemantic, selectedMode], () => {
   emit('update:instanceState', {
     id: instanceState.id,
     semanticKey: selectedSemantic.value.key,
     mode: selectedMode.value,
-    evaluateContinuously: evaluateContinuously.value,
   })
 })
 
@@ -97,22 +95,17 @@ const query = useSetAfEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   selectedMode,
-  evaluateContinuously,
+  true,
 )
 
 const {
   selectedExtension,
-  resultsHeader,
   selectionHint,
   emptyMessage,
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(
-  selectedMode,
-  query,
-  computed(() => selectedSemantic.value.displayName),
-)
+} = useExtensionWindowBase(selectedMode, query)
 
 watch(currentHighlight, (h) => emit('highlight', h))
 function onWindowFocus() {
@@ -126,18 +119,16 @@ const windowTitle = computed(() => {
       : selectedMode.value === 'credulous'
         ? 'Credulous'
         : 'Skeptical'
-  return `Extensions: ${selectedSemantic.value.displayName} · ${modeLabel}`
+  return `${selectedSemantic.value.displayName} · ${modeLabel}`
 })
 </script>
 
 <template>
   <BaseEvaluationWindow
-    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
     :initial-size="{ width: 400, height: 360 }"
     :query="query"
-    :results-header="resultsHeader"
     :document-id="documentId"
     :state-key="stateKey"
     @close="emit('close')"

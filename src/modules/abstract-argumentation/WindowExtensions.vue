@@ -95,7 +95,6 @@ const args = ref<Record<string, string>>(
   instanceState.args ?? defaultArgsForSemantics(instanceState.semanticKey),
 )
 const selectedMode = ref<string>(instanceState.mode)
-const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
 watch(selectedSemantic, (semantic, previous) => {
   if (previous !== undefined && semantic.key !== previous.key) {
@@ -104,14 +103,13 @@ watch(selectedSemantic, (semantic, previous) => {
 })
 
 watch(
-  [selectedSemantic, args, selectedMode, evaluateContinuously],
+  [selectedSemantic, args, selectedMode],
   () => {
     emit('update:instanceState', {
       id: instanceState.id,
       semanticKey: selectedSemantic.value.key,
       args: args.value,
       mode: selectedMode.value,
-      evaluateContinuously: evaluateContinuously.value,
     })
   },
   { deep: true },
@@ -122,7 +120,7 @@ const query = useExtensionEvaluationQuery(
   computed(() => selectedSemantic.value.key),
   args,
   selectedMode,
-  evaluateContinuously,
+  true,
 )
 
 // Explicit per-column track sizes (matching each field's own ParameterField min/max
@@ -143,41 +141,26 @@ const GRID_COLS_UP_TO_2 =
 const GRID_COLS_UP_TO_4 =
   'grid-cols-1 @min-[18rem]:grid-cols-[minmax(10rem,14rem)_minmax(7rem,8rem)] @min-[33.5rem]:grid-cols-[minmax(10rem,14rem)_minmax(7rem,8rem)_minmax(7rem,14rem)_minmax(7rem,14rem)]'
 
-// Shared by the results header and window title below, both of which need the current
-// meta-reasoner's parameters resolved to their Semantics objects before they can format
-// a notation — the two differ only in which formatter they call (formatNotation may
-// contain KaTeX; formatTitleNotation is the plain-text fallback for the title bar).
-const activeMetaReasoner = computed(() => {
+// The window title needs the current meta-reasoner's parameters resolved to their
+// Semantics objects before it can format a notation (formatTitleNotation is the
+// plain-text variant of formatNotation, which may contain KaTeX).
+const titleSemanticName = computed(() => {
   const metaReasoner = KNOWN_META_REASONERS.find((m) => m.key === selectedSemantic.value.key)
-  if (metaReasoner === undefined) return undefined
+  if (metaReasoner === undefined) return selectedSemantic.value.displayName
   const resolvedParams = metaReasoner.parameters.map((p) =>
     resolveSemanticFromKey(args.value[p.key] ?? ''),
   )
-  return { metaReasoner, resolvedParams }
-})
-
-const resultsSemanticName = computed(() => {
-  const active = activeMetaReasoner.value
-  if (active === undefined) return selectedSemantic.value.displayName
-  return active.metaReasoner.formatNotation(active.resolvedParams)
-})
-
-const titleSemanticName = computed(() => {
-  const active = activeMetaReasoner.value
-  if (active === undefined) return selectedSemantic.value.displayName
-  const { metaReasoner, resolvedParams } = active
   return (metaReasoner.formatTitleNotation ?? metaReasoner.formatNotation)(resolvedParams)
 })
 
 const {
   selectedExtension,
-  resultsHeader,
   selectionHint,
   emptyMessage,
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query, resultsSemanticName)
+} = useExtensionWindowBase(selectedMode, query)
 
 // Vacuous Reduct has 2 parameters (4 fields total incl. Semantics/Mode) and can grow to a
 // 4-column row; every other case (0 or 1 parameter) stays at 2 columns so a 3rd field always
@@ -199,19 +182,17 @@ const windowTitle = computed(() => {
       : selectedMode.value === 'credulous'
         ? 'Credulous'
         : 'Skeptical'
-  return `Extensions: ${titleSemanticName.value} · ${modeLabel}`
+  return `${titleSemanticName.value} · ${modeLabel}`
 })
 </script>
 
 <template>
   <BaseEvaluationWindow
-    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
     :initial-size="{ width: 400, height: 360 }"
     :active="isActive"
     :query="query"
-    :results-header="resultsHeader"
     :document-id="documentId"
     :state-key="stateKey"
     @close="emit('close')"
@@ -219,12 +200,6 @@ const windowTitle = computed(() => {
     @evaluate="emit('evaluate')"
   >
     <template #parameters>
-      <label class="select select-sm w-fit" hidden>
-        <span class="label">Solver</span>
-        <select disabled>
-          <option selected>TweetyProject</option>
-        </select>
-      </label>
       <div class="@container basis-full">
         <div
           class="grid gap-3"

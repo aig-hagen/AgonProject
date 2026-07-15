@@ -26,7 +26,6 @@ export interface RankingWindowInstanceState {
   id: string
   semanticKey: string
   args: RankingArgs
-  evaluateContinuously: boolean
 }
 
 export function createDefaultRankingWindowInstance(): RankingWindowInstanceState {
@@ -34,6 +33,5 @@ export function createDefaultRankingWindowInstance(): RankingWindowInstanceState
     id: crypto.randomUUID(),
     semanticKey: KEY_DEFAULT_RANKING_SEMANTIC,
     args: defaultRankingArgsFor(KEY_DEFAULT_RANKING_SEMANTIC),
-    evaluateContinuously: false,
   }
 }

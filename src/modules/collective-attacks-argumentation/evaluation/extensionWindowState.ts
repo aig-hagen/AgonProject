@@ -22,7 +22,6 @@ export interface ExtensionWindowInstanceState {
   id: string
   semanticKey: string
   mode: string
-  evaluateContinuously: boolean
 }
 
 export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceState {
@@ -30,6 +29,5 @@ export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceS
     id: crypto.randomUUID(),
     semanticKey: KEY_DEFAULT_SEMANTIC,
     mode: 'enumerate',
-    evaluateContinuously: false,
   }
 }
