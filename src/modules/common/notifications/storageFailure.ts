@@ -16,27 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { useStorage } from '@vueuse/core'
-import { createSharedComposable } from '@vueuse/shared'
-import { computed, watchEffect } from 'vue'
+import { useNotifications } from '@/modules/common/notifications/useNotifications'
 
-import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
+let hasNotified = false
 
-export const useTheme = createSharedComposable(() => {
-  const theme = useStorage('vueuse-color-scheme', 'light', undefined, {
-    onError: notifyStorageFailureOnce,
-  })
-
-  watchEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme.value)
-  })
-
-  const isDark = computed({
-    get: () => theme.value === 'dark',
-    set: (value: boolean) => {
-      theme.value = value ? 'dark' : 'light'
-    },
-  })
-
-  return { isDark }
-})
+/**
+ * Surfaces at most one toast per page load when persistence (localStorage or
+ * IndexedDB) fails - e.g. private browsing, disabled storage, or quota errors -
+ * so failures across many keys/components don't spam the user with duplicate toasts.
+ */
+export function notifyStorageFailureOnce(error?: unknown) {
+  if (error !== undefined) {
+    console.error('Storage operation failed.', error)
+  }
+  if (hasNotified) return
+  hasNotified = true
+  const { addErrorNotification } = useNotifications()
+  addErrorNotification(
+    'Could not save your data',
+    'Your browser is blocking local storage, so some settings, window layouts, and progress may not be saved between visits. This can happen in private browsing or if storage is disabled.',
+    10_000,
+  )
+}

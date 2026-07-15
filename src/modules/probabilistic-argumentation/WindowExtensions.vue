@@ -21,6 +21,7 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
+import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
@@ -33,13 +34,23 @@ import {
   usePafEvaluationQuery,
 } from '@/modules/probabilistic-argumentation/evaluation/tweetyProject'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
-import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import type {
+  PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 
-const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
+const {
+  input,
+  instanceState,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+} = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
   instanceState: PafWindowInstanceState
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -49,7 +60,10 @@ const emit = defineEmits<{
   close: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...probabilisticArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationGlossary,
+  ...probabilisticArgumentationGlossary,
+})
 
 const allSemantics = KNOWN_SEMANTIC_GROUPS.flatMap((g) => g.semantics)
 
@@ -62,7 +76,9 @@ const selectedMode = ref(instanceState.mode)
 const selectedSolver = ref(instanceState.solver)
 const isApproximate = computed({
   get: () => selectedSolver.value === 'montecarlo',
-  set: (v) => { selectedSolver.value = v ? 'montecarlo' : 'simple' },
+  set: (v) => {
+    selectedSolver.value = v ? 'montecarlo' : 'simple'
+  },
 })
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
@@ -87,7 +103,10 @@ const query = usePafEvaluationQuery(
 const { data } = query
 
 watch(data, (d) => {
-  emit('setWeights', d === undefined ? [] : d.entries.map((e) => ({ id: e.id, weight: e.probability })))
+  emit(
+    'setWeights',
+    d === undefined ? [] : d.entries.map((e) => ({ id: e.id, weight: e.probability })),
+  )
 })
 
 const windowTitle = computed(() => {
@@ -97,9 +116,14 @@ const windowTitle = computed(() => {
 })
 
 const resultsHeader = computed((): ResultsHeaderPart[] => {
-  const tooltipId = selectedMode.value === 'skeptical' ? 'skepticalAcceptance' : 'credulousAcceptance'
-  const prefix = selectedMode.value === 'skeptical' ? 'Skeptically accepted' : 'Credulously accepted'
-  return [{ text: prefix, tooltipId }, ` probabilities wrt ${selectedSemantic.value.displayName.toLowerCase()} semantics`]
+  const tooltipId =
+    selectedMode.value === 'skeptical' ? 'skepticalAcceptance' : 'credulousAcceptance'
+  const prefix =
+    selectedMode.value === 'skeptical' ? 'Skeptically accepted' : 'Credulously accepted'
+  return [
+    { text: prefix, tooltipId },
+    ` probabilities wrt ${selectedSemantic.value.displayName.toLowerCase()} semantics`,
+  ]
 })
 </script>
 
@@ -112,7 +136,8 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     :initial-size="{ width: 480, height: 320 }"
     :query="query"
     :results-header="resultsHeader"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
     @evaluate="emit('evaluate')"
     @close="emit('close')"
   >
@@ -120,7 +145,11 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
       <label class="select select-sm w-fit">
         <span class="label">Semantics</span>
         <select v-model="selectedSemantic">
-          <optgroup v-for="group in KNOWN_SEMANTIC_GROUPS" :key="group.key" :label="group.displayName">
+          <optgroup
+            v-for="group in KNOWN_SEMANTIC_GROUPS"
+            :key="group.key"
+            :label="group.displayName"
+          >
             <option v-for="s in group.semantics" :key="s.key" :value="s">
               {{ s.displayName }}
             </option>
@@ -135,9 +164,13 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
         </select>
       </label>
       <div class="flex items-center gap-1.5 text-sm">
-        <TermTooltip id="exactInference" :class="!isApproximate ? '' : 'opacity-40'">Exact</TermTooltip>
+        <TermTooltip id="exactInference" :class="!isApproximate ? '' : 'opacity-40'"
+          >Exact</TermTooltip
+        >
         <input type="checkbox" class="toggle toggle-sm" v-model="isApproximate" />
-        <TermTooltip id="approximateInference" :class="isApproximate ? '' : 'opacity-40'">Approximate</TermTooltip>
+        <TermTooltip id="approximateInference" :class="isApproximate ? '' : 'opacity-40'"
+          >Approximate</TermTooltip
+        >
       </div>
     </template>
     <template #parameters-footer>

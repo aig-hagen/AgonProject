@@ -1,6 +1,6 @@
 # Project Structure
 
-This is an overview of how the repository is laid out. For how to set up a dev environment, see [DEVELOPMENT.md](./DEVELOPMENT.md); for how to extend the app, see [extending.md](./extending.md).
+This is an overview of how the repository is laid out. For how to set up a dev environment, see [DEVELOPMENT.md](./DEVELOPMENT.md); for how to extend the app, see [extending.md](./extending.md); for coding conventions, see [conventions.md](./conventions.md).
 
 ## Top level
 

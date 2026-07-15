@@ -19,11 +19,12 @@
 <script setup lang="ts">
 import type { AnnotationPosition } from '@aig-hagen/graph-component/lib'
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
-import { useLocalStorage } from '@vueuse/core'
-import { computed, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -44,7 +45,10 @@ import {
 } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/probabilistic-argumentation/export'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
-import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import type {
+  PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 import ProbabilityEditor from '@/modules/probabilistic-argumentation/ProbabilityEditor.vue'
 import { pafBasicsTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-basics'
 import { pafEvaluationTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-evaluation'
@@ -55,6 +59,11 @@ const { state, historyState, documentId } = defineProps<{
   historyState: HistoryState
   documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const emit = defineEmits<{
   load: []
@@ -203,7 +212,8 @@ function getAttackProbabilityLabels(nodes: GraphEditorStateNode[]): ProbabilityL
     let offsetY = 0
 
     if (attackSet.has(`${targetId}-${sourceId}`)) {
-      const [canonSrcId, canonTgtId] = sourceId < targetId ? [sourceId, targetId] : [targetId, sourceId]
+      const [canonSrcId, canonTgtId] =
+        sourceId < targetId ? [sourceId, targetId] : [targetId, sourceId]
       const canonSrc = positions.get(canonSrcId)!
       const canonTgt = positions.get(canonTgtId)!
       const dx = canonTgt.x - canonSrc.x
@@ -274,8 +284,10 @@ function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
   nodeWeights.value = new Map(weights.map(({ id, weight }) => [id, weight]))
 }
 
-const evaluationInstances = useLocalStorage<PafWindowInstanceState[]>(
-  computed(() => `probabilistic-argumentation:${documentId}:evaluation-instances`),
+const evaluationInstances = useDocumentUIState<PafWindowInstanceState[]>(
+  db,
+  documentId,
+  'evaluation-instances',
   [],
 )
 
@@ -294,7 +306,10 @@ function updateEvaluationInstance(updated: PafWindowInstanceState) {
   )
 }
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...probabilisticArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationGlossary,
+  ...probabilisticArgumentationGlossary,
+})
 
 const pafTutorials = [pafBasicsTutorial, pafEvaluationTutorial, ...commonTutorials]
 
@@ -314,7 +329,9 @@ const tutorialRefs = computed(() => ({
 
 // ── Inline editing popup ────────────────────────────────────────────────────
 
-const editingLabel = shallowRef<(ProbabilityLabel & { screenX: number; screenY: number }) | null>(null)
+const editingLabel = shallowRef<(ProbabilityLabel & { screenX: number; screenY: number }) | null>(
+  null,
+)
 const editingValue = ref(0)
 
 function openEditor(event: MouseEvent, label: ProbabilityLabel) {
@@ -350,6 +367,7 @@ function onPopupKeydown(event: KeyboardEvent) {
     <GraphEditor
       v-if="editorState"
       class="paf-graph"
+      :document-id="documentId"
       @new="emit('new')"
       @load="emit('load')"
       @generate="emit('generate')"
@@ -361,7 +379,6 @@ function onPopupKeydown(event: KeyboardEvent) {
       @link-deleted="onLinkDeleted"
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
-
       :link-configs="linkConfig"
       :state="editorState"
       :node-weights="nodeWeights"
@@ -384,7 +401,8 @@ function onPopupKeydown(event: KeyboardEvent) {
           :input="evaluationInput"
           :instance-state="instance"
           :instance-offset="index"
-          :storage-key="`probabilistic-argumentation:${documentId}:${instance.id}:window`"
+          :document-id="documentId"
+          :state-key="`${instance.id}:window`"
           @update:instance-state="updateEvaluationInstance($event)"
           @set-weights="onSetWeights"
           @evaluate="evaluationCount++"
@@ -419,7 +437,8 @@ function onPopupKeydown(event: KeyboardEvent) {
           paint-order="stroke fill"
           style="pointer-events: all; cursor: pointer"
           @click="openEditor($event, label)"
-        >{{ label.value.toFixed(2) }}</text>
+          >{{ label.value.toFixed(2) }}</text
+        >
       </template>
 
       <template #export="{ isOpen, onIsOpen }">
@@ -436,18 +455,15 @@ function onPopupKeydown(event: KeyboardEvent) {
     <ProbabilityEditor
       v-model:open="isProbabilitiesOpen"
       :input="evaluationInput"
-      :storage-key="`probabilistic-argumentation:${documentId}:probabilities:window`"
+      :document-id="documentId"
+      state-key="probabilities:window"
       @change-argument-probability="onChangeArgumentProbability"
       @change-attack-probability="onChangeAttackProbability"
     />
 
     <Teleport to="body">
       <template v-if="editingLabel !== null">
-        <div
-          class="fixed inset-0 z-40"
-          @click="closeEditor"
-          @keydown="onPopupKeydown"
-        />
+        <div class="fixed inset-0 z-40" @click="closeEditor" @keydown="onPopupKeydown" />
         <div
           class="fixed z-50 bg-base-100 border border-base-300 rounded-lg shadow-xl p-3 flex flex-col gap-2 w-48"
           :style="{ left: `${editingLabel.screenX + 8}px`, top: `${editingLabel.screenY + 8}px` }"

@@ -27,7 +27,11 @@ import {
   useSetAfEvaluationQuery,
 } from '@/modules/collective-attacks-argumentation/evaluation/tweetyProject'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
-import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import {
+  type SetAF,
+  type SetAfArgumentData,
+} from '@/modules/collective-attacks-argumentation/model'
+import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -36,11 +40,18 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
+const {
+  input,
+  instanceState,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+} = defineProps<{
   input: Input<SetAF<SetAfArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -50,7 +61,10 @@ const emit = defineEmits<{
   evaluate: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...collectiveAttacksArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationGlossary,
+  ...collectiveAttacksArgumentationGlossary,
+})
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
@@ -87,15 +101,24 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantic.value.displayName))
+} = useExtensionWindowBase(
+  selectedMode,
+  query,
+  computed(() => selectedSemantic.value.displayName),
+)
 
 watch(currentHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('highlight', currentHighlight.value) }
+function onWindowFocus() {
+  emit('highlight', currentHighlight.value)
+}
 
 const windowTitle = computed(() => {
   const modeLabel =
-    selectedMode.value === 'enumerate' ? 'Enumerate'
-    : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
+    selectedMode.value === 'enumerate'
+      ? 'Enumerate'
+      : selectedMode.value === 'credulous'
+        ? 'Credulous'
+        : 'Skeptical'
   return `Extensions: ${selectedSemantic.value.displayName} · ${modeLabel}`
 })
 </script>
@@ -107,7 +130,8 @@ const windowTitle = computed(() => {
     :instance-offset="instanceOffset"
     :query="query"
     :results-header="resultsHeader"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
     @close="emit('close')"
     @focus="onWindowFocus"
     @evaluate="emit('evaluate')"

@@ -20,19 +20,31 @@ import { useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
 
 import type { GridVisibility, PhysicsMode } from '@/modules/common/main-menu/types'
+import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 
 export type GraphStyleName = 'default' | 'high-contrast' | 'minimal' | 'library'
 export type GridType = 'square' | 'rhombus'
 
 export const useSettings = createSharedComposable(() => {
-  const graphStyle = useStorage<GraphStyleName>('settings:graphStyle', 'default')
-  const defaultPhysicsMode = useStorage<PhysicsMode>('settings:defaultPhysicsMode', 'off')
+  const options = { onError: notifyStorageFailureOnce }
+  const graphStyle = useStorage<GraphStyleName>('settings:graphStyle', 'default', undefined, options)
+  const defaultPhysicsMode = useStorage<PhysicsMode>(
+    'settings:defaultPhysicsMode',
+    'off',
+    undefined,
+    options,
+  )
   if ((defaultPhysicsMode.value as string) === 'settle') defaultPhysicsMode.value = 'on'
-  const defaultShowGrid = useStorage<GridVisibility>('settings:defaultGridVisibility', 'off')
-  const defaultGridType = useStorage<GridType>('settings:defaultGridType', 'rhombus')
-  const gridCellScale = useStorage<number>('settings:gridCellScale', 3)
-  const snapMode = useStorage<boolean>('settings:snapMode', false)
-  const showHints = useStorage<boolean>('settings:showHints', true)
+  const defaultShowGrid = useStorage<GridVisibility>(
+    'settings:defaultGridVisibility',
+    'off',
+    undefined,
+    options,
+  )
+  const defaultGridType = useStorage<GridType>('settings:defaultGridType', 'rhombus', undefined, options)
+  const gridCellScale = useStorage<number>('settings:gridCellScale', 3, undefined, options)
+  const snapMode = useStorage<boolean>('settings:snapMode', false, undefined, options)
+  const showHints = useStorage<boolean>('settings:showHints', true, undefined, options)
 
   return { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints }
 })

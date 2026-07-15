@@ -39,7 +39,9 @@ import {
   type DocumentsDB,
   OBJECT_STORE_CONTENT_NAME,
   OBJECT_STORE_METADATA_NAME,
+  OBJECT_STORE_UI_STATE_NAME,
 } from '@/modules/common/documents/db'
+import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import { generateUUID } from '@/modules/common/ids'
 import type { DocumentState } from '@/modules/common/state'
 
@@ -58,7 +60,11 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
   async function getNewMetadata(
     tx: IDBPTransaction<
       DocumentsDB,
-      (typeof OBJECT_STORE_METADATA_NAME | typeof OBJECT_STORE_CONTENT_NAME)[],
+      (
+        | typeof OBJECT_STORE_METADATA_NAME
+        | typeof OBJECT_STORE_CONTENT_NAME
+        | typeof OBJECT_STORE_UI_STATE_NAME
+      )[],
       'readonly' | 'readwrite'
     >,
   ): Promise<DocumentMetadata[]> {
@@ -100,20 +106,17 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
   }
 
   async function deleteDocument(id: DocumentId) {
-    const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_CONTENT_NAME], 'readwrite')
+    const tx = db.transaction(
+      [OBJECT_STORE_METADATA_NAME, OBJECT_STORE_CONTENT_NAME, OBJECT_STORE_UI_STATE_NAME],
+      'readwrite',
+    )
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
     const contentStore = tx.objectStore(OBJECT_STORE_CONTENT_NAME)
+    const uiStateStore = tx.objectStore(OBJECT_STORE_UI_STATE_NAME)
 
     await metadataStore.delete(id)
     await contentStore.delete(id)
-
-    const marker = `:${id}:`
-    const keysToRemove: string[] = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key !== null && key.includes(marker)) keysToRemove.push(key)
-    }
-    for (const key of keysToRemove) localStorage.removeItem(key)
+    await uiStateStore.delete(id)
 
     const newMetadata = await getNewMetadata(tx)
     await tx.done
@@ -187,7 +190,12 @@ export const LAST_SELECTED_DOCUMENT_KEY = 'last-selected-document'
 export function useSelectedDocumentId(documentsRef: Readonly<Ref<Readonly<DocumentMetadata[]>>>) {
   const selectedDocumentRef = shallowRef<DocumentId | undefined>(undefined)
 
-  const stored = localStorage.getItem(LAST_SELECTED_DOCUMENT_KEY)
+  let stored: string | null = null
+  try {
+    stored = localStorage.getItem(LAST_SELECTED_DOCUMENT_KEY)
+  } catch (error) {
+    notifyStorageFailureOnce(error)
+  }
   let pendingId: DocumentId | undefined = stored !== null ? Number(stored) : undefined
 
   function selectDocument(id: DocumentId | undefined) {
@@ -206,7 +214,11 @@ export function useSelectedDocumentId(documentsRef: Readonly<Ref<Readonly<Docume
     }
     selectedDocumentRef.value = newDocument?.id
     if (newDocument?.id !== undefined) {
-      localStorage.setItem(LAST_SELECTED_DOCUMENT_KEY, String(newDocument.id))
+      try {
+        localStorage.setItem(LAST_SELECTED_DOCUMENT_KEY, String(newDocument.id))
+      } catch (error) {
+        notifyStorageFailureOnce(error)
+      }
     }
   }
 

@@ -33,6 +33,7 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import type { DocumentId } from '@/modules/common/documents/db'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import { IdMapping } from '@/modules/common/ids'
@@ -40,11 +41,19 @@ import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vu
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
-const { input, instanceState, instanceOffset = 0, storageKey, suppressed = false } = defineProps<{
+const {
+  input,
+  instanceState,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+  suppressed = false,
+} = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: SerialisationWindowInstanceState
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
   suppressed?: boolean
 }>()
 
@@ -71,20 +80,25 @@ const selectedTerminationFunction = shallowRef<SerialisationFunction>(
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 const selectedMode = ref<'sequences' | 'interactive'>(instanceState.mode ?? 'sequences')
 
-watch([selectedSelectionFunction, selectedTerminationFunction, evaluateContinuously, selectedMode], () => {
-  const state: SerialisationWindowInstanceState = {
-    id: instanceState.id,
-    selectionFunctionKey: selectedSelectionFunction.value.key,
-    terminationFunctionKey: selectedTerminationFunction.value.key,
-    evaluateContinuously: evaluateContinuously.value,
-    mode: selectedMode.value,
-  }
-  emit('update:instanceState', state)
-})
+watch(
+  [selectedSelectionFunction, selectedTerminationFunction, evaluateContinuously, selectedMode],
+  () => {
+    const state: SerialisationWindowInstanceState = {
+      id: instanceState.id,
+      selectionFunctionKey: selectedSelectionFunction.value.key,
+      terminationFunctionKey: selectedTerminationFunction.value.key,
+      evaluateContinuously: evaluateContinuously.value,
+      mode: selectedMode.value,
+    }
+    emit('update:instanceState', state)
+  },
+)
 
 // --- FloatingWindow state ---
 const isOpen = ref(true)
-watch(isOpen, (v) => { if (!v) emit('close') })
+watch(isOpen, (v) => {
+  if (!v) emit('close')
+})
 const isCompact = ref(false)
 watch(isCompact, (v) => {
   if (v && selectedMode.value === 'sequences') evaluateContinuously.value = true
@@ -112,7 +126,8 @@ const query = useSerialisationEvaluationQuery(
 const { status, error, isPending, isLoading, isError, refetch, data } = query
 const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
 const userCanTriggerFetch = computed(
-  () => selectedMode.value === 'sequences' && !evaluateContinuously.value && status.value !== 'success',
+  () =>
+    selectedMode.value === 'sequences' && !evaluateContinuously.value && status.value !== 'success',
 )
 const sequencesResultsHeader = computed(
   () => `Serialisation sequences (${data.value?.sequences.length ?? 0})`,
@@ -150,7 +165,10 @@ function getArgByServerId(originalServerId: number): { id: ArgumentId; name: str
   const [id, { name }] = entry
   return { id, name }
 }
-function mapReductStep(reductStep: number[], state: ReductState): { id: ArgumentId; name: string }[] {
+function mapReductStep(
+  reductStep: number[],
+  state: ReductState,
+): { id: ArgumentId; name: string }[] {
   return reductStep.map((reductId) => getArgByServerId(state.originalIds[reductId - 1]!))
 }
 
@@ -256,7 +274,9 @@ watch(selectedMode, (newMode) => {
 // Reset when the AF changes while in interactive mode
 watch(
   () => input.stateId,
-  () => { if (selectedMode.value === 'interactive') resetInteractive() },
+  () => {
+    if (selectedMode.value === 'interactive') resetInteractive()
+  },
 )
 // Reset on function change in interactive mode
 watch([selectedSelectionFunction, selectedTerminationFunction], () => {
@@ -269,11 +289,13 @@ onMounted(() => {
 
 const currentHighlight = computed<Highlight | undefined>(() => {
   if (selectedMode.value !== 'interactive' || currentExtension.value.length === 0) return undefined
-  const nodes = new Set(currentExtension.value.map((serverId) => {
-    const entry = argumentIdAndData.value[serverId - 1]
-    if (!entry) throw new Error('Invalid server argument ID')
-    return entry[0]
-  }))
+  const nodes = new Set(
+    currentExtension.value.map((serverId) => {
+      const entry = argumentIdAndData.value[serverId - 1]
+      if (!entry) throw new Error('Invalid server argument ID')
+      return entry[0]
+    }),
+  )
   return {
     stateId: input.stateId,
     groups: [{ nodes, color: NODE_GREEN }],
@@ -285,7 +307,9 @@ const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlig
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
 watch(emittedHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('focus') }
+function onWindowFocus() {
+  emit('focus')
+}
 </script>
 
 <template>
@@ -296,7 +320,8 @@ function onWindowFocus() { emit('focus') }
     :initial-position="{ x: 256 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
     :intital-size="{ width: 576, height: 480 }"
     :instance-offset="instanceOffset"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
     :active="isActive"
     compactable
     :minimizable="false"
@@ -304,14 +329,15 @@ function onWindowFocus() { emit('focus') }
   >
     <template #default="{ compact }">
       <div class="p-4 flex flex-col gap-3">
-
         <!-- Parameters (hidden in compact) -->
         <fieldset v-if="!compact" class="fieldset">
           <legend class="fieldset-legend">Parameters</legend>
           <div class="flex gap-2 flex-wrap">
             <label class="select select-sm w-fit" hidden>
               <span class="label">Solver</span>
-              <select disabled><option selected>TweetyProject</option></select>
+              <select disabled>
+                <option selected>TweetyProject</option>
+              </select>
             </label>
             <label class="select select-sm w-fit">
               <span class="label">Selection</span>
@@ -348,11 +374,7 @@ function onWindowFocus() { emit('focus') }
         <!-- Sequences mode: evaluate controls (hidden in compact) -->
         <fieldset v-if="!compact && selectedMode === 'sequences'" class="fieldset">
           <div class="flex gap-2 flex-wrap">
-            <button
-              class="btn btn-sm btn-soft"
-              :disabled="!userCanTriggerFetch"
-              @click="refetch()"
-            >
+            <button class="btn btn-sm btn-soft" :disabled="!userCanTriggerFetch" @click="refetch()">
               Evaluate
             </button>
             <label class="label">
@@ -365,17 +387,12 @@ function onWindowFocus() { emit('focus') }
         <!-- Interactive mode: reset button (hidden in compact) -->
         <fieldset v-if="!compact && selectedMode === 'interactive'" class="fieldset">
           <div class="flex gap-2">
-            <button class="btn btn-sm btn-soft" @click="resetInteractive()">
-              Reset
-            </button>
+            <button class="btn btn-sm btn-soft" @click="resetInteractive()">Reset</button>
           </div>
         </fieldset>
 
         <!-- ── SEQUENCES RESULTS ── -->
-        <fieldset
-          v-if="selectedMode === 'sequences' && (!isPending || isLoading)"
-          class="fieldset"
-        >
+        <fieldset v-if="selectedMode === 'sequences' && (!isPending || isLoading)" class="fieldset">
           <legend v-if="!compact" class="fieldset-legend">{{ sequencesResultsHeader }}</legend>
           <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
             <span>Evaluation timed out</span>
@@ -450,8 +467,7 @@ function onWindowFocus() { emit('focus') }
 
             <!-- Step selection (hidden in compact) -->
             <template v-if="!compact">
-              <div v-if="selectableStepsDisplay.length === 0"
-                class="text-sm opacity-60">
+              <div v-if="selectableStepsDisplay.length === 0" class="text-sm opacity-60">
                 No initial sets available.
               </div>
               <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">
@@ -471,7 +487,6 @@ function onWindowFocus() { emit('focus') }
             </template>
           </template>
         </fieldset>
-
       </div>
     </template>
   </FloatingWindow>

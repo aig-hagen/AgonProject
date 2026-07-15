@@ -17,8 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { useLocalStorage } from '@vueuse/core'
-import { computed, provide, ref, shallowRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import {
@@ -32,6 +31,8 @@ import { bipolarBasicsTutorial } from '@/modules/bipolar-argumentation/tutorials
 import { bipolarEvaluationTutorial } from '@/modules/bipolar-argumentation/tutorials/bipolar-evaluation'
 import WindowExtensions from '@/modules/bipolar-argumentation/WindowExtensions.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -53,6 +54,11 @@ const { state, historyState, documentId } = defineProps<{
   historyState: HistoryState
   documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const emit = defineEmits<{
   load: []
@@ -95,7 +101,6 @@ function transformToEditorState(
       label: data.name,
       x: data.x,
       y: data.y,
-
     }
   })
   const attackLinks: GraphEditorStateLink[] = [...argumentation.attacks()].map(
@@ -200,8 +205,10 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
 
 // --- Multi-instance window management ---
 
-const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  computed(() => `bipolar-argumentation:${documentId}:extension-instances`),
+const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
+  db,
+  documentId,
+  'extension-instances',
   [],
 )
 
@@ -237,6 +244,7 @@ const tutorialContextExtra = computed(() => ({
 <template>
   <GraphEditor
     v-if="editorState"
+    :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"
     @node-created="onNodeCreated"
@@ -265,9 +273,15 @@ const tutorialContextExtra = computed(() => ({
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
-        :storage-key="`bipolar-argumentation:${documentId}:${instance.id}:window`"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @highlight="
+          (h) => {
+            onHighlight(h)
+            if (h) highlightCount++
+          }
+        "
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />

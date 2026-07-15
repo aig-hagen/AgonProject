@@ -29,6 +29,7 @@ import {
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
+import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
@@ -37,11 +38,18 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
+const {
+  input,
+  instanceState,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+} = defineProps<{
   input: Input<BipoloarArgumentation<ArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -91,27 +99,49 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantics.value.displayName))
+} = useExtensionWindowBase(
+  selectedMode,
+  query,
+  computed(() => selectedSemantics.value.displayName),
+)
 
 watch(currentHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('highlight', currentHighlight.value) }
+function onWindowFocus() {
+  emit('highlight', currentHighlight.value)
+}
 
 const supportTypeTooltipId = computed(() => {
   const support = selectedSupportType.value
-  return support === 'ded' ? 'deductiveSupport' : support === 'nec' ? 'necessarySupport' : 'coalitionSemantics'
+  return support === 'ded'
+    ? 'deductiveSupport'
+    : support === 'nec'
+      ? 'necessarySupport'
+      : 'coalitionSemantics'
 })
 
 const resultsHeader = computed((): ResultsHeaderPart[] => {
   const support = selectedSupportType.value
   const label = support === 'ded' ? 'deductive' : support === 'nec' ? 'necessary' : 'coalition'
-  return [...baseResultsHeader.value, ' under ', { text: `${label} support`, tooltipId: supportTypeTooltipId.value }]
+  return [
+    ...baseResultsHeader.value,
+    ' under ',
+    { text: `${label} support`, tooltipId: supportTypeTooltipId.value },
+  ]
 })
 
 const windowTitle = computed(() => {
-  const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
-    : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
-  const supportLabel = selectedSupportType.value === 'ded' ? 'Deductive'
-    : selectedSupportType.value === 'nec' ? 'Necessary' : 'Coalition'
+  const modeLabel =
+    selectedMode.value === 'enumerate'
+      ? 'Enumerate'
+      : selectedMode.value === 'credulous'
+        ? 'Credulous'
+        : 'Skeptical'
+  const supportLabel =
+    selectedSupportType.value === 'ded'
+      ? 'Deductive'
+      : selectedSupportType.value === 'nec'
+        ? 'Necessary'
+        : 'Coalition'
   return `Extensions: ${supportLabel} · ${selectedSemantics.value.displayName} · ${modeLabel}`
 })
 </script>
@@ -123,7 +153,8 @@ const windowTitle = computed(() => {
     :instance-offset="instanceOffset"
     :query="query"
     :results-header="resultsHeader"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
     @close="emit('close')"
     @focus="onWindowFocus"
     @evaluate="emit('evaluate')"

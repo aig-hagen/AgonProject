@@ -20,6 +20,7 @@ import { useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
 import { computed, type InjectionKey, ref } from 'vue'
 
+import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 
 /**
@@ -30,8 +31,12 @@ import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 export const TUTORIAL_INSTANCE_KEY: InjectionKey<string> = Symbol('tutorialInstance')
 
 export const useTutorial = createSharedComposable(() => {
-  const completedTutorials = useStorage<string[]>('tutorial:completed', [])
-  const autoStartedTutorials = useStorage<string[]>('tutorial:autoStarted', [])
+  const completedTutorials = useStorage<string[]>('tutorial:completed', [], undefined, {
+    onError: notifyStorageFailureOnce,
+  })
+  const autoStartedTutorials = useStorage<string[]>('tutorial:autoStarted', [], undefined, {
+    onError: notifyStorageFailureOnce,
+  })
 
   const activeTutorial = ref<Tutorial | null>(null)
   const activeStepIndex = ref(0)

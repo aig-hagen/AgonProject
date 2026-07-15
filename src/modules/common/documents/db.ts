@@ -18,14 +18,16 @@
  */
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb'
 import type { Objectish } from 'immer'
+import type { InjectionKey } from 'vue'
 
 import type { DocumentState } from '@/modules/common/state'
 
-const DATABASE_DOCUMENTS_VERSION = 1
+const DATABASE_DOCUMENTS_VERSION = 2
 
 export const OBJECT_STORE_METADATA_NAME = 'metadata'
 export const OBJECT_STORE_METADATA_KEY_PATH = 'id'
 export const OBJECT_STORE_CONTENT_NAME = 'content'
+export const OBJECT_STORE_UI_STATE_NAME = 'ui-state'
 
 export type DocumentId = number
 type DocumentName = string
@@ -48,12 +50,24 @@ export interface DocumentsDB extends DBSchema {
     key: DocumentId
     value: DocumentState<Objectish>
   }
+  'ui-state': {
+    key: DocumentId
+    value: Record<string, unknown>
+  }
 }
+
+/**
+ * Provided once (in HomeView.vue) so deeply nested components (e.g. GraphEditor
+ * and FloatingWindow) can read/write per-document UI state without prop-threading
+ * the database connection through every intermediate component.
+ */
+export const DOCUMENTS_DB_INJECTION_KEY: InjectionKey<IDBPDatabase<DocumentsDB>> =
+  Symbol('documents-db')
 
 export async function openDocumentsDB(dbName: string): Promise<IDBPDatabase<DocumentsDB>> {
   const db = await openDB<DocumentsDB>(dbName, DATABASE_DOCUMENTS_VERSION, {
     upgrade(db, oldVersion, newVersion, _transaction, _event) {
-      if (newVersion !== 1) {
+      if (newVersion !== 2) {
         // When making breaking changes to data, either migrate or delete old data here.
         throw new Error(`Cannot upgrade database from version ${oldVersion} to ${newVersion}.`)
       }
@@ -65,6 +79,11 @@ export async function openDocumentsDB(dbName: string): Promise<IDBPDatabase<Docu
           keyPath: OBJECT_STORE_METADATA_KEY_PATH,
         })
         db.createObjectStore(OBJECT_STORE_CONTENT_NAME)
+      }
+
+      if (oldVersion < 2) {
+        console.debug('Adding UI state store.')
+        db.createObjectStore(OBJECT_STORE_UI_STATE_NAME)
       }
     },
     blocking(_currentVersion, _blockedVersion, _event) {

@@ -28,6 +28,7 @@ import {
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
+import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -36,11 +37,19 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { input, instanceState, instanceOffset = 0, storageKey, suppressed = false } = defineProps<{
+const {
+  input,
+  instanceState,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+  suppressed = false,
+} = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
   suppressed?: boolean
 }>()
 
@@ -89,17 +98,27 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query, computed(() => selectedSemantic.value.displayName))
+} = useExtensionWindowBase(
+  selectedMode,
+  query,
+  computed(() => selectedSemantic.value.displayName),
+)
 
 const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
 watch(emittedHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('focus') }
+function onWindowFocus() {
+  emit('focus')
+}
 
 const windowTitle = computed(() => {
-  const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
-    : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
+  const modeLabel =
+    selectedMode.value === 'enumerate'
+      ? 'Enumerate'
+      : selectedMode.value === 'credulous'
+        ? 'Credulous'
+        : 'Skeptical'
   return `Extensions: ${selectedSemantic.value.displayName} · ${modeLabel}`
 })
 </script>
@@ -112,7 +131,8 @@ const windowTitle = computed(() => {
     :active="isActive"
     :query="query"
     :results-header="resultsHeader"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
     @close="emit('close')"
     @focus="onWindowFocus"
     @evaluate="emit('evaluate')"

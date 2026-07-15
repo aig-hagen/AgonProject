@@ -21,6 +21,7 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { NODE_BLUE, NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import type { DocumentId } from '@/modules/common/documents/db'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
@@ -36,13 +37,23 @@ import {
   useInterpretationEvaluationQuery,
 } from '@/modules/dialectical-argumentation/evaluation/tweetyProject'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
-import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import type {
+  AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 
-const { input, instanceState, instanceOffset = 0, storageKey } = defineProps<{
+const {
+  input,
+  instanceState,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+} = defineProps<{
   input: Input<DialecticalArgumentation<AdfArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -52,10 +63,15 @@ const emit = defineEmits<{
   evaluate: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...dialecticalArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationGlossary,
+  ...dialecticalArgumentationGlossary,
+})
 
 const internalOpen = ref(true)
-watch(internalOpen, (v) => { if (!v) emit('close') })
+watch(internalOpen, (v) => {
+  if (!v) emit('close')
+})
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
@@ -68,7 +84,9 @@ const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceSt
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 const isCompact = ref(false)
-watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
+watch(isCompact, (v) => {
+  if (v) evaluateContinuously.value = true
+})
 
 watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
@@ -81,12 +99,13 @@ watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
 
 const enabled = computed(() => evaluateContinuously.value)
 
-const { data, status, refetch, isLoading, isPending, isError, error } = useInterpretationEvaluationQuery(
-  toRef(() => input),
-  computed(() => selectedSemantic.value.key),
-  computed(() => selectedMode.value),
-  enabled,
-)
+const { data, status, refetch, isLoading, isPending, isError, error } =
+  useInterpretationEvaluationQuery(
+    toRef(() => input),
+    computed(() => selectedSemantic.value.key),
+    computed(() => selectedMode.value),
+    enabled,
+  )
 
 const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
 const userCanTriggerFetch = computed(
@@ -113,8 +132,10 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     ? { text: displayName, tooltipId: semanticTooltipId }
     : displayName
   if (selectedMode.value === 'enumerate') return [semanticPart, ' models']
-  const tooltipId = selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
-  const prefix = selectedMode.value === 'credulous' ? 'Credulously accepted' : 'Skeptically accepted'
+  const tooltipId =
+    selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
+  const prefix =
+    selectedMode.value === 'credulous' ? 'Credulously accepted' : 'Skeptically accepted'
   return [{ text: prefix, tooltipId }, ' arguments wrt ', semanticPart, ' semantics']
 })
 const selectionHint = computed(() =>
@@ -123,9 +144,7 @@ const selectionHint = computed(() =>
     : 'Select acceptable argument to highlight.',
 )
 const emptyMessage = computed(() =>
-  selectedMode.value === 'enumerate'
-    ? 'No models exist.'
-    : 'No acceptable arguments exist.',
+  selectedMode.value === 'enumerate' ? 'No models exist.' : 'No acceptable arguments exist.',
 )
 
 const formattedData = computed(() => {
@@ -164,8 +183,12 @@ const resultItems = computed(
 )
 
 const windowTitle = computed(() => {
-  const modeLabel = selectedMode.value === 'enumerate' ? 'Enumerate'
-    : selectedMode.value === 'credulous' ? 'Credulous' : 'Skeptical'
+  const modeLabel =
+    selectedMode.value === 'enumerate'
+      ? 'Enumerate'
+      : selectedMode.value === 'credulous'
+        ? 'Credulous'
+        : 'Skeptical'
   return `Models: ${selectedSemantic.value.displayName} · ${modeLabel}`
 })
 
@@ -177,14 +200,25 @@ const currentHighlight = computed<Highlight | undefined>(() => {
   return {
     stateId: formattedData.value.stateId,
     groups: [
-      { nodes: new Set(item.interpretation.filter((a) => a.label === 'in').map((a) => a.id)), color: NODE_GREEN },
-      { nodes: new Set(item.interpretation.filter((a) => a.label === 'out').map((a) => a.id)), color: NODE_RED },
-      { nodes: new Set(item.interpretation.filter((a) => a.label === 'undec').map((a) => a.id)), color: NODE_BLUE },
+      {
+        nodes: new Set(item.interpretation.filter((a) => a.label === 'in').map((a) => a.id)),
+        color: NODE_GREEN,
+      },
+      {
+        nodes: new Set(item.interpretation.filter((a) => a.label === 'out').map((a) => a.id)),
+        color: NODE_RED,
+      },
+      {
+        nodes: new Set(item.interpretation.filter((a) => a.label === 'undec').map((a) => a.id)),
+        color: NODE_BLUE,
+      },
     ],
   }
 })
 watch(currentHighlight, (h) => emit('highlight', h))
-function onWindowFocus() { emit('highlight', currentHighlight.value) }
+function onWindowFocus() {
+  emit('highlight', currentHighlight.value)
+}
 </script>
 
 <template>
@@ -195,81 +229,93 @@ function onWindowFocus() { emit('highlight', currentHighlight.value) }
     :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
     :intitalSize="{ width: 512, height: 400 }"
     :instance-offset="instanceOffset"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
     compactable
     :minimizable="false"
     @focus="onWindowFocus"
   >
     <template #default="{ compact }">
-    <div class="p-4">
-      <fieldset v-if="!compact" class="fieldset">
-        <legend class="fieldset-legend">Parameters</legend>
-        <div class="flex gap-2 flex-wrap">
-          <label class="select select-sm w-fit">
-            <span class="label">Semantics</span>
-            <select v-model="selectedSemantic">
-              <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-                <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
-                  {{ semantic.displayName }}
-                </option>
-              </optgroup>
-            </select>
-          </label>
-          <label class="select select-sm w-fit">
-            <span class="label">Mode</span>
-            <select v-model="selectedMode">
-              <option value="enumerate">Enumerate</option>
-              <option value="credulous">Credulous</option>
-              <option value="skeptical">Skeptical</option>
-            </select>
-          </label>
-        </div>
-        <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
-      </fieldset>
-      <fieldset v-if="!compact" class="fieldset">
-        <div class="flex gap-2 flex-wrap">
-          <button
-            class="btn btn-sm btn-soft mt-2"
-            :disabled="!userCanTriggerFetch"
-            @click="() => { refetch(); emit('evaluate') }"
-          >
-            Evaluate
-          </button>
-          <label class="label mt-2">
-            <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
-            Evaluate continuously
-          </label>
-        </div>
-      </fieldset>
-      <fieldset class="fieldset" v-if="!isPending || isLoading">
-        <legend v-if="!compact" class="fieldset-legend">
-          <span>
-            <template v-for="(part, i) in resultsHeader" :key="i">
-              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
-              <template v-else>{{ part }}</template>
-            </template>
-          </span>
-        </legend>
-        <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
-          <span>Evaluation timed out</span>
-        </div>
-        <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
-          <span>Evaluation failed</span>
-        </div>
-        <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-          <span>Evaluating...</span>
-        </div>
-        <template v-if="formattedData !== undefined">
-          <EvaluationResultGrid
-            v-model:selected="selectedKey"
-            :items="resultItems"
-            :empty-message="emptyMessage"
-            :selection-hint="selectionHint"
-            :evaluation-duration-in-ms="formattedData.evaluationDurationInMs"
-          />
-        </template>
-      </fieldset>
-    </div>
+      <div class="p-4">
+        <fieldset v-if="!compact" class="fieldset">
+          <legend class="fieldset-legend">Parameters</legend>
+          <div class="flex gap-2 flex-wrap">
+            <label class="select select-sm w-fit">
+              <span class="label">Semantics</span>
+              <select v-model="selectedSemantic">
+                <optgroup
+                  v-for="group in semanticGroups"
+                  :key="group.key"
+                  :label="group.displayName"
+                >
+                  <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
+                    {{ semantic.displayName }}
+                  </option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="select select-sm w-fit">
+              <span class="label">Mode</span>
+              <select v-model="selectedMode">
+                <option value="enumerate">Enumerate</option>
+                <option value="credulous">Credulous</option>
+                <option value="skeptical">Skeptical</option>
+              </select>
+            </label>
+          </div>
+          <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
+        </fieldset>
+        <fieldset v-if="!compact" class="fieldset">
+          <div class="flex gap-2 flex-wrap">
+            <button
+              class="btn btn-sm btn-soft mt-2"
+              :disabled="!userCanTriggerFetch"
+              @click="
+                () => {
+                  refetch()
+                  emit('evaluate')
+                }
+              "
+            >
+              Evaluate
+            </button>
+            <label class="label mt-2">
+              <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
+              Evaluate continuously
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="fieldset" v-if="!isPending || isLoading">
+          <legend v-if="!compact" class="fieldset-legend">
+            <span>
+              <template v-for="(part, i) in resultsHeader" :key="i">
+                <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{
+                  part.text
+                }}</TermTooltip>
+                <template v-else>{{ part }}</template>
+              </template>
+            </span>
+          </legend>
+          <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
+            <span>Evaluation timed out</span>
+          </div>
+          <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
+            <span>Evaluation failed</span>
+          </div>
+          <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
+            <span>Evaluating...</span>
+          </div>
+          <template v-if="formattedData !== undefined">
+            <EvaluationResultGrid
+              v-model:selected="selectedKey"
+              :items="resultItems"
+              :empty-message="emptyMessage"
+              :selection-hint="selectionHint"
+              :evaluation-duration-in-ms="formattedData.evaluationDurationInMs"
+            />
+          </template>
+        </fieldset>
+      </div>
     </template>
   </FloatingWindow>
 </template>

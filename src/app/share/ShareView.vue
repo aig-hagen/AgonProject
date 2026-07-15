@@ -25,6 +25,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import { LAST_SELECTED_DOCUMENT_KEY, useDocumentMetadata } from '@/modules/common/documents/useDocuments'
+import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import { fetchShare } from '@/modules/common/share/useShare'
 
 const { db, modules } = defineProps<{
@@ -84,7 +85,11 @@ onMounted(async () => {
       : importModule.newNamePrefix
 
   const newId = await createDocument(documentName, result.data as Objectish)
-  localStorage.setItem(LAST_SELECTED_DOCUMENT_KEY, String(newId))
+  try {
+    localStorage.setItem(LAST_SELECTED_DOCUMENT_KEY, String(newId))
+  } catch (error) {
+    notifyStorageFailureOnce(error)
+  }
   await router.replace('/')
 })
 </script>

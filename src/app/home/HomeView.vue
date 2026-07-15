@@ -20,13 +20,13 @@
 import copy from 'copy-to-clipboard'
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/home/EditorTabs.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
-import type { DocumentsDB } from '@/modules/common/documents/db'
+import { DOCUMENTS_DB_INJECTION_KEY, type DocumentsDB } from '@/modules/common/documents/db'
 import {
   loadDocumentState,
   useDocumentContent,
@@ -55,6 +55,8 @@ const { db, modules } = defineProps<{
   modules: ModuleConfig<DocumentT>[]
 }>()
 
+provide(DOCUMENTS_DB_INJECTION_KEY, db)
+
 const router = useRouter()
 
 const { notifications, addSuccessNotification, addErrorNotification } = useNotifications()
@@ -66,7 +68,6 @@ const { documents, createDocument, deleteDocument, renameDocument } = useDocumen
 const { selectedDocumentId, selectDocument } = useSelectedDocumentId(documents)
 const { documentId, documentState, updateDocument, documentModule, documentLoading } =
   useDocumentContent<DocumentT>(db, modules, selectedDocumentId)
-
 
 const loadedDocuments = shallowRef<
   {
@@ -169,7 +170,9 @@ function redo() {
 }
 
 const showCreate = computed(
-  () => selectedDocumentId.value !== undefined && (documentLoading.value || documentState.value !== undefined),
+  () =>
+    selectedDocumentId.value !== undefined &&
+    (documentLoading.value || documentState.value !== undefined),
 )
 
 const historyState = computed<HistoryState>(() => {
@@ -314,7 +317,9 @@ async function quickShareDocument() {
     copy(result.url)
     shareCopied.value = true
     clearTimeout(shareCopiedTimer)
-    shareCopiedTimer = setTimeout(() => { shareCopied.value = false }, 2_000)
+    shareCopiedTimer = setTimeout(() => {
+      shareCopied.value = false
+    }, 2_000)
     addSuccessNotification('Share link copied to clipboard')
   } catch {
     addErrorNotification('Failed to create share link')
@@ -398,7 +403,11 @@ function getFileName(name: string, module: ModuleConfig<DocumentT>) {
           v-show="loadedDocument.id === selectedDocumentId"
           :key="loadedDocument.id"
           :is="loadedDocument.module.editorComponent"
-          @change="(state) => { if (loadedDocument.id === selectedDocumentId) updateDocument(state) }"
+          @change="
+            (state) => {
+              if (loadedDocument.id === selectedDocumentId) updateDocument(state)
+            }
+          "
           @new="createAndSelectBlankDocument"
           @load="loadFile"
           @generate="router.push(documentModule?.generateHref ?? '/generate')"

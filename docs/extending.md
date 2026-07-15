@@ -3,7 +3,7 @@
 The AgonProject is still in early development.
 Extension points are yet to be fully figured out, and no plugin mechanism exists.
 
-Still, extending some common parts of the application is possible more simply than others. Those parts are described below.
+Still, extending some common parts of the application is possible more simply than others. Those parts are described below. For the coding conventions and patterns those extension points build on, see [conventions.md](./conventions.md).
 
 ## Add new argumentation types
 

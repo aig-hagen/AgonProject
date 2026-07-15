@@ -37,9 +37,10 @@ import {
   QueueListIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
-import { useElementVisibility, useMediaQuery } from '@vueuse/core'
+import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
 import {
   computed,
+  inject,
   nextTick,
   onMounted,
   onUnmounted,
@@ -54,6 +55,8 @@ import {
 } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
   type GraphEditorState,
@@ -106,7 +109,7 @@ const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
 
-const { state, linkConfigs, historyState, nodeWeights, nodeOutlines, nodeAnnotations, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false, tutorials, defaultTutorialId, tutorialContextExtra } = defineProps<{
+const { state, linkConfigs, historyState, nodeWeights, nodeOutlines, nodeAnnotations, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false, tutorials, defaultTutorialId, tutorialContextExtra, documentId } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
@@ -121,7 +124,13 @@ const { state, linkConfigs, historyState, nodeWeights, nodeOutlines, nodeAnnotat
   defaultTutorialId?: string
   tutorialContextExtra?: Partial<TutorialContext>
   tutorialRefs?: Record<string, HTMLElement | null>
+  documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const { isDark } = useTheme()
 const { graphStyle: graphStyleSetting, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints } = useSettings()
@@ -305,6 +314,8 @@ const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics } = usePhy
   graphComponentRef,
   getIdMapping: () => idMapping,
   containerRef,
+  documentId,
+  db,
 })
 const showGrid = ref<GridVisibility>(defaultShowGrid.value)
 const isVisible = useElementVisibility(containerRef)
@@ -516,6 +527,40 @@ function onNodesMoved(positions: PositionSnapshot[]) {
   emit('nodesMoved', data)
 }
 
+const VIEWPORT_STATE_KEY = 'viewport'
+
+interface StoredViewport {
+  k: number
+  x: number
+  y: number
+}
+
+function getZoomElements(): {
+  svgEl: (SVGElement & { __zoom?: StoredViewport }) | null
+  group: SVGGElement | null
+} {
+  const svgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+    | (SVGElement & { __zoom?: StoredViewport })
+    | null
+  const group = (svgEl?.querySelector(':scope > g') ?? null) as SVGGElement | null
+  return { svgEl, group }
+}
+
+function applyViewport(viewport: StoredViewport) {
+  const { svgEl, group } = getZoomElements()
+  if (!svgEl || !group || svgEl.__zoom == null) return
+  const newZoom = Object.create(Object.getPrototypeOf(svgEl.__zoom))
+  newZoom.k = viewport.k
+  newZoom.x = viewport.x
+  newZoom.y = viewport.y
+  svgEl.__zoom = newZoom
+  group.setAttribute('transform', `translate(${viewport.x},${viewport.y}) scale(${viewport.k})`)
+}
+
+const saveViewport = useDebounceFn((viewport: StoredViewport) => {
+  void setUIStateValue(db, documentId, VIEWPORT_STATE_KEY, viewport)
+}, 400)
+
 function setupZoomAndDragObservers() {
   zoomObserver?.disconnect()
   dragObserver?.disconnect()
@@ -542,6 +587,7 @@ function setupZoomAndDragObservers() {
         if (Math.abs(k - prevTransformScale) > 0.001) tutorialZoomCount.value++
         else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5) tutorialPanCount.value++
         prevTransformScale = k; prevTransformTx = tx; prevTransformTy = ty
+        void saveViewport({ k, x: tx, y: ty })
       }
     }
   }
@@ -614,6 +660,13 @@ onMounted(() => {
   })
 
   renderNewState(state, true)
+
+  // Restore a previously saved pan/zoom for this document, overriding the auto-centered
+  // view above. Applied after the fact (rather than before centering) since the read is
+  // async — if there's nothing saved this is a no-op and the auto-centered view stands.
+  void getUIStateValue<StoredViewport>(db, documentId, VIEWPORT_STATE_KEY).then((viewport) => {
+    if (viewport) applyViewport(viewport)
+  })
 
   setupZoomAndDragObservers()
 

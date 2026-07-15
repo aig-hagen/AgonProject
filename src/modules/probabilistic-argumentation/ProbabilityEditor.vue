@@ -19,14 +19,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import type { DocumentId } from '@/modules/common/documents/db'
 import type { Input } from '@/modules/common/evaluation/types'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
-import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import type {
+  PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 
 const open = defineModel<boolean>('open', { required: true })
-const { input, storageKey } = defineProps<{
+const { input, documentId, stateKey } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -35,7 +40,11 @@ const emit = defineEmits<{
 }>()
 
 const argumentList = computed(() => {
-  return [...input.content.arguments()].map(([id, data]) => ({ id, name: data.name, probability: data.probability }))
+  return [...input.content.arguments()].map(([id, data]) => ({
+    id,
+    name: data.name,
+    probability: data.probability,
+  }))
 })
 
 const attackList = computed(() => {
@@ -73,17 +82,14 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
     title="Probabilities"
     :initial-position="{ x: 128, y: 64 }"
     :intitalSize="{ width: 360, height: 300 }"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
   >
     <div class="p-2 flex flex-col gap-2 overflow-y-auto h-full">
       <fieldset class="fieldset" v-if="argumentList.length > 0">
         <legend class="fieldset-legend">Arguments</legend>
         <div class="flex flex-col gap-0.5">
-          <div
-            v-for="arg in argumentList"
-            :key="arg.id"
-            class="flex items-center gap-2"
-          >
+          <div v-for="arg in argumentList" :key="arg.id" class="flex items-center gap-2">
             <span class="w-8 text-right font-mono text-xs shrink-0">{{ arg.name }}</span>
             <input
               type="range"
@@ -115,7 +121,9 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
             :key="`${atk.sourceId}-${atk.targetId}`"
             class="flex items-center gap-2"
           >
-            <span class="w-16 text-right font-mono text-xs shrink-0">{{ atk.sourceName }} → {{ atk.targetName }}</span>
+            <span class="w-16 text-right font-mono text-xs shrink-0"
+              >{{ atk.sourceName }} → {{ atk.targetName }}</span
+            >
             <input
               type="range"
               min="0"
@@ -138,10 +146,7 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
         </div>
       </fieldset>
 
-      <p
-        v-if="argumentList.length === 0"
-        class="text-sm text-base-content/50"
-      >
+      <p v-if="argumentList.length === 0" class="text-sm text-base-content/50">
         Add arguments to the graph to set their probabilities.
       </p>
     </div>

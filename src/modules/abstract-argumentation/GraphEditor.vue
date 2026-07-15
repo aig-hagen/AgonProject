@@ -17,8 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { useLocalStorage } from '@vueuse/core'
-import { computed, provide, ref, shallowRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 
 import {
   createDefaultExtensionWindowInstance,
@@ -41,6 +40,8 @@ import WindowExtensions from '@/modules/abstract-argumentation/WindowExtensions.
 import WindowRanking from '@/modules/abstract-argumentation/WindowRanking.vue'
 import WindowSerialisation from '@/modules/abstract-argumentation/WindowSerialisation.vue'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -62,6 +63,11 @@ const { state, historyState, documentId } = defineProps<{
   historyState: HistoryState
   documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const evaluationInput = computed<Input<AbstractArgumentation<ArgumentData>>>(() => {
   return {
@@ -105,7 +111,6 @@ function transformToEditorState(
       label: data.name,
       x: data.x,
       y: data.y,
-
     }
   })
   const links: GraphEditorStateLink[] = [...argumentation.attacks()].map(([source, target]) => ({
@@ -164,12 +169,16 @@ function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
 type HighlightSource = 'extension' | 'ranking' | 'serialisation'
 const activeSource = ref<HighlightSource | undefined>(undefined)
 
-const extensionSuppressed = computed(() => activeSource.value === 'ranking' || activeSource.value === 'serialisation')
-const serialisationSuppressed = computed(() => activeSource.value === 'ranking' || activeSource.value === 'extension')
-const rankingSuppressed = computed(() => activeSource.value === 'extension' || activeSource.value === 'serialisation')
-const visibleNodeWeights = computed(() =>
-  rankingSuppressed.value ? new Map() : nodeWeights.value,
+const extensionSuppressed = computed(
+  () => activeSource.value === 'ranking' || activeSource.value === 'serialisation',
 )
+const serialisationSuppressed = computed(
+  () => activeSource.value === 'ranking' || activeSource.value === 'extension',
+)
+const rankingSuppressed = computed(
+  () => activeSource.value === 'extension' || activeSource.value === 'serialisation',
+)
+const visibleNodeWeights = computed(() => (rankingSuppressed.value ? new Map() : nodeWeights.value))
 
 function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   createNewState((draft) => {
@@ -203,12 +212,16 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
 
 // --- Multi-instance window management ---
 
-const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  computed(() => `abstract-argumentation:${documentId}:extension-instances`),
+const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
+  db,
+  documentId,
+  'extension-instances',
   [],
 )
-const rankingInstances = useLocalStorage<RankingWindowInstanceState[]>(
-  computed(() => `abstract-argumentation:${documentId}:ranking-instances`),
+const rankingInstances = useDocumentUIState<RankingWindowInstanceState[]>(
+  db,
+  documentId,
+  'ranking-instances',
   [],
 )
 
@@ -243,13 +256,13 @@ function removeRankingInstance(id: string) {
 }
 
 function updateRankingInstance(updated: RankingWindowInstanceState) {
-  rankingInstances.value = rankingInstances.value.map((i) =>
-    i.id === updated.id ? updated : i,
-  )
+  rankingInstances.value = rankingInstances.value.map((i) => (i.id === updated.id ? updated : i))
 }
 
-const serialisationInstances = useLocalStorage<SerialisationWindowInstanceState[]>(
-  computed(() => `abstract-argumentation:${documentId}:serialisation-instances`),
+const serialisationInstances = useDocumentUIState<SerialisationWindowInstanceState[]>(
+  db,
+  documentId,
+  'serialisation-instances',
   [],
 )
 
@@ -290,6 +303,7 @@ const tutorialContextExtra = computed(() => ({
 <template>
   <GraphEditor
     v-if="editorState"
+    :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"
     @node-created="onNodeCreated"
@@ -320,10 +334,16 @@ const tutorialContextExtra = computed(() => ({
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
-        :storage-key="`abstract-argumentation:${documentId}:${instance.id}:window`"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
         :suppressed="extensionSuppressed"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @highlight="
+          (h) => {
+            onHighlight(h)
+            if (h) highlightCount++
+          }
+        "
         @focus="activeSource = 'extension'"
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
@@ -345,7 +365,8 @@ const tutorialContextExtra = computed(() => ({
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
-        :storage-key="`abstract-argumentation:${documentId}:${instance.id}:window`"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
         :suppressed="rankingSuppressed"
         @update:instance-state="updateRankingInstance($event)"
         @set-weights="onSetWeights"
@@ -360,7 +381,8 @@ const tutorialContextExtra = computed(() => ({
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
-        :storage-key="`abstract-argumentation:${documentId}:${instance.id}:window`"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
         :suppressed="serialisationSuppressed"
         @update:instance-state="updateSerialisationInstance($event)"
         @highlight="onHighlight"

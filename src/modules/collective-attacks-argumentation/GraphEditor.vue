@@ -17,8 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { useLocalStorage } from '@vueuse/core'
-import { computed, provide, ref, shallowRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import {
@@ -27,10 +26,15 @@ import {
 } from '@/modules/collective-attacks-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/collective-attacks-argumentation/export'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
-import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import {
+  type SetAF,
+  type SetAfArgumentData,
+} from '@/modules/collective-attacks-argumentation/model'
 import { setafBasicsTutorial } from '@/modules/collective-attacks-argumentation/tutorials/setaf-basics'
 import { setafEvaluationTutorial } from '@/modules/collective-attacks-argumentation/tutorials/setaf-evaluation'
 import WindowExtensions from '@/modules/collective-attacks-argumentation/WindowExtensions.vue'
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -53,6 +57,11 @@ const { state, historyState, documentId } = defineProps<{
   historyState: HistoryState
   documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const emit = defineEmits<{
   load: []
@@ -77,10 +86,7 @@ watch(
   },
 )
 
-function transformToEditorState(
-  state: DocumentState<SetAF<SetAfArgumentData>>,
-  redraw: boolean,
-) {
+function transformToEditorState(state: DocumentState<SetAF<SetAfArgumentData>>, redraw: boolean) {
   const af = state.current.content
   const nodes: GraphEditorStateNode[] = [...af.arguments()].map(([id, data]) => ({
     id,
@@ -94,7 +100,11 @@ function transformToEditorState(
     if (attack.attackers.length === 1) {
       links.push({ sourceId: attack.attackers[0]!, targetId: attack.target, type: LinkType.SINGLE })
     } else {
-      hyperLinks.push({ sourceIds: attack.attackers, targetId: attack.target, type: LinkType.SINGLE })
+      hyperLinks.push({
+        sourceIds: attack.attackers,
+        targetId: attack.target,
+        type: LinkType.SINGLE,
+      })
     }
   }
   return { stateId: state.stateId, nodes, links, hyperLinks, redraw }
@@ -138,20 +148,29 @@ function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
 }
 
 function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
-  createNewState((draft) => { draft.addCollectiveAttack([data.sourceId], data.targetId) })
+  createNewState((draft) => {
+    draft.addCollectiveAttack([data.sourceId], data.targetId)
+  })
 }
 
 function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
   createNewState((draft) => {
-    const attack = draft.attacks().find(
-      (a) => a.attackers.length === 1 && a.attackers[0] === data.sourceId && a.target === data.targetId,
-    )
+    const attack = draft
+      .attacks()
+      .find(
+        (a) =>
+          a.attackers.length === 1 &&
+          a.attackers[0] === data.sourceId &&
+          a.target === data.targetId,
+      )
     if (attack !== undefined) draft.deleteCollectiveAttack(attack.id)
   })
 }
 
 function onHyperLinkCreated(data: { sourceIds: NodeId[]; targetId: NodeId }) {
-  createNewState((draft) => { draft.addCollectiveAttack(data.sourceIds, data.targetId) })
+  createNewState((draft) => {
+    draft.addCollectiveAttack(data.sourceIds, data.targetId)
+  })
 }
 
 function onHyperLinkDeleted(data: { sourceIds: NodeId[]; targetId: NodeId }) {
@@ -176,8 +195,10 @@ const evaluationInput = computed<Input<SetAF<SetAfArgumentData>>>(() => ({
   content: state.current.content,
 }))
 
-const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  computed(() => `collective-attacks-argumentation:${documentId}:extension-instances`),
+const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
+  db,
+  documentId,
+  'extension-instances',
   [],
 )
 
@@ -191,10 +212,15 @@ function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => voi
 }
 
 function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
-  extensionInstances.value = extensionInstances.value.map((i) => (i.id === updated.id ? updated : i))
+  extensionInstances.value = extensionInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
 }
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...collectiveAttacksArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationGlossary,
+  ...collectiveAttacksArgumentationGlossary,
+})
 
 const setafTutorials = [setafBasicsTutorial, setafEvaluationTutorial, ...commonTutorials]
 
@@ -210,6 +236,7 @@ const tutorialContextExtra = computed(() => ({
 <template>
   <GraphEditor
     v-if="editorState"
+    :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"
     @node-created="onNodeCreated"
@@ -251,9 +278,15 @@ const tutorialContextExtra = computed(() => ({
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
-        :storage-key="`collective-attacks-argumentation:${documentId}:${instance.id}:window`"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @highlight="
+          (h) => {
+            onHighlight(h)
+            if (h) highlightCount++
+          }
+        "
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />

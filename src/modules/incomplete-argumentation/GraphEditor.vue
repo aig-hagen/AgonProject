@@ -17,12 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { useLocalStorage } from '@vueuse/core'
-import { computed, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
-
 import { NodeOutline } from '@aig-hagen/graph-component/lib'
+import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -45,7 +45,10 @@ import {
 } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/incomplete-argumentation/export'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
-import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import type {
+  IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 import { iafBasicsTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-basics'
 import { iafEvaluationTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-evaluation'
 import WindowExtensions from '@/modules/incomplete-argumentation/WindowExtensions.vue'
@@ -55,6 +58,11 @@ const { state, historyState, documentId } = defineProps<{
   historyState: HistoryState
   documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const emit = defineEmits<{
   load: []
@@ -113,7 +121,12 @@ function transformToEditorState(
 
 const linkConfig = {
   SINGLE: { displayName: 'Definite Attack' },
-  DOUBLE: { displayName: 'Uncertain Attack', arrowType: 'SINGLE' as const, dashArray: '8 4', icon: ArrowLongRightDashedIcon },
+  DOUBLE: {
+    displayName: 'Uncertain Attack',
+    arrowType: 'SINGLE' as const,
+    dashArray: '8 4',
+    icon: ArrowLongRightDashedIcon,
+  },
 }
 
 const argumentOutlines = computed(() => {
@@ -185,8 +198,10 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
 
 // --- Multi-instance window management ---
 
-const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  computed(() => `incomplete-argumentation:${documentId}:extension-instances`),
+const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
+  db,
+  documentId,
+  'extension-instances',
   [],
 )
 
@@ -205,7 +220,10 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   )
 }
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...incompleteArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationGlossary,
+  ...incompleteArgumentationGlossary,
+})
 
 const iafTutorials = [iafBasicsTutorial, iafEvaluationTutorial, ...commonTutorials]
 
@@ -229,6 +247,7 @@ const tutorialRefs = computed(() => ({
 <template>
   <GraphEditor
     v-if="editorState"
+    :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"
     @node-created="onNodeCreated"
@@ -298,9 +317,15 @@ const tutorialRefs = computed(() => ({
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
-        :storage-key="`incomplete-argumentation:${documentId}:${instance.id}:window`"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @highlight="
+          (h) => {
+            onHighlight(h)
+            if (h) highlightCount++
+          }
+        "
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />

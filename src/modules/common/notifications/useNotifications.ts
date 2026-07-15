@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { createSharedComposable } from '@vueuse/shared'
 import { ref } from 'vue'
 
 import { generateUUID } from '@/modules/common/ids'
@@ -33,7 +34,7 @@ export interface Notification {
   remove(): void
 }
 
-export function useNotifications() {
+export const useNotifications = createSharedComposable(() => {
   const notifications = ref<Notification[]>([])
 
   function addSuccessNotification(title: string, description?: string, timeout = 1_000) {
@@ -78,4 +79,4 @@ export function useNotifications() {
     addSuccessNotification,
     addErrorNotification,
   }
-}
+})

@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, type Ref, ref, useTemplateRef, watch } from 'vue'
 
+import type { DocumentId } from '@/modules/common/documents/db'
 import { TWEETY_TIMEOUT_IN_MS } from '@/modules/common/evaluation/tweety-project/fetch'
 import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
@@ -40,7 +41,8 @@ const props = defineProps<{
   initialSize?: { width: number; height: number }
   resultsHeader?: ResultsHeaderPart[]
   query: EvaluationWindowQuery
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
   active?: boolean
 }>()
 
@@ -53,10 +55,14 @@ const emit = defineEmits<{
 const evaluateContinuously = defineModel<boolean>('evaluateContinuously', { required: true })
 
 const internalOpen = ref(true)
-watch(internalOpen, (v) => { if (!v) emit('close') })
+watch(internalOpen, (v) => {
+  if (!v) emit('close')
+})
 
 const isCompact = ref(false)
-watch(isCompact, (v) => { if (v) evaluateContinuously.value = true })
+watch(isCompact, (v) => {
+  if (v) evaluateContinuously.value = true
+})
 
 const { status, error, isPending, isLoading, isError, refetch } = props.query
 
@@ -116,7 +122,8 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
     :initial-position="{ x: basePos.x + offset * 24, y: basePos.y + offset * 24 }"
     :intitalSize="size"
     :instance-offset="offset"
-    :storage-key="props.storageKey"
+    :document-id="props.documentId"
+    :state-key="props.stateKey"
     :active="props.active"
     compactable
     :minimizable="false"
@@ -151,7 +158,9 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
           <legend v-if="!compact && resultsHeader" class="fieldset-legend">
             <span>
               <template v-for="(part, i) in resultsHeader" :key="i">
-                <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
+                <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{
+                  part.text
+                }}</TermTooltip>
                 <template v-else>{{ part }}</template>
               </template>
             </span>

@@ -18,9 +18,10 @@
 -->
 <script setup lang="ts">
 import type { AnnotationPosition } from '@aig-hagen/graph-component/lib'
-import { useLocalStorage } from '@vueuse/core'
-import { computed, provide, ref, shallowRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -36,7 +37,10 @@ import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
-import { type FormulaNode,formulaToString } from '@/modules/dialectical-argumentation/condition/formula'
+import {
+  type FormulaNode,
+  formulaToString,
+} from '@/modules/dialectical-argumentation/condition/formula'
 import ConditionEditorBar from '@/modules/dialectical-argumentation/ConditionEditorBar.vue'
 import {
   createDefaultExtensionWindowInstance,
@@ -44,7 +48,10 @@ import {
 } from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/dialectical-argumentation/export'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
-import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import type {
+  AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 import { adfBasicsTutorial } from '@/modules/dialectical-argumentation/tutorials/adf-basics'
 import { adfEvaluationTutorial } from '@/modules/dialectical-argumentation/tutorials/adf-evaluation'
 import WindowInterpretations from '@/modules/dialectical-argumentation/WindowInterpretations.vue'
@@ -54,6 +61,11 @@ const { state, historyState, documentId } = defineProps<{
   historyState: HistoryState
   documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const emit = defineEmits<{
   load: []
@@ -221,8 +233,10 @@ function onConditionChanged(formula: FormulaNode) {
 
 // --- Multi-instance window management ---
 
-const extensionInstances = useLocalStorage<ExtensionWindowInstanceState[]>(
-  computed(() => `dialectical-argumentation:${documentId}:extension-instances`),
+const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
+  db,
+  documentId,
+  'extension-instances',
   [],
 )
 
@@ -257,6 +271,7 @@ const tutorialContextExtra = computed(() => ({
   <GraphEditor
     v-if="editorState"
     class="adf-graph"
+    :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"
     @node-created="onNodeCreated"
@@ -287,9 +302,15 @@ const tutorialContextExtra = computed(() => ({
         :input="evaluationInput"
         :instance-state="instance"
         :instance-offset="index"
-        :storage-key="`dialectical-argumentation:${documentId}:${instance.id}:window`"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
         @update:instance-state="updateExtensionInstance($event)"
-        @highlight="(h) => { onHighlight(h); if (h) highlightCount++ }"
+        @highlight="
+          (h) => {
+            onHighlight(h)
+            if (h) highlightCount++
+          }
+        "
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />

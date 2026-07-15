@@ -25,22 +25,37 @@ import {
   type RankingSemantic,
   useRankingEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProjectRanking'
-import { abstractArgumentationGlossary, abstractArgumentationRankingGlossary } from '@/modules/abstract-argumentation/glossary'
+import {
+  abstractArgumentationGlossary,
+  abstractArgumentationRankingGlossary,
+} from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary })
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationGlossary,
+  ...abstractArgumentationRankingGlossary,
+})
 
-const { input, instanceState, instanceOffset = 0, storageKey, suppressed = false } = defineProps<{
+const {
+  input,
+  instanceState,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+  suppressed = false,
+} = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: RankingWindowInstanceState
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
   suppressed?: boolean
 }>()
 
@@ -55,7 +70,9 @@ function resolveSemanticFromKey(key: string): RankingSemantic {
   return KNOWN_RANKING_SEMANTICS.find((s) => s.key === key) ?? KNOWN_RANKING_SEMANTICS[0]!
 }
 
-const selectedSemantic = shallowRef<RankingSemantic>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantic = shallowRef<RankingSemantic>(
+  resolveSemanticFromKey(instanceState.semanticKey),
+)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
 watch([selectedSemantic, evaluateContinuously], () => {
@@ -123,15 +140,20 @@ const copyText = computed(() => {
 
 function computeWeights() {
   const d = data.value
-  return d === undefined ? [] : d.ranking.map((e) => ({
-    id: e.id,
-    weight: d.rankingType === 'lattice' ? Math.round(e.score) : e.score,
-  }))
+  return d === undefined
+    ? []
+    : d.ranking.map((e) => ({
+        id: e.id,
+        weight: d.rankingType === 'lattice' ? Math.round(e.score) : e.score,
+      }))
 }
 
 watch(data, () => emit('setWeights', computeWeights()), { immediate: true })
 
-function onWindowFocus() { emit('setWeights', computeWeights()); emit('focus') }
+function onWindowFocus() {
+  emit('setWeights', computeWeights())
+  emit('focus')
+}
 
 const isActive = computed(() => !suppressed && data.value !== undefined)
 </script>
@@ -145,7 +167,8 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
     :initial-size="{ width: 480, height: 400 }"
     :query="query"
     :results-header="[`${selectedSemantic.displayName} ranking`]"
-    :storage-key="storageKey"
+    :document-id="documentId"
+    :state-key="stateKey"
     :active="isActive"
     @close="emit('close')"
     @focus="onWindowFocus"
@@ -182,16 +205,26 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
               :style="{ backgroundColor: entry.bgColor, borderColor: entry.borderColor }"
             >
               <span class="font-medium truncate" :title="entry.name">{{ entry.name }}</span>
-              <span class="font-mono text-xs tabular-nums opacity-60 shrink-0">{{ formatScore(entry.score) }}</span>
+              <span class="font-mono text-xs tabular-nums opacity-60 shrink-0">{{
+                formatScore(entry.score)
+              }}</span>
             </div>
           </div>
         </template>
         <div class="flex items-center justify-between gap-2">
           <p class="label">
-            {{ data.rankingType === 'lattice' ? 'Node labels show the ranking level.' : 'Node labels show ranking scores.' }}
+            {{
+              data.rankingType === 'lattice'
+                ? 'Node labels show the ranking level.'
+                : 'Node labels show ranking scores.'
+            }}
             · {{ data.evaluationDurationInMs }}ms
           </p>
-          <ButtonCopy v-if="copyText !== undefined" class="btn btn-xs btn-ghost gap-1 ml-auto" :text="copyText">
+          <ButtonCopy
+            v-if="copyText !== undefined"
+            class="btn btn-xs btn-ghost gap-1 ml-auto"
+            :text="copyText"
+          >
             ranking
           </ButtonCopy>
         </div>

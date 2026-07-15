@@ -17,13 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { useElementVisibility } from '@vueuse/core'
+import type { IDBPDatabase } from 'idb'
 import type { Ref } from 'vue'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
+import type { DocumentId, DocumentsDB } from '@/modules/common/documents/db'
+import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import type { IdMapping } from '@/modules/common/ids'
 import type { PhysicsMode } from '@/modules/common/main-menu/types'
 import { useSettings } from '@/modules/common/settings/useSettings'
+
+const PHYSICS_MODE_STATE_KEY = 'physics-mode'
 
 interface PhysicsCapable {
   $el: unknown
@@ -41,15 +46,31 @@ export function usePhysics({
   graphComponentRef,
   getIdMapping,
   containerRef,
+  documentId,
+  db,
 }: {
   graphComponentRef: Ref<PhysicsCapable | null>
   getIdMapping: () => IdMapping<number, number>
   containerRef: Ref<HTMLDivElement | null>
+  documentId?: DocumentId
+  db?: IDBPDatabase<DocumentsDB>
 }) {
   const { defaultPhysicsMode } = useSettings()
   const physicsMode = ref<PhysicsMode>(defaultPhysicsMode.value)
   let settleTimerId: ReturnType<typeof setTimeout> | null = null
   let settlePointerCleanup: (() => void) | undefined
+
+  if (db && documentId !== undefined) {
+    void getUIStateValue<PhysicsMode>(db, documentId, PHYSICS_MODE_STATE_KEY).then((stored) => {
+      if (stored !== undefined) physicsMode.value = stored
+    })
+  }
+
+  function persistPhysicsMode(mode: PhysicsMode) {
+    if (db && documentId !== undefined) {
+      void setUIStateValue(db, documentId, PHYSICS_MODE_STATE_KEY, mode)
+    }
+  }
 
   // Shifts all nodes so their centroid sits at the simulation's centering-force target
   // (clientWidth/2, clientHeight/2), then compensates the zoom/pan transform so that
@@ -132,6 +153,7 @@ export function usePhysics({
       physicsMode.value = 'off'
       disablePhysics()
     }
+    persistPhysicsMode(physicsMode.value)
   }
 
   watch(defaultPhysicsMode, (mode) => {

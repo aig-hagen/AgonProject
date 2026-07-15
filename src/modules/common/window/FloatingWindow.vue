@@ -22,12 +22,21 @@ import '@interactjs/actions/drag'
 import '@interactjs/actions/resize'
 import '@interactjs/modifiers'
 
-import { AdjustmentsHorizontalIcon, ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/vue/24/solid'
+import {
+  AdjustmentsHorizontalIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  XMarkIcon,
+} from '@heroicons/vue/24/solid'
 import interact from '@interactjs/interact'
 import { useEventListener } from '@vueuse/core'
-import { nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
+import { inject, nextTick, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
 
+import { type DocumentId, DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import { POINTER_SHIELD_Z_INDEX, useZIndex } from '@/modules/common/window/useZIndex'
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY, undefined)
 
 const floating = useTemplateRef('floating')
 const content = useTemplateRef('content')
@@ -36,14 +45,25 @@ const pointerShield = useTemplateRef('pointerShield')
 const open = defineModel('open', { required: true })
 const compact = defineModel<boolean>('compact', { default: false })
 const emit = defineEmits<{ focus: [] }>()
-const { title, initialPosition, intitalSize, compactable = false, minimizable = true, instanceOffset = 0, storageKey, active = false } = defineProps<{
+const {
+  title,
+  initialPosition,
+  intitalSize,
+  compactable = false,
+  minimizable = true,
+  instanceOffset = 0,
+  documentId,
+  stateKey,
+  active = false,
+} = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
   intitalSize: { width: number; height: number }
   compactable?: boolean
   minimizable?: boolean
   instanceOffset?: number
-  storageKey?: string
+  documentId?: DocumentId
+  stateKey?: string
   active?: boolean
 }>()
 
@@ -60,22 +80,28 @@ interface StoredWindowState {
   y: number
   width: number
   height: number
+  compact?: boolean
 }
 
 function saveWindowState() {
-  if (!storageKey) return
+  if (!db || documentId === undefined || !stateKey) return
   const el = floating.value
   if (!el) return
   const w = parseFloat(el.style.width) || intitalSize.width
   const h = parseFloat(el.style.height) || intitalSize.height
-  localStorage.setItem(storageKey, JSON.stringify({ x: position.x, y: position.y, width: w, height: h } satisfies StoredWindowState))
+  void setUIStateValue<StoredWindowState>(db, documentId, stateKey, {
+    x: position.x,
+    y: position.y,
+    width: w,
+    height: h,
+    compact: compact.value,
+  })
 }
 
-function loadWindowState(): StoredWindowState | null {
-  if (!storageKey) return null
-  const raw = localStorage.getItem(storageKey)
-  if (!raw) return null
-  try { return JSON.parse(raw) as StoredWindowState } catch { return null }
+async function loadWindowState(): Promise<StoredWindowState | null> {
+  if (!db || documentId === undefined || !stateKey) return null
+  const stored = await getUIStateValue<StoredWindowState>(db, documentId, stateKey)
+  return stored ?? null
 }
 
 function toggleMinimize() {
@@ -103,10 +129,12 @@ function toggleCompact() {
     nextTick(() => {
       floating.value!.style.height = ''
       floating.value!.style.height = floating.value!.offsetHeight + 'px'
+      saveWindowState()
     })
   } else {
     compact.value = false
     floating.value!.style.height = savedCompactHeight
+    saveWindowState()
   }
 }
 
@@ -129,14 +157,20 @@ function endDragOrResize() {
   saveWindowState()
 }
 
-onMounted(() => {
+onMounted(async () => {
   const el = floating.value
   if (el === null) {
     throw Error('Window ref not set.')
   }
   pointerShield.value!.style.display = 'none'
+  // Hidden until the persisted position/size resolves, so a restored window doesn't
+  // visibly jump from its default position once the (async) IndexedDB read completes.
+  el.style.visibility = 'hidden'
 
-  const stored = loadWindowState()
+  const stored = await loadWindowState()
+  if (stored?.compact !== undefined) {
+    compact.value = stored.compact
+  }
   const mobile = window.innerWidth < 640
   isMobileLayout.value = mobile
 
@@ -263,6 +297,7 @@ onMounted(() => {
         },
       })
   }
+  el.style.visibility = ''
 })
 
 function resizeToFitContent(maxHeight = Math.min(window.innerHeight * 0.8, 700)) {
@@ -330,7 +365,10 @@ watchEffect(async () => {
       class="floating-window-header bg-base-200 flex justify-between py-1 pl-4 pr-2"
       :class="{ 'border-b border-base-300': !minimized }"
     >
-      <div class="flex-1 mr-2 self-center flex items-center gap-1.5" :class="{ truncate: !minimized }">
+      <div
+        class="flex-1 mr-2 self-center flex items-center gap-1.5"
+        :class="{ truncate: !minimized }"
+      >
         <span
           v-if="active"
           class="inline-block size-1.5 rounded-full bg-success shrink-0"
@@ -352,7 +390,15 @@ watchEffect(async () => {
           v-if="minimizable || compactable"
           @click="!minimizable && compactable ? toggleCompact() : toggleMinimize()"
           class="btn btn-square btn-xs btn-ghost"
-          :title="!minimizable && compactable ? (compact ? 'Show parameters' : 'Hide parameters') : (minimized ? 'Expand' : 'Minimize')"
+          :title="
+            !minimizable && compactable
+              ? compact
+                ? 'Show parameters'
+                : 'Hide parameters'
+              : minimized
+                ? 'Expand'
+                : 'Minimize'
+          "
         >
           <ChevronUpIcon v-if="!minimizable && compactable ? compact : minimized" class="size-4" />
           <ChevronDownIcon v-else class="size-4" />
@@ -362,7 +408,11 @@ watchEffect(async () => {
         </button>
       </div>
     </div>
-    <div v-show="!minimized" ref="content" class="floating-window-content bg-base-100 overflow-x-auto overflow-y-auto flex-1">
+    <div
+      v-show="!minimized"
+      ref="content"
+      class="floating-window-content bg-base-100 overflow-x-auto overflow-y-auto flex-1"
+    >
       <slot :compact="compact" />
     </div>
   </div>
