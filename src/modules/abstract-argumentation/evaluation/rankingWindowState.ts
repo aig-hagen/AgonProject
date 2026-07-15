@@ -16,11 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { KEY_DEFAULT_RANKING_SEMANTIC } from '@/modules/abstract-argumentation/evaluation/tweetyProjectRanking'
+import {
+  defaultRankingArgsFor,
+  KEY_DEFAULT_RANKING_SEMANTIC,
+  type RankingArgs,
+} from '@/modules/abstract-argumentation/evaluation/tweetyProjectRanking'
 
 export interface RankingWindowInstanceState {
   id: string
   semanticKey: string
+  args: RankingArgs
   evaluateContinuously: boolean
 }
 
@@ -28,6 +33,7 @@ export function createDefaultRankingWindowInstance(): RankingWindowInstanceState
   return {
     id: crypto.randomUUID(),
     semanticKey: KEY_DEFAULT_RANKING_SEMANTIC,
+    args: defaultRankingArgsFor(KEY_DEFAULT_RANKING_SEMANTIC),
     evaluateContinuously: false,
   }
 }

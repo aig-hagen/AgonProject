@@ -384,6 +384,24 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     content: ['A set of arguments $E$ is a weakly preferred extension iff $E$ is a $\\subseteq$-maximal ', { ref: 'WAD' }, ' set.'],
     reference: BBU20,
   },
+
+  // Meta semantics
+  QLD: {
+    label: 'qualified',
+    title: 'Qualified Semantics',
+    content: ['TODO'],
+  },
+  SQLD: {
+    label: 'semi-qualified',
+    title: 'Semi-Qualified Semantics',
+    content: ['TODO'],
+  },
+  VR: {
+    label: 'vacuous reduct',
+    title: 'Vacuous Reduct Semantics',
+    content: ['TODO'],
+    reference: T23,
+  },
 }
 
 export const abstractArgumentationRankingGlossary: TooltipRegistry = {

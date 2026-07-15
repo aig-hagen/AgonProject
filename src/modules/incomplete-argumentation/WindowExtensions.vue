@@ -25,6 +25,7 @@ import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWind
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
+import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -70,6 +71,11 @@ provide(TOOLTIP_REGISTRY_KEY, {
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
+const semanticsSelectGroups: GroupedSelectGroup<Semantics>[] = semanticGroups.map((g) => ({
+  key: g.key,
+  displayName: g.displayName,
+  options: g.semantics,
+}))
 
 function resolveSemanticFromKey(key: string): Semantics {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
@@ -167,16 +173,7 @@ const windowTitle = computed(() => {
           <option value="nec">Necessary</option>
         </select>
       </label>
-      <label class="select select-sm w-fit">
-        <span class="label">Semantics</span>
-        <select v-model="selectedSemantic">
-          <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-            <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
-              {{ semantic.displayName }}
-            </option>
-          </optgroup>
-        </select>
-      </label>
+      <GroupedSelect v-model="selectedSemantic" label="Semantics" :groups="semanticsSelectGroups" />
       <label class="select select-sm w-fit">
         <span class="label">Mode</span>
         <select v-model="selectedMode">

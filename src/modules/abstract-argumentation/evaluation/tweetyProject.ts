@@ -89,12 +89,84 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
 
 export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 
+export interface MetaReasonerParameter {
+  key: string
+  label: string
+  description: string
+  /** Keys of {@link KNOWN_SEMANTIC_GROUPS} semantics this parameter may be set to. */
+  compatibleSemantics: string[]
+}
+
+export interface MetaReasoner {
+  key: string
+  displayName: string
+  parameters: MetaReasonerParameter[]
+}
+
+// Note: resolution-based reasoners are intentionally left out of this list for now.
+export const KNOWN_META_REASONERS: MetaReasoner[] = [
+  {
+    key: 'QLD',
+    displayName: 'Qualified',
+    parameters: [
+      {
+        key: 'baseSemantics',
+        label: 'Base Semantics',
+        description: 'SCC-decomposable semantics used as the base function for the qualified extensions.',
+        compatibleSemantics: ['ADM', 'CO', 'GR', 'PR', 'ST'],
+      },
+    ],
+  },
+  {
+    key: 'SQLD',
+    displayName: 'Semi-Qualified',
+    parameters: [
+      {
+        key: 'baseSemantics',
+        label: 'Base Semantics',
+        description: 'SCC-decomposable semantics used as the base function for the semi-qualified extensions.',
+        compatibleSemantics: ['ADM', 'CO', 'GR', 'PR', 'ST'],
+      },
+    ],
+  },
+  {
+    key: 'VR',
+    displayName: 'Vacuous Reduct',
+    parameters: [
+      {
+        key: 'baseSemantics',
+        label: 'Base Semantics',
+        description: 'Semantics whose extensions are filtered by the reduct condition.',
+        compatibleSemantics: ['CF', 'ADM', 'CO', 'GR', 'PR', 'ST', 'UD', 'SUD'],
+      },
+      {
+        key: 'reductSemantics',
+        label: 'Reduct Semantics',
+        description: 'Semantics that must not yield a non-empty extension on the reduct of a base extension.',
+        compatibleSemantics: ['CF', 'ADM', 'CO', 'GR', 'PR', 'ST', 'UD', 'SUD'],
+      },
+    ],
+  },
+]
+
+/** Default args for the given semantics/meta-reasoner key (empty for plain semantics). */
+export function defaultArgsForSemantics(key: string): Record<string, string> {
+  const metaReasoner = KNOWN_META_REASONERS.find((m) => m.key === key)
+  if (metaReasoner === undefined) return {}
+  const args: Record<string, string> = {}
+  for (const param of metaReasoner.parameters) {
+    args[param.key] = param.compatibleSemantics[0]!
+  }
+  return args
+}
+
 interface GetCredulousRequestBody {
   email: string
   cmd: 'get_credulous'
   nr_of_arguments: number
   attacks: number[][]
   semantics: string
+  args: Record<string, string>
   timeout: number
   unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
@@ -103,6 +175,7 @@ async function fetchCredulous(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
+  args: Record<string, string>,
 ): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
   const body: GetCredulousRequestBody = {
     email: USER_ID,
@@ -110,6 +183,7 @@ async function fetchCredulous(
     nr_of_arguments: numberOfArguments,
     attacks,
     semantics,
+    args,
     timeout: TWEETY_TIMEOUT_IN_MS,
     unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
@@ -124,6 +198,7 @@ interface GetSkepticalRequestBody {
   nr_of_arguments: number
   attacks: number[][]
   semantics: string
+  args: Record<string, string>
   timeout: number
   unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
@@ -132,6 +207,7 @@ async function fetchSkeptical(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
+  args: Record<string, string>,
 ): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
   const body: GetSkepticalRequestBody = {
     email: USER_ID,
@@ -139,6 +215,7 @@ async function fetchSkeptical(
     nr_of_arguments: numberOfArguments,
     attacks,
     semantics,
+    args,
     timeout: TWEETY_TIMEOUT_IN_MS,
     unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
@@ -153,6 +230,7 @@ interface GetModelsRequestBody {
   nr_of_arguments: number
   attacks: number[][]
   semantics: string
+  args: Record<string, string>
   timeout: number
   unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
@@ -161,6 +239,7 @@ async function fetchModels(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
+  args: Record<string, string>,
 ): Promise<{ evaluationDurationInMs: number; extensions: number[][] }> {
   const body: GetModelsRequestBody = {
     email: USER_ID,
@@ -168,6 +247,7 @@ async function fetchModels(
     nr_of_arguments: numberOfArguments,
     attacks,
     semantics,
+    args,
     timeout: TWEETY_TIMEOUT_IN_MS,
     unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }
@@ -190,6 +270,7 @@ export type Extension = {
 export function useExtensionEvaluationQuery(
   inputRef: MaybeRef<Input<AbstractArgumentation<ArgumentData>>>,
   semanticsRef: MaybeRef<string>,
+  argsRef: MaybeRef<Record<string, string>>,
   modeRef: MaybeRef<string>,
   enabled: MaybeRef<boolean>,
 ) {
@@ -215,31 +296,32 @@ export function useExtensionEvaluationQuery(
   const queryKey = computed(() => {
     const mode = unref(modeRef)
     if (mode === 'credulous') {
-      return ['dung_get_credulous', semanticsRef, modeRef, argumentData] as const
+      return ['dung_get_credulous', semanticsRef, argsRef, modeRef, argumentData] as const
     }
     if (mode === 'skeptical') {
-      return ['dung_get_skeptical', semanticsRef, modeRef, argumentData] as const
+      return ['dung_get_skeptical', semanticsRef, argsRef, modeRef, argumentData] as const
     }
-    return ['dung_get_models', semanticsRef, modeRef, argumentData] as const
+    return ['dung_get_models', semanticsRef, argsRef, modeRef, argumentData] as const
   })
 
   const queryResult = useQuery<EvaluationQueryResult>({
     queryKey: queryKey,
     queryFn: ({ queryKey }) => {
-      const [, semantics, , { attacks, numberOfArguments }] = queryKey as [
+      const [, semantics, args, , { attacks, numberOfArguments }] = queryKey as [
         string,
         string,
+        Record<string, string>,
         string,
         { attacks: number[][]; numberOfArguments: number },
       ]
       const mode = unref(modeRef)
       if (mode === 'credulous') {
-        return fetchCredulous(numberOfArguments, attacks, semantics)
+        return fetchCredulous(numberOfArguments, attacks, semantics, args)
       }
       if (mode === 'skeptical') {
-        return fetchSkeptical(numberOfArguments, attacks, semantics)
+        return fetchSkeptical(numberOfArguments, attacks, semantics, args)
       }
-      return fetchModels(numberOfArguments, attacks, semantics)
+      return fetchModels(numberOfArguments, attacks, semantics, args)
     },
     enabled: enabled,
   })

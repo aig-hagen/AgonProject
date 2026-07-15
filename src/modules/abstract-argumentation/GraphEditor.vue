@@ -163,22 +163,21 @@ function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
   nodeWeights.value = new Map(weights.map(({ id, weight }) => [id, weight]))
 }
 
-// --- Highlight/weight visibility across evaluation window types ---
+// --- Highlight/weight visibility across evaluation window instances ---
 // Only the most recently focused window's result is shown on the canvas, so
-// e.g. an Extension selection and a Ranking don't render on top of each other.
+// e.g. an Extension selection and a Ranking don't render on top of each other,
+// and so multiple windows of the same type (e.g. two Extension windows) don't
+// both claim to be active at once.
 type HighlightSource = 'extension' | 'ranking' | 'serialisation'
-const activeSource = ref<HighlightSource | undefined>(undefined)
+const activeWindow = ref<{ source: HighlightSource; id: string } | undefined>(undefined)
 
-const extensionSuppressed = computed(
-  () => activeSource.value === 'ranking' || activeSource.value === 'serialisation',
+function isSuppressed(source: HighlightSource, id: string): boolean {
+  return activeWindow.value?.source !== source || activeWindow.value.id !== id
+}
+
+const visibleNodeWeights = computed(() =>
+  activeWindow.value?.source === 'ranking' ? nodeWeights.value : new Map(),
 )
-const serialisationSuppressed = computed(
-  () => activeSource.value === 'ranking' || activeSource.value === 'extension',
-)
-const rankingSuppressed = computed(
-  () => activeSource.value === 'extension' || activeSource.value === 'serialisation',
-)
-const visibleNodeWeights = computed(() => (rankingSuppressed.value ? new Map() : nodeWeights.value))
 
 function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   createNewState((draft) => {
@@ -230,9 +229,9 @@ function addExtensionInstance() {
 }
 
 function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (extensionInstances.value.length === 1) {
+  if (activeWindow.value?.id === id) {
     onHighlight(undefined)
-    if (activeSource.value === 'extension') activeSource.value = undefined
+    activeWindow.value = undefined
   }
   extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
 }
@@ -248,9 +247,9 @@ function addRankingInstance() {
 }
 
 function removeRankingInstance(id: string) {
-  if (rankingInstances.value.length === 1) {
+  if (activeWindow.value?.id === id) {
     nodeWeights.value = new Map()
-    if (activeSource.value === 'ranking') activeSource.value = undefined
+    activeWindow.value = undefined
   }
   rankingInstances.value = rankingInstances.value.filter((i) => i.id !== id)
 }
@@ -274,9 +273,9 @@ function addSerialisationInstance() {
 }
 
 function removeSerialisationInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (serialisationInstances.value.length === 1) {
+  if (activeWindow.value?.id === id) {
     onHighlight(undefined)
-    if (activeSource.value === 'serialisation') activeSource.value = undefined
+    activeWindow.value = undefined
   }
   serialisationInstances.value = serialisationInstances.value.filter((i) => i.id !== id)
 }
@@ -336,7 +335,7 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
-        :suppressed="extensionSuppressed"
+        :suppressed="isSuppressed('extension', instance.id)"
         @update:instance-state="updateExtensionInstance($event)"
         @highlight="
           (h) => {
@@ -344,7 +343,7 @@ const tutorialContextExtra = computed(() => ({
             if (h) highlightCount++
           }
         "
-        @focus="activeSource = 'extension'"
+        @focus="activeWindow = { source: 'extension', id: instance.id }"
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
@@ -367,10 +366,10 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
-        :suppressed="rankingSuppressed"
+        :suppressed="isSuppressed('ranking', instance.id)"
         @update:instance-state="updateRankingInstance($event)"
-        @set-weights="onSetWeights"
-        @focus="activeSource = 'ranking'"
+        @set-weights="(w) => { if (!isSuppressed('ranking', instance.id)) onSetWeights(w) }"
+        @focus="activeWindow = { source: 'ranking', id: instance.id }"
         @close="removeRankingInstance(instance.id)"
       />
     </template>
@@ -383,10 +382,10 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
-        :suppressed="serialisationSuppressed"
+        :suppressed="isSuppressed('serialisation', instance.id)"
         @update:instance-state="updateSerialisationInstance($event)"
         @highlight="onHighlight"
-        @focus="activeSource = 'serialisation'"
+        @focus="activeWindow = { source: 'serialisation', id: instance.id }"
         @close="removeSerialisationInstance(instance.id, onHighlight)"
       />
     </template>

@@ -24,6 +24,7 @@ import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
+import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -66,6 +67,11 @@ provide(TOOLTIP_REGISTRY_KEY, {
 })
 
 const allSemantics = KNOWN_SEMANTIC_GROUPS.flatMap((g) => g.semantics)
+const semanticsSelectGroups: GroupedSelectGroup<Semantics>[] = KNOWN_SEMANTIC_GROUPS.map((g) => ({
+  key: g.key,
+  displayName: g.displayName,
+  options: g.semantics,
+}))
 
 function resolveSemanticFromKey(key: string): Semantics {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
@@ -142,20 +148,7 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     @close="emit('close')"
   >
     <template #parameters>
-      <label class="select select-sm w-fit">
-        <span class="label">Semantics</span>
-        <select v-model="selectedSemantic">
-          <optgroup
-            v-for="group in KNOWN_SEMANTIC_GROUPS"
-            :key="group.key"
-            :label="group.displayName"
-          >
-            <option v-for="s in group.semantics" :key="s.key" :value="s">
-              {{ s.displayName }}
-            </option>
-          </optgroup>
-        </select>
-      </label>
+      <GroupedSelect v-model="selectedSemantic" label="Semantics" :groups="semanticsSelectGroups" />
       <label class="select select-sm w-fit">
         <span class="label">Mode</span>
         <select v-model="selectedMode">

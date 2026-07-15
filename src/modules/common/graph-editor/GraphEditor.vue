@@ -18,11 +18,11 @@
 -->
 <script setup lang="ts">
 import {
+  type AnnotationPosition,
+  type AnnotationPositionSnapshot,
   ArrowType,
   EVENT_CAUSE,
   GraphComponent,
-  type AnnotationPosition,
-  type AnnotationPositionSnapshot,
   type jsonHyperLink,
   type jsonLink,
   type jsonNode,

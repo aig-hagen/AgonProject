@@ -39,6 +39,17 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'CAT',
     displayName: 'Categorizer',
+    parameters: [
+      {
+        key: 'epsilon',
+        label: 'Epsilon',
+        description: 'Convergence tolerance for the fixed-point iteration.',
+        type: 'number',
+        default: 0.001,
+        min: 0,
+        step: 0.0001,
+      },
+    ],
   },
   {
     key: 'BB',
@@ -51,6 +62,28 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'CO',
     displayName: 'Counting',
+    parameters: [
+      {
+        key: 'dampingFactor',
+        label: 'Damping factor',
+        description:
+          'Weight given to the counting matrix at each iteration. Should be in (0,1), commonly 0.9–0.98.',
+        type: 'number',
+        default: 0.9,
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+      {
+        key: 'epsilon',
+        label: 'Epsilon',
+        description: 'Convergence tolerance for the fixed-point iteration.',
+        type: 'number',
+        default: 0.001,
+        min: 0,
+        step: 0.0001,
+      },
+    ],
   },
   {
     key: 'DB',
@@ -63,6 +96,35 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'SAF',
     displayName: 'Social Argumentation',
+    parameters: [
+      {
+        key: 'epsilon',
+        label: 'Epsilon',
+        description: 'Vote-aggregation parameter of the underlying social product semantics.',
+        type: 'number',
+        default: 0.1,
+        min: 0,
+        step: 0.01,
+      },
+      {
+        key: 'precision',
+        label: 'Precision',
+        description: 'Precision used when comparing values during ranking construction.',
+        type: 'number',
+        default: 0.0001,
+        min: 0,
+        step: 0.0001,
+      },
+      {
+        key: 'tolerance',
+        label: 'Tolerance',
+        description: 'Convergence tolerance for the Iterative Successive Substitution algorithm.',
+        type: 'number',
+        default: 0.0001,
+        min: 0,
+        step: 0.0001,
+      },
+    ],
   },
   {
     key: 'SB',
@@ -71,12 +133,126 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'TU',
     displayName: 'Tuples',
-  }
+  },
+  {
+    key: 'PR',
+    displayName: 'Propagation',
+    parameters: [
+      {
+        key: 'attackedArgumentsInfluence',
+        label: 'Attacked-argument influence',
+        description:
+          'How much attacked arguments influence the ranking. Smaller values give more weight to non-attacked arguments.',
+        type: 'number',
+        default: 0.75,
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+      {
+        key: 'useMultiset',
+        label: 'Use multiset',
+        description:
+          'Propagate a value for every path between two arguments instead of just one.',
+        type: 'boolean',
+        default: true,
+      },
+      {
+        key: 'propagationSemantics',
+        label: 'Variant',
+        description:
+          'Which of the three propagation variants to use for turning the propagation vector into a ranking.',
+        type: 'enum',
+        default: 'PROPAGATION1',
+        options: [
+          { value: 'PROPAGATION1', label: 'Propa_ε' },
+          { value: 'PROPAGATION2', label: 'Propa_{1+ε}' },
+          { value: 'PROPAGATION3', label: 'Propa_{1→ε}' },
+        ],
+      },
+    ],
+  },
+  {
+    key: 'PROB',
+    displayName: 'Probabilistic',
+    parameters: [
+      {
+        key: 'classicalSemantics',
+        label: 'Base semantics',
+        description: 'Classical Dung semantics used to evaluate each sampled subgraph.',
+        type: 'enum',
+        default: 'GR',
+        options: [
+          { value: 'CO', label: 'Complete' },
+          { value: 'GR', label: 'Grounded' },
+          { value: 'PR', label: 'Preferred' },
+          { value: 'ST', label: 'Stable' },
+        ],
+      },
+      {
+        key: 'probability',
+        label: 'Argument probability',
+        description:
+          'Existence probability applied to every argument when sampling probabilistic subgraphs.',
+        type: 'number',
+        default: 0.5,
+        min: 0,
+        max: 1,
+        step: 0.01,
+      },
+      {
+        key: 'exactInference',
+        label: 'Exact inference',
+        description:
+          'Compute the ranking exactly instead of approximating it via Monte Carlo sampling.',
+        type: 'boolean',
+        default: true,
+      },
+      {
+        key: 'inferenceMode',
+        label: 'Inference mode',
+        description:
+          "Whether an argument's probability reflects credulous or skeptical acceptance across sampled subgraphs.",
+        type: 'enum',
+        default: 'SKEPTICAL',
+        options: [
+          { value: 'CREDULOUS', label: 'Credulous' },
+          { value: 'SKEPTICAL', label: 'Skeptical' },
+        ],
+      },
+    ],
+  },
 ]
+
+export type RankingSemanticParameterType = 'number' | 'boolean' | 'enum'
+
+export interface RankingSemanticParameter {
+  key: string
+  label: string
+  description: string
+  type: RankingSemanticParameterType
+  default: number | boolean | string
+  min?: number
+  max?: number
+  step?: number
+  options?: Array<{ value: string; label: string }>
+}
 
 export interface RankingSemantic {
   key: string
   displayName: string
+  parameters?: RankingSemanticParameter[]
+}
+
+export type RankingArgs = Record<string, number | boolean | string>
+
+export function defaultRankingArgsFor(semanticKey: string): RankingArgs {
+  const semantic = KNOWN_RANKING_SEMANTICS.find((s) => s.key === semanticKey)
+  const args: RankingArgs = {}
+  for (const param of semantic?.parameters ?? []) {
+    args[param.key] = param.default
+  }
+  return args
 }
 
 export type RankingType = 'numerical' | 'lattice'
@@ -99,6 +275,7 @@ interface GetRankingRequestBody {
   nr_of_arguments: number
   attacks: number[][]
   semantics: string
+  args?: RankingArgs
   timeout: number
   unit_timeout: typeof TIMEOUT_UNIT_MS
 }
@@ -114,6 +291,7 @@ async function fetchRanking(
   numberOfArguments: number,
   attacks: number[][],
   semantics: string,
+  args: RankingArgs,
 ): Promise<{ evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }>; rankingType: RankingType }> {
   const body: GetRankingRequestBody = {
     email: USER_ID,
@@ -121,6 +299,7 @@ async function fetchRanking(
     nr_of_arguments: numberOfArguments,
     attacks,
     semantics,
+    args,
     timeout: TIMEOUT_IN_MS,
     unit_timeout: TIMEOUT_UNIT_MS,
   }
@@ -137,6 +316,7 @@ async function fetchRanking(
 export function useRankingEvaluationQuery(
   inputRef: MaybeRef<Input<AbstractArgumentation<ArgumentData>>>,
   semanticsRef: MaybeRef<string>,
+  argsRef: MaybeRef<RankingArgs>,
   enabled: MaybeRef<boolean>,
 ) {
   const argumentData = computed(() => {
@@ -155,19 +335,20 @@ export function useRankingEvaluationQuery(
   })
 
   const queryKey = computed(
-    () => ['rankings_get_model', semanticsRef, argumentData] as const,
+    () => ['rankings_get_model', semanticsRef, argsRef, argumentData] as const,
   )
 
   type RawResult = { evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }>; rankingType: RankingType }
   const queryResult = useQuery<RawResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
-      const [, semantics, { attacks, numberOfArguments }] = queryKey as [
+      const [, semantics, args, { attacks, numberOfArguments }] = queryKey as [
         string,
         string,
+        RankingArgs,
         { attacks: number[][]; numberOfArguments: number },
       ]
-      return fetchRanking(numberOfArguments, attacks, semantics)
+      return fetchRanking(numberOfArguments, attacks, semantics, args)
     },
     enabled,
   })

@@ -21,8 +21,10 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
 import {
+  defaultArgsForSemantics,
+  KNOWN_META_REASONERS,
   KNOWN_SEMANTIC_GROUPS,
-  type Semantics,
+  type MetaReasonerParameter,
   useExtensionEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
@@ -33,9 +35,16 @@ import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWind
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
+import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
+
+interface ExtensionSemanticsOption {
+  key: string
+  displayName: string
+  parameters?: MetaReasonerParameter[]
+}
 
 const {
   input,
@@ -64,28 +73,53 @@ const emit = defineEmits<{
 provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
-const allSemantics = semanticGroups.flatMap((g) => g.semantics)
+const allSemantics: ExtensionSemanticsOption[] = [
+  ...semanticGroups.flatMap((g) => g.semantics),
+  ...KNOWN_META_REASONERS,
+]
 
-function resolveSemanticFromKey(key: string): Semantics {
+const semanticsSelectGroups: GroupedSelectGroup<ExtensionSemanticsOption>[] = [
+  ...semanticGroups.map((g) => ({ key: g.key, displayName: g.displayName, options: g.semantics })),
+  { key: 'meta', displayName: 'Meta Semantics', options: KNOWN_META_REASONERS },
+]
+
+function resolveSemanticFromKey(key: string): ExtensionSemanticsOption {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
 }
 
-const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantic = shallowRef<ExtensionSemanticsOption>(
+  resolveSemanticFromKey(instanceState.semanticKey),
+)
+const args = ref<Record<string, string>>(
+  instanceState.args ?? defaultArgsForSemantics(instanceState.semanticKey),
+)
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
-  emit('update:instanceState', {
-    id: instanceState.id,
-    semanticKey: selectedSemantic.value.key,
-    mode: selectedMode.value,
-    evaluateContinuously: evaluateContinuously.value,
-  })
+watch(selectedSemantic, (semantic, previous) => {
+  if (previous !== undefined && semantic.key !== previous.key) {
+    args.value = defaultArgsForSemantics(semantic.key)
+  }
 })
+
+watch(
+  [selectedSemantic, args, selectedMode, evaluateContinuously],
+  () => {
+    emit('update:instanceState', {
+      id: instanceState.id,
+      semanticKey: selectedSemantic.value.key,
+      args: args.value,
+      mode: selectedMode.value,
+      evaluateContinuously: evaluateContinuously.value,
+    })
+  },
+  { deep: true },
+)
 
 const query = useExtensionEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
+  args,
   selectedMode,
   evaluateContinuously,
 )
@@ -144,16 +178,7 @@ const windowTitle = computed(() => {
           <option selected>TweetyProject</option>
         </select>
       </label>
-      <label class="select select-sm w-fit">
-        <span class="label">Semantics</span>
-        <select v-model="selectedSemantic">
-          <optgroup v-for="group in semanticGroups" :key="group.key" :label="group.displayName">
-            <option v-for="semantic in group.semantics" :key="semantic.key" :value="semantic">
-              {{ semantic.displayName }}
-            </option>
-          </optgroup>
-        </select>
-      </label>
+      <GroupedSelect v-model="selectedSemantic" label="Semantics" :groups="semanticsSelectGroups" />
       <label class="select select-sm w-fit">
         <span class="label">Mode</span>
         <select v-model="selectedMode">
@@ -162,6 +187,20 @@ const windowTitle = computed(() => {
           <option value="skeptical">Skeptical</option>
         </select>
       </label>
+      <div v-if="selectedSemantic.parameters?.length" class="flex gap-2 flex-wrap basis-full">
+        <label
+          v-for="param in selectedSemantic.parameters"
+          :key="param.key"
+          class="select select-sm w-fit"
+        >
+          <span class="label" :title="param.description">{{ param.label }}</span>
+          <select v-model="args[param.key]">
+            <option v-for="key in param.compatibleSemantics" :key="key" :value="key">
+              {{ resolveSemanticFromKey(key).displayName }}
+            </option>
+          </select>
+        </label>
+      </div>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />

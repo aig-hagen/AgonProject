@@ -21,7 +21,9 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import type { RankingWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/rankingWindowState'
 import {
+  defaultRankingArgsFor,
   KNOWN_RANKING_SEMANTICS,
+  type RankingArgs,
   type RankingSemantic,
   useRankingEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProjectRanking'
@@ -35,6 +37,7 @@ import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
+import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -73,19 +76,32 @@ function resolveSemanticFromKey(key: string): RankingSemantic {
 const selectedSemantic = shallowRef<RankingSemantic>(
   resolveSemanticFromKey(instanceState.semanticKey),
 )
+const args = ref<RankingArgs>(instanceState.args ?? defaultRankingArgsFor(instanceState.semanticKey))
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
 
-watch([selectedSemantic, evaluateContinuously], () => {
-  emit('update:instanceState', {
-    id: instanceState.id,
-    semanticKey: selectedSemantic.value.key,
-    evaluateContinuously: evaluateContinuously.value,
-  })
+watch(selectedSemantic, (semantic, previous) => {
+  if (previous !== undefined && semantic.key !== previous.key) {
+    args.value = defaultRankingArgsFor(semantic.key)
+  }
 })
+
+watch(
+  [selectedSemantic, args, evaluateContinuously],
+  () => {
+    emit('update:instanceState', {
+      id: instanceState.id,
+      semanticKey: selectedSemantic.value.key,
+      args: args.value,
+      evaluateContinuously: evaluateContinuously.value,
+    })
+  },
+  { deep: true },
+)
 
 const query = useRankingEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
+  args,
   evaluateContinuously,
 )
 
@@ -151,8 +167,8 @@ function computeWeights() {
 watch(data, () => emit('setWeights', computeWeights()), { immediate: true })
 
 function onWindowFocus() {
-  emit('setWeights', computeWeights())
   emit('focus')
+  emit('setWeights', computeWeights())
 }
 
 const isActive = computed(() => !suppressed && data.value !== undefined)
@@ -182,6 +198,44 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
           </option>
         </select>
       </label>
+      <details v-if="selectedSemantic.parameters?.length" class="collapse collapse-arrow w-full">
+        <summary class="collapse-title fieldset-legend ps-0 min-h-0 py-1 max-w-max">
+          Parameters
+        </summary>
+        <div class="collapse-content px-0 pb-1 pt-1">
+          <div class="flex gap-3 flex-wrap items-end">
+            <template v-for="param in selectedSemantic.parameters" :key="param.key">
+              <div class="flex flex-col gap-0.5">
+                <HoverTooltip class="label text-xs w-fit">{{ param.label }}
+                  <template #content>
+                    <span class="text-xs">{{ param.description }}</span>
+                  </template>
+                </HoverTooltip>
+                <input
+                  v-if="param.type === 'number'"
+                  type="number"
+                  class="input input-xs w-20"
+                  :min="param.min"
+                  :max="param.max"
+                  :step="param.step ?? 'any'"
+                  v-model.number="args[param.key]"
+                />
+                <input
+                  v-else-if="param.type === 'boolean'"
+                  type="checkbox"
+                  class="toggle toggle-xs"
+                  v-model="args[param.key]"
+                />
+                <select v-else class="select select-xs w-fit" v-model="args[param.key]">
+                  <option v-for="o in param.options" :key="o.value" :value="o.value">
+                    {{ o.label }}
+                  </option>
+                </select>
+              </div>
+            </template>
+          </div>
+        </div>
+      </details>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />

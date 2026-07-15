@@ -41,8 +41,8 @@ import {
   OBJECT_STORE_METADATA_NAME,
   OBJECT_STORE_UI_STATE_NAME,
 } from '@/modules/common/documents/db'
-import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import { generateUUID } from '@/modules/common/ids'
+import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import type { DocumentState } from '@/modules/common/state'
 
 const CHANNEL_DOCUMENTS_METADATA = 'documents'

@@ -16,11 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { KEY_DEFAULT_SEMANTIC } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
+import {
+  defaultArgsForSemantics,
+  KEY_DEFAULT_SEMANTIC,
+} from '@/modules/abstract-argumentation/evaluation/tweetyProject'
 
 export interface ExtensionWindowInstanceState {
   id: string
   semanticKey: string
+  args: Record<string, string>
   mode: string
   evaluateContinuously: boolean
 }
@@ -29,6 +33,7 @@ export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceS
   return {
     id: crypto.randomUUID(),
     semanticKey: KEY_DEFAULT_SEMANTIC,
+    args: defaultArgsForSemantics(KEY_DEFAULT_SEMANTIC),
     mode: 'enumerate',
     evaluateContinuously: false,
   }
