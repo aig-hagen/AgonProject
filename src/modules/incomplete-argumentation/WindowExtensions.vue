@@ -26,6 +26,7 @@ import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGr
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -157,6 +158,7 @@ const windowTitle = computed(() => {
     v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
+    :initial-size="{ width: 536, height: 360 }"
     :query="query"
     :results-header="resultsHeader"
     :document-id="documentId"
@@ -166,22 +168,22 @@ const windowTitle = computed(() => {
     @evaluate="emit('evaluate')"
   >
     <template #parameters>
-      <label class="select select-sm w-fit">
-        <span class="label">Type</span>
-        <select v-model="selectedType">
+      <ParameterField label="Type" max-width="8rem">
+        <select v-model="selectedType" class="select select-sm w-full bg-base-200">
           <option value="pos">Possible</option>
           <option value="nec">Necessary</option>
         </select>
-      </label>
-      <GroupedSelect v-model="selectedSemantic" label="Semantics" :groups="semanticsSelectGroups" />
-      <label class="select select-sm w-fit">
-        <span class="label">Mode</span>
-        <select v-model="selectedMode">
+      </ParameterField>
+      <ParameterField label="Semantics" min-width="10rem">
+        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+      </ParameterField>
+      <ParameterField label="Mode" max-width="8rem">
+        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
           <option value="enumerate">Enumerate</option>
           <option value="credulous">Credulous</option>
           <option value="skeptical">Skeptical</option>
         </select>
-      </label>
+      </ParameterField>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />

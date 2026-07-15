@@ -36,6 +36,7 @@ import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGr
 import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -124,6 +125,50 @@ const query = useExtensionEvaluationQuery(
   evaluateContinuously,
 )
 
+// Explicit per-column track sizes (matching each field's own ParameterField min/max
+// below) instead of uniform repeat() tracks, so Semantics' column isn't coupled to
+// Mode's — Mode has a smaller max-width and would otherwise leave its track's spare
+// space stranded rather than letting Semantics use it.
+//
+// The container-query breakpoints below must stay >= the actual sum of that row's
+// column minimums + gaps, or the grid switches column count before there's room and
+// briefly overflows (horizontal scrollbar) while shrinking:
+//   2 columns need >= 10rem (Semantics min) + 7rem (Mode min) + 0.75rem (gap-3) = 17.75rem -> @min-[18rem]
+//   4 columns need >= 17.75rem + 7rem (Base min) + 7rem (Reduct min) + 1.5rem (2 more gaps) = 33.25rem -> @min-[33.5rem]
+// Full class strings (including variant prefixes) are kept literal and unbroken so
+// Tailwind's content scanner can find them — building them via interpolation would
+// hide the "@min-[...]:grid-cols-[...]" candidates from it.
+const GRID_COLS_UP_TO_2 =
+  'grid-cols-1 @min-[18rem]:grid-cols-[minmax(10rem,14rem)_minmax(7rem,8rem)]'
+const GRID_COLS_UP_TO_4 =
+  'grid-cols-1 @min-[18rem]:grid-cols-[minmax(10rem,14rem)_minmax(7rem,8rem)] @min-[33.5rem]:grid-cols-[minmax(10rem,14rem)_minmax(7rem,8rem)_minmax(7rem,14rem)_minmax(7rem,14rem)]'
+
+// Shared by the results header and window title below, both of which need the current
+// meta-reasoner's parameters resolved to their Semantics objects before they can format
+// a notation — the two differ only in which formatter they call (formatNotation may
+// contain KaTeX; formatTitleNotation is the plain-text fallback for the title bar).
+const activeMetaReasoner = computed(() => {
+  const metaReasoner = KNOWN_META_REASONERS.find((m) => m.key === selectedSemantic.value.key)
+  if (metaReasoner === undefined) return undefined
+  const resolvedParams = metaReasoner.parameters.map((p) =>
+    resolveSemanticFromKey(args.value[p.key] ?? ''),
+  )
+  return { metaReasoner, resolvedParams }
+})
+
+const resultsSemanticName = computed(() => {
+  const active = activeMetaReasoner.value
+  if (active === undefined) return selectedSemantic.value.displayName
+  return active.metaReasoner.formatNotation(active.resolvedParams)
+})
+
+const titleSemanticName = computed(() => {
+  const active = activeMetaReasoner.value
+  if (active === undefined) return selectedSemantic.value.displayName
+  const { metaReasoner, resolvedParams } = active
+  return (metaReasoner.formatTitleNotation ?? metaReasoner.formatNotation)(resolvedParams)
+})
+
 const {
   selectedExtension,
   resultsHeader,
@@ -132,11 +177,12 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(
-  selectedMode,
-  query,
-  computed(() => selectedSemantic.value.displayName),
-)
+} = useExtensionWindowBase(selectedMode, query, resultsSemanticName)
+
+// Vacuous Reduct has 2 parameters (4 fields total incl. Semantics/Mode) and can grow to a
+// 4-column row; every other case (0 or 1 parameter) stays at 2 columns so a 3rd field always
+// wraps to its own row instead of the layout ever showing exactly 3 columns.
+const hasFourParamFields = computed(() => (selectedSemantic.value.parameters?.length ?? 0) >= 2)
 
 const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
@@ -153,7 +199,7 @@ const windowTitle = computed(() => {
       : selectedMode.value === 'credulous'
         ? 'Credulous'
         : 'Skeptical'
-  return `Extensions: ${selectedSemantic.value.displayName} · ${modeLabel}`
+  return `Extensions: ${titleSemanticName.value} · ${modeLabel}`
 })
 </script>
 
@@ -162,6 +208,7 @@ const windowTitle = computed(() => {
     v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
     :instance-offset="instanceOffset"
+    :initial-size="{ width: 400, height: 360 }"
     :active="isActive"
     :query="query"
     :results-header="resultsHeader"
@@ -178,28 +225,34 @@ const windowTitle = computed(() => {
           <option selected>TweetyProject</option>
         </select>
       </label>
-      <GroupedSelect v-model="selectedSemantic" label="Semantics" :groups="semanticsSelectGroups" />
-      <label class="select select-sm w-fit">
-        <span class="label">Mode</span>
-        <select v-model="selectedMode">
-          <option value="enumerate">Enumerate</option>
-          <option value="credulous">Credulous</option>
-          <option value="skeptical">Skeptical</option>
-        </select>
-      </label>
-      <div v-if="selectedSemantic.parameters?.length" class="flex gap-2 flex-wrap basis-full">
-        <label
-          v-for="param in selectedSemantic.parameters"
-          :key="param.key"
-          class="select select-sm w-fit"
+      <div class="@container basis-full">
+        <div
+          class="grid gap-3"
+          :class="hasFourParamFields ? GRID_COLS_UP_TO_4 : GRID_COLS_UP_TO_2"
         >
-          <span class="label" :title="param.description">{{ param.label }}</span>
-          <select v-model="args[param.key]">
-            <option v-for="key in param.compatibleSemantics" :key="key" :value="key">
-              {{ resolveSemanticFromKey(key).displayName }}
-            </option>
-          </select>
-        </label>
+          <ParameterField label="Semantics" min-width="10rem">
+            <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+          </ParameterField>
+          <ParameterField label="Mode" max-width="8rem">
+            <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
+              <option value="enumerate">Enumerate</option>
+              <option value="credulous">Credulous</option>
+              <option value="skeptical">Skeptical</option>
+            </select>
+          </ParameterField>
+          <ParameterField
+            v-for="param in selectedSemantic.parameters ?? []"
+            :key="param.key"
+            :label="param.label"
+            :title="param.description"
+          >
+            <select v-model="args[param.key]" class="select select-sm w-full bg-base-200">
+              <option v-for="key in param.compatibleSemantics" :key="key" :value="key">
+                {{ resolveSemanticFromKey(key).displayName }}
+              </option>
+            </select>
+          </ParameterField>
+        </div>
       </div>
     </template>
     <template #parameters-footer>

@@ -382,7 +382,7 @@ watchEffect(async () => {
           @click="toggleCompact"
           class="btn btn-square btn-xs btn-ghost"
           :class="{ 'opacity-40': compact }"
-          :title="compact ? 'Show parameters' : 'Hide parameters'"
+          :title="compact ? 'Show parameters' : 'Compact view'"
         >
           <AdjustmentsHorizontalIcon class="size-4" />
         </button>
@@ -394,7 +394,7 @@ watchEffect(async () => {
             !minimizable && compactable
               ? compact
                 ? 'Show parameters'
-                : 'Hide parameters'
+                : 'Compact view'
               : minimized
                 ? 'Expand'
                 : 'Minimize'

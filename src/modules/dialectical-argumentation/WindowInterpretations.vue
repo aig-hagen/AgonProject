@@ -22,14 +22,14 @@ import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { NODE_BLUE, NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import type { DocumentId } from '@/modules/common/documents/db'
+import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
-import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 import type { ExtensionWindowInstanceState } from '@/modules/dialectical-argumentation/evaluation/extensionWindowState'
 import {
   type Interpretation,
@@ -69,11 +69,6 @@ provide(TOOLTIP_REGISTRY_KEY, {
   ...dialecticalArgumentationGlossary,
 })
 
-const internalOpen = ref(true)
-watch(internalOpen, (v) => {
-  if (!v) emit('close')
-})
-
 const semanticGroups = KNOWN_SEMANTIC_GROUPS
 const allSemantics = semanticGroups.flatMap((g) => g.semantics)
 const semanticsSelectGroups: GroupedSelectGroup<Semantics>[] = semanticGroups.map((g) => ({
@@ -89,10 +84,6 @@ function resolveSemanticFromKey(key: string): Semantics {
 const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
 const evaluateContinuously = ref(instanceState.evaluateContinuously)
-const isCompact = ref(false)
-watch(isCompact, (v) => {
-  if (v) evaluateContinuously.value = true
-})
 
 watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
   emit('update:instanceState', {
@@ -105,18 +96,13 @@ watch([selectedSemantic, selectedMode, evaluateContinuously], () => {
 
 const enabled = computed(() => evaluateContinuously.value)
 
-const { data, status, refetch, isLoading, isPending, isError, error } =
-  useInterpretationEvaluationQuery(
-    toRef(() => input),
-    computed(() => selectedSemantic.value.key),
-    computed(() => selectedMode.value),
-    enabled,
-  )
-
-const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
-const userCanTriggerFetch = computed(
-  () => !evaluateContinuously.value && status.value !== 'success',
+const query = useInterpretationEvaluationQuery(
+  toRef(() => input),
+  computed(() => selectedSemantic.value.key),
+  computed(() => selectedMode.value),
+  enabled,
 )
+const { data } = query
 
 function interpretationKey(interp: Interpretation): string {
   return JSON.stringify(interp.map(({ id, label }) => ({ id, label })))
@@ -146,8 +132,8 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
 })
 const selectionHint = computed(() =>
   selectedMode.value === 'enumerate'
-    ? 'Select model to highlight.'
-    : 'Select acceptable argument to highlight.',
+    ? 'Select model to highlight'
+    : 'Select acceptable argument to highlight',
 )
 const emptyMessage = computed(() =>
   selectedMode.value === 'enumerate' ? 'No models exist.' : 'No acceptable arguments exist.',
@@ -228,91 +214,44 @@ function onWindowFocus() {
 </script>
 
 <template>
-  <FloatingWindow
-    v-model:open="internalOpen"
-    v-model:compact="isCompact"
+  <BaseEvaluationWindow
+    v-model:evaluate-continuously="evaluateContinuously"
     :title="windowTitle"
-    :initial-position="{ x: 128 + instanceOffset * 24, y: 64 + instanceOffset * 24 }"
-    :intitalSize="{ width: 512, height: 400 }"
     :instance-offset="instanceOffset"
+    :initial-size="{ width: 400, height: 360 }"
+    :query="query"
+    :results-header="resultsHeader"
     :document-id="documentId"
     :state-key="stateKey"
-    compactable
-    :minimizable="false"
+    @close="emit('close')"
     @focus="onWindowFocus"
+    @evaluate="emit('evaluate')"
   >
-    <template #default="{ compact }">
-      <div class="p-4">
-        <fieldset v-if="!compact" class="fieldset">
-          <legend class="fieldset-legend">Parameters</legend>
-          <div class="flex gap-2 flex-wrap">
-            <GroupedSelect
-              v-model="selectedSemantic"
-              label="Semantics"
-              :groups="semanticsSelectGroups"
-            />
-            <label class="select select-sm w-fit">
-              <span class="label">Mode</span>
-              <select v-model="selectedMode">
-                <option value="enumerate">Enumerate</option>
-                <option value="credulous">Credulous</option>
-                <option value="skeptical">Skeptical</option>
-              </select>
-            </label>
-          </div>
-          <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
-        </fieldset>
-        <fieldset v-if="!compact" class="fieldset">
-          <div class="flex gap-2 flex-wrap">
-            <button
-              class="btn btn-sm btn-soft mt-2"
-              :disabled="!userCanTriggerFetch"
-              @click="
-                () => {
-                  refetch()
-                  emit('evaluate')
-                }
-              "
-            >
-              Evaluate
-            </button>
-            <label class="label mt-2">
-              <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
-              Evaluate continuously
-            </label>
-          </div>
-        </fieldset>
-        <fieldset class="fieldset" v-if="!isPending || isLoading">
-          <legend v-if="!compact" class="fieldset-legend">
-            <span>
-              <template v-for="(part, i) in resultsHeader" :key="i">
-                <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{
-                  part.text
-                }}</TermTooltip>
-                <template v-else>{{ part }}</template>
-              </template>
-            </span>
-          </legend>
-          <div v-if="isTimeout" role="alert" class="alert alert-warning alert-soft">
-            <span>Evaluation timed out</span>
-          </div>
-          <div v-else-if="isError" role="alert" class="alert alert-error alert-soft">
-            <span>Evaluation failed</span>
-          </div>
-          <div v-if="isLoading" role="alert" class="alert alert-info alert-soft">
-            <span>Evaluating...</span>
-          </div>
-          <template v-if="formattedData !== undefined">
-            <EvaluationResultGrid
-              v-model:selected="selectedKey"
-              :items="resultItems"
-              :empty-message="emptyMessage"
-              :selection-hint="selectionHint"
-              :evaluation-duration-in-ms="formattedData.evaluationDurationInMs"
-            />
-          </template>
-        </fieldset>
-      </div>
+    <template #parameters>
+      <ParameterField label="Semantics" min-width="10rem">
+        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+      </ParameterField>
+      <ParameterField label="Mode" max-width="8rem">
+        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
+          <option value="enumerate">Enumerate</option>
+          <option value="credulous">Credulous</option>
+          <option value="skeptical">Skeptical</option>
+        </select>
+      </ParameterField>
     </template>
-  </FloatingWindow>
+    <template #parameters-footer>
+      <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
+    </template>
+    <template #results>
+      <template v-if="formattedData !== undefined">
+        <EvaluationResultGrid
+          v-model:selected="selectedKey"
+          :items="resultItems"
+          :empty-message="emptyMessage"
+          :selection-hint="selectionHint"
+          :evaluation-duration-in-ms="formattedData.evaluationDurationInMs"
+        />
+      </template>
+    </template>
+  </BaseEvaluationWindow>
 </template>

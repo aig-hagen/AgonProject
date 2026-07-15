@@ -37,6 +37,7 @@ import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -190,15 +191,17 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
     @focus="onWindowFocus"
   >
     <template #parameters>
-      <label class="select select-sm w-fit">
-        <span class="label">Semantics</span>
-        <select v-model="selectedSemantic">
+      <ParameterField label="Semantics" min-width="10rem">
+        <select v-model="selectedSemantic" class="select select-sm w-full bg-base-200">
           <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
             {{ s.displayName }}
           </option>
         </select>
-      </label>
-      <details v-if="selectedSemantic.parameters?.length" class="collapse collapse-arrow w-full">
+      </ParameterField>
+      <details
+        v-if="selectedSemantic.parameters?.length"
+        class="collapse collapse-arrow basis-full"
+      >
         <summary class="collapse-title fieldset-legend ps-0 min-h-0 py-1 max-w-max">
           Parameters
         </summary>
@@ -226,7 +229,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
                   class="toggle toggle-xs"
                   v-model="args[param.key]"
                 />
-                <select v-else class="select select-xs w-fit" v-model="args[param.key]">
+                <select v-else class="select select-xs w-fit bg-base-200" v-model="args[param.key]">
                   <option v-for="o in param.options" :key="o.value" :value="o.value">
                     {{ o.label }}
                   </option>
@@ -269,8 +272,8 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
           <p class="label">
             {{
               data.rankingType === 'lattice'
-                ? 'Node labels show the ranking level.'
-                : 'Node labels show ranking scores.'
+                ? 'Node labels show the ranking level'
+                : 'Node labels show ranking scores'
             }}
             · {{ data.evaluationDurationInMs }}ms
           </p>

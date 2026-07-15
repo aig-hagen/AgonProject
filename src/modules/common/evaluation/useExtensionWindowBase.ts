@@ -42,8 +42,10 @@ export function useExtensionWindowBase(
   const selectedExtension = ref<string | undefined>(undefined)
 
   const resultsHeader = computed((): ResultsHeaderPart[] => {
-    const name = selectedSemanticName.value.toLowerCase()
-    if (selectedMode.value === 'enumerate') return [`${selectedSemanticName.value} extensions`]
+    // LaTeX notation (e.g. "$CO^{PR}$") must keep its abbreviation casing.
+    const rawName = selectedSemanticName.value
+    const name = rawName.includes('$') ? rawName : rawName.toLowerCase()
+    if (selectedMode.value === 'enumerate') return [`${rawName} extensions`]
     const tooltipId = selectedMode.value === 'credulous' ? 'credulousAcceptance' : 'skepticalAcceptance'
     const prefix = selectedMode.value === 'credulous' ? 'Credulously accepted' : 'Skeptically accepted'
     return [{ text: prefix, tooltipId }, ` arguments wrt ${name} semantics`]
@@ -51,8 +53,8 @@ export function useExtensionWindowBase(
 
   const selectionHint = computed(() =>
     selectedMode.value === 'enumerate'
-      ? 'Select extension to highlight.'
-      : 'Select acceptable argument to highlight.',
+      ? 'Select extension to highlight'
+      : 'Select acceptable argument to highlight',
   )
 
   const emptyMessage = computed(() =>

@@ -26,10 +26,11 @@ export interface GroupedSelectGroup<T> {
   options: T[]
 }
 
-const { modelValue, groups, label } = defineProps<{
+const { modelValue, groups, label, fullWidth = false } = defineProps<{
   modelValue: T
   groups: GroupedSelectGroup<T>[]
   label?: string
+  fullWidth?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -186,11 +187,14 @@ watch(isOpen, (open) => {
 </script>
 
 <template>
-  <div ref="wrapper" class="inline-block">
+  <div ref="wrapper" :class="fullWidth ? 'block w-full' : 'inline-block'">
     <label
       ref="trigger"
-      class="select select-sm w-fit"
-      :class="{ 'outline-2 outline-primary/50': isOpen }"
+      class="select select-sm gap-1 bg-base-200"
+      :class="[
+        fullWidth ? 'w-full justify-between' : 'w-fit',
+        { 'outline-2 outline-primary/50': isOpen },
+      ]"
       tabindex="0"
       role="combobox"
       aria-haspopup="listbox"
@@ -200,7 +204,7 @@ watch(isOpen, (open) => {
       @keydown="onTriggerKeydown"
     >
       <span v-if="label" class="label">{{ label }}</span>
-      <span>{{ modelValue.displayName }}</span>
+      <span class="truncate">{{ modelValue.displayName }}</span>
     </label>
     <Teleport to="body">
       <div

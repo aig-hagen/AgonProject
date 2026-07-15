@@ -22,6 +22,7 @@ import { computed, nextTick, onUnmounted, type Ref, ref, useTemplateRef, watch }
 import type { DocumentId } from '@/modules/common/documents/db'
 import { TWEETY_TIMEOUT_IN_MS } from '@/modules/common/evaluation/tweety-project/fetch'
 import type { ResultsHeaderPart } from '@/modules/common/evaluation/types'
+import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
 
@@ -130,41 +131,38 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
     @focus="emit('focus')"
   >
     <template #default="{ compact }">
-      <div class="p-4">
-        <fieldset v-if="!compact" class="fieldset">
-          <div class="flex gap-2 flex-wrap">
-            <slot name="parameters" :compact="compact" />
-          </div>
-          <slot name="parameters-footer" :compact="compact" />
-        </fieldset>
+      <div class="p-4 flex flex-col gap-3">
+        <div v-if="!compact" class="flex flex-wrap gap-3 text-xs">
+          <slot name="parameters" :compact="compact" />
+        </div>
+        <slot v-if="!compact" name="parameters-footer" :compact="compact" />
 
-        <fieldset v-if="!compact" class="fieldset">
-          <div class="flex gap-2 flex-wrap">
-            <button
-              class="btn btn-sm btn-soft mt-2"
-              :disabled="!userCanTriggerFetch"
-              @click="() => refetch()"
-            >
-              Evaluate
-            </button>
-            <label class="label mt-2">
-              <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-sm" />
-              Evaluate continuously
-            </label>
-          </div>
-        </fieldset>
+        <div v-if="!compact" class="flex items-center gap-3 pt-2 border-t border-base-300">
+          <span
+            v-if="resultsHeader && (!isPending || isLoading)"
+            class="text-xs font-semibold text-base-content"
+          >
+            <template v-for="(part, i) in resultsHeader" :key="i">
+              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">
+                <KatexInlineElement :text="part.text" />
+              </TermTooltip>
+              <KatexInlineElement v-else :text="part" />
+            </template>
+          </span>
+          <label class="label gap-1.5 text-xs ml-auto">
+            <input type="checkbox" v-model="evaluateContinuously" class="checkbox checkbox-xs" />
+            Continuous
+          </label>
+          <button
+            class="btn btn-xs btn-soft"
+            :disabled="!userCanTriggerFetch"
+            @click="() => refetch()"
+          >
+            Evaluate
+          </button>
+        </div>
 
-        <fieldset class="fieldset" v-if="!isPending || isLoading">
-          <legend v-if="!compact && resultsHeader" class="fieldset-legend">
-            <span>
-              <template v-for="(part, i) in resultsHeader" :key="i">
-                <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{
-                  part.text
-                }}</TermTooltip>
-                <template v-else>{{ part }}</template>
-              </template>
-            </span>
-          </legend>
+        <div v-if="!isPending || isLoading" class="flex flex-col gap-2 text-xs">
           <div v-if="isServiceUnavailable" role="alert" class="alert alert-warning alert-soft">
             <span>The server is temporarily unavailable — please try again in a moment</span>
           </div>
@@ -181,7 +179,7 @@ const size = computed(() => props.initialSize ?? { width: 576, height: 448 })
             <span>Evaluating... ({{ remainingSeconds }}s remaining)</span>
           </div>
           <slot name="results" :compact="compact" />
-        </fieldset>
+        </div>
       </div>
     </template>
   </FloatingWindow>

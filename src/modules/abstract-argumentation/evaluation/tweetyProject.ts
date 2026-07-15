@@ -101,6 +101,17 @@ export interface MetaReasoner {
   key: string
   displayName: string
   parameters: MetaReasonerParameter[]
+  /**
+   * Formats the currently selected parameter semantics (in parameter order) into the
+   * results-header notation, e.g. ["Preferred"] -> "q-preferred". May contain KaTeX
+   * "$...$" math, since the results header renders through KatexInlineElement.
+   */
+  formatNotation: (params: { key: string; displayName: string }[]) => string
+  /**
+   * Plain-text variant of formatNotation for contexts that can't render KaTeX (e.g. the
+   * window title bar). Falls back to formatNotation when omitted.
+   */
+  formatTitleNotation?: (params: { key: string; displayName: string }[]) => string
 }
 
 // Note: resolution-based reasoners are intentionally left out of this list for now.
@@ -108,6 +119,7 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
   {
     key: 'QLD',
     displayName: 'Qualified',
+    formatNotation: ([base]) => `q-${base!.displayName.toLowerCase()}`,
     parameters: [
       {
         key: 'baseSemantics',
@@ -120,6 +132,7 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
   {
     key: 'SQLD',
     displayName: 'Semi-Qualified',
+    formatNotation: ([base]) => `sq-${base!.displayName.toLowerCase()}`,
     parameters: [
       {
         key: 'baseSemantics',
@@ -132,6 +145,10 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
   {
     key: 'VR',
     displayName: 'Vacuous Reduct',
+    formatNotation: ([base, reduct]) =>
+      '$' + `{\\sf ${base!.key.toLowerCase()}}^{\\sf ${reduct!.key.toLowerCase()}}` + '$',
+    formatTitleNotation: ([base, reduct]) =>
+      `${base!.key.toLowerCase()}/${reduct!.key.toLowerCase()}`,
     parameters: [
       {
         key: 'baseSemantics',

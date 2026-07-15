@@ -25,6 +25,7 @@ import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input, ResultsHeaderPart } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -139,7 +140,7 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     :title="windowTitle"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
-    :initial-size="{ width: 480, height: 320 }"
+    :initial-size="{ width: 400, height: 420 }"
     :query="query"
     :results-header="resultsHeader"
     :document-id="documentId"
@@ -148,23 +149,26 @@ const resultsHeader = computed((): ResultsHeaderPart[] => {
     @close="emit('close')"
   >
     <template #parameters>
-      <GroupedSelect v-model="selectedSemantic" label="Semantics" :groups="semanticsSelectGroups" />
-      <label class="select select-sm w-fit">
-        <span class="label">Mode</span>
-        <select v-model="selectedMode">
+      <ParameterField label="Semantics" min-width="10rem">
+        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+      </ParameterField>
+      <ParameterField label="Mode" max-width="8rem">
+        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
           <option value="credulous">Credulous</option>
           <option value="skeptical">Skeptical</option>
         </select>
-      </label>
-      <div class="flex items-center gap-1.5 text-sm">
-        <TermTooltip id="exactInference" :class="!isApproximate ? '' : 'opacity-40'"
-          >Exact</TermTooltip
-        >
-        <input type="checkbox" class="toggle toggle-sm" v-model="isApproximate" />
-        <TermTooltip id="approximateInference" :class="isApproximate ? '' : 'opacity-40'"
-          >Approximate</TermTooltip
-        >
-      </div>
+      </ParameterField>
+      <ParameterField label="Inference" min-width="100%" max-width="100%">
+        <div class="flex items-center gap-1.5 text-sm h-8">
+          <TermTooltip id="exactInference" :class="!isApproximate ? '' : 'opacity-40'"
+            >Exact</TermTooltip
+          >
+          <input type="checkbox" class="toggle toggle-sm" v-model="isApproximate" />
+          <TermTooltip id="approximateInference" :class="isApproximate ? '' : 'opacity-40'"
+            >Approximate</TermTooltip
+          >
+        </div>
+      </ParameterField>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />
