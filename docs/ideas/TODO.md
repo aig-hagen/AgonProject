@@ -1,12 +1,20 @@
 ## Bugs and Issues
 
 - on drag to create edge: the arrow tip does sometimes not line up with mouse cursor
-- PAF: arg probs do not show for new created arguments
 
 ## Features
 
 ### add tags to AF types
 In the future, those can then be used to filter AF types; can also implement a search bar on the main page
+
+#### Tags
+- Abstract (Arguments are abstract entities)
+- Augmented (Arguments are augmented with something)
+- Uncertainty (Incomplete or probabilities)
+- Attack
+- Support
+- Collective Relations
+
 
 ### Split Basic Tutorials into functional part and argumentation part
 There should be a short tutorial, just for the controls, and one more detailed tutorial that explains in more detail the specifics of the argumentation formalism.

@@ -28,6 +28,7 @@ import {
   C14,
   CL05b,
   CT19,
+  D17,
   D95,
   DD17,
   DG16,
@@ -562,5 +563,12 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
     title: 'Tuples Ranking',
     content: ['The tuples ranking compares arguments based on the lengths of the attack and defense branches in the argumentation framework. Note that this ranking is only implemented for acyclic AFs.'],
     reference: CL05b,
+  },
+
+  PR: {
+    label: 'propagation',
+    title: 'Propagation Ranking',
+    content: ['The propagation ranking assigns each argument an initial value and propagates it along attack paths to obtain a propagation vector, which is turned into a ranking $\\succeq_F^\\mathrm{Prop}$ on $A$ using one of three variants (Propa$_\\epsilon$, Propa$_{1+\\epsilon}$, Propa$_{1\\to\\epsilon}$). Note that this ranking is only implemented for acyclic AFs.'],
+    reference: D17,
   },
 }

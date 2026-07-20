@@ -129,6 +129,12 @@ export const BDKM16: Publication = {
   href: 'https://doi.org/10.1609/aaai.v30i1.10116',
 }
 
+export const D17: Publication = {
+  shortLabel: 'Delobelle (2017)',
+  label: "Delobelle, J. (2017). Ranking-based Semantics for Abstract Argumentation. PhD Thesis, Université d'Artois.",
+  href: 'https://theses.hal.science/tel-01937279',
+}
+
 export const BH01: Publication = {
   shortLabel: 'Besnard & Hunter (2001)',
   label: 'Besnard, P. & Hunter, A. (2001). A logic-based theory of deductive arguments. Artificial Intelligence, 128(1–2), pp. 203–235.',
