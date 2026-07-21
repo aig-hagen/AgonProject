@@ -37,6 +37,7 @@ import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
+import { escapeTexText } from '@/modules/common/export/texEscape'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
@@ -153,6 +154,20 @@ const copyText = computed(() => {
   return undefined
 })
 
+const copyTextTex = computed(() => {
+  if (rankGroups.value !== undefined) {
+    return rankGroups.value
+      .map((group) => group.entries.map((e) => escapeTexText(e.name)).join(', '))
+      .join(' \\succ ')
+  }
+  if (numericalDisplayData.value !== undefined) {
+    return numericalDisplayData.value
+      .map((e) => `${escapeTexText(e.name)}: ${formatScore(e.score)}`)
+      .join('\n')
+  }
+  return undefined
+})
+
 function computeWeights() {
   const d = data.value
   return d === undefined
@@ -261,13 +276,21 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
                 : 'Node labels show ranking scores'
             }}
           </p>
-          <ButtonCopy
-            v-if="copyText !== undefined"
-            class="btn btn-xs btn-ghost gap-1 ml-auto"
-            :text="copyText"
-          >
-            ranking
-          </ButtonCopy>
+          <div v-if="copyText !== undefined" class="join ml-auto">
+            <ButtonCopy
+              class="btn join-item btn-xs btn-ghost gap-1"
+              :text="copyText"
+              title="Copy as plain text"
+            >
+              ranking
+            </ButtonCopy>
+            <ButtonCopy
+              class="btn join-item btn-square btn-xs btn-ghost"
+              :text="copyTextTex"
+              icon-only
+              title="Copy as TeX"
+            />
+          </div>
         </div>
       </template>
     </template>

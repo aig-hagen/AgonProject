@@ -403,6 +403,12 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     content: ['TODO'],
     reference: T23,
   },
+  SER: {
+    label: 'serialised',
+    title: 'Serialisable Semantics',
+    content: ['Computes the extensions induced by a chosen ', { ref: 'selFn' }, ' and ', { ref: 'termFn' }, ' by iteratively selecting ', { ref: 'IS' }, ' of the current AF and computing the ', { ref: 'reduct' }, ' until the termination function accepts the current state.'],
+    reference: T22,
+  },
 }
 
 export const abstractArgumentationRankingGlossary: TooltipRegistry = {

@@ -10,7 +10,10 @@
       "Read(//home/lars/GitHub/aig_graph_component/src/components/**)",
       "Bash(npx vitest *)",
       "Read(//home/lars/GitHub/aig_graph_component/src/d3/**)",
-      "Bash(grep -n \"function initData\\\\|nodeSelection = \\\\|linkSelection = \\\\|hyperLinkSelection = \\\\|function restart\\\\|function onZoom\\\\|canvas!.attr\" /home/lars/GitHub/aig_graph_component/src/components/GraphComponent.vue)"
+      "Bash(grep -n \"function initData\\\\|nodeSelection = \\\\|linkSelection = \\\\|hyperLinkSelection = \\\\|function restart\\\\|function onZoom\\\\|canvas!.attr\" /home/lars/GitHub/aig_graph_component/src/components/GraphComponent.vue)",
+      "Bash(xargs ls -la)",
+      "Bash(xargs ls)",
+      "Bash(npx vue-tsc *)"
     ]
   }
 }

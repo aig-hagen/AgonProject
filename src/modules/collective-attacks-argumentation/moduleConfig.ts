@@ -27,6 +27,7 @@ import {
   loadFromString,
   saveAsString,
 } from '@/modules/collective-attacks-argumentation/save/saveFormat'
+import { TAG_ABSTRACT, TAG_ATTACK, TAG_COLLECTIVE_RELATIONS } from '@/modules/common/tags'
 import { BCDFP21, NP06 } from '@/modules/common/tooltip/publications'
 
 const TYPE_KEY = 'type'
@@ -91,4 +92,5 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   generateHref: '/generate?type=setaf',
   description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
   publications: [NP06, BCDFP21],
+  tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_COLLECTIVE_RELATIONS],
 }

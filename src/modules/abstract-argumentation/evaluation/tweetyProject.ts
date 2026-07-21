@@ -19,6 +19,12 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
 
+import {
+  KEY_DEFAULT_SELECTION_FUNCTION,
+  KEY_DEFAULT_TERMINATION_FUNCTION,
+  SELECTION_FUNCTIONS,
+  TERMINATION_FUNCTIONS,
+} from '@/modules/abstract-argumentation/evaluation/tweetyProjectSerialisation'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
@@ -93,8 +99,18 @@ export interface MetaReasonerParameter {
   key: string
   label: string
   description: string
-  /** Keys of {@link KNOWN_SEMANTIC_GROUPS} semantics this parameter may be set to. */
-  compatibleSemantics: string[]
+  /**
+   * Keys of {@link KNOWN_SEMANTIC_GROUPS} semantics this parameter may be set to.
+   * Mutually exclusive with `options`.
+   */
+  compatibleSemantics?: string[]
+  /**
+   * Fixed set of choices for parameters that aren't a semantics pick (e.g. selection/
+   * termination functions). Mutually exclusive with `compatibleSemantics`.
+   */
+  options?: { key: string; displayName: string }[]
+  /** Default value for this parameter; falls back to the first compatible/option entry when omitted. */
+  default?: string
 }
 
 export interface MetaReasoner {
@@ -164,6 +180,28 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
       },
     ],
   },
+  {
+    key: 'SER',
+    displayName: 'Serialisable',
+    formatNotation: ([selection, termination]) =>
+      `serialised(${selection!.displayName.toLowerCase()}, ${termination!.displayName.toLowerCase()})`,
+    parameters: [
+      {
+        key: 'selectionFunction',
+        label: 'Selection Function',
+        description: 'Selects which initial sets may be added to the extension at each step of the serialisation.',
+        options: SELECTION_FUNCTIONS,
+        default: KEY_DEFAULT_SELECTION_FUNCTION,
+      },
+      {
+        key: 'terminationFunction',
+        label: 'Termination Function',
+        description: 'Decides whether the current partial extension is accepted as a result.',
+        options: TERMINATION_FUNCTIONS,
+        default: KEY_DEFAULT_TERMINATION_FUNCTION,
+      },
+    ],
+  },
 ]
 
 /** Default args for the given semantics/meta-reasoner key (empty for plain semantics). */
@@ -172,7 +210,7 @@ export function defaultArgsForSemantics(key: string): Record<string, string> {
   if (metaReasoner === undefined) return {}
   const args: Record<string, string> = {}
   for (const param of metaReasoner.parameters) {
-    args[param.key] = param.compatibleSemantics[0]!
+    args[param.key] = param.default ?? param.options?.[0]?.key ?? param.compatibleSemantics![0]!
   }
   return args
 }

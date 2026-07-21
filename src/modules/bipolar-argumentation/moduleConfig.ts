@@ -29,6 +29,7 @@ import {
 } from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { TAG_ABSTRACT, TAG_ATTACK, TAG_SUPPORT } from '@/modules/common/tags'
 import {
   CCL21,
   CL05,
@@ -104,4 +105,5 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   generateHref: '/generate?type=bipolar',
   description: 'Relations between arguments can be either attacking or supporting.',
   publications: [CL05, CL10, CCL21],
+  tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_SUPPORT],
 }

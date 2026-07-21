@@ -24,7 +24,7 @@ import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 const selected = defineModel<string | undefined>('selected')
 const props = withDefaults(
   defineProps<{
-    items: { key: string; label: string }[]
+    items: { key: string; label: string; texLabel: string }[]
     emptyMessage?: string
     selectionHint?: string
     evaluationDurationInMs?: number
@@ -40,6 +40,7 @@ const statusLine = computed(() => {
 })
 
 const copyText = computed(() => props.items.map((item) => item.label).join(', '))
+const copyTextTex = computed(() => props.items.map((item) => item.texLabel).join(', '))
 
 const containerRef = useTemplateRef('container')
 const itemRefs = useTemplateRef('item-refs')
@@ -85,13 +86,21 @@ watchEffect(async () => {
   </div>
   <div v-if="statusLine || props.items.length > 0" class="flex items-center justify-between gap-2">
     <p v-if="statusLine" class="label">{{ statusLine }}</p>
-    <ButtonCopy
-      v-if="props.items.length > 0"
-      class="btn btn-xs btn-ghost gap-1 ml-auto"
-      :text="copyText"
-    >
-      results
-    </ButtonCopy>
+    <div v-if="props.items.length > 0" class="join ml-auto">
+      <ButtonCopy
+        class="btn join-item btn-xs btn-ghost gap-1"
+        :text="copyText"
+        title="Copy as plain text"
+      >
+        results
+      </ButtonCopy>
+      <ButtonCopy
+        class="btn join-item btn-square btn-xs btn-ghost"
+        :text="copyTextTex"
+        icon-only
+        title="Copy as TeX"
+      />
+    </div>
   </div>
 </template>
 

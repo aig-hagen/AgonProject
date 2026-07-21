@@ -306,7 +306,16 @@ onMounted(async () => {
         ],
         allowFrom: el,
         invert: 'none',
-        edges: { top: false, left: true, bottom: !card, right: true },
+        // Selector-based edges (rather than interact.js's boolean auto-margin, which
+        // is an invisible zone measured inward from the true DOM edge) so the visible
+        // handle strips below are exactly what's clickable — no guessing where the
+        // margin starts, and no fighting the content scrollbar for the same pixels.
+        edges: {
+          top: false,
+          left: '.resize-edge-left',
+          right: '.resize-edge-right',
+          bottom: card ? false : '.resize-edge-bottom',
+        },
         listeners: {
           start: startDragOrResize,
           move(event) {
@@ -487,6 +496,21 @@ watchEffect(async () => {
     >
       <slot :compact="compact" />
     </div>
+    <template v-if="!isMobileLayout">
+      <div class="resize-strip resize-strip-left resize-edge-left" aria-hidden="true"></div>
+      <div class="resize-strip resize-strip-right resize-edge-right" aria-hidden="true"></div>
+      <template v-if="!card">
+        <div class="resize-strip resize-strip-bottom resize-edge-bottom" aria-hidden="true"></div>
+        <div
+          class="resize-corner resize-corner-bl resize-edge-left resize-edge-bottom"
+          aria-hidden="true"
+        ></div>
+        <div
+          class="resize-corner resize-corner-br resize-edge-right resize-edge-bottom"
+          aria-hidden="true"
+        ></div>
+      </template>
+    </template>
   </div>
   <div
     ref="pointerShield"
@@ -512,5 +536,53 @@ watchEffect(async () => {
   inset: 0;
   cursor: inherit;
   opacity: 1;
+}
+
+/* Handle strips straddle the visible border (half in, half out) so the clickable
+   zone lines up with where users actually aim, instead of being a purely-inward
+   margin only interact.js knows about. */
+.resize-strip,
+.resize-corner {
+  position: absolute;
+}
+
+.resize-strip-left,
+.resize-strip-right {
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  cursor: ew-resize;
+}
+
+.resize-strip-left {
+  left: -6px;
+}
+
+.resize-strip-right {
+  right: -6px;
+}
+
+.resize-strip-bottom {
+  left: 0;
+  right: 0;
+  height: 12px;
+  bottom: -6px;
+  cursor: ns-resize;
+}
+
+.resize-corner {
+  width: 18px;
+  height: 18px;
+  bottom: -6px;
+}
+
+.resize-corner-bl {
+  left: -6px;
+  cursor: nesw-resize;
+}
+
+.resize-corner-br {
+  right: -6px;
+  cursor: nwse-resize;
 }
 </style>

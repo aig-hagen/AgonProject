@@ -1,19 +1,11 @@
 ## Bugs and Issues
 
-- on drag to create edge: the arrow tip does sometimes not line up with mouse cursor
+
 
 ## Features
 
-### add tags to AF types
-In the future, those can then be used to filter AF types; can also implement a search bar on the main page
-
-#### Tags
-- Abstract (Arguments are abstract entities)
-- Augmented (Arguments are augmented with something)
-- Uncertainty (Incomplete or probabilities)
-- Attack
-- Support
-- Collective Relations
+### use tags to filter AF types
+Tags are now defined and associated with each module (see `src/modules/common/tags.ts` and each module's `moduleConfig.ts`). In the future, those can be used to filter AF types; can also implement a search bar on the main page.
 
 
 ### Split Basic Tutorials into functional part and argumentation part
@@ -35,4 +27,4 @@ Make available all (Semi-)Qualified Reasoners in the interface
 - How to incorporate the Semiring? Select in EvalWindow?
 - alpha/beta parameters need to be setable in the EvalWindow as well
 - need TweetyProject endpoint
-- reconsider TweetyProject reasoners; can we extend that easily to have more semantics available?
+- reconsider TweetyProject reasoners; can we extend that easily to have more semantics available? no

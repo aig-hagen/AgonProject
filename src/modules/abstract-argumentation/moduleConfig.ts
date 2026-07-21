@@ -29,6 +29,7 @@ import {
 } from '@/modules/abstract-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { TAG_ABSTRACT, TAG_ATTACK } from '@/modules/common/tags'
 import { BCG18, D95 } from '@/modules/common/tooltip/publications'
 
 const initialAbstractArgumentation = new AbstractArgumentation<ArgumentData>()
@@ -98,4 +99,5 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
   generateHref: '/generate?type=abstract',
   description: 'The foundational model for the formal representation of argumentation via arguments and directed attacks.',
   publications: [D95, BCG18],
+  tags: [TAG_ABSTRACT, TAG_ATTACK],
 }

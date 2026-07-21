@@ -20,6 +20,7 @@ import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY } from '@/modules/common/tags'
 import { BJNNR21, CDKLM07 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/incomplete-argumentation/examples'
 import GraphEditor from '@/modules/incomplete-argumentation/GraphEditor.vue'
@@ -81,4 +82,5 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
     generateHref: '/generate?type=incomplete',
   description: 'Distinguish between certain and uncertain arguments and attacks to represent incomplete information.',
   publications: [CDKLM07, BJNNR21],
+  tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY],
   }

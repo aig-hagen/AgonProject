@@ -20,6 +20,7 @@ import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY, TAG_WEIGHTS } from '@/modules/common/tags'
 import { H12, HPPRT21, LON11 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/probabilistic-argumentation/examples'
 import GraphEditor from '@/modules/probabilistic-argumentation/GraphEditor.vue'
@@ -87,4 +88,5 @@ export const probabilisticArgumentationModule: ModuleConfig<
   generateHref: '/generate?type=probabilistic',
   description: 'Arguments and attacks can be assigned a probability value between 0 and 1 to quantify uncertainty.',
   publications: [LON11, H12, HPPRT21],
+  tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY, TAG_WEIGHTS],
 }

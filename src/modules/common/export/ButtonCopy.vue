@@ -21,8 +21,17 @@ import { ClipboardDocumentCheckIcon, ClipboardDocumentIcon } from '@heroicons/vu
 import copy from 'copy-to-clipboard'
 import { ref } from 'vue'
 
-const { text } = defineProps<{
+import TexIcon from '@/modules/common/export/TexIcon.vue'
+
+const {
+  text,
+  iconOnly = false,
+  title,
+} = defineProps<{
   text: string | undefined
+  /** Renders just the icon (e.g. as a "Copy as TeX" button next to the full copy button). */
+  iconOnly?: boolean
+  title?: string
 }>()
 
 const showCopied = ref(false)
@@ -46,12 +55,15 @@ async function copyToClipboard() {
 </script>
 
 <template>
-  <button @click="copyToClipboard" :disabled="text === undefined">
+  <button @click="copyToClipboard" :disabled="text === undefined" :title="title">
     <template v-if="showCopied">
-      <ClipboardDocumentCheckIcon class="size-4"></ClipboardDocumentCheckIcon>Copied
+      <ClipboardDocumentCheckIcon class="size-4"></ClipboardDocumentCheckIcon>
+      <template v-if="!iconOnly">Copied</template>
     </template>
     <template v-else>
-      <ClipboardDocumentIcon class="size-4"></ClipboardDocumentIcon>Copy <slot></slot>
+      <TexIcon v-if="iconOnly" class="size-4"></TexIcon>
+      <ClipboardDocumentIcon v-else class="size-4"></ClipboardDocumentIcon>
+      <template v-if="!iconOnly">Copy <slot></slot></template>
     </template>
   </button>
 </template>

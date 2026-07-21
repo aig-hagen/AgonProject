@@ -20,6 +20,13 @@ import type { Objectish } from 'immer'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import {
+  TAG_ABSTRACT,
+  TAG_ATTACK,
+  TAG_COLLECTIVE_RELATIONS,
+  TAG_CONSTRAINTS,
+  TAG_SUPPORT,
+} from '@/modules/common/tags'
 import { BESWW13, BESWW18, BW10 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/dialectical-argumentation/examples'
 import GraphEditor from '@/modules/dialectical-argumentation/GraphEditor.vue'
@@ -96,4 +103,5 @@ export const dialecticalArgumentationModule: ModuleConfig<
   generateHref: '/generate?type=adf',
   description: 'Relations between arguments are modelled via propositional acceptance conditions.',
   publications: [BW10, BESWW13, BESWW18],
+  tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_SUPPORT, TAG_COLLECTIVE_RELATIONS, TAG_CONSTRAINTS],
 }

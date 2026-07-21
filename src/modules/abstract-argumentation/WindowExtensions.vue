@@ -88,6 +88,14 @@ function resolveSemanticFromKey(key: string): ExtensionSemanticsOption {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
 }
 
+// Meta-reasoner parameters are either a pick from the known semantics (`compatibleSemantics`,
+// e.g. Vacuous Reduct's base/reduct semantics) or a fixed, non-semantics set of choices
+// (`options`, e.g. Serialisable's selection/termination function) - this normalizes both into
+// the same { key, displayName } shape for rendering and notation formatting.
+function paramOptions(param: MetaReasonerParameter): { key: string; displayName: string }[] {
+  return param.options ?? (param.compatibleSemantics ?? []).map((key) => resolveSemanticFromKey(key))
+}
+
 const selectedSemantic = shallowRef<ExtensionSemanticsOption>(
   resolveSemanticFromKey(instanceState.semanticKey),
 )
@@ -147,9 +155,10 @@ const GRID_COLS_UP_TO_4 =
 const titleSemanticName = computed(() => {
   const metaReasoner = KNOWN_META_REASONERS.find((m) => m.key === selectedSemantic.value.key)
   if (metaReasoner === undefined) return selectedSemantic.value.displayName
-  const resolvedParams = metaReasoner.parameters.map((p) =>
-    resolveSemanticFromKey(args.value[p.key] ?? ''),
-  )
+  const resolvedParams = metaReasoner.parameters.map((p) => {
+    const options = paramOptions(p)
+    return options.find((o) => o.key === args.value[p.key]) ?? options[0]!
+  })
   return (metaReasoner.formatTitleNotation ?? metaReasoner.formatNotation)(resolvedParams)
 })
 
@@ -162,9 +171,10 @@ const {
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query)
 
-// Vacuous Reduct has 2 parameters (4 fields total incl. Semantics/Mode) and can grow to a
-// 4-column row; every other case (0 or 1 parameter) stays at 2 columns so a 3rd field always
-// wraps to its own row instead of the layout ever showing exactly 3 columns.
+// Meta-reasoners with 2 parameters (e.g. Vacuous Reduct, Serialisable) have 4 fields total
+// incl. Semantics/Mode and can grow to a 4-column row; every other case (0 or 1 parameter)
+// stays at 2 columns so a 3rd field always wraps to its own row instead of the layout ever
+// showing exactly 3 columns.
 const hasFourParamFields = computed(() => (selectedSemantic.value.parameters?.length ?? 0) >= 2)
 
 const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
@@ -222,8 +232,8 @@ const windowTitle = computed(() => {
             :title="param.description"
           >
             <select v-model="args[param.key]" class="select select-sm w-full bg-base-200">
-              <option v-for="key in param.compatibleSemantics" :key="key" :value="key">
-                {{ resolveSemanticFromKey(key).displayName }}
+              <option v-for="opt in paramOptions(param)" :key="opt.key" :value="opt.key">
+                {{ opt.displayName }}
               </option>
             </select>
           </ParameterField>

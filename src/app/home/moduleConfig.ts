@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { Example } from '@/modules/common/examples'
 import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
 import type { DeserializationResult } from '@/modules/common/save/load'
+import type { Tag } from '@/modules/common/tags'
 import type { Publication } from '@/modules/common/tooltip/publications'
 
 export type { Publication }
@@ -103,4 +104,8 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * If true, the module card is shown as under construction and cannot be used.
    */
   underConstruction?: boolean
+  /**
+   * Tags describing properties of this argumentation type, e.g. for filtering or search.
+   */
+  tags?: Tag[]
 }

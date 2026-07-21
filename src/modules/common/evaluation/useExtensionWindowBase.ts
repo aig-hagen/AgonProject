@@ -19,6 +19,7 @@
 import { computed, type Ref,ref } from 'vue'
 
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import { escapeTexText } from '@/modules/common/export/texEscape'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import type { UUID } from '@/modules/common/ids'
 
@@ -80,10 +81,14 @@ export function useExtensionWindowBase(
 
   const resultItems = computed(
     () =>
-      dataExtensionsFormatedAndSorted.value?.formatedAndSorted.map((e) => ({
-        key: e.key,
-        label: selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
-      })) ?? [],
+      dataExtensionsFormatedAndSorted.value?.formatedAndSorted.map((e) => {
+        const nameEscaped = escapeTexText(e.nameFormated)
+        return {
+          key: e.key,
+          label: selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
+          texLabel: selectedMode.value === 'enumerate' ? `\\{${nameEscaped}\\}` : nameEscaped,
+        }
+      }) ?? [],
   )
 
   const currentHighlight = computed<Highlight | undefined>(() => {

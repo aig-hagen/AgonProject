@@ -25,6 +25,7 @@ import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Input } from '@/modules/common/evaluation/types'
+import { escapeTexText } from '@/modules/common/export/texEscape'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
@@ -114,6 +115,17 @@ function formatInterpretation(interp: Interpretation): string {
     .join(', ')
 }
 
+function formatInterpretationTex(interp: Interpretation): string {
+  return interp
+    .map(({ name, label }) => {
+      const nameEscaped = escapeTexText(name)
+      if (label === 'in') return nameEscaped
+      if (label === 'out') return `\\neg ${nameEscaped}`
+      return `?${nameEscaped}`
+    })
+    .join(', ')
+}
+
 const selectionHint = computed(() =>
   selectedMode.value === 'enumerate'
     ? 'Select model to highlight'
@@ -135,6 +147,7 @@ const formattedData = computed(() => {
         key: String(arg.id),
         interpretation: [arg] as Interpretation,
         formatted: arg.name,
+        formattedTex: escapeTexText(arg.name),
       })),
     }
   }
@@ -146,6 +159,7 @@ const formattedData = computed(() => {
       key: interpretationKey(interp),
       interpretation: interp,
       formatted: formatInterpretation(interp),
+      formattedTex: formatInterpretationTex(interp),
     })),
   }
 })
@@ -155,6 +169,7 @@ const resultItems = computed(
     formattedData.value?.items.map((i) => ({
       key: i.key,
       label: selectedMode.value === 'enumerate' ? `{${i.formatted}}` : i.formatted,
+      texLabel: selectedMode.value === 'enumerate' ? `\\{${i.formattedTex}\\}` : i.formattedTex,
     })) ?? [],
 )
 
