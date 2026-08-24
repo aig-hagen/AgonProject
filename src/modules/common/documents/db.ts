@@ -64,7 +64,38 @@ export interface DocumentsDB extends DBSchema {
 export const DOCUMENTS_DB_INJECTION_KEY: InjectionKey<IDBPDatabase<DocumentsDB>> =
   Symbol('documents-db')
 
+const STALE_BUNDLE_RELOAD_FLAG = 'agon-stale-bundle-reloaded'
+
+/**
+ * A `VersionError` on open means this bundle requested a database version older
+ * than the one already stored — i.e. a newer deploy ran here before and this is
+ * a stale (cached) bundle. Reload once to fetch the current bundle instead of
+ * leaving the app unmounted with a blank page. The `sessionStorage` guard stops
+ * a reload loop if, for whatever reason, the fresh bundle still isn't served.
+ */
+function isVersionError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'VersionError'
+}
+
 export async function openDocumentsDB(dbName: string): Promise<IDBPDatabase<DocumentsDB>> {
+  try {
+    const db = await openDocumentsDBInternal(dbName)
+    sessionStorage.removeItem(STALE_BUNDLE_RELOAD_FLAG)
+    return db
+  } catch (error) {
+    if (isVersionError(error) && !sessionStorage.getItem(STALE_BUNDLE_RELOAD_FLAG)) {
+      console.warn('Stale bundle detected (database VersionError); reloading once.')
+      sessionStorage.setItem(STALE_BUNDLE_RELOAD_FLAG, '1')
+      window.location.reload()
+      // Return a never-resolving promise so callers don't proceed before the
+      // reload navigates away.
+      return new Promise<IDBPDatabase<DocumentsDB>>(() => {})
+    }
+    throw error
+  }
+}
+
+async function openDocumentsDBInternal(dbName: string): Promise<IDBPDatabase<DocumentsDB>> {
   const db = await openDB<DocumentsDB>(dbName, DATABASE_DOCUMENTS_VERSION, {
     upgrade(db, oldVersion, newVersion, _transaction, _event) {
       if (newVersion !== 2) {
