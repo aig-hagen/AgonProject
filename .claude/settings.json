@@ -1,5 +1,18 @@
 {
   "permissions": {
+    "deny": [
+      "Read(node_modules/**)",
+      "Read(dist/**)",
+      "Read(dist-ssr/**)",
+      "Read(.venv/**)",
+      "Read(coverage/**)",
+      "Read(test-results/**)",
+      "Read(playwright-report/**)",
+      "Read(data/**)",
+      "Read(package-lock.json)",
+      "Read(.env)",
+      "Read(.env.*)"
+    ],
     "allow": [
       "Bash(grep -v \"\\\\.map$\")",
       "Read(//home/lars/GitHub/aig_graph_component/**)",
