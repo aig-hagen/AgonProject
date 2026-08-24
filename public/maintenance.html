@@ -1,0 +1,104 @@
+<!--
+  AgonProject - The platform to explore different approaches to formal argumentation.
+
+  Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Under maintenance &middot; AgonProject</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f7f8fa;
+        --card: #ffffff;
+        --fg: #1c2430;
+        --muted: #5b6672;
+        --border: #e2e6eb;
+        --accent: #3b6ea5;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #12161c;
+          --card: #1a2029;
+          --fg: #e7ecf2;
+          --muted: #9aa5b1;
+          --border: #2a323d;
+          --accent: #6ea3d8;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+          sans-serif;
+        line-height: 1.55;
+      }
+      .card {
+        width: 100%;
+        max-width: 30rem;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0.35rem 0;
+        color: var(--muted);
+      }
+      .brand {
+        margin-top: 1.75rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .brand strong {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>Temporarily unavailable</h1>
+      <p>AgonProject is currently down for maintenance.</p>
+      <p>We&rsquo;ll be back shortly &mdash; please check again in a little while.</p>
+      <p class="brand">
+        <strong>AgonProject</strong> &middot; AIG Hagen
+      </p>
+    </main>
+  </body>
+</html>

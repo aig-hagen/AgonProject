@@ -22,6 +22,18 @@ http://:8080 {
 
 	root * ./dist
 
+	# Maintenance mode: while ./dist/maintenance.flag exists, every request is
+	# served the maintenance page with a 503 status. Toggle it live (no restart):
+	#   enable:  docker exec -u www-data <container> touch /opt/app/dist/maintenance.flag
+	#   disable: docker exec -u www-data <container> rm    /opt/app/dist/maintenance.flag
+	@maintenance file /maintenance.flag
+	handle @maintenance {
+		rewrite * /maintenance.html
+		file_server {
+			status 503
+		}
+	}
+
 	@backend path /dung /setaf /bipolar /rankings /adf /serialisation /paf /iaf
 	handle @backend {
 		rate_limit {
