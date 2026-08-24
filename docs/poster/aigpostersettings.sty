@@ -1,0 +1,123 @@
+\ProvidesPackage{aigpostersettings}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+
+%Colors
+
+
+\definecolorstyle{aigpostercolor} 
+{\definecolor{aigyellow}{RGB}{210,149,81}
+	\definecolor{aigblue}{RGB}{0,76,151}
+	\definecolor{examplegreen}{RGB}{30,161,6}}
+	{
+	% Background Colors
+	\colorlet{backgroundcolor}{white}%{aigblue!30!white}
+	\colorlet{framecolor}{white}
+	% Title Colors
+	\colorlet{titlefgcolor}{white}
+	\colorlet{titlebgcolor}{aigblue}
+	% Block Colors
+	\colorlet{blocktitlebgcolor}{aigblue}
+	\colorlet{blocktitlefgcolor}{white}
+	\colorlet{blockbodybgcolor}{aigblue!20!white}
+	\colorlet{blockbodyfgcolor}{black}
+	% Innerblock Colors
+	\colorlet{innerblocktitlebgcolor}{white}
+	\colorlet{innerblocktitlefgcolor}{aigblue}
+	\colorlet{innerblockbodybgcolor}{white}
+	\colorlet{innerblockbodyfgcolor}{black}
+}
+
+%Background
+
+\definebackgroundstyle{aigposterback}{
+\draw[draw=white, line width=0pt, bottom color = backgroundcolor, top color=backgroundcolor](bottomleft) rectangle (topright);
+\draw[draw=aigblue, line width=0pt, bottom color=titlebgcolor, top color=titlebgcolor] (bottomleft) rectangle ($(bottomleft)+(\textwidth,4)$);
+%\draw[draw=none, line width=0pt, bottom color=white, top color=white] (bottomleft) rectangle ($(bottomleft)+(\textwidth,1)$);
+}
+
+
+%Title with one Logo
+
+\definetitlestyle{aigpostertitle1}{width=\paperwidth, roundedcorners=0, linewidth=5pt, innersep=5pt,titletotopverticalspace=0mm, titletoblockverticalspace=30mm
+}{
+\begin{scope}[line width=0pt, rounded corners=\titleroundedcorners]
+	\draw[color=blocktitlebgcolor, fill=titlebgcolor]
+	(\titleposleft,\titleposbottom) rectangle (\titleposright,\titlepostop);
+\end{scope}
+}
+
+\newcommand{\leftlogo}{figures/tweety-logo.png}  % Replace with your actual file
+\newcommand{\rightlogo}{figures/logoaig.png} % Replace with your actual file
+
+\makeatletter
+\settitle{%
+    \begin{minipage}{0.6\linewidth}
+        \vspace*{1.5em}
+		\color{titlefgcolor}
+  	    \hspace*{1.5em}{\Huge\bfseries\sc \@title \par}
+		\vspace*{1.8em}
+        
+		\hspace*{1.5em}{\huge \@author \par}
+		\vspace*{0.6em}
+        
+		\hspace*{1.5em}{\Large\itshape \@institute}
+        \vspace{1em}
+	\end{minipage}%
+	\hfill
+    \begin{minipage}{0.18\linewidth}
+        \centering
+        \includegraphics[scale=2]{\leftlogo}
+    \end{minipage}
+    \begin{minipage}{0.16\linewidth}
+        \centering
+        \begin{tcolorbox}[
+            colback=white,     % background color
+            colframe=gray!80,    % border color
+            boxrule=0pt,         % border thickness
+            arc=6mm,             % corner radius
+            left=6pt, right=6pt, top=6pt, bottom=6pt, % padding inside box
+            boxsep=2pt,          % space between box and content
+            width=\linewidth,
+            valign=center
+        ]
+        \includegraphics[scale=1.5]{\rightlogo}
+        \end{tcolorbox}
+    \end{minipage}
+    \hspace*{1em}
+}
+
+%Blocks, 1 Blue and 1 Yellow Version for better variation and readability
+\defineblockstyle{aigposterblockB}{
+    titlewidthscale=1, bodywidthscale=1, titlecenter, titleoffsetx=0pt, titleoffsety=0pt, bodyoffsetx=0mm, bodyoffsety=15mm, bodyverticalshift=10mm, roundedcorners=5, linewidth=7.5pt, titleinnersep=6mm, bodyinnersep=1cm
+}{%
+\begin{scope}[line width=\blocklinewidth, rounded corners=\blockroundedcorners]
+    \draw[color=aigblue, fill=blockbodybgcolor] (blockbody.south west) rectangle (blockbody.north east);
+    \ifBlockHasTitle
+        \draw[color=aigblue, fill=blocktitlebgcolor] (blocktitle.south west) rectangle (blocktitle.north east);
+    \fi
+\end{scope}
+}
+
+
+\defineblockstyle{aigposterblockY}{
+    titlewidthscale=1, bodywidthscale=1,titlecenter, titleoffsetx=0pt, titleoffsety=0pt, bodyoffsetx=0mm, bodyoffsety=15mm, bodyverticalshift=10mm, roundedcorners=5, linewidth=7.5pt, titleinnersep=6mm, bodyinnersep=1cm
+}{%
+\begin{scope}[rounded corners=\blockroundedcorners,line width=\blocklinewidth]
+    \draw[color=aigyellow, fill=aigyellow!30!white] (blockbody.south west) rectangle (blockbody.north east);
+    \ifBlockHasTitle
+        \draw[color=aigyellow, fill=aigyellow, text=aigblue] (blocktitle.south west) rectangle (blocktitle.north east);
+    \fi
+\end{scope}
+}
+
+\newcommand{\useblockstyleaigposterblockY}{\useblockstyle{aigposterblockY}}
+
+\newcommand{\useblockstyleaigposterblockB}{\useblockstyle{aigposterblockB}}
+% Some highlighting options:
+\newcommand{\highlight}[1]{\colorbox{aigblue!10}{#1}}
+\newcommand{\mathhighlight}[1]{\colorbox{aigblue!10}{$\displaystyle #1$}}
+\newcommand{\darkhighlight}[1]{\colorbox{aigblue!20}{#1}}
+\newcommand{\darkmathhighlight}[1]{\colorbox{aigblue!20}{$\displaystyle #1$}}
+\newcommand{\yellowhighlight}[1]{\colorbox{aigyellow!30}{#1}}
+\newcommand{\yellowmathhighlight}[1]{\colorbox{aigyellow!30}{$\displaystyle #1$}}

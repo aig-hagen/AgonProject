@@ -48,3 +48,22 @@ __pycache__/
 
 # Share server data
 data/
+
+# LaTeX build artifacts (docs/paper, docs/poster)
+*.aux
+*.out
+*.abs
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.toc
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.xmpi

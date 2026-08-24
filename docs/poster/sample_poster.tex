@@ -1,0 +1,451 @@
+%\documentclass[20pt,a1paper,portrait,margin=2mm, innermargin=18mm, blockverticalspace=15mm, colspace=15mm, subcolspace=8mm]{tikzposter} 
+
+%\documentclass[20pt,a1paper,landscape,margin=2mm, innermargin=18mm, blockverticalspace=15mm, colspace=15mm, subcolspace=8mm]{tikzposter}
+
+\documentclass[25pt,a0paper,portrait,margin=2mm, innermargin=30mm, blockverticalspace=20mm, colspace=20mm, subcolspace=10mm]{tikzposter}
+
+%\documentclass[25pt,a0paper,landscape,margin=2mm, innermargin=28mm, blockverticalspace=20mm, colspace=20mm, subcolspace=10mm]{tikzposter}
+
+\usepackage{aigpostersettings}
+
+\usepackage{anyfontsize}
+\usepackage{palatino}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage{cite}
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\usepackage{graphicx}
+\usepackage{amssymb,amsthm,amsmath,amsfonts}
+
+\usepackage[numbers]{natbib}
+\renewcommand{\bibfont}{\footnotesize}
+\bibliographystyle{abbrvnat}
+
+\usepackage{serialisation}
+%\tikzset{
+%    serial node/.append={draw=black,line width=1pt,thick},
+%}
+\usepackage[macros,attackstyle=large,argumentstyle=colored,namestyle=bold]{argumentation}
+\setargumentstyle{argument colored,font=\Large}
+\setattackstyle{-{Stealth[scale=1.6]}}
+\setargumentcolorscheme{aigblue}{aigyellow}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem*{definition*}{Definition}
+
+\usepackage{_macros}
+
+
+\usetitlestyle{aigpostertitle1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{\parbox{0.9\linewidth}{AgonProject}}
+\institute{Artificial Intelligence Group, University of Hagen, Germany} 
+%\author{Lars Bengel, Matthias Thimm}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Titlemaking
+
+%Style-Inclusion from aigpostersettings.sty (check out title options for multiple logos)
+
+\usecolorstyle{aigpostercolor}
+\usebackgroundstyle{aigposterback}
+\useblockstyle{aigposterblockB}
+
+\begin{document}
+	
+\maketitle % See Section 4.1
+	
+%	\block{Abstract}{Blocktext} % See Section 4.2
+
+\begin{columns}
+\column{1.0}
+\useblockstyle{aigposterblockY}
+\block{Motivation}{
+    \begin{minipage}{0.38\linewidth}
+    \centering
+     \begin{af}
+            \argument{c}
+            \argument[right=of a1]{o}
+            \argument[right=of a2]{f}
+            \argument[right=of a3]{s}
+            \argument[right=of a4]{m}
+
+            \dualattack{a1}{a2}
+            \attack{a2}{a3}
+            \attack{a3}{a4}
+            \attack{a5}{a4}
+        \end{af}
+
+        \vspace*{2ex}
+
+        \begin{minipage}{0.8\linewidth}
+        \innerblock{}{
+        \centering
+        \textcolor{aigblue}{Goal:} Stepwise evaluation of the abstract dialectical 
+        framework.
+        }\end{minipage}
+        \vspace{-0.3cm}
+    \end{minipage}
+    \hspace{5ex}
+    \begin{minipage}{0.2\linewidth}
+    \begin{description}
+        \item[o:~] Valve is \textbf{o}pen.
+        \item[c:~] Valve is \textbf{c}losed.
+        \item[f:~] \textbf{F}low sensor activated.
+        \item[s:~] System \textbf{s}hutdown.
+        \item[m:~] System \textbf{m}aintenance.
+    \end{description}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.34\linewidth}
+    \begin{itemize}
+        \item The main valve is either open or closed.
+        \item If the valve is open (for too long), then the water flow sensor is activated.
+        \item If the flow sensor is active or the system required maintenance, then the facility is shut down.
+        \item The system requires no maintenance.
+    \end{itemize}
+    \end{minipage}
+    \hspace{3ex}
+}\useblockstyle{aigposterblockB}
+\end{columns}
+
+
+\begin{columns}
+\column{0.5}
+
+\block{Abstract Dialectical Frameworks}{
+        \innerblock{}{
+        \centering
+        An \emph{abstract dialectical framework} (ADF) is a pair $\ADFcomplete$ where $\arguments$ is a set of arguments and $\conditions$ is a set of propositional formulae $\{\phi_a\}_{a\in\arguments}$ over $\arguments$, called \emph{acceptance conditions}. [Brewka and Woltran, 2010]
+        }
+
+        \vspace{1ex}
+        Given an abstract dialectical framework \ADFcomplete.
+        
+        \begin{itemize}
+            \item We consider three-valued interpretations: \modelcomplete
+            \item We define the \emph{consensus} $\model_3 = \model_1 \sqcap \model_2$ as 
+            \begin{align*}
+                \model_3(a) = \begin{multicases}{3}
+                    \tr & \text{if } \model_1(a) = \model_2(a) = \tr \\
+                    \f & \text{if } \model_1(a) = \model_2(a) = \f\\
+                    \un & \text{otherwise}         
+                    \end{multicases}
+            \end{align*}
+            for all $a \in\arguments$.
+    
+            \item We define the set of \emph{completions} $[\model]_2$ as
+            \begin{align*}
+                [\model]_2 = \{\model' \mid \model \leq_i \model', (\model')^{-1}(\un) = \emptyset\}
+            \end{align*}
+    
+            \item We define the \emph{characteristic operator} $\chop$ as
+                \begin{align*}
+                    \chop(\model)(a) = \bigsqcap\{\model'(\phi_a) \mid \model' \in [\model]_2\}
+                \end{align*}
+                for all $a\in\arguments$.
+            \item An interpretation $\model: \arguments \mapsto \{\tr,\f,\un\}$ is called an \emph{admissible (\adm) model} of \ADF, iff $\model \leq_i \chop(\model)$.
+        \end{itemize}
+        \vspace*{-1.45cm}
+
+        \node[](inf) at (38, 20.5){
+        \begin{minipage}{0.5\linewidth}
+        \begin{tikzpicture}
+            \node[](u) at (0,0) {\un};
+            \node[](t) at (-1.75,3.25) {\tr};
+            \node[](f) at (1.75,3.25) {\f};
+            \path(u) edge[->] node[left,yshift=-0.25cm]{$\leq_i$} (t);
+            \path(u) edge[->] node[right,yshift=-0.2cm]{$\leq_i$} (f);
+        \end{tikzpicture}
+        \end{minipage}
+        };
+    
+}
+
+\column{0.5}
+
+\block{Initial Models}{
+    \begin{minipage}{.4\linewidth}
+        % Innerblock Colors
+	\colorlet{innerblocktitlebgcolor}{aigyellow}
+	\colorlet{innerblocktitlefgcolor}{white}
+	\colorlet{innerblockbodybgcolor}{aigyellow!30}
+	\colorlet{innerblockbodyfgcolor}{black}
+        \innerblock{Initial Model}{
+        An interpretation $\model$ is called an \emph{initial model} (\elc) of $\ADF$, iff $\model$ is admissible with $\model \neq \model_{\un}$ and there is no admissible model $\model'\neq \model_{\un}$ with $\model' <_i \model$.
+        }
+    \end{minipage}%
+    \hfill
+    \begin{minipage}{0.57\linewidth}
+        \vspace*{0.4cm}
+        An initial model $\model$ is
+	\begin{itemize}
+        \item \emph{unattacked} iff for all $a\in\arguments$ if $\model(a)\neq\un$, then $\phi_a \in \textsc{Taut}_\arguments\cup\textsc{Unsat}_\arguments$,
+		\item \emph{unchallenged} iff \model is not unattacked and there is no initial model $\model'$ that is conflicting with $\model$,
+		\item \emph{challenged} iff there is some model initial model $\model'$ that is conflicting with $\model$.
+	\end{itemize}
+        
+    \end{minipage}
+}
+
+\useblockstyle{aigposterblockY}
+\block{Example: Initial Models}{
+    \begin{center}
+        \begin{af}
+        \argument{c}
+        \argument[right=of a1]{o}
+        \argument[right=of a2]{f}
+        \argument[right=of a3]{s}
+        \argument[right=of a4]{m}
+
+        \dualattack{a1}{a2}
+        \attack{a2}{a3}
+        \attack{a3}{a4}
+        \attack{a5}{a4}
+        \end{af}
+    \end{center}
+
+    \centering
+    \vspace{1cm}
+
+    \highlight{Initial Models}\\[0.7ex]    
+    \begin{tabular}{clclc}
+        unattacked && unchallenged && challenged \\
+        $\{m \mapsto \f\}$ &\phantom{xx}& -- &\phantom{xx}& $\{c \mapsto\tr, o\mapsto\f\}$, $\{c\mapsto\f,o\mapsto\tr\}$
+    \end{tabular}
+    \vspace{-0.175cm}
+}\useblockstyle{aigposterblockB}
+
+\end{columns}
+\begin{columns}
+
+\column{0.4}
+%\useblockstyle{}
+\block{\model-Reduct}{
+    \vspace{0.3cm}
+    Let \ADFcomplete be an ADF and $\modelcomplete$ is a three-valued interpretation.
+    Then we define the $\model$\emph{-reduct} of $\ADF$ as the ADF $\ADF^\model = (\arguments', \{\phi'_a\}_{a\in\arguments'})$ where
+    \begin{align*}
+        \arguments' = &\quad \arguments \setminus \{a\in\arguments\mid \model(a)\neq\un\},\\
+        \conditions' = &\quad \{\phi'_a\}_{a\in\arguments'},
+    \end{align*}
+    with $\mathsf{x}\in\{\tr, \f\}$ and $\phi'_a = \phi_a^{[b/\mathsf{x}~:~\model(b)=\mathsf{x}]}$.
+    \vspace{-0.1cm}
+}
+
+\column{0.6}
+
+\block{Serialisation Sequences}{
+    \vspace{0.5cm}
+    \begin{minipage}{.4\linewidth}
+        \colorlet{innerblocktitlebgcolor}{aigyellow}
+	\colorlet{innerblocktitlefgcolor}{white}
+	\colorlet{innerblockbodybgcolor}{aigyellow!30}
+	\colorlet{innerblockbodyfgcolor}{black}
+        \innerblock{Serialisation Sequence}{
+            A \emph{serialisation sequence} for \ADFcomplete is a sequence \msequencecomplete with $\model_1 \in \elc(\ADF)$ and for each $2 \leq i \leq n$ we have that $\model_i \in \elc(\ADF^{\model_1 \sqcup\dots\sqcup\model_{i-1}})$.
+        }
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.56\linewidth}
+        \begin{itemize}
+            \item Provides a decomposition of admissible models into a series of initial models.
+            \item Each sequence represents one way of reasoning to arrive at some conclusion.
+            \item Directly encodes procedural information in the semantic representation
+        \end{itemize}
+    \end{minipage}
+    \vspace{-0.2cm}
+}
+\end{columns}
+
+\begin{columns}
+    \column{1}
+    \useblockstyle{aigposterblockY}
+    \block{Example: Serialisation Sequences}{
+    \begin{minipage}{0.30\linewidth}
+        \centering
+        \begin{af}
+            \argument{c}
+            \argument[right=of a1]{o}
+            \argument[right=of a2]{f}
+            \argument[right=of a3]{s}
+            \argument[right=of a4]{m}
+
+            \annotation[yshift=-0.8cm]{a1}{$\phi_c = \neg o$}
+            \annotation[yshift=-0.8cm]{a2}{$\phi_o = \neg c$}
+            \annotation[yshift=-0.8cm]{a3}{$\phi_f = o$}
+            %\annotation<3,4>[yshift=-0.8cm]{a3}{$\phi_f = \bot$}
+            \annotation[yshift=-0.8cm]{a4}{$\phi_s = f \lor m$}
+            %\annotation<5,6>[yshift=-0.8cm]{a4}{$\phi_s = \bot \lor m$}
+            %\annotation<7,8>[yshift=-0.8cm]{a4}{$\phi_s = \bot$}
+            \annotation[yshift=-0.8cm]{a5}{$\phi_m = \bot$}
+    
+            \dualattack{a1}{a2}
+            \attack{a2}{a3}
+            \attack{a3}{a4}
+            \attack{a5}{a4}
+        \end{af}
+
+        \vspace{0.5cm}
+
+        Initial Models:
+        
+        $\mathhighlight{\{c \mapsto \tr, o \mapsto \f\}}, \{c \mapsto \f, o \mapsto \tr\}, \{m \mapsto \f\}$
+        
+            
+        
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.25\linewidth}
+        \centering
+        \begin{af}
+            %\argument{c}
+            %\argument[right=of a1]{o}
+            \argument(a3){f}
+            \argument[right=of a3](a4){s}
+            \argument[right=of a4](a5){m}
+
+            %\argument(x){x} at (20,0)
+            \afname{$\implies$} at (-5,0)
+            \afname{$\ADF^\model$} at (-4.9,1)
+
+            \annotation[yshift=-0.8cm]{a3}{$\phi_f = \bot$}
+            \annotation[yshift=-0.8cm]{a4}{$\phi_s = f \lor m$}
+            %\annotation<5,6>[yshift=-0.8cm]{a4}{$\phi_s = \bot \lor m$}
+            %\annotation<7,8>[yshift=-0.8cm]{a4}{$\phi_s = \bot$}
+            \annotation[yshift=-0.8cm]{a5}{$\phi_m = \bot$}
+    
+            \attack{a3}{a4}
+            \attack{a5}{a4}
+        \end{af}
+
+        \vspace{0.5cm}
+
+        Initial Models:
+        
+        $\mathhighlight{\{f \mapsto \f\}}, \{m \mapsto \f\}$
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.16\linewidth}
+        \centering
+        \begin{af}
+            %\argument{c}
+            %\argument[right=of a1]{o}
+            %\argument[right=of a2]{f}
+            \argument(a4){s}
+            \argument[right=of a4](a5){m}
+
+            \afname{$\implies$} at (-4,0)
+            \afname{$\ADF^\model$} at (-3.9,1)
+
+            \annotation[yshift=-0.8cm]{a4}{$\phi_s = \bot \lor m$}
+            %\annotation<7,8>[yshift=-0.8cm]{a4}{$\phi_s = \bot$}
+            \annotation[yshift=-0.8cm]{a5}{$\phi_m = \bot$}
+    
+            \attack{a5}{a4}
+        \end{af}
+
+        \vspace{0.5cm}
+
+        Initial Models:
+        
+        $\mathhighlight{\{m \mapsto \f\}}$
+        
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.10\linewidth}
+        \centering
+        \begin{af}
+            \argument(a4){s}
+
+            \afname{$\implies$} at (-5,0)
+            \afname{$\ADF^\model$} at (-4.9,1)
+
+            \annotation[yshift=-0.8cm]{a4}{$\phi_s = \bot$}
+        \end{af}
+
+        \vspace{0.5cm}
+
+        Initial Models:
+        
+        $\mathhighlight{\{s \mapsto \f\}}$
+    \end{minipage}
+
+    \centering
+    \vspace{0.9cm}
+    
+    Serialisation sequence: $\mseq = (\{c \mapsto \tr, o \mapsto \f\}, \{f \mapsto \f\}, \{m \mapsto \f\}, \{s \mapsto \f\})$, ~~corresponding to the admissible model $\{c \mapsto \tr, o \mapsto \f, f \mapsto \f, s \mapsto \f, m \mapsto \f\}$
+
+    \vspace{-0.3cm}
+    
+    }\useblockstyle{aigposterblockB}
+\end{columns}
+
+\begin{columns}
+    \column{0.6}
+    \block{Characterising Admissibility-based Semantics}{
+    We can characterise many semantics in terms of serialisation sequences as follows.\\[0.4ex]
+
+        \hspace{1.8cm}
+        \begin{minipage}{0.76\linewidth}
+        \msequencecomplete is a serialisation sequence of \ADF and \dots
+        \begin{description}
+            \item[preferred:] if there exists no further initial model in the final reduct.
+            \item[complete:] if there exists no unattacked initial model in the final reduct.
+            \item[grounded:] if every $\model_i$ is an unattacked initial model and there exists no further unattacked initial model.
+            \item[two-valued:] if the final reduct is the empty ADF.
+        \end{description}
+        \end{minipage}
+
+        \centering
+
+        \vspace{1cm}
+
+        \yellowhighlight{
+        $\implies$ Serialisation Sequences provide a more expressive semantic representation for ADF.
+        }
+    }
+    \column{0.4}
+    \block{Complexity of Initial Models}{
+        \renewcommand{\arraystretch}{1.25}
+        \centering
+        %\begin{minipage}{\textwidth}
+        %\centering
+        \begin{tabular}{l|cc|cc}
+        \toprule
+        & \multicolumn{2}{c|}{AFs} & \multicolumn{2}{c}{ADFs}\\
+         & \adm [1] & \elc [2] & \adm [3] &\cellcolor{aigyellow!10} \elc \\
+        \midrule
+        $\textsc{Ver}_{\sigma}$ & in \textsf{L} & in \p & \coNP-c &\cellcolor{aigyellow!10} in $\p^{\NP}_\parallel$, \coNP-h \\
+        $\textsc{Exists}_{\sigma}$ & trivial & \NP-c & trivial &\cellcolor{aigyellow!10} $\Sigma^P_2$-c \\
+        $\textsc{Exists}^{\neg\emptyset}_{\sigma}$ & \NP-c & \NP-c & $\Sigma^P_2$-c &\cellcolor{aigyellow!10} $\Sigma^P_2$-c \\
+        $\textsc{Cred}_{\sigma}$ & \NP-c & \NP-c & $\Sigma^P_2$-c &\cellcolor{aigyellow!10} $\Sigma^P_2$-c \\
+        $\textsc{Skept}_{\sigma}$ & trivial & \coNP-c & trivial &\cellcolor{aigyellow!10} $\Pi^P_2$-c \\
+        \bottomrule
+        \end{tabular}
+        %\end{minipage}
+
+        \vspace{0.4cm}
+        {\small
+        [1] Dvorak and Dunne, 2017; [2] Thimm, 2022; [3] Strass and Wallner, 2015
+        }\vspace{-0.2cm}
+    }
+\end{columns}
+
+\node[] at (38.3,43.9){\bf\ttfamily\LARGE \textcolor{white}{1}};
+\node[] at (-1.5,29.2){\bf\ttfamily\LARGE \textcolor{white}{2}};
+\node[] at (38.3,29.2){\bf\ttfamily\LARGE \textcolor{white}{3}};
+\node[] at (38.3,12){\bf\ttfamily\LARGE \textcolor{white}{4}};
+\node[] at (-9.5,-5){\bf\ttfamily\LARGE \textcolor{white}{5}};
+\node[] at (38.3,-5){\bf\ttfamily\LARGE \textcolor{white}{6}};
+\node[] at (38.3,-19.5){\bf\ttfamily\LARGE \textcolor{white}{7}};
+\node[] at (6.4,-36.6){\bf\ttfamily\LARGE \textcolor{white}{8}};
+\node[] at (38.3,-36.6){\bf\ttfamily\LARGE \textcolor{white}{9}};
+
+%\hfill
+\end{document}

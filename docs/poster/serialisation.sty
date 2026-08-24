@@ -1,0 +1,79 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{serialisation}[2024/10/01 Serialisation]
+% Author:   Lars Bengel
+% E-Mail:   lars.bengel@fernuni-hagen.de
+% Version:  1.0
+% Date:     2024/10/01
+% License:  LaTeX Project Public License 1.3c
+
+%%%%%%%%%%% Package Requirements %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{amsbsy,amsmath}                 % Proper bold letters in math mode
+%\RequirePackage{pgfopts}                        % Managing package options
+\RequirePackage{xspace}                         % Dynamic spaces after math commands
+\RequirePackage{xcolor}                         % Defining colors
+\RequirePackage{tikz}                           % Drawing the argumentation frameworks
+\usetikzlibrary{positioning}                    % Relative node positioning
+\usetikzlibrary{arrows.meta}                    % Directed edges / attack arrows
+\usetikzlibrary{arrows}                         % Directed edges / attack arrows
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%% Package Style Definitions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{aigyellow}{RGB}{210,149,81}        % Highlight color
+\definecolor{aigblue}{RGB}{0,76,151}            % Node color
+
+%%% TikZ Style Definitions
+\tikzset{
+    serial node/.style={draw=none,inner sep=3,outer sep=0,minimum height=4.0ex,minimum width=4.0ex,rounded corners=1ex},
+    serial transition/.style={->},
+    transition node/.style={font=\footnotesize, sloped},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%% Command Definitions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NewDocumentCommand { \snode } {s O{} r() m dat d()} {
+    \IfNoValueTF {#5}{%
+        \IfBooleanTF {#1} {
+            \node[serial node,#2](#3) {\ensuremath{#4}};
+        }{%
+            \node[serial node,#2](#3) {\ensuremath{\{#4\}}};
+        }
+    }{%
+        \IfBooleanTF {#1} {
+            \node[serial node,#2](#3) at (#6) {\ensuremath{#4}};
+        }{%
+            \node[serial node,#2](#3) at (#6) {\ensuremath{\{#4\}}};
+        }
+    }
+}
+
+\NewDocumentCommand { \tnode } {s O{} r() m dat d()} {
+    \IfNoValueTF {#6}{%
+        \IfBooleanTF {#1} {
+            \node[serial node,#2](#3) {\ensuremath{\boldsymbol{#4}}};
+        }{%
+            \node[serial node,#2](#3) {\ensuremath{\boldsymbol{\{#4\}}}};
+        }
+    }{%
+        \IfBooleanTF {#1} {
+            \node[serial node,#2](#3) at (#6) {\ensuremath{\boldsymbol{#4}}};
+        }{%
+            \node[serial node,#2](#3) at (#6) {\ensuremath{\boldsymbol{\{#4\}}}};
+        }
+    }
+}
+
+\newcommand{\transition}[4][]{\path(#2) edge [serial transition,#1] node[transition node](t_#2_#3){\ensuremath{\{#4\}}} (#3);}
+
+%%%%%%%%%%%%%%%  Serialisation Environment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Initializing the af environment
+\newcounter{serialisation}
+\newenvironment{serialisation}[1][]{
+    \refstepcounter{serialisation}
+    \tikzpicture[node distance=0.75cm,#1]
+}{%
+    \endtikzpicture
+}

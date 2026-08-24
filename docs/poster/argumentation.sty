@@ -1,0 +1,762 @@
+    \NeedsTeXFormat{LaTeX2e}
+    \ProvidesPackage{argumentation}[2026/07/08 Argumentation]
+    % Author:   Lars Bengel
+    % E-Mail:   lars.bengel@fernuni-hagen.de
+    % Version:  1.8
+    % Date:     2026/07/08
+    % License:  LaTeX Project Public License 1.3c
+
+
+    %%%%%%%%%%% Package Requirements %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \RequirePackage{amsbsy,amsmath}                 % Proper bold letters in math mode
+    \RequirePackage{pgfopts}                        % Managing package options
+    \RequirePackage{xspace}                         % Dynamic spaces after math commands
+    \RequirePackage{xcolor}                         % Defining colors
+    \RequirePackage{tikz}                           % Drawing the argumentation frameworks
+    \usetikzlibrary{positioning}                    % Relative node positioning
+    \usetikzlibrary{arrows.meta}                    % Directed edges / attack arrows
+    \usetikzlibrary{arrows}                         % Directed edges / attack arrows
+    \usetikzlibrary{decorations.markings}           % Creating the support edge markings
+    \usetikzlibrary{calc}                           % Coordinate arithmetic for setattack
+
+
+    %%%%%%%%%%% Package Style Definitions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Color definitions
+    \definecolor{aigyellow}{RGB}{210,149,81}        % Highlight color
+    \definecolor{aigblue}{RGB}{0,76,151}            % Node color
+
+    %%% Argument Style Definitions
+    \tikzset{
+        argument size/.style={},                                                                    % Size of argument nodes
+        argument/.style={},                                                                         % Base style for argument nodes
+        argument standard/.style={circle,draw=black,inner sep=0,outer sep=0},                       % Standard argument style
+        argument large/.style={circle,draw=black,inner sep=0,outer sep=0, font=\large},             % Large argument style
+        argument thick/.style={circle,draw=black,inner sep=0,outer sep=0, line width=0.1em},        % Thick outline argument style
+        argument gray/.style={argument thick,fill=gray!30,draw=gray!65,text=black!80},              % Gray argument style
+        argument colored/.style={argument thick,fill=aigblue!40,draw=aigblue!80},                   % Colored argument style
+    }
+
+    %%% Attack/Support Edge Definitions
+    \tikzset{
+        attack width/.style={},                                                 % Width of attack arrows
+        attack/.style={attack width,-{\pgfkeysvalueof{/argumentation/attack tip}}},     % Base style for attack arrow; tip tracks the attack tip key (set via attackstyle)
+        % Trailing "[]" after each copy of the tip disambiguates the boundary between
+        % the two stacked tips -- without it, pgf cannot tell where the first tip ends
+        % and the second begins (this holds even for tips, like stealth', that take no
+        % options of their own).
+        edgetarget/.style={attack width,-{\pgfkeysvalueof{/argumentation/attack tip}[]\pgfkeysvalueof{/argumentation/attack tip}[]}}, % Auto-applied double arrow head for attacks/supports that target another edge's anchor
+        attack standard/.style={-{stealth'}},                                   % Standard attack arrow (for manual reference/override)
+        attack large/.style={-{Stealth[scale=1.25]}},                           % Larger arrow tip (for manual reference/override)
+        attack modern/.style={-{To[sharp,length=0.65ex,line width=0.05em]}},    % Modern rightarrow style tip (for manual reference/override)
+        support/.style={},                                                      % Base style for support
+        support marked/.style = {attack, postaction = {decorate,decoration={markings,mark=at position 0.36 with {\draw[-] (0,-0.1) -- (0.1,0.1);}}}},                                              % Marked support arrow
+        support dashed/.style={attack,densely dashed},                          % Dashed Support arrow
+        support double/.style={-{Classical TikZ Rightarrow},double},            % double-line support arrow
+    }
+
+    %%% Additional Style Parameters
+    \tikzset{
+        selfattack/.style={loop,min distance=0.4em,in=0,out=60,looseness=4.5},  % Self-attack
+        inactive/.style={fill=none,draw=gray!50,text=gray!60},                  % Inactive argument or edge (reduct)
+        incomplete/.style={densely dashed},                                     % incomplete argument or edge
+        accepted/.style={fill=green!40},                                        % Accepted argument (in)
+        rejected/.style={fill=red!40},                                          % Rejected argument (out)
+        undecided/.style={fill=cyan!40},                                        % Undecided Argument (undec)
+        highlight/.style={fill=aigyellow!60},                                   % Highlighted argument
+        caption/.style={draw=none},                                             % Caption or text
+        invisible/.style={draw=none,fill=none,opacity=0.0},                     % Invisible argument or edge
+        annotation/.style={font=\scriptsize,node distance=1.5ex},               % Argument annotation
+        argin/.style={accepted},
+        argout/.style={rejected},
+        argundec/.style={undecided},
+    }
+
+    %%% Style-Options for af environment
+    \pgfkeys{/tikz/.cd,
+        af/.style={},                                               % Base style for af
+        standard/.style={node distance=6.6ex,argument size/.style={minimum size=4.5ex},attack width/.style={line width=0.05em}},                                                                % Standard size style for af
+        small/.style={node distance=3.5ex,argument size/.style={minimum size=3.4ex},attack width/.style={line width=0.045em},caption/.append style={font=\small}},        % Small size style for af
+        tiny/.style={node distance=2.3ex,argument size/.style={minimum size=2.6ex,font=\small},attack width/.style={line width=0.03em},caption/.append style={font=\small}},         % Tiny size style for af
+    }
+
+    %%% Option for switching beamer cover type in af
+    \makeatletter
+    \newif\if@afoverlay
+    \pgfkeys{/tikz/.cd,
+        covered/.is choice,
+        covered/transparent/.code={\@afoverlaytrue},
+        covered/invisible/.code={\@afoverlayfalse},
+        covered/.default=transparent,
+        covered=transparent,
+    }
+    \makeatother
+
+
+    %%%%%%%%%% Internal Utility Functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \makeatletter
+    \newif\ifmacros
+    \newif\if@numericidx
+    \newif\if@alphaidx
+    \newif\if@insideaf
+
+    %%% Defines the font style in which argument names are displayed
+    \newcommand{\@arg@style}[1]{#1}
+
+    % Dummy command in case the beamer documentclass is not loaded
+    \ProvideDocumentCommand{ \alt } {r<> m m} {#2}
+
+    %%% Registry mapping node/coordinate IDs to the kind of thing that created them
+    %%% (argument / attack / support / annotation / caption). Registered with a plain
+    %%% (non-\global) \@namedef, so entries are scoped to the enclosing af/af* environment's
+    %%% own TeX group -- just like the TikZ nodes/coordinates they describe -- and vanish
+    %%% automatically at \end{af} instead of leaking into unrelated, later af environments.
+    %   #1 id
+    %   #2 type (argument / attack / support / annotation / caption)
+    \newcommand{\@registerid}[2]{%
+        \edef\@registerid@old{\@idtypeof{#1}}%
+        \edef\@registerid@new{#2}%
+        \ifx\@registerid@old\@empty
+        \else
+            \ifx\@registerid@old\@registerid@new
+            \else
+                \PackageWarning{argumentation}{Id '#1' was already used for a \@registerid@old, now reused as a #2 -- this can silently produce a wrong or missing node; consider using a unique id}%
+            \fi
+        \fi
+        \@namedef{@idtype@#1}{#2}%
+    }
+
+    %%% Expands to the type registered for ID #1, or to nothing if it was never registered.
+    \newcommand{\@idtypeof}[1]{%
+        \@ifundefined{@idtype@#1}{}{\@nameuse{@idtype@#1}}%
+    }
+
+    %%% Test whether ID #1 is registered with type #2.
+    %   #1 id, #2 type to test for, #3 true branch, #4 false branch
+    \newcommand{\@ifidtype}[4]{%
+        \edef\@ifidtype@found{\@idtypeof{#1}}%
+        \edef\@ifidtype@want{#2}%
+        \ifx\@ifidtype@found\@ifidtype@want #3\else #4\fi
+    }
+
+    %%% Test whether ID #1 is registered as an edge (attack or support), i.e. whether
+    %%% it refers to another edge's anchor rather than an argument.
+    %   #1 id, #2 true branch, #3 false branch
+    \newcommand{\@ifedgeid}[3]{%
+        \@ifidtype{#1}{attack}{#2}{\@ifidtype{#1}{support}{#2}{#3}}%
+    }
+
+    \makeatother
+
+    %%%%%%%%%% Package Options %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Options for style of the argument node itself
+    \pgfkeys{/argumentation/.cd,
+        .unknown/.code={},
+        argumentstyle/.is choice,
+        argumentstyle/standard/.code={\tikzset{argument/.style={argument standard,argument size}}},
+        argumentstyle/large/.code={\tikzset{argument/.style={argument large,argument size}}},
+        argumentstyle/thick/.code={\tikzset{argument/.style={argument thick,argument size}}},
+        argumentstyle/gray/.code={\tikzset{argument/.style={argument gray,argument size}}},
+        argumentstyle/colored/.code={\tikzset{argument/.style={argument colored,argument size}}},
+        argumentstyle=standard,
+    }
+
+    %%% Options for the style of the attack edges
+    \pgfkeys{/argumentation/.cd,
+        attack tip/.initial={stealth'},                                        % Tip of the currently selected attackstyle; reused (doubled) by edgetarget
+        attackstyle/.is choice,
+        attackstyle/standard/.code={\pgfkeys{/argumentation/.cd,attack tip={stealth'}}},
+        attackstyle/large/.code={\pgfkeys{/argumentation/.cd,attack tip={Stealth[scale=1.25]}}},
+        attackstyle/modern/.code={\pgfkeys{/argumentation/.cd,attack tip={To[sharp,length=0.65ex,line width=0.05em]}}},
+        attackstyle=standard,
+    }
+
+    %%% Option for hyperedge junction placement: minimum clearance beyond target node border
+    \pgfkeys{/argumentation/.cd,
+        junction dist/.initial=1ex,
+    }
+
+    %%% Options for the style of the support edges
+    \pgfkeys{/argumentation/.cd,
+        supportstyle/.is choice,
+        supportstyle/marked/.code={\tikzset{support/.style={support marked}}},
+        supportstyle/dashed/.code={\tikzset{support/.style={support dashed}}},
+        supportstyle/double/.code={\tikzset{support/.style={support double}}},
+        supportstyle=double,
+    }
+
+    %%% Options for the automatic text formatting for the argument names
+    \makeatletter
+    \pgfkeys{/argumentation/.cd,
+        namestyle/.is choice,
+        namestyle/none/.code={\renewcommand{\@arg@style}[1]{##1}},
+        namestyle/math/.code={\renewcommand{\@arg@style}[1]{\ensuremath{##1}}},
+        namestyle/bold/.code={\renewcommand{\@arg@style}[1]{\ensuremath{\boldsymbol{##1}}}},
+        namestyle/monospace/.code={\renewcommand{\@arg@style}[1]{{\ttfamily##1}}},
+        namestyle/monoemph/.code={\renewcommand{\@arg@style}[1]{{\ttfamily\itshape##1}}},
+        namestyle=none,
+    }
+
+    %%% Option for automatic indexing of arguments
+    \pgfkeys{/argumentation/.cd,
+        indexing/.is choice,
+        indexing/numeric/.code={\@numericidxtrue},
+        indexing/alphabetic/.code={\@alphaidxtrue},
+        indexing/none/.code={\@numericidxfalse\@alphaidxfalse},
+        indexing/.default=numeric,
+        indexing=numeric,
+    }
+    \makeatother
+
+    %%% Forward argumentation-specific keys from /tikz namespace to /argumentation
+    \pgfkeys{/tikz/.cd,
+        argumentstyle/.code={\pgfkeys{/argumentation/.cd,argumentstyle=#1}},
+        attackstyle/.code={\pgfkeys{/argumentation/.cd,attackstyle=#1}},
+        supportstyle/.code={\pgfkeys{/argumentation/.cd,supportstyle=#1}},
+        namestyle/.code={\pgfkeys{/argumentation/.cd,namestyle=#1}},
+        junction dist/.code={\pgfkeys{/argumentation/.cd,junction dist=#1}},
+    }
+
+    %%% Option for enabling additional macros
+    \pgfkeys{/argumentation/.cd,
+        macros/.is choice,
+        macros/true/.code={\macrostrue},
+        macros/false/.code={\macrosfalse},
+        macros/.default=true,
+        macros=false,
+    }
+
+    \ProcessPgfPackageOptions{/argumentation}
+
+
+    %%%%%%%%%%%%%%% Arguments %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \makeatletter
+    % Internal (locally-scoped) counter for argument IDs; 
+    % resets automatically at the end of each af/af* environment
+    \newcount\@argumentcnt
+
+    %%% Command for creating arguments
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 unique argument ID (optional)
+    %   #4 argument display name
+    %   #5 ignored
+    %   #6 absolute positioning values (optional)
+    \NewDocumentCommand { \argument } {D<>{.-} O{} d() m dat d()} {%
+        \advance\@argumentcnt by 1
+        \IfNoValueTF {#3}{%
+            \if@alphaidx
+                \edef\@argid{\@alph{\the\@argumentcnt}}
+            \else\if@numericidx
+                \edef\@argid{a\the\@argumentcnt}
+            \else
+                \PackageError{argumentation}{Missing argument ID}{Must either provide argument ID inside () or activate auto-indexing}
+            \fi\fi
+        }{%
+            \edef\@argid{#3}
+        }
+        \@registerid{\@argid}{argument}
+        \@create@argument{#1}{#2}{}{\@argid}{#4}{#6}
+    }
+
+    %%% Auxiliary command for creating arguments
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 TikZ parameters (optional)
+    %   #4 unique argument ID (optional)
+    %   #5 argument display name
+    %   #6 absolute positioning value (optional)
+    \NewDocumentCommand { \@create@argument } {mmmmmm} {%
+        \alt<#1>{
+            \IfNoValueTF {#6}{%
+                \node[argument size,argument,#2,#3](#4) {\@arg@style{#5}};
+            }{%
+                \node[argument size,argument,#2,#3](#4) at (#6) {\@arg@style{#5}};
+            }
+        }{%
+            \if@afoverlay
+                \IfNoValueTF {#6}{%
+                    \node[argument size,argument,inactive,#2,#3](#4) {\@arg@style{#5}};
+                }{%
+                    \node[argument size,argument,inactive,#2,#3](#4) at (#6) {\@arg@style{#5}};
+                }
+            \else
+                \IfNoValueTF {#6}{%
+                    \node[argument size,argument,invisible,#2,#3](#4) {\@arg@style{#5}};
+                }{%
+                    \node[argument size,argument,invisible,#2,#3](#4) at (#6) {\@arg@style{#5}};
+                }
+            \fi
+        }
+    }
+    \makeatother
+
+
+    %%%%%%%%%%%%%%% Attacks & Support %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \makeatletter
+    % Internal counter for attack IDs; plain (locally-scoped) register
+    \newcount\@attackcnt
+
+    %%% Command for creating attacks
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 unique attack ID (optional)
+    %   #4 attacking argument ID
+    %   #5 attacked argument ID
+    %   #6 annotation text (optional)
+    \NewDocumentCommand { \attack } {D<>{.-} O{} d() m m d()} {%
+        \advance\@attackcnt by 1
+        \IfNoValueTF {#3}{%
+            \edef\@attid{att\the\@attackcnt}
+        }{%
+            \edef\@attid{#3}
+        }
+        \@registerid{\@attid}{attack}
+        % An attack whose target is itself another edge's anchor (attack on an
+        % attack/support) is drawn by the dedicated \@create@extendedattack helper,
+        % which auto-applies the edgetarget (double arrow head) style.
+        \@ifedgeid{#5}{%
+            \@create@extendedattack{#1}{#2}{}{#4}{#5}{#6}{\@attid}%
+        }{%
+            \@create@attack{#1}{#2}{}{#4}{#5}{#6}{\@attid}%
+        }%
+    }
+
+    %%% Internal command for creating the attack in TikZ
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 TikZ parameters (optional)
+    %   #4 attacking argument ID
+    %   #5 attacked argument ID
+    %   #6 annotation text
+    %   #7 unique attack ID
+    \NewDocumentCommand { \@create@attack } {mmmmmmm} {%
+        \alt<#1>{
+            \IfNoValueTF{#6}{%
+                \path(#4) edge [attack,#2,#3] coordinate(#7) (#5);
+            }{%
+                \path(#4) edge [attack,#2,#3] node[annotation](#7){#6} (#5);
+            }
+        }{%
+            \if@afoverlay
+                \IfNoValueTF{#6}{%
+                    \path(#4) edge [attack,inactive,#2,#3] coordinate(#7) (#5);
+                }{%
+                    \path(#4) edge [attack,inactive,#2,#3] node[annotation](#7){#6} (#5);
+                }
+            \else
+                \IfNoValueTF{#6}{%
+                    \path(#4) edge [attack,invisible,#2,#3] coordinate(#7) (#5);
+                }{%
+                    \path(#4) edge [attack,invisible,#2,#3] node[annotation](#7){#6} (#5);
+                }
+            \fi
+        }
+    }
+
+    %%% Internal command for creating an "extended" attack, i.e. one whose target is
+    %%% another edge's anchor rather than an argument (attack on attack/support).
+    %%% Identical to \@create@attack except the edgetarget style (auto double arrow
+    %%% head) is always applied.
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 TikZ parameters (optional)
+    %   #4 attacking argument ID
+    %   #5 attacked edge ID
+    %   #6 annotation text
+    %   #7 unique attack ID
+    \NewDocumentCommand { \@create@extendedattack } {mmmmmmm} {%
+        \alt<#1>{
+            \IfNoValueTF{#6}{%
+                \path(#4) edge [attack,edgetarget,#2,#3] coordinate(#7) (#5);
+            }{%
+                \path(#4) edge [attack,edgetarget,#2,#3] node[annotation](#7){#6} (#5);
+            }
+        }{%
+            \if@afoverlay
+                \IfNoValueTF{#6}{%
+                    \path(#4) edge [attack,edgetarget,inactive,#2,#3] coordinate(#7) (#5);
+                }{%
+                    \path(#4) edge [attack,edgetarget,inactive,#2,#3] node[annotation](#7){#6} (#5);
+                }
+            \else
+                \IfNoValueTF{#6}{%
+                    \path(#4) edge [attack,edgetarget,invisible,#2,#3] coordinate(#7) (#5);
+                }{%
+                    \path(#4) edge [attack,edgetarget,invisible,#2,#3] node[annotation](#7){#6} (#5);
+                }
+            \fi
+        }
+    }
+
+    %%% Self-attack edge
+    %   #1 TikZ parameters (optional)
+    %   #2 unique attack ID (optional)
+    %   #3 argument ID
+    \NewDocumentCommand { \selfattack } {D<>{.-} O{} d() m} {%
+        \IfNoValueTF{#3}{%
+            \attack<#1>[selfattack,#2]{#4}{#4}
+        }{%
+            \attack<#1>[selfattack,#2](#3){#4}{#4}
+        }
+    }
+
+    %%% Symmetric attack edges between two arguments
+    %   #1 TikZ parameters (optional)
+    %   #2 unique ID for the first attack edge (optional)
+    %   #3 unique ID for the second attack edge (optional)
+    %   #4 first argument ID
+    %   #5 second argument ID
+    \NewDocumentCommand { \dualattack } {D<>{.-} O{} d() d() m m} {%
+        \IfNoValueTF{#3}{%
+            \attack<#1>[bend right,#2]{#5}{#6}
+        }{%
+            \attack<#1>[bend right,#2](#3){#5}{#6}
+        }
+        \IfNoValueTF{#4}{%
+            \attack<#1>[bend right,#2]{#6}{#5}
+        }{%
+            \attack<#1>[bend right,#2](#4){#6}{#5}
+        }
+    }
+
+    %%% Hyperedge attack from a set of arguments to one argument
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 unique attack ID (optional)
+    %   #4 comma-separated list of attacking argument IDs
+    %   #5 attacked argument ID
+    %   #6 annotation text (optional)
+    \NewDocumentCommand { \setattack } {D<>{.-} O{} d() m m d()} {%
+        \advance\@attackcnt by 1
+        \IfNoValueTF {#3}{%
+            \edef\@attid{att\the\@attackcnt}
+        }{%
+            \edef\@attid{#3}
+        }
+        \@registerid{\@attid}{attack}
+        \@create@sehyperedge{#1}{#2}{}{#4}{#5}{#6}{attack}{\@attid}{attack}%
+    }
+
+    %%% Create attack edge with value (DEPRECATED as of v1.4)
+    %   #1 TikZ parameters (optional)
+    %   #2 attacking argument ID
+    %   #3 attacked argument ID
+    %   #4 annotation text
+    \NewDocumentCommand{ \annotatedattack } {D<>{.-} O{} m m m} {%
+        \PackageWarning{argumentation}{\string\annotatedattack\space is deprecated and may be removed in a future release; use \string\attack\space with a (\string\annotation) argument instead}%
+        \attack<#1>[#2]{#3}{#4}(#5)
+    }
+
+    % Internal counter for support IDs; plain (locally-scoped) register
+    \newcount\@supportcnt
+
+    %%% Support edge
+    %   #1 overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 unique support ID (optional)
+    %   #4 supporting argument ID
+    %   #5 supported argument ID
+    %   #6 annotation text (optional)
+    \NewDocumentCommand { \support } {D<>{.-} O{} d() m m d()} {%
+        \advance\@supportcnt by 1
+        \IfNoValueTF {#3}{%
+            \edef\@suppid{supp\the\@supportcnt}
+        }{%
+            \edef\@suppid{#3}
+        }
+        \@registerid{\@suppid}{support}
+        \alt<#1>{%
+            \IfNoValueTF{#6}{%
+                \path(#4) edge [support=0.35,#2] coordinate(\@suppid) (#5);
+            }{%
+                \path(#4) edge [support=0.35,#2] node[annotation](\@suppid){#6} (#5);
+            }
+        }{%
+            \if@afoverlay
+                \IfNoValueTF{#6}{%
+                    \path(#4) edge [support=0.35,inactive,#2] coordinate(\@suppid) (#5);
+                }{%
+                    \path(#4) edge [support=0.35,inactive,#2] node[annotation](\@suppid){#6} (#5);
+                }
+            \else
+                \IfNoValueTF{#6}{%
+                    \path(#4) edge [support=0.35,invisible,#2] coordinate(\@suppid) (#5);
+                }{%
+                    \path(#4) edge [support=0.35,invisible,#2] node[annotation](\@suppid){#6} (#5);
+                }
+            \fi
+        }
+    }
+
+    %%% Hyperedge support from a set of arguments to one argument
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 unique support ID (optional)
+    %   #4 comma-separated list of supporting argument IDs
+    %   #5 supported argument ID
+    %   #6 annotation text (optional)
+    \NewDocumentCommand { \setsupport } {D<>{.-} O{} d() m m d()} {%
+        \advance\@supportcnt by 1
+        \IfNoValueTF {#3}{%
+            \edef\@suppid{supp\the\@supportcnt}
+        }{%
+            \edef\@suppid{#3}
+        }
+        \@registerid{\@suppid}{support}
+        \@create@sehyperedge{#1}{#2}{}{#4}{#5}{#6}{support=0.35}{\@suppid}{support}%
+    }
+
+    %%% Shared internal command for set-attack and set-support
+    %   #1 beamer overlay specification
+    %   #2 TikZ parameters (optional)
+    %   #3 TikZ parameters (optional)
+    %   #4 comma-separated list of source argument IDs
+    %   #5 target argument ID
+    %   #6 annotation text
+    %   #7 junction-to-target edge style (attack / support=0.35)
+    %   #8 unique ID for the junction-to-target edge
+    %   #9 registry type for the id ("attack" / "support")
+    % Plain (locally-scoped) registers
+    \newcount\@sehyperedgecnt
+    \newcount\@sehyperedgesrccnt
+    \newif\if@sehyperedge@first
+    \NewDocumentCommand { \@create@sehyperedge } {mmmmmmmmm} {%
+        \advance\@sehyperedgecnt by 1
+        \edef\@shcent{sehyperedge@cent@\the\@sehyperedgecnt}%
+        \edef\@shjunc{sehyperedge@junc@\the\@sehyperedgecnt}%
+        % Build "node=1,node=1,..." string for barycentric cs from source clist
+        \global\let\@sehyperedge@bary\@empty
+        \@sehyperedge@firsttrue
+        \@for\@she@item:=#4\do{%
+            \if@sehyperedge@first
+                \@sehyperedge@firstfalse
+                \xdef\@sehyperedge@bary{\@she@item=1}%
+            \else
+                \xdef\@sehyperedge@bary{\@sehyperedge@bary,\@she@item=1}%
+            \fi
+        }%
+        \edef\@shcmd{\noexpand\coordinate(\@shcent) at (barycentric cs:\@sehyperedge@bary);}%
+        % Register the per-source sub-anchors here (not inside \@@draw@sehyperedge's
+        % \begingroup below), so the registration is scoped to the af environment's own
+        % group, matching how long the underlying TikZ coordinates actually stay valid.
+        \@sehyperedgesrccnt=0 %
+        \@for\@she@item:=#4\do{%
+            \advance\@sehyperedgesrccnt by 1
+            \@registerid{#8-\the\@sehyperedgesrccnt}{#9}%
+        }%
+        \alt<#1>{%
+            \@@draw@sehyperedge{}{#2}{#3}{#4}{#5}{#6}{#7}{#8}%
+        }{%
+            \if@afoverlay
+                \@@draw@sehyperedge{inactive}{#2}{#3}{#4}{#5}{#6}{#7}{#8}%
+            \else
+                \@@draw@sehyperedge{invisible}{#2}{#3}{#4}{#5}{#6}{#7}{#8}%
+            \fi
+        }%
+    }
+
+    %%% Shared internal drawing helper for set-attack and set-support
+    %   #1 style modifier (empty / inactive / invisible)
+    %   #2 TikZ parameters
+    %   #3 TikZ parameters
+    %   #4 source IDs (comma-separated)
+    %   #5 target ID
+    %   #6 annotation text
+    %   #7 junction-to-target edge style
+    %   #8 unique ID for the junction-to-target edge; each individual
+    %      source-to-junction curve additionally gets its own anchor
+    %      named #8-1, #8-2, ... in source-list order
+    \NewDocumentCommand { \@@draw@sehyperedge } {mmmmmmmm} {%
+        \begingroup
+        \pgfkeys{/tikz/.cd,#2,#3}%
+        \@shcmd
+        \path let
+            \p{@c}  = (\@shcent),
+            \p{@t}  = (#5.center),
+            \p{@te} = (#5.east),
+            \n{@d}  = {veclen(\x{@t}-\x{@c}, \y{@t}-\y{@c})},
+            \n{@r}  = {\x{@te} - \x{@t}},
+            \n{@jd} = {max(0.25*\n{@d}, \n{@r} + \pgfkeysvalueof{/argumentation/junction dist})}
+        in
+            ($(#5.center)!\n{@jd}!(\@shcent)$) node[coordinate](\@shjunc){};%
+        \edef\@shtgt{#5}%
+        \edef\@shid{#8}%
+        \@sehyperedgesrccnt=0 %
+        % \@for (unlike TikZ's \foreach) does not run each iteration in its own local
+        % group, so \advance below correctly accumulates across sources -- see the
+        % identical loop in \@create@sehyperedge above.
+        \@for\@she@src:=#4\do{%
+            \advance\@sehyperedgesrccnt by 1
+            \edef\@shsrcid{\@shid-\the\@sehyperedgesrccnt}%
+            \ifx\@she@src\@shtgt
+                % Source = target: detour arc bowing 45° off the junction direction
+                \draw[attack width,#7,-,#1,#2,#3]
+                    let
+                        \p{src}   = (\@she@src),
+                        \p{src_e} = (\@she@src.east),
+                        \p{jnc}   = (\@shjunc),
+                        \n{r}     = {\x{src_e} - \x{src}},
+                        \n{ja}    = {atan2(\y{jnc}-\y{src}, \x{jnc}-\x{src})},
+                        \n{sbx}   = {\x{src} + \n{r}*cos(\n{ja}+45)},
+                        \n{sby}   = {\y{src} + \n{r}*sin(\n{ja}+45)},
+                        \n{cp1x}  = {\n{sbx} + 1.25*\n{r}*cos(\n{ja}+45)},
+                        \n{cp1y}  = {\n{sby} + 1.25*\n{r}*sin(\n{ja}+45)},
+                        \n{cp2x}  = {\x{jnc} + \n{r}*cos(\n{ja})},
+                        \n{cp2y}  = {\y{jnc} + \n{r}*sin(\n{ja})}
+                    in
+                    (\n{sbx}, \n{sby}) .. controls (\n{cp1x}, \n{cp1y})
+                                    and (\n{cp2x}, \n{cp2y}) .. (\@shjunc) coordinate[pos=0.5](\@shsrcid);%
+            \else
+                \draw[attack width,#7,-,#1,#2,#3]
+                    let
+                        \p{src}   = (\@she@src),
+                        \p{src_e} = (\@she@src.east),
+                        \p{jnc}   = (\@shjunc),
+                        \p{tgt}   = (#5),
+                        \n{r}     = {\x{src_e} - \x{src}},
+                        \n{dx}    = {\x{jnc} - \x{src}},
+                        \n{dy}    = {\y{jnc} - \y{src}},
+                        \n{h}     = {veclen(\n{dx}, \n{dy})},
+                        \n{ux}    = {\n{dx} / \n{h}},
+                        \n{uy}    = {\n{dy} / \n{h}},
+                        \n{bx}    = {\x{src} + \n{r} * \n{ux}},
+                        \n{by}    = {\y{src} + \n{r} * \n{uy}},
+                        \n{cp1x}  = {\n{bx} + \n{h}/3 * \n{ux}},
+                        \n{cp1y}  = {\n{by} + \n{h}/3 * \n{uy}},
+                        \n{j2tx}  = {\x{tgt} - \x{jnc}},
+                        \n{j2ty}  = {\y{tgt} - \y{jnc}},
+                        \n{j2td}  = {veclen(\n{j2tx}, \n{j2ty})},
+                        \n{j2tux} = {\n{j2tx} / \n{j2td}},
+                        \n{j2tuy} = {\n{j2ty} / \n{j2td}},
+                        \n{cp2x}  = {\x{jnc} - 0.35 * \n{h} * \n{j2tux}},
+                        \n{cp2y}  = {\y{jnc} - 0.35 * \n{h} * \n{j2tuy}}
+                    in
+                    (\n{bx}, \n{by}) .. controls (\n{cp1x}, \n{cp1y})
+                                    and (\n{cp2x}, \n{cp2y}) .. (\@shjunc) coordinate[pos=0.5](\@shsrcid);%
+            \fi
+        }%
+        \IfNoValueTF{#6}{%
+            \path(\@shjunc) edge[#7,#1,#2,#3] coordinate[pos=0.1](#8) (#5);%
+        }{%
+            \path(\@shjunc) edge[#7,#1,#2,#3] node[annotation,pos=0.1](#8){#6} (#5);%
+        }%
+        \endgroup
+    }
+    \makeatother
+
+
+    %%%%%%%%%%%%%%%  AF Environment %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %%% Uncounted version of the environment
+    \makeatletter
+    \NewDocumentEnvironment {af*} {O{}} {%
+        \pgfkeys{/argumentation/.cd, #1}
+        \tikzpicture[standard,af,#1]
+    }{%
+        \endtikzpicture
+    }
+
+    \NewDocumentCommand{\newafenvironment}{mm}{
+        \newcounter{#1}
+        \NewDocumentEnvironment{#1}{O{}}{
+            \refstepcounter{#1}
+            \@insideaftrue
+            \begin{af*}[##1]
+        }{
+            \end{af*}
+            \@insideaffalse
+        }
+        \ifmacros
+            \@ifpackageloaded{hyperref}{
+                \global\expandafter\def\csname #1ref\endcsname##1{\ensuremath{\hyperref[##1]{#2_{\ref*{##1}}}}\xspace}
+            }{
+                \global\expandafter\def\csname #1ref\endcsname##1{\ensuremath{#2_{\ref{##1}}}\xspace}
+            }
+        \fi
+    }
+
+    \newafenvironment{af}{\AF}
+    \makeatother
+
+
+    %%%%%%%%%%%%%%%% Additional Commands %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Definitions for referencing
+    \ifmacros
+        \providecommand{\AF}{\ensuremath{F}\xspace}                     % AF abbreviation
+        \providecommand{\arguments}{\ensuremath{A}\xspace}              % Set of arguments
+        \providecommand{\attacks}{\ensuremath{R}\xspace}                % Set of attacks
+        \providecommand{\AFcomplete}{\ensuremath{\AF = (\arguments, \attacks)}\xspace}  % Full AF
+        \newcommand{\fullafref}[1]{\ensuremath{\afref{#1} = (\arguments_{\ref*{#1}}, \attacks_{\ref*{#1}})}\xspace}                                   % Full AF with reference
+    \fi
+
+    %%% Creates a node displaying the name of the AF
+    %   #1 overlay specification (optional)
+    %   #2 TikZ-parameters (optional)
+    %   #3 node identifier (optional)
+    %   #4 node name
+    %   #5 ignored
+    %   #6 node position
+    \makeatletter
+    \NewDocumentCommand { \afname } { D<>{.-} O{} D(){caption} m dat d()} {%
+        \@registerid{#3}{other}
+        \alt<#1>{
+            \IfNoValueTF {#6}{%
+                \node[caption,#2](#3){#4};
+            }{%
+                \node[caption,#2](#3) at (#6) {#4};
+            }
+        }{%
+            \IfNoValueTF {#6}{%
+                \node[caption,invisible,#2](#3){#4};
+            }{%
+                \node[caption,invisible,#2](#3) at (#6) {#4};
+            }
+        }
+    }
+    \makeatother
+
+    %%% Create a text annotation, positioned the same way as \argument:
+    %%% either relative to another node (e.g. [right=of a5]) or at absolute
+    %%% coordinates via "at (posX,posY)". No implicit default position.
+    \makeatletter
+    % Internal counter for annotation IDs; plain (locally-scoped) register
+    \newcount\@annotationcnt
+
+    %%% Command for creating annotations
+    %   #1 beamer overlay specification (optional)
+    %   #2 TikZ parameters (optional)
+    %   #3 unique annotation ID (optional)
+    %   #4 annotation text
+    %   #5 ignored
+    %   #6 absolute positioning values (optional)
+    \NewDocumentCommand { \annotation } {D<>{.-} O{} d() m dat d()} {%
+        \advance\@annotationcnt by 1
+        \IfNoValueTF {#3}{%
+            \edef\@annid{annotation\the\@annotationcnt}
+        }{%
+            \edef\@annid{#3}
+        }
+        \@registerid{\@annid}{other}
+        \alt<#1>{
+            \IfNoValueTF {#6}{%
+                \node[annotation,#2](\@annid){#4};
+            }{%
+                \node[annotation,#2](\@annid) at (#6) {#4};
+            }
+        }{%
+            \IfNoValueTF {#6}{%
+                \node[annotation,invisible,#2](\@annid){#4};
+            }{%
+                \node[annotation,invisible,#2](\@annid) at (#6) {#4};
+            }
+        }
+    }
+    \makeatother
+
+    %%% Commands for setting custom tikz-style parameters
+    \newcommand{\setafstyle}[1]{\tikzset{af/.style={#1}}}
+    \newcommand{\setargumentcolorscheme}[2]{\tikzset{argument colored/.style={argument thick,fill=#2,draw=#1}}}
+    \newcommand{\setargumentstyle}[1]{\tikzset{argument/.style={argument size,#1}}}
+    \newcommand{\setattackstyle}[1]{\tikzset{attack/.style={attack width,#1}}}
+    \newcommand{\setsupportstyle}[1]{\tikzset{support/.style={#1}}}
+    \newcommand{\setannotationstyle}[1]{\tikzset{annotation/.style={#1}}}

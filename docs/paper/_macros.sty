@@ -1,0 +1,246 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{_macros}[2025/12/10 \_macros]
+
+\RequirePackage{amsthm}
+\RequirePackage{pifont}                                 % for checkmark and xmark
+\RequirePackage{xspace}
+\RequirePackage{hyperref}
+\RequirePackage[macros]{argumentation}
+
+% function case distinction environment
+\makeatletter
+\newenvironment{multicases}[1]
+  {\let\@ifnextchar\new@ifnextchar
+   \left\lbrace\def\arraystretch{1.2}%
+   \array{@{}l*{#1}{@{\quad\quad}l}@{}}}
+  {\endarray\right.\kern-\nulldelimiterspace}
+
+% intersection symbol (big, square)
+\providecommand{\bigsqcap}{%
+  \mathop{%
+    \mathpalette\@updown\bigsqcup
+  }%
+}
+\newcommand*{\@updown}[2]{%
+  \rotatebox[origin=c]{180}{$\m@th#1#2$}%
+}
+\makeatother
+
+%%%%%%% General Macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\xmark}[1]{\ding{55}\textsuperscript{#1}}    % cross mark in table
+\newcommand{\cmark}[1]{\ding{51}\textsuperscript{#1}}
+\newcommand{\ie}{i.\,e.\xspace}				% i.e.
+\newcommand{\eg}{e.\,g.\xspace}				% e.g.
+\newcommand{\wrt}{wrt.~}
+\newcommand{\mt}[1]{\textcolor{red}{MT: #1}} % for comments
+\newcommand{\lb}[1]{\textcolor{blue}{LB: #1}} % for comments
+\newcommand{\todo}[1]{\textcolor{magenta}{TODO: #1}} % for todos
+\newcommand{\citeh}[1]{\citeauthor{#1},~\citeyear{#1}}
+
+%%%%%%% AF Macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\AF}[1][AF]{\ensuremath{\mathsf{#1}}\xspace}				% Abstract argumentation framework
+%\renewcommand{\arguments}{\ensuremath{\mathsf{A}}\xspace}				% Set of arguments
+\RenewDocumentCommand { \arguments } { O{} } {
+    \IfBlankTF{#1}{%
+        \ensuremath{\mathsf{A}}\xspace
+    }{%
+        \ensuremath{\mathsf{A}_{\AF[#1]}}\xspace
+    }
+}
+%\renewcommand{\attacks}{\ensuremath{\mathsf{R}}\xspace}				% Attack relation
+\RenewDocumentCommand { \attacks } { O{} } {
+    \IfBlankTF{#1}{%
+        \ensuremath{\mathsf{R}}\xspace
+    }{%
+        \ensuremath{\mathsf{R}_{\AF[#1]}}\xspace
+    }
+}
+\newcommand{\nattacks}{\ensuremath{\centernot\attacks}}
+\NewDocumentCommand { \attackers } { O{} m } {
+    \IfBlankTF{#1}{%
+        \ensuremath{#2^{-}}\xspace
+    }{%
+        \ensuremath{#2^{-}_{\AF[#1]}}\xspace
+    }
+}
+\NewDocumentCommand { \attacked } { O{} m } {
+    \IfBlankTF{#1}{%
+        \ensuremath{#2^{+}}\xspace
+    }{%
+        \ensuremath{#2^{+}_{\AF[#1]}}\xspace
+    }
+}
+%\newcommand{\attackers}[2][\AF]{\ensuremath{#2^{-}_{#1}\xspace}}				% Attacker set
+%\newcommand{\attacked}[2][\AF]{\ensuremath{#2^{+}_{#1}\xspace}}				% Attacker set
+\RenewDocumentCommand {\AFcomplete} { O{} } {
+    \IfBlankTF{#1}{%
+        \ensuremath{\AF=(\arguments,\attacks)}\xspace
+    }{%
+        \ensuremath{\AF[#1]=(\arguments[#1],\attacks[#1])}\xspace
+    }
+}
+%\renewcommand{\AFcomplete}{\ensuremath{\AF=(\arguments,\attacks)}\xspace}		% Definition of an abstract argumentation framework
+\newcommand{\allAFs}{\ensuremath{\mathbb{AF}}\xspace}
+\newcommand{\allArgs}{\ensuremath{\mathbb{A}}\xspace}
+\newcommand{\unattacked}[1][\AF]{\ensuremath{\mathfrak{US}(#1)}\xspace}
+\newcommand{\SCCs}[1][\AF]{\ensuremath{\mathsf{SCCs}(#1)}\xspace}
+\newcommand{\SCC}{\ensuremath{\mathsf{S}}\xspace}
+\newcommand{\op}[1][\AF]{\ensuremath{\text{op}_{#1}}}
+\newcommand{\sd}{\ensuremath{\mathtt{sd}}}                          % strong defense
+
+\renewcommand{\afref}[2][F]{\ensuremath{\AF[#1]_{\ref{#2}}}\xspace}
+\newcommand{\AFfull}[1][F]{\ensuremath{\AF[#1]=(\arguments_{\AF[#1]},\attacks_{\AF[#1]})}\xspace}
+
+\newcommand{\supports}{\mathsf{S}}
+\newcommand{\probdist}{\mathsf{P}}
+\newcommand{\BAF}{\ensuremath{\mathsf{BAF}}\xspace}
+\newcommand{\iAF}{\ensuremath{\mathsf{iAF}}\xspace}
+\newcommand{\PAF}{\ensuremath{\mathsf{PAF}}\xspace}
+\newcommand{\SetAF}{\ensuremath{\mathsf{SetAF}}\xspace}
+
+
+\NewDocumentCommand { \projection } { O{} m } {
+    \IfBlankTF{#1}{%
+        \ensuremath{\AF|_{#2}}\xspace
+    }{%
+        \ensuremath{\AF[#1]|_{#2}}\xspace
+    }
+}
+\NewDocumentCommand { \reduct } { O{} m } {
+    \IfBlankTF{#1}{%
+        \ensuremath{\AF^{#2}}\xspace
+    }{%
+        \ensuremath{\AF[#1]^{#2}}\xspace
+    }
+}
+%\renewcommand{\projection}[2][\AF]{\ensuremath{#1|_{#2}}\xspace}
+%\renewcommand{\reduct}[2][\AF]{\ensuremath{{#1}^{#2}}\xspace}
+
+\newcommand{\sem}{\ensuremath{\sigma}\xspace}
+\newcommand{\ext}{\ensuremath{E}\xspace}
+\newcommand{\set}{\ensuremath{S}\xspace}
+\newcommand{\exts}[1]{\ensuremath{\sem(#1)}}
+\newcommand{\chaf}[1][\AF]{\ensuremath{\Delta_{#1}}\xspace}
+
+\newcommand{\argstyle}[1]{\ensuremath{\boldsymbol{#1}}\xspace}
+\newcommand{\aA}{\argstyle{a}}
+\newcommand{\aB}{\argstyle{b}}
+\newcommand{\aC}{\argstyle{c}}
+\newcommand{\aD}{\argstyle{d}}
+\newcommand{\aE}{\argstyle{e}}
+\newcommand{\aF}{\argstyle{f}}
+\newcommand{\aG}{\argstyle{g}}
+\newcommand{\aH}{\argstyle{h}}
+\newcommand{\aI}{\argstyle{i}}
+
+\newcommand{\acr}[1]{\ensuremath{\textsc{#1}}\xspace}
+\newcommand{\expl}{\ensuremath{\mathcal{E}}\xspace}
+
+%%%%%%% Serialisation Macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\NewDocumentCommand { \select } {d()} {\IfNoValueTF{#1}{\ensuremath{\alpha}\xspace}{\ensuremath{\alpha(\uelc(#1), \ucelc(#1), \celc(#1))}\xspace}}
+\newcommand{\termination}{\ensuremath{\beta}\xspace}
+
+\newcommand{\sersem}{\ensuremath{\Sigma_s}\xspace}
+
+\newcommand{\seq}{\ensuremath{\mathcal{S}}\xspace}
+\newcommand{\ssequence}{\ensuremath{(\set_1, \ldots, \set_n)}\xspace}
+\newcommand{\ssequencecomplete}{\ensuremath{\seq=(\set_1, \ldots, \set_n)}\xspace}
+\newcommand{\seqs}[1][\sigma]{\ensuremath{\mathfrak{S}_{#1}}\xspace}
+\newcommand{\induced}[1]{\ensuremath{\hat{#1}}\xspace}
+\newcommand{\sequnion}{\ensuremath{\set_1 \cup\ldots\cup \set_n}\xspace}
+
+%%%%%%% ADF Macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\ADF}{\ensuremath{\mathsf{ADF}}\xspace}						% Abstract dialectical framework
+\newcommand{\conditions}{\ensuremath{\mathsf{C}}\xspace}				% Attack relation
+\newcommand{\links}{\ensuremath{\mathsf{L}}\xspace}
+\newcommand{\ADFcomplete}{\ensuremath{\ADF=(\arguments,\conditions)}\xspace}		% Definition of an abstract 
+\newcommand{\ADFfull}{\ensuremath{\ADF=(\arguments,\links,\conditions)}\xspace}
+\newcommand{\true}{\ensuremath{\mathsf{true}}\xspace}
+\newcommand{\false}{\ensuremath{\mathsf{false}}\xspace}
+\newcommand\truthvalue[1]{\mathsf{#1}}
+\newcommand{\tr}{\ensuremath{\boldsymbol{\truthvalue{t}}}\xspace}
+\newcommand{\f}{\ensuremath{\boldsymbol{\truthvalue{f}}}\xspace}
+\newcommand{\un}{\ensuremath{\boldsymbol{\truthvalue{u}}}\xspace}
+
+\newcommand{\model}{\ensuremath{\upsilon}\xspace}
+\newcommand{\modelcomplete}{\ensuremath{\model: \arguments\mapsto\{\tr,\f,\un\}}\xspace}
+\newcommand{\chop}[1][\ADF]{\ensuremath{\Gamma_{#1}}\xspace}
+
+\newcommand{\allADFs}{\ensuremath{\mathbb{ADF}}\xspace}
+\newcommand{\allBADFs}{\ensuremath{\mathbb{BADF}}\xspace}
+
+\newcommand{\mseq}{\ensuremath{\mathcal{Y}}\xspace}
+\newcommand{\msequence}{\ensuremath{(\model_1, \dots \model_n)}\xspace}
+\newcommand{\msequencecomplete}{\ensuremath{\mseq=\msequence}\xspace}
+
+
+%%%%%%%%% Semantics %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\abr}[1]{\ensuremath{\textsf{#1}}\xspace}                       % general command for highlighting abbreviations
+%\newcommand{\acr}[1]{\textsf{\textsmaller[0.75]{#1}}} % for acronyms
+
+\newcommand{\cf}{\abr{cf}}
+\newcommand{\adm}{\abr{ad}}
+\newcommand{\co}{\abr{co}}
+\newcommand{\gr}{\abr{gr}}
+\newcommand{\sta}{\abr{st}}
+\newcommand{\pr}{\abr{pr}}
+\newcommand{\sst}{\abr{sst}}
+\newcommand{\id}{\abr{id}}
+\newcommand{\ea}{\abr{ea}}
+\newcommand{\na}{\abr{na}}
+\newcommand{\sa}{\abr{sa}}
+\newcommand{\uc}{\abr{uc}}
+\newcommand{\elc}{\abr{is}}
+\newcommand{\uelc}{\ensuremath{\elc^{\not\leftarrow}}}
+\newcommand{\ucelc}{\ensuremath{\elc^{\not\leftrightarrow}}}
+\newcommand{\celc}{\ensuremath{\elc^{\leftrightarrow}}}
+
+
+\newcommand{\conflicts}{\textsf{conflicts}}
+
+%%%%%%%%%%%%%%%%% Principles %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\principle}[1]{\emph{#1}\xspace}
+\renewcommand{\AA}{\principle{Allowing Abstention}}
+\newcommand{\LI}{\principle{Language Independence}}
+\newcommand{\IM}{\principle{I-Maximality}}
+\newcommand{\AD}{\principle{Admissibility}}
+\newcommand{\CF}{\principle{Conflict-Freeness}}
+\newcommand{\DE}{\principle{Defense}}
+\newcommand{\DI}{\principle{Directionality}}
+\newcommand{\SR}{\principle{SCC-Recursiveness}}
+\newcommand{\NA}{\principle{Naivety}}
+\newcommand{\RE}{\principle{Reinstatement}}
+\newcommand{\SA}{\principle{Strong Admissibility}}
+\newcommand{\MO}{\principle{Modularisation}}
+\newcommand{\CO}{\principle{Confluence}}
+
+%%%%%%%%%%%%%%%%% Equivalence Commands %%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%% Complexity Commands %%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\L}{\ensuremath{\textsf{L}}\xspace}
+\newcommand{\p}{\ensuremath{\textsf{P}}\xspace}
+\newcommand{\NP}{\ensuremath{\textsf{NP}}\xspace}
+\newcommand{\coNP}{\ensuremath{\textsf{coNP}}\xspace}
+\newcommand{\D}{\ensuremath{\textsf{D}}\xspace}
+\newcommand{\DP}{\ensuremath{\textsf{DP}}\xspace}
+
+
+%%%%%%% Environments %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{property}{Property}
+\newtheorem{example}{Example}[section]
+\newtheorem{conjecture}{Conjecture}[section]
+
+
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+\renewcommand{\chapterautorefname}{Chapter}
+\newcommand{\definitionautorefname}{Definition}
+\newcommand{\exampleautorefname}{Example}
+\newcommand{\corollaryautorefname}{Corollary}
+\newcommand{\propositionautorefname}{Proposition}
+
+\newafenvironment{adf}{\ADF}
