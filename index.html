@@ -7,6 +7,23 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AgonProject</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a flash while the app loads.
+      try {
+        document.documentElement.setAttribute(
+          'data-theme',
+          localStorage.getItem('vueuse-color-scheme') || 'light',
+        )
+      } catch (e) {}
+    </script>
+    <style>
+      html {
+        background-color: oklch(100% 0 0);
+      }
+      html[data-theme='dark'] {
+        background-color: oklch(25.33% 0.016 252.42);
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>

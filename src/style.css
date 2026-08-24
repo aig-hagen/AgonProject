@@ -21,6 +21,11 @@
   themes: light --default, dark;
 }
 
+html,
+body {
+  background-color: var(--color-base-100);
+}
+
 .graph-controller__graph-canvas {
   background-color: var(--color-base-100);
 }
