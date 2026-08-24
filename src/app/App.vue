@@ -16,6 +16,13 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
+<script setup lang="ts">
+import { useTheme } from '@/modules/common/theme/useTheme'
+
+// Keep the theme applied app-wide, not just while a consumer like GraphEditor is mounted.
+useTheme()
+</script>
+
 <template>
   <RouterView />
 </template>
