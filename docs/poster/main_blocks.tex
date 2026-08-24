@@ -1,0 +1,195 @@
+% AgonProject poster — AIG tikzposter style (A0 portrait)
+% Screenshot-showcase layout. Style reused from the AIG sample poster;
+% the previous sample content is preserved in sample_poster.tex.bak.
+
+\documentclass[25pt,a0paper,portrait,margin=2mm, innermargin=16mm, blockverticalspace=4mm, colspace=15mm, subcolspace=10mm]{tikzposter}
+
+\usepackage{aigpostersettings}
+
+\usepackage{anyfontsize}
+\usepackage{palatino}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\usepackage{graphicx}
+\usepackage{amssymb,amsthm,amsmath,amsfonts}
+\usepackage{qrcode}
+
+\usepackage{xspace}
+
+% Instance-specific project name macros
+\newcommand{\agon}{\textsc{AgonProject}\xspace}
+\newcommand{\tweety}{\textsc{TweetyProject}\xspace}
+
+\usetitlestyle{aigpostertitle1}
+
+\settitlefontsize{4cm}
+\title{AgonProject}
+\subtitle{An online platform for exploring approaches to formal argumentation}
+%\author{Lars Bengel \quad Matti Berthold \quad Oleksandr Dzhychko \quad Matthias Thimm}
+\institute{Artificial Intelligence Group, University of Hagen, Germany}
+
+\usecolorstyle{aigpostercolor}
+\usebackgroundstyle{aigposterback}
+\useblockstyle{aigposterblockB}
+
+\begin{document}
+
+\maketitle
+
+%======================================================================
+% Row 1 — Motivation | QR + architecture
+%======================================================================
+\begin{columns}
+\column{0.63}
+\blueblock{Why AgonProject?}{
+    Formal argumentation offers a rich \emph{zoo} of formalisms for reasoning with
+    conflicting information --- but their diverse semantics, algorithms, and
+    implementation details make them hard for students and newcomers to grasp.
+    \tweety provides the most comprehensive collection of argumentation
+    implementations available, yet exposes only \emph{text-based} interfaces for a
+    handful of tasks.
+
+    \vspace{0.4cm}
+    \yellowcallout{%
+    \textbf{Goal:} a unified, \textbf{visual}, install-free web interface to
+    \emph{construct}, \emph{evaluate}, and \emph{compare} argumentation formalisms
+    --- right in the browser.}
+}
+\column{0.37}
+\yellowblock{Try it now --- no installation}{
+    \centering
+    {\setlength{\fboxsep}{10pt}\colorbox{white}{\qrcode[height=4.5cm]{http://agon.tweetyproject.org}}}\\[0.7ex]
+    {\Large\bfseries\color{aigblue}\texttt{agon.tweetyproject.org}}
+}
+\blueblock{Built for exploration}{
+    A client-side single-page app (Vue~3 + TypeScript) that delegates reasoning to a
+    \tweety REST backend --- backend-agnostic, open source under GPL-3.0.
+}
+\end{columns}
+
+%======================================================================
+% Row 2 — Six formalisms | landing screenshot
+%======================================================================
+\begin{columns}
+\column{0.58}
+\blueblock{Six Argumentation Formalisms}{
+    \begin{description}\setlength{\itemsep}{0.6ex}
+        \item[AF] \emph{Abstract} argumentation --- arguments and directed attacks (Dung).
+        \item[BAF] \emph{Bipolar} --- attacks \textbf{and} a support relation.
+        \item[ADF] \emph{Abstract dialectical} --- propositional acceptance conditions.
+        \item[iAF] \emph{Incomplete} --- uncertain arguments and attacks.
+        \item[PAF] \emph{Probabilistic} --- probabilities on arguments and attacks.
+        \item[SetAF] \emph{Collective attacks} --- sets of arguments attack a target.
+    \end{description}
+    \vspace{0.3ex}
+    Every formalism shares the same editor, evaluation, export, and learning features.
+}
+\column{0.42}
+\yellowblock{One Landing Page}{
+    \shotpanel{figures/screenshot-landing.png}{Pick a formalism and start modelling
+    straight away --- with curated examples and one-click random generation.}
+}
+\end{columns}
+
+%======================================================================
+% Row 3 — Five individual capability blocks
+%======================================================================
+\begin{columns}
+\column{0.185}
+\blueblock{Build}{Interactive graph editor with automatic layouts (Graphviz) and a
+    physics simulation.}
+\column{0.185}
+\yellowblock{Evaluate}{Extension- and ranking-based semantics; credulous / sceptical
+    acceptance, highlighted in the graph.}
+\column{0.185}
+\blueblock{Export \& Share}{\LaTeX{} (\texttt{argumentation}), SVG, TGF and ICCMA
+    AF-format --- plus share-URLs.}
+\column{0.185}
+\yellowblock{Generate}{Random frameworks from eight configurable \texttt{networkX}
+    generators.}
+\column{0.185}
+\blueblock{Learn}{10+ step-by-step tutorials and a glossary with literature references.}
+\end{columns}
+
+%======================================================================
+% Row 4 — Three individual screenshot panels
+%======================================================================
+\begin{columns}
+\column{0.315}
+\yellowblock{Evaluate \& Rank (AF)}{
+    \shotpanel{figures/screenshot-af.png}{Preferred extensions enumerated, with the
+    \emph{categoriser} ranking annotated on each argument.}
+}
+\column{0.315}
+\blueblock{Acceptance Conditions (ADF)}{
+    \shotpanel{figures/screenshot-adf.png}{Propositional acceptance conditions,
+    evaluated over three-valued interpretations; a stable model highlighted.}
+}
+\column{0.315}
+\yellowblock{Collective Attacks \& Export (SetAF)}{
+    \shotpanel{figures/screenshot-setaf.png}{Set-attacks drawn as hyperedges; the export
+    window emits ready-to-use \LaTeX{} with an SVG preview.}
+}
+\end{columns}
+
+%======================================================================
+% Row 5 — Semantics + Outlook
+%======================================================================
+\begin{columns}
+\column{0.58}
+\block{Supported Semantics}{
+    \small
+    \renewcommand{\arraystretch}{1.25}
+    \begin{tabular}{@{}p{0.30\linewidth}p{0.64\linewidth}@{}}
+        \toprule
+        \textbf{Group} & \textbf{Semantics}\\
+        \midrule
+        Classical & conflict-free, admissible, complete, grounded, preferred, stable\\
+        Admissibility-based & ideal, semi-stable, eager, strong admissibility, initial sets, unchallenged\\
+        Non-admissible & naive, CF2, SCF2, stage, stage2, (strongly) undisputed\\
+        Weak-admissible & w-admissible, w-complete, w-grounded, w-preferred\\
+        \midrule
+        Rankings & burden, categoriser, counting, discussion, iterated graded defense, serialisability, social, strategy, tuples\\
+        \bottomrule
+    \end{tabular}
+
+    \vspace{0.8ex}
+    {\footnotesize Available across AF, BAF, iAF, PAF and SetAF; ADFs use the three-valued
+    classical and naive semantics. Serialisation sequences are supported interactively.}
+}
+\column{0.42}
+\useblockstyle{aigposterblockY}
+\block{Outlook}{
+    \vspace{0.2cm}
+    Planned extensions:
+    \begin{itemize}\setlength{\itemsep}{0.5ex}
+        \item further formalisms --- Assumption-Based Argumentation, Weighted AFs, Bipolar
+        Set-based AFs, claim-augmented AFs;
+        \item benchmark generators from the ICCMA ecosystem;
+        \item explanation-based reasoning: \emph{why} is an argument accepted?
+    \end{itemize}
+    \vspace{0.3cm}
+    \yellowcallout{\centering
+    \agon is backend-agnostic and open to new formalisms and solvers.}
+}\useblockstyle{aigposterblockB}
+\end{columns}
+
+%======================================================================
+% Footer
+%======================================================================
+\begin{columns}
+\column{1.0}
+\block{}{
+    \centering
+    {\large
+    \textbf{Live:}~\texttt{agon.tweetyproject.org} \quad$\bullet$\quad
+    \textbf{Source:}~\texttt{github.com/aig-hagen/AgonProject} \quad$\bullet$\quad
+    GPL-3.0}\\[0.6ex]
+    {\footnotesize Partially supported by the Deutsche Forschungsgemeinschaft (project
+    ``Argumentative Reasoning in Nonsensical Situations'', ARNS, grant 550735820).}
+}
+\end{columns}
+
+\end{document}

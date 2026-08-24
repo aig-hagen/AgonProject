@@ -1,0 +1,173 @@
+% agoneditorial.sty — an editorial style layer for the AgonProject poster.
+% Flat, borderless sections on a warm off-white ground, a full-bleed blue
+% masthead, an ochre accent and a Source Sans / Source Serif pairing.
+% Built on tikzposter but deliberately bypassing its boxed block styles.
+\ProvidesPackage{agoneditorial}
+
+\RequirePackage{tikz}
+\RequirePackage{tcolorbox}
+\RequirePackage{varwidth}
+\RequirePackage{letterspace}
+\usetikzlibrary{shadows.blur}
+
+% ---------------------------------------------------------------------------
+% Palette
+% ---------------------------------------------------------------------------
+\definecolor{aigblue}{RGB}{0,76,151}
+\definecolor{aigbluedeep}{RGB}{1,58,115}
+\definecolor{ochre}{RGB}{192,129,58}
+\definecolor{ochrelt}{RGB}{234,191,135}
+\definecolor{aigyellow}{RGB}{210,149,81}
+\definecolor{ink}{RGB}{23,35,59}
+\definecolor{inksoft}{RGB}{58,69,95}
+\definecolor{muted}{RGB}{87,97,122}
+\definecolor{offwhite}{RGB}{246,243,238}
+\definecolor{cream}{RGB}{239,228,209}
+\definecolor{bluetint}{RGB}{207,224,241}
+\definecolor{rulegrey}{RGB}{224,217,205}
+
+% ---------------------------------------------------------------------------
+% Colour + background styles
+% ---------------------------------------------------------------------------
+\definecolorstyle{editorialcolor}{}{
+    \colorlet{backgroundcolor}{offwhite}
+    \colorlet{framecolor}{offwhite}
+    \colorlet{titlefgcolor}{white}
+    \colorlet{titlebgcolor}{aigblue}
+    \colorlet{blocktitlebgcolor}{offwhite}
+    \colorlet{blocktitlefgcolor}{ink}
+    \colorlet{blockbodybgcolor}{offwhite}
+    \colorlet{blockbodyfgcolor}{ink}
+    \colorlet{innerblocktitlebgcolor}{offwhite}
+    \colorlet{innerblocktitlefgcolor}{ink}
+    \colorlet{innerblockbodybgcolor}{offwhite}
+    \colorlet{innerblockbodyfgcolor}{ink}
+}
+
+\definebackgroundstyle{editorialback}{
+    \draw[draw=offwhite, fill=offwhite] (bottomleft) rectangle (topright);
+}
+
+% ---------------------------------------------------------------------------
+% Masthead title style (full-bleed blue band, left identity, right logo chip)
+% ---------------------------------------------------------------------------
+\definetitlestyle{editorialtitle}{
+    width=\paperwidth, roundedcorners=0, linewidth=0pt, innersep=0pt,
+    titletotopverticalspace=0mm, titletoblockverticalspace=26mm
+}{
+    \begin{scope}
+        \draw[draw=aigblue, fill=aigblue]
+            (\titleposleft,\titleposbottom) rectangle (\titleposright,\titlepostop);
+        % ochre accent rule along the bottom edge of the masthead
+        \draw[draw=ochre, fill=ochre]
+            (\titleposleft,\titleposbottom) rectangle (\titleposright,\titleposbottom+0.7);
+    \end{scope}
+}
+
+\newcommand{\mastheadlogo}{figures/logoaig.png}
+\newcommand{\tweetylogo}{figures/tweety-logo.png}
+
+\makeatletter
+\settitle{%
+    \hspace*{40mm}%
+    \begin{minipage}[c]{0.62\linewidth}
+        \vspace{2.2em}
+        {\sffamily\bfseries\color{ochrelt}\fontsize{24}{28}\selectfont
+            \textls[150]{ARTIFICIAL INTELLIGENCE GROUP \textbullet\ UNIVERSITY OF HAGEN}\par}
+        \vspace{0.55em}
+        {\sffamily\bfseries\scshape\color{white}\fontsize{150}{150}\selectfont \@title\par}
+        \vspace{0.7em}
+        {\color{bluetint}\itshape\fontsize{40}{46}\selectfont \@subtitle\par}
+        \vspace{2.2em}
+    \end{minipage}%
+    \hfill
+    \begin{minipage}[c]{0.22\linewidth}
+        \centering
+        \begin{tcolorbox}[colback=white, colframe=white, boxrule=0pt, arc=8pt,
+            left=22pt, right=22pt, top=18pt, bottom=16pt, boxsep=0pt, halign=center]
+            \centering
+            \includegraphics[width=0.82\linewidth]{\mastheadlogo}\\[14pt]
+            {\color{rulegrey}\rule{0.92\linewidth}{1.5pt}}\\[12pt]
+            \raisebox{-0.30\height}{\includegraphics[height=1.15cm]{\tweetylogo}}\hspace{9pt}%
+            {\sffamily\bfseries\color{aigblue}\fontsize{23}{25}\selectfont TweetyProject}
+        \end{tcolorbox}
+    \end{minipage}%
+    \hspace*{35mm}
+}
+% subtitle plumbing
+\providecommand{\@subtitle}{}
+\newcommand{\subtitle}[1]{\renewcommand{\@subtitle}{#1}}
+\makeatother
+
+% ---------------------------------------------------------------------------
+% Flat, frameless block styles (content sits directly on the ground)
+% ---------------------------------------------------------------------------
+\defineblockstyle{flat}{
+    titlewidthscale=1, bodywidthscale=1, titleleft, titleoffsetx=0pt, titleoffsety=0pt,
+    bodyoffsetx=0mm, bodyoffsety=0mm, bodyverticalshift=0mm, roundedcorners=0,
+    linewidth=0pt, titleinnersep=0mm, bodyinnersep=0mm
+}{}
+
+% Blue "band" block for the footer (filled, borderless).
+\defineblockstyle{bandblue}{
+    titlewidthscale=1, bodywidthscale=1, titleleft, titleoffsetx=0pt, titleoffsety=0pt,
+    bodyoffsetx=0mm, bodyoffsety=0mm, bodyverticalshift=0mm, roundedcorners=6,
+    linewidth=0pt, titleinnersep=0mm, bodyinnersep=1.1cm
+}{
+    \draw[draw=aigblue, fill=aigblue] (blockbody.south west) rectangle (blockbody.north east);
+}
+
+% ---------------------------------------------------------------------------
+% Editorial content helpers
+% ---------------------------------------------------------------------------
+% Small ochre uppercase kicker above a section.
+\newcommand{\eyebrow}[1]{%
+    {\sffamily\bfseries\color{ochre}\fontsize{24}{28}\selectfont
+     \textls[200]{\MakeUppercase{#1}}\par}}
+
+% Thin ink rule spanning the current width.
+\newcommand{\sectionrule}{\par\vspace{0.2ex}{\color{ink}\rule{\linewidth}{2pt}}\par}
+
+% Display heading / body shortcuts.
+\newcommand{\dsp}{\sffamily}
+\newcommand{\heading}[1]{{\sffamily\bfseries\color{ink}#1}}
+
+% Framed screenshot: thin border + soft drop shadow.
+\newcommand{\screenshot}[2][\linewidth]{%
+    \tikz\node[inner sep=0pt, draw=rulegrey, line width=1.5pt,
+        blur shadow={shadow blur steps=12, shadow xshift=0pt,
+            shadow yshift=-7pt, shadow blur radius=12pt, shadow opacity=32}]
+        {\includegraphics[width=#1]{#2}};%
+}
+
+% A titled screenshot panel: blue lead-in title, framed shot, muted caption.
+\newcommand{\shotpanel}[3]{%
+    {\sffamily\bfseries\color{aigblue}\fontsize{30}{34}\selectfont #1\par}
+    \vspace{0.5em}\screenshot[\linewidth]{#2}\par
+    \vspace{0.5em}{\color{muted}\fontsize{20}{25}\selectfont #3\par}}
+
+% One capability: title on the left, FontAwesome icon pushed to the right.
+\newcommand{\featureitem}[3]{%
+    \noindent{\sffamily\bfseries\color{ink}\fontsize{30}{34}\selectfont #1}%
+    \hfill{\color{ochre}\fontsize{34}{34}\selectfont #2}\par
+    \vspace{0.6em}{\color{muted}\fontsize{20}{25}\selectfont #3\par}}
+
+% One formalism entry for the strip: bold blue abbreviation + description.
+\newcommand{\formalism}[2]{%
+    \noindent{\sffamily\bfseries\color{aigblue}\fontsize{30}{34}\selectfont #1}\hspace{0.5em}%
+    {\color{inksoft}\fontsize{24}{29}\selectfont #2}\par}
+
+% Cream callout with an ochre left border.
+\newcommand{\callout}[1]{%
+    \noindent\begin{tcolorbox}[colback=cream, colframe=ochre, boxrule=0pt,
+        leftrule=6pt, arc=0pt, left=16pt, right=16pt, top=12pt, bottom=12pt,
+        boxsep=0pt]{\color{inksoft}\fontsize{22}{28}\selectfont #1}\end{tcolorbox}}
+
+% One row of the supported-semantics list: group label + description, ruled.
+\newcommand{\semrow}[2]{%
+    \par\vspace{0.35em}{\color{rulegrey}\rule{\linewidth}{1pt}}\par\vspace{0.35em}%
+    \noindent\begin{minipage}[t]{0.34\linewidth}%
+        {\sffamily\bfseries\color{ink}\fontsize{23}{27}\selectfont #1}%
+    \end{minipage}\hfill\begin{minipage}[t]{0.63\linewidth}%
+        {\color{inksoft}\fontsize{23}{28}\selectfont #2}%
+    \end{minipage}\par}
