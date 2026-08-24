@@ -25,6 +25,11 @@ Never start the app, dev server, or backend services to verify changes (`npm run
 - Formatting and import ordering are auto-fixed — run `npm run format` / `npm run lint`.
   Don't hand-order import groups.
 
+## Keep comments terse
+
+Don't add long, multi-line explanatory comments to changes. At most a single short
+comment for a non-obvious *why*, matching the surrounding code's sparse comment density.
+
 ## No relative imports in `src/`
 
 Use the `@/*` alias (mapped to `src/*`), never `../../` paths within `src/`. This is
