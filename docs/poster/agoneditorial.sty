@@ -85,16 +85,18 @@
         \vspace{2.2em}
     \end{minipage}%
     \hfill
-    \begin{minipage}[c]{0.30\linewidth}
-        % Powered-by lockup, flush right so its edge mirrors the title's left margin.
-        \makebox[\linewidth][r]{%
-            \raisebox{-0.42\height}{\includegraphics[height=2.2cm]{figures/tweety-logo.png}}\hspace{16pt}%
-            \begin{tabular}[c]{@{}l@{}}
-                {\sffamily\bfseries\color{aigyellow}\fontsize{20}{22}\selectfont\textls[150]{POWERED BY}}\\[3pt]
-                {\sffamily\bfseries\color{white}\fontsize{38}{42}\selectfont TweetyProject}\\[3pt]
-                {\color{bluetint}\fontsize{21}{25}\selectfont reasoning libraries \& solvers}
-            \end{tabular}%
-        }%
+    \begin{minipage}[c]{0.22\linewidth}
+        \centering
+        \begin{tcolorbox}[colback=white, colframe=white, boxrule=0pt, arc=8pt,
+            left=22pt, right=22pt, top=18pt, bottom=16pt, boxsep=0pt, halign=center]
+            \centering
+            \includegraphics[width=0.82\linewidth]{\mastheadlogo}\\[14pt]
+            {\color{rulegrey}\rule{0.92\linewidth}{1.5pt}}\\[12pt]
+            {\sffamily\bfseries\color{muted}\fontsize{16}{18}\selectfont
+             \textls[200]{POWERED BY}\par}\vspace{8pt}
+            \raisebox{-0.30\height}{\includegraphics[height=1.15cm]{\tweetylogo}}\hspace{9pt}%
+            {\sffamily\bfseries\color{aigblue}\fontsize{23}{25}\selectfont TweetyProject}
+        \end{tcolorbox}
     \end{minipage}%
     \hspace*{40mm}
 }
