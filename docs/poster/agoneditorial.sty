@@ -6,6 +6,7 @@
 
 \RequirePackage{tikz}
 \RequirePackage{tcolorbox}
+\tcbuselibrary{skins}
 \RequirePackage{varwidth}
 \RequirePackage{letterspace}
 \RequirePackage{calc}
@@ -85,17 +86,13 @@
         \vspace{2.2em}
     \end{minipage}%
     \hfill
-    \begin{minipage}[c]{0.22\linewidth}
+    \begin{minipage}[c]{0.24\linewidth}
         \centering
-        \begin{tcolorbox}[colback=white, colframe=white, boxrule=0pt, arc=8pt,
-            left=22pt, right=22pt, top=18pt, bottom=16pt, boxsep=0pt, halign=center]
+        \begin{tcolorbox}[enhanced, colback=offwhite, colframe=offwhite, boxrule=0pt,
+            arc=10pt, left=20pt, right=20pt, top=18pt, bottom=18pt, boxsep=0pt,
+            halign=center, drop fuzzy shadow=black!35]
             \centering
-            \includegraphics[width=0.82\linewidth]{\mastheadlogo}\\[14pt]
-            {\color{rulegrey}\rule{0.92\linewidth}{1.5pt}}\\[12pt]
-            {\sffamily\bfseries\color{muted}\fontsize{16}{18}\selectfont
-             \textls[200]{POWERED BY}\par}\vspace{8pt}
-            \raisebox{-0.30\height}{\includegraphics[height=1.15cm]{\tweetylogo}}\hspace{9pt}%
-            {\sffamily\bfseries\color{aigblue}\fontsize{23}{25}\selectfont TweetyProject}
+            \includegraphics[width=0.84\linewidth]{\mastheadlogo}
         \end{tcolorbox}
     \end{minipage}%
     \hspace*{40mm}
