@@ -37,6 +37,7 @@ const {
   notifications,
   documents,
   deleteDocument,
+  renameDocument,
   selectedDocumentId,
   selectDocument,
   documentModule,
@@ -85,6 +86,35 @@ function openDocument(id: number) {
   goTo('editor')
 }
 
+// Per-row rename / delete-confirm state for the Documents surface.
+const renamingId = ref<number | null>(null)
+const renameText = ref('')
+const confirmDeleteId = ref<number | null>(null)
+const confirmDeleteAll = ref(false)
+
+function startRename(document: { id: number; name: string }) {
+  confirmDeleteId.value = null
+  renamingId.value = document.id
+  renameText.value = document.name
+}
+
+function commitRename() {
+  if (renamingId.value === null) return
+  const name = renameText.value.trim()
+  if (name.length > 0) renameDocument(renamingId.value, name)
+  renamingId.value = null
+}
+
+function confirmDelete(id: number) {
+  deleteDocument(id)
+  confirmDeleteId.value = null
+}
+
+function deleteAll() {
+  documents.value.forEach((document) => deleteDocument(document.id))
+  confirmDeleteAll.value = false
+}
+
 async function createFromNew(content: DocumentT, newNamePrefix: string) {
   await createDocumentWithContent(content, newNamePrefix)
   goTo('editor')
@@ -113,18 +143,74 @@ function loadFile() {
     <main class="flex-1 relative overflow-hidden">
       <!-- Documents surface -->
       <div v-show="surface === 'documents'" class="absolute inset-0 overflow-y-auto p-3">
-        <button class="btn btn-primary btn-block mb-3" @click="goTo('new')">+ New document</button>
+        <div class="flex gap-2 mb-3">
+          <button class="btn btn-primary flex-1" @click="goTo('new')">+ New document</button>
+          <button
+            v-if="documents.length > 0"
+            class="btn btn-ghost text-error"
+            @click="confirmDeleteAll = true"
+          >
+            Delete all
+          </button>
+        </div>
+
+        <div
+          v-if="confirmDeleteAll"
+          class="flex items-center gap-2 rounded-lg border border-error px-3 py-2 mb-3"
+        >
+          <span class="flex-1 text-sm">Delete all documents?</span>
+          <button class="btn btn-ghost btn-sm" @click="confirmDeleteAll = false">Cancel</button>
+          <button class="btn btn-error btn-sm" @click="deleteAll">Delete all</button>
+        </div>
+
+        <p v-if="documents.length === 0" class="text-center opacity-60 py-8">No documents yet.</p>
+
         <ul class="flex flex-col gap-2">
           <li v-for="document of documents" :key="document.id">
+            <!-- Rename mode -->
             <div
-              class="flex items-center gap-2 rounded-lg border border-base-300 px-3 py-2"
+              v-if="renamingId === document.id"
+              class="flex items-center gap-2 rounded-lg border border-primary px-3 py-2"
+            >
+              <input
+                v-model="renameText"
+                class="input input-sm flex-1"
+                @keydown.enter="commitRename"
+                @keydown.esc="renamingId = null"
+              />
+              <button class="btn btn-ghost btn-sm" @click="renamingId = null">Cancel</button>
+              <button class="btn btn-primary btn-sm" @click="commitRename">Save</button>
+            </div>
+
+            <!-- Delete confirm -->
+            <div
+              v-else-if="confirmDeleteId === document.id"
+              class="flex items-center gap-2 rounded-lg border border-error px-3 py-2"
+            >
+              <span class="flex-1 truncate text-sm"
+                >Delete “{{ document.name || 'Untitled' }}”?</span
+              >
+              <button class="btn btn-ghost btn-sm" @click="confirmDeleteId = null">Cancel</button>
+              <button class="btn btn-error btn-sm" @click="confirmDelete(document.id)">
+                Delete
+              </button>
+            </div>
+
+            <!-- Default row -->
+            <div
+              v-else
+              class="flex items-center gap-1 rounded-lg border border-base-300 px-3 py-2"
               :class="{ 'border-primary': document.id === selectedDocumentId }"
             >
               <button class="flex-1 text-left truncate" @click="openDocument(document.id)">
                 {{ document.name || 'Untitled' }}
               </button>
+              <button class="btn btn-ghost btn-xs" @click="startRename(document)">Rename</button>
               <button class="btn btn-ghost btn-xs" @click="saveAsFile(document.id)">Save</button>
-              <button class="btn btn-ghost btn-xs text-error" @click="deleteDocument(document.id)">
+              <button
+                class="btn btn-ghost btn-xs text-error"
+                @click="confirmDeleteId = document.id"
+              >
                 Delete
               </button>
             </div>
