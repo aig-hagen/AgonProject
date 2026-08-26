@@ -19,40 +19,56 @@ For repository layout and coding conventions this plan builds on, see
 - A layout that is **easy to use and readable on a phone**, not a responsive squeeze of the
   desktop UI.
 - The **editor stays the primary feature** on mobile.
-- Reuse **all** logic (composables, module configs, evaluation/export machinery); only the
-  presentation shells are new.
+- Reuse the existing **domain and application logic** (document models, evaluation queries,
+  export functions, tutorials, settings, persistence). Some of that logic is currently coupled
+  to desktop components, so extracting shared controllers and capability contracts is part of
+  the work; the mobile implementation is not presentation-only.
 - The underlying graph component (`@aig-hagen/graph-component`) already supports touch for
   everything **except moving nodes**, which is acceptable — hence relayout and fit-to-view
   become first-class mobile controls.
 
-## Architecture: two layouts, one logic
+## Architecture: two layouts, shared controllers
 
-Two radically different layouts are feasible here because the views are thin shells and the
-logic lives in composables and module configs. [`App.vue`](/src/app/App.vue) only renders
-`<RouterView />`.
+[`App.vue`](/src/app/App.vue) only renders `<RouterView />`, but the components below it are not
+yet thin shells: [`HomeView.vue`](/src/app/home/HomeView.vue) owns document lifecycle, history,
+file operations and sharing, while the shared
+[`GraphEditor.vue`](/src/modules/common/graph-editor/GraphEditor.vue) owns both graph commands
+and desktop chrome. The first implementation step is therefore to establish presentation-neutral
+contracts around that logic.
 
-**Approach (chosen): separate view components switched at the route/shell level.**
+**Approach (chosen): separate presentation shells over shared controllers.**
 
-- Add a `useIsMobile()` composable (a `matchMedia('(max-width: 640px)')` ref; `640px` matches
-  the existing `window.innerWidth < 640` breakpoint already used in
-  [`FloatingWindow.vue`](/src/modules/common/window/FloatingWindow.vue)). Prefer
-  `(pointer: coarse)` **in addition to** width if we want touch-desktops handled — start with
-  width only.
+- Add a reactive `useLayoutMode()` composable based on viewport width. Keep input capability
+  detection (`pointer: coarse`, `hover: none`) separate: viewport decides the shell, while input
+  capability decides gesture help and interaction affordances. Do not combine them into one
+  boolean because narrow mouse windows and wide touch devices are both valid cases.
 - Each route renders either the desktop or the mobile shell:
   - either a thin wrapper per route (`<HomeView>` vs `<HomeViewMobile>`), or
   - a single `<component :is=...>` switch in each view file.
-- Both shells call the **same** composables:
+- Extract a shared home controller from `HomeView`: documents, active document, loaded-document
+  lifecycle, create/rename/delete, history, load/save, sharing, and notifications. Desktop and
+  mobile home shells consume the same controller instead of instantiating parallel document
+  state.
+- Give the shared graph editor a presentation-neutral command surface (typed emits/injection or
+  an exposed controller) for at least: `fitToView`, `applyLayout`, undo/redo state, opening the
+  available evaluation kinds, export, settings, tutorials, and module-specific tools.
+- Extract the bodies/controllers of floating windows from their desktop `FloatingWindow`
+  wrappers. Desktop renders those bodies in floating windows; mobile renders them in sheets.
+- Add a typed module capability contract for evaluation kinds, export formats, creation modes,
+  and module-specific editors. The current `ModuleConfig.editorComponent` alone does not expose
+  enough information for generic mobile chrome.
+- Both shells continue to use
   [`useDocuments`](/src/modules/common/documents/useDocuments.ts),
   [`useTheme`](/src/modules/common/theme/useTheme.ts),
   [`useSettings`](/src/modules/common/settings/useSettings.ts),
-  [`useTutorial`](/src/modules/common/tutorial/useTutorial.ts), the `ModuleConfig` registry,
-  and the evaluation/export logic.
+  [`useTutorial`](/src/modules/common/tutorial/useTutorial.ts), evaluation queries, export
+  functions, and persisted per-document UI state.
 
 Rejected alternatives: CSS-only responsive breakpoints (the desktop paradigm — floating
 windows, tab bar, mouse/keyboard controls — does not reflow into mobile); fully separate
 apps/entry points (needless duplication of routing/bootstrap).
 
-**The genuinely new work** is not the switching but two redesigns:
+The main new presentation work remains two redesigns:
 1. The desktop **floating windows** (`Window*.vue`) become **bottom sheets**.
 2. The **graph canvas chrome** (a left-edge button cluster, mouse/keyboard controls) becomes a
    bottom command bar + on-canvas selectors + touch gestures.
@@ -64,14 +80,28 @@ editor top bar is the hub:
 
 - Tapping the chip opens **Home** (*Home* artboard), which absorbs both desktop surfaces it
   replaces — the tab bar and the landing page ([`BlankDocumentCanvas.vue`](/src/app/home/BlankDocumentCanvas.vue)):
-  - **Documents** tab: switch between saved frameworks (open one marked).
+  - **Documents** tab: switch between saved frameworks (open one marked). Each document's
+    overflow menu preserves rename, save, and delete-with-confirmation; the screen also provides
+    a deliberate "delete all" action rather than silently dropping the desktop tab controls.
   - **New** tab (*NewDoc* artboard): the type picker — the six module cards, each expanding to
     its examples + *Create new* + *Generate*.
 - The switcher chip is also the **way back home** from the editor (it doubles as a home
   button).
 
-Route map is unchanged ([`router.ts`](/src/app/router.ts)): `/`, `/generate`, `/glossary`,
-`/share/:id`, `/third-party`. Only the components rendered per route differ on mobile.
+The route paths remain unchanged ([`router.ts`](/src/app/router.ts)): `/`, `/generate`,
+`/glossary`, `/share/:id`, `/third-party`. Within `/`, the mobile shell has three explicit
+surfaces: `documents`, `new`, and `editor`. The surface must be represented in browser history
+(recommended: a query parameter such as `/?surface=documents`) so Back, forward, refresh, and
+shared URLs behave predictably. Opening the switcher pushes `documents`; selecting/creating a
+document navigates to `editor`; Back returns to the previous surface.
+
+Keep the active editor mounted while the Documents/New surface is shown (for example with
+`v-show` or a stable parent controller). This preserves viewport, active evaluation, tutorial,
+and module-tool state instead of recreating the graph every time the switcher opens.
+
+The current document metadata stores only `id` and `name`. The "edited 2h ago" text in the Home
+mockup is excluded from the initial implementation unless we explicitly add `createdAt` /
+`updatedAt` fields and an IndexedDB migration.
 
 ## View inventory
 
@@ -88,7 +118,12 @@ Route map is unchanged ([`router.ts`](/src/app/router.ts)): `/`, `/generate`, `/
 | Tutorials | `TutorialOverlay` | *Tutorial* | docked overlay |
 | Generate | `GenerateView` | *Generate* | form + result |
 | Glossary | `GlossaryView` | *Glossary* | searchable list |
-| Per-type | module editors | *BafLink*, *IafEditor*, *AdfNode*, *PafProbabilities* | see below |
+| Per-type | module editors | *BafLink*, *IafEditor*, *AdfNode*, *PafProbabilities*; SETAF mockup needed | see below |
+
+Mockups must be reconciled with this plan before implementation: add SETAF and the tutorial
+picker; update Home document actions/timestamps, Settings tutorial reset, module-specific node
+tap actions, Help wording, and the Export/ExportSvg option-effect labels and LaTeX flow. The
+mockups illustrate layout but do not override the behavioral requirements below.
 
 ## The editor (View 2, *Main*)
 
@@ -107,17 +142,37 @@ speed-dial because the app is editor-primary and visible actions beat hidden one
 - **Evaluate** opens the *Evaluate* sheet.
 - **Export** opens the *Export* sheet.
 
-**Canvas gestures** (graph component already supports these on touch):
+**Baseline canvas gestures** (subject to the per-module interaction table below):
 
 - **Double-tap** empty canvas → add an argument (already implemented via the
   `handleDoubleTap` synthetic-dblclick shim in `GraphEditor.vue`).
-- **Tap** an argument → select its name + open the keyboard to rename.
+- **Tap** an argument → the module's primary node action; plain AF uses rename.
 - **Hold** an argument → delete it.
 - **Hold + drag** to another argument → create an attack.
 - **Drag / pinch** → pan / zoom.
 
 Node **moving is intentionally unsupported** on touch — arrangement is done via Relayout +
 Fit-to-view.
+
+Tap, hold and hold-drag compete for the same pointer sequence, so the implementation must define
+and test movement/time thresholds, cancellation, and visible pressed/selected feedback. A hold
+must not delete after the pointer has moved far enough to begin link creation. Destructive actions
+must also be available from an explicit contextual menu; gesture-only deletion is not sufficient
+for discoverability or accessibility.
+
+Before implementation, complete this primary-action table and use it as the source for Help and
+tutorial wording:
+
+| Module | Node tap | Node hold | Node hold-drag | Edge tap |
+|--------|----------|-----------|----------------|----------|
+| AF / BAF | Rename | Delete menu/action | Create selected link type | BAF: change type / delete; AF: delete menu |
+| iAF | Context menu: rename, certainty, delete | Delete menu/action | Create selected attack type | Change certainty / delete |
+| ADF | Open acceptance-condition sheet; rename is an action in that sheet | Delete menu/action | Disabled | Not applicable (links derive from conditions) |
+| PAF | Open/jump to probability row; rename is a contextual action | Delete menu/action | Create attack | Open attack probability / delete |
+| SETAF | Toggle source selection; contextual action provides rename | Delete menu/action | From selected source(s), create attack | Delete menu |
+
+The exact tap behavior for iAF, PAF, and SETAF is a product decision; the entries above are the
+recommended defaults and remove the conflict between generic rename and type-specific editing.
 
 **Notifications** ([`NotificationsDisplay.vue`](/src/modules/common/notifications/NotificationsDisplay.vue))
 render as a **top-center toast** that auto-dismisses (the bottom is occupied by the command
@@ -137,9 +192,19 @@ The desktop `FloatingWindow` already has a mobile branch, but it is not good eno
 `BottomSheet.vue` under [`src/modules/common/window/`](/src/modules/common/window/) is the
 natural home; `FloatingWindow` consumers on mobile render `BottomSheet` instead.
 
+`BottomSheet` is an accessible modal primitive, not only a visual container. It must provide a
+labelled dialog, focus trap and restoration, Escape/backdrop dismissal, a non-drag close action,
+scroll containment, and reduced-motion behavior. It must account for
+`env(safe-area-inset-bottom)`, dynamic viewport units, and the virtual keyboard/`visualViewport`.
+Define one full-height snap point plus a content-driven default; dragging below the dismissal
+threshold closes the sheet.
+
 ### Evaluate (View 3, *Evaluate* / *EvaluateRanking*)
 
-One sheet handles **all evaluation kinds**. Desktop keeps arrays of window instances
+One sheet hosts **all evaluation kinds**, but it does not flatten them into one result model.
+Each evaluation kind supplies its own parameter and result body through the module capability
+contract while the sheet owns only navigation, adding/removing configurations, and active-config
+state. Desktop keeps arrays of window instances
 (`extensionInstances`, `rankingInstances`, `serialisationInstances` in each module's
 `GraphEditor.vue`); each instance is a saved config (semantics + args + mode).
 
@@ -160,10 +225,13 @@ One sheet handles **all evaluation kinds**. Desktop keeps arrays of window insta
   - *Ranking* — colored score chips **plus number badges on the nodes** (not a highlight);
     lattice semantics instead render an order `a ≻ c ≻ b`. Matches
     [`WindowRanking.vue`](/src/modules/abstract-argumentation/WindowRanking.vue).
-  - *Serialisation* — sequence steps (straightforward once the above two exist).
+  - *Serialisation* — preserve both existing modes: sequence enumeration and the interactive
+    workflow for choosing initial sets, checking termination, stepping, resetting, and
+    highlighting the partial extension.
 
-Kind availability is **module-specific** (e.g. ADF exposes *interpretations* rather than
-*extensions* — this is only a display name, the sheet skeleton is identical).
+Kind availability and result shape are **module-specific**. For example, ADF interpretations
+use three-valued in/out/undecided results, not merely an alternative display name for extension
+sets. The sheet skeleton is shared; the parameter/result component is not assumed identical.
 
 ### Export (View 4, *Export* / *ExportSvg*)
 
@@ -172,16 +240,20 @@ each module's `export.ts` (abstract: LaTeX, ICCMA, TGF).
 
 - **Format picker** (*Export*): a one-tap share-link action up top, then formats grouped:
   - **Image** — SVG (and PNG later) → these open a **preview** screen.
-  - **Code & data** — LaTeX (TikZ), ICCMA, TGF → **download directly**, no options.
-- **Why the split:** the downloadable TikZ code is **identical regardless of style config** —
-  the config only changes the `\usepackage[...]{argumentation}` line (copied separately) and
-  the rendered **SVG**. ICCMA/TGF are unaffected too. So options belong only with the image.
+  - **Code & data** — ICCMA and TGF download directly. LaTeX opens a compact code view with
+    Copy/Download, the package line, and the structural options that affect generated code.
+- Split `ExportStyleOptions` in the UI by effect:
+  - **Appearance** — Argument/Name/Attack/Support style changes the package line and rendered
+    SVG but not the TikZ body.
+  - **Structure** — Node distance, grid scale/snap and name shortening change TikZ coordinates
+    or labels as well as the rendered SVG, so they must not live in an image-only path.
+  - ICCMA/TGF are unaffected by either group.
 - **SVG preview** (*ExportSvg*): the rendered diagram + an **optional** "Style options"
-  disclosure (Argument/Name/Attack style, Node distance) marked "affects image", + Download /
-  Copy. Style params come from the same `ExportStyleOptions` the desktop window uses.
+  disclosure with an effect label ("image only" or "image + TikZ"), + Download / Copy. Style
+  params come from the same `ExportStyleOptions` the desktop window uses.
 - Format list is **per-module** (e.g. BAF adds a support-style option).
-- Downloading LaTeX on a phone is low-value, so keep its path minimal (copy code + copy
-  package line).
+- Downloading LaTeX on a phone is low-value, so keep its path minimal while preserving Copy
+  code, Copy package line, Download, and the structural options above.
 
 ### Menu (*Menu*)
 
@@ -203,6 +275,7 @@ Full screen, one control per setting from
 - **Graph defaults:** Physics mode (off / on), Show grid (off / on-drag / on), Grid type
   (square / rhombus), Grid cell size (slider), Snap to grid.
 - **Tutorials:** Show hints.
+- **Tutorial progress:** Reset completed/autostarted tutorials.
 
 Physics and grid toggles live **only** here (desktop exposes them via the `p`/`g` keyboard
 shortcuts, which mobile lacks) — no bottom-bar buttons for them.
@@ -219,7 +292,9 @@ Tap applies via the existing `doLayout` path.
 A gesture sheet rewritten for touch (replacing the desktop
 [`WindowHelp`](/src/modules/common/help/WindowHelp.vue) / `HelpControls` mouse+keyboard
 overview): double-tap = add, tap = rename, hold = delete, hold+drag = attack, drag/pinch =
-pan/zoom, fit-view = recenter, plus the bottom-left selector note for BAF/iAF.
+pan/zoom, fit-view = recenter, plus the module-specific tap actions, BAF/iAF selectors, and
+SETAF multi-source selection. Generate the wording from the primary-action table rather than
+claiming tap always means rename.
 
 ## Per-type interactions (Per-type editing page)
 
@@ -263,6 +338,18 @@ Each module adds interactions beyond plain AF. Two patterns: a **creation-mode s
 - Entry point: in PAF the bottom bar carries an **extra Probabilities button** (right of
   Export). Tapping a node jumps to its row.
 
+### SETAF — collective attacks (mockup required)
+
+- Tapping arguments toggles them into a visible **selected sources** set; selection must remain
+  distinct from evaluation highlights.
+- Holding and dragging from any selected source to a target creates a collective attack from all
+  selected sources. With exactly one selected source it creates an ordinary single-source attack.
+- Provide explicit **Clear selection**, **Rename**, and **Delete** actions so source selection
+  does not make normal node management inaccessible.
+- Tapping an existing collective attack opens a sheet/popover listing its sources and target,
+  with Delete.
+- Source: [`collective-attacks-argumentation/GraphEditor.vue`](/src/modules/collective-attacks-argumentation/GraphEditor.vue).
+
 ## Tutorials (*Tutorial*)
 
 Tutorials are step-by-step and sometimes **wait for the user to interact** with the canvas or
@@ -277,9 +364,14 @@ evaluation, so they **cannot** be a separate full-screen view. Design from
   `advanceCondition` logic in `useTutorial` is unchanged.
 - Anchored steps: instead of floating-ui placement beside small targets, dock the card and
   highlight the target in place.
-- Tutorials **autostart** (per `defaultTutorialId`), so a separate tutorial picker
-  ([`WindowTutorials.vue`](/src/modules/common/tutorial/WindowTutorials.vue)) is not required
-  initially; the Menu → Tutorials entry can list them later.
+- Tutorials **autostart** as today (per `defaultTutorialId`), but Menu → Tutorials still opens a
+  mobile picker based on [`WindowTutorials.vue`](/src/modules/common/tutorial/WindowTutorials.vue).
+  It lists module basics/evaluation plus common navigation/advanced/export tutorials, shows
+  completion, and supports start/restart. Autostart alone does not make the non-default tutorials
+  discoverable.
+- Until the mobile tutorial overlay and all of its target refs are implemented, disable tutorial
+  autostart in the mobile shell; do not render the desktop floating overlay over an incomplete
+  mobile editor.
 
 ## Standalone views
 
@@ -290,26 +382,92 @@ evaluation, so they **cannot** be a separate full-screen view. Design from
 - **Glossary** (*Glossary*, [`GlossaryView.vue`](/src/app/glossary/GlossaryView.vue)):
   searchable, grouped list; each entry = title + definition + reference-paper link (same data
   as the eval ⓘ card).
-- **Share-open** (`/share/:id`) and **Third-party** are read views — straightforward reflow, no
-  dedicated mockups.
+- **Share-open** (`/share/:id`) keeps its loading/error/import behavior and must route directly
+  to the newly imported document's editor surface. **Third-party** replaces its fixed sidebar +
+  content columns with a single-column disclosure/list on compact screens. Both still require
+  mobile acceptance coverage even though they do not need dedicated mockups.
 
-## Suggested implementation phases
+## Implementation phases
 
-1. **Foundation.** `useIsMobile()`; route/shell switch scaffolding; `BottomSheet.vue`; verify
-   the graph component's touch gestures (especially hold+drag-to-link while node-move is
-   disabled) on a device.
-2. **Home + editor shell.** *Home* / *NewDoc*; the mobile `HomeView` shell with switcher chip,
-   top bar, bottom command bar, Fit-to-view, toast notifications. Plain AF fully editable.
-3. **Sheets.** Evaluate (extension first, then ranking + serialisation), Export (picker +
-   SVG), Menu, Settings, Relayout, Help.
-4. **Per-type interactions.** BAF, iAF, ADF, PAF selectors + tap-to-edit/sheets.
-5. **Tutorials overlay** on mobile.
-6. **Standalone views.** Generate, Glossary, Share, Third-party.
+0. **Contracts and parity baseline.** Inventory desktop actions for all six modules. Extract the
+   home controller, graph command surface, window bodies/controllers, and typed module
+   capabilities. Add tests around the extracted behavior before changing presentation.
+1. **Platform foundation and device spike.** `useLayoutMode()` + separate input capabilities;
+   surface/history model; accessible `BottomSheet.vue`; safe-area/dynamic-viewport utilities.
+   On real iOS and Android devices verify double-tap creation, rename keyboard behavior,
+   pan/pinch, hold, hold-drag linking with node movement disabled, link tapping, and SETAF source
+   selection. Agree the gesture thresholds before continuing.
+2. **Home + plain-AF editor shell.** *Home* / *NewDoc* with full rename/save/delete parity; the
+   mobile editor with switcher chip, top bar, bottom command bar, Fit-to-view, relayout, undo/redo,
+   menu, and toast notifications. Plain AF must be fully editable and survive switching surfaces,
+   rotation, and keyboard opening.
+3. **Core sheets.** Menu, Settings, Relayout, Help; extension evaluation first; Export picker,
+   SVG preview, and corrected LaTeX flow. Extracted bodies must continue to render in desktop
+   floating windows without regression.
+4. **Advanced evaluation.** Ranking, ADF interpretations, PAF ranking/probability results, and
+   serialisation sequence + interactive modes in the shared evaluation host.
+5. **Per-type interactions.** BAF, iAF, ADF, PAF, and SETAF selectors/context actions/sheets;
+   add the SETAF mockup before implementing it.
+6. **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
+   Share-open, and Third-party.
+7. **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
+   performance/memory checks with many documents and evaluation configs, desktop regression,
+   and documentation/help alignment.
 
-## Open questions
+Do not ship a partially replaced mobile shell between phases. Keep it behind a feature flag (or
+merge only after the routes needed for a coherent mobile release are complete); otherwise phases
+2–5 would expose missing evaluation, tutorial, or module actions.
+
+## Acceptance and test matrix
+
+Each phase adds tests for its behavior rather than deferring testing to the end.
+
+- Enable Playwright projects for Mobile Chrome and Mobile Safari. Cover compact-shell selection,
+  Documents/New/Editor browser history, document persistence, sheets, keyboard-visible layouts,
+  and at least one create/edit/evaluate/export flow per module.
+- Keep the existing desktop Chromium, Firefox, and WebKit projects as regression gates.
+- Run a real-device smoke matrix on current iOS Safari and Android Chrome in portrait and
+  landscape. Browser emulation is not sufficient for long-press, pinch, keyboard, safe-area, and
+  download behavior.
+- Test every gesture with touch and every action through its explicit button/menu alternative.
+- Verify focus entry/containment/restoration, accessible names and status announcements, Escape
+  behavior with a hardware keyboard, reduced motion, 200% text zoom, and minimum 44×44 CSS-pixel
+  touch targets.
+- Verify no horizontal overflow and no control hidden by browser chrome, safe areas, or the
+  virtual keyboard at the supported viewport bounds.
+- Verify desktop/mobile resizing does not duplicate document watchers, lose pending edits, reset
+  active tutorials/evaluations, or leave stale highlights.
+
+## Decisions required
+
+1. **Compact-layout range.** Which phones/tablets receive the mobile shell, especially landscape
+   phones and small tablets? Recommended default: compact layout below `768px`; input capability
+   never changes the shell by itself. Validate this against the 640px legacy breakpoint before
+   settling it.
+2. **Home/editor history.** Query-backed `/` surfaces or internal overlay state? Recommended:
+   query-backed `surface=documents|new|editor`, with the editor kept mounted underneath.
+3. **Primary node taps.** Confirm or amend the per-module table above, particularly iAF, PAF and
+   SETAF. This determines whether rename is direct or lives in a contextual action.
+4. **Long-press deletion.** Should a hold delete immediately with an Undo toast, or open a
+   contextual confirmation? Recommended: open the contextual action; reserve immediate deletion
+   for an explicit button followed by Undo where feasible.
+5. **SETAF source selection.** Confirm tap-to-toggle sources + hold-drag from the selected set, or
+   choose a dedicated "Collective attack" creation mode. Recommended: dedicated creation mode if
+   tap-to-select proves too disruptive to rename and normal navigation in the device spike.
+6. **Document timestamps.** Add `createdAt`/`updatedAt` with an IndexedDB migration, or remove the
+   relative-time labels from the mockup? Recommended initial scope: remove the timestamps.
+7. **Evaluation navigation.** One aggregate sheet with kind-specific bodies, or a separate sheet
+   per kind? Recommended: one host/switcher as designed, while keeping each kind's controller and
+   result component independent.
+
+## Technical validation gates
 
 - Confirm hold+drag link creation works when node dragging is disabled on touch (blocks Phase
   1).
-- Whether to also gate on `(pointer: coarse)` in `useIsMobile` for touch laptops/tablets.
-- Landscape phones / small tablets: does the same mobile shell serve them, or do they fall back
-  to desktop above 640px?
+- Confirm the graph component can distinguish hold-to-delete from hold-drag-to-link with the
+  agreed thresholds, including pointer cancellation and scrolling prevention.
+- Confirm SETAF source selection and collective-link creation work without keyboard modifiers.
+- Confirm iOS file download/copy/share behavior for SVG, LaTeX, ICCMA, TGF, and native save files;
+  use the Web Share API as a progressive enhancement where file sharing is supported.
+- Confirm resizing across the compact breakpoint can preserve one controller/editor instance; if
+  it cannot, persist and restore all transient state deliberately before enabling live switching.
