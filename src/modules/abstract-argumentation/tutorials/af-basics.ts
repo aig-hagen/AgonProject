@@ -21,7 +21,8 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const afBasicsTutorial: Tutorial = {
   id: 'af-basics',
   name: 'Basic AF Tutorial',
-  description: 'Learn how to create arguments and attacks, use undo/redo, and apply layout algorithms.',
+  description:
+    'Learn how to create arguments and attacks, use undo/redo, and apply layout algorithms.',
   steps: [
     {
       id: 'welcome',
@@ -81,8 +82,8 @@ export const afBasicsTutorial: Tutorial = {
     },
     {
       id: 'done',
-      title: 'You\'re all set!',
-      body: 'You\'ve learned the basics of creating argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how semantics are computed and visualised.',
+      title: "You're all set!",
+      body: "You've learned the basics of creating argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how semantics are computed and visualised.",
       advanceOn: 'button',
       nextTutorialId: 'af-evaluation',
     },

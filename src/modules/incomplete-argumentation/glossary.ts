@@ -23,28 +23,52 @@ export const incompleteArgumentationGlossary: TooltipRegistry = {
   IAF: {
     label: 'iAF',
     title: 'Incomplete Argumentation Framework',
-    content: ['An incomplete argumentation framework $I = (A, A^?, R, R^?)$ splits both the set of arguments and the set of attacks into two disjoint parts, the definite part ($A$ and $R$) and the uncertain part ($A^?$ and $R^?$), where both $R$ and $R^?$ are subsets of $(A \\cup A^?) \\times (A \\cup A^?)$'],
+    content: [
+      'An incomplete argumentation framework $I = (A, A^?, R, R^?)$ splits both the set of arguments and the set of attacks into two disjoint parts, the definite part ($A$ and $R$) and the uncertain part ($A^?$ and $R^?$), where both $R$ and $R^?$ are subsets of $(A \\cup A^?) \\times (A \\cup A^?)$',
+    ],
     reference: BJNNR21,
   },
 
   completion: {
     label: 'completion',
     title: 'Completion',
-    content: ['A completion of an ', { ref: 'IAF' }, ' is a classical ', { ref: 'AF' }, ' $F^* = (A^* , R^*)$ such that $A \\subseteq A^* \\subseteq A \\cup A^?$ and $R|_{A^*} \\subseteq R^* \\subseteq (R \\cup R^?)|_{A^*}$.'],
+    content: [
+      'A completion of an ',
+      { ref: 'IAF' },
+      ' is a classical ',
+      { ref: 'AF' },
+      ' $F^* = (A^* , R^*)$ such that $A \\subseteq A^* \\subseteq A \\cup A^?$ and $R|_{A^*} \\subseteq R^* \\subseteq (R \\cup R^?)|_{A^*}$.',
+    ],
     reference: BJNNR21,
   },
 
   necessaryAcceptance: {
     label: 'necessary',
     title: 'Necessary Acceptance',
-    content: ['An argument is necessarily accepted under a ', { ref: 'semantics' }, ' $\\sigma$ if it is accepted in every ', { ref: 'completion' }, ' of the ', { ref: 'IAF' }, '.'],
+    content: [
+      'An argument is necessarily accepted under a ',
+      { ref: 'semantics' },
+      ' $\\sigma$ if it is accepted in every ',
+      { ref: 'completion' },
+      ' of the ',
+      { ref: 'IAF' },
+      '.',
+    ],
     reference: BJNNR21,
   },
 
   possibleAcceptance: {
     label: 'possible',
     title: 'Possible Acceptance',
-    content: ['An argument is possibly accepted under a ', { ref: 'semantics' }, ' $\\sigma$ if it is accepted in at least one ', { ref: 'completion' }, ' of the ', { ref: 'IAF' }, '.'],
+    content: [
+      'An argument is possibly accepted under a ',
+      { ref: 'semantics' },
+      ' $\\sigma$ if it is accepted in at least one ',
+      { ref: 'completion' },
+      ' of the ',
+      { ref: 'IAF' },
+      '.',
+    ],
     reference: CDKLM07,
   },
 }

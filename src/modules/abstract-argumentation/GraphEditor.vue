@@ -368,7 +368,11 @@ const tutorialContextExtra = computed(() => ({
         :state-key="`${instance.id}:window`"
         :suppressed="isSuppressed('ranking', instance.id)"
         @update:instance-state="updateRankingInstance($event)"
-        @set-weights="(w) => { if (!isSuppressed('ranking', instance.id)) onSetWeights(w) }"
+        @set-weights="
+          (w) => {
+            if (!isSuppressed('ranking', instance.id)) onSetWeights(w)
+          }
+        "
         @focus="activeWindow = { source: 'ranking', id: instance.id }"
         @close="removeRankingInstance(instance.id)"
       />

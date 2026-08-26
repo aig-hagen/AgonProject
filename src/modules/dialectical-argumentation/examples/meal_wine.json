@@ -6,7 +6,8 @@
   "arguments": {
     "0": {
       "name": "Pasta",
-      "x": 200, "y": 0,
+      "x": 200,
+      "y": 0,
       "condition": {
         "type": "conjunction",
         "children": [
@@ -17,7 +18,8 @@
     },
     "1": {
       "name": "Fish",
-      "x": 0, "y": 200,
+      "x": 0,
+      "y": 200,
       "condition": {
         "type": "conjunction",
         "children": [
@@ -28,7 +30,8 @@
     },
     "2": {
       "name": "Meat",
-      "x": 400, "y": 200,
+      "x": 400,
+      "y": 200,
       "condition": {
         "type": "conjunction",
         "children": [
@@ -39,7 +42,8 @@
     },
     "3": {
       "name": "White",
-      "x": 100, "y": 400,
+      "x": 100,
+      "y": 400,
       "condition": {
         "type": "disjunction",
         "children": [
@@ -50,7 +54,8 @@
     },
     "4": {
       "name": "Red",
-      "x": 350, "y": 400,
+      "x": 350,
+      "y": 400,
       "condition": { "type": "atom", "argumentId": 2 }
     }
   }

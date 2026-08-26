@@ -26,7 +26,10 @@ import {
   formulaToString,
 } from '@/modules/dialectical-argumentation/condition/formula'
 import FormulaEditor from '@/modules/dialectical-argumentation/condition/FormulaEditor.vue'
-import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import type {
+  AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 
 const props = defineProps<{
   argumentId: NodeId
@@ -57,9 +60,7 @@ const availableArguments = computed(() => {
   return result
 })
 
-const formulaPreview = computed(() =>
-  formulaToString(argument.value.condition, argNameMap.value),
-)
+const formulaPreview = computed(() => formulaToString(argument.value.condition, argNameMap.value))
 </script>
 
 <template>

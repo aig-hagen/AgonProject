@@ -86,7 +86,9 @@ export function usePhysics({
     // Iterate idMapping directly so newly created nodes (added to idMapping before
     // triggerSettle fires but not yet reflected in the state prop) are included.
     const idMapping = getIdMapping()
-    let sumX = 0, sumY = 0, count = 0
+    let sumX = 0,
+      sumY = 0,
+      count = 0
     for (const internalId of idMapping.inputIds()) {
       const pos = gc.getNodePosition(internalId)
       sumX += pos.x
@@ -157,7 +159,10 @@ export function usePhysics({
   }
 
   watch(defaultPhysicsMode, (mode) => {
-    if (settleTimerId !== null) { clearTimeout(settleTimerId); settleTimerId = null }
+    if (settleTimerId !== null) {
+      clearTimeout(settleTimerId)
+      settleTimerId = null
+    }
     disablePhysics()
     physicsMode.value = mode
   })
@@ -176,18 +181,23 @@ export function usePhysics({
   })
 
   onMounted(() => {
-    const graphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+    const graphHost = containerRef.value?.querySelector<HTMLElement>(
+      '.graph-controller__graph-host',
+    )
     if (!graphHost) return
 
     let nodePointerDown = false
     const handleSettlePointerDown = (event: PointerEvent) => {
       if (physicsMode.value !== 'on') return
-      if (event.button !== 0) return  // right-click starts edge creation — don't shift coordinates mid-gesture
+      if (event.button !== 0) return // right-click starts edge creation — don't shift coordinates mid-gesture
       if (!(event.target as Element).closest('.graph-controller__node-container')) return
       nodePointerDown = true
       alignNodesToSimulationCenter()
       graphComponentRef.value?.toggleNodePhysics(true)
-      if (settleTimerId !== null) { clearTimeout(settleTimerId); settleTimerId = null }
+      if (settleTimerId !== null) {
+        clearTimeout(settleTimerId)
+        settleTimerId = null
+      }
     }
     const handleSettlePointerUp = () => {
       if (!nodePointerDown) return
@@ -210,5 +220,12 @@ export function usePhysics({
     if (settleTimerId !== null) clearTimeout(settleTimerId)
   })
 
-  return { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics, enablePhysics, alignNodesToSimulationCenter }
+  return {
+    physicsMode,
+    toggleNodePhysics,
+    triggerSettle,
+    disablePhysics,
+    enablePhysics,
+    alignNodesToSimulationCenter,
+  }
 }

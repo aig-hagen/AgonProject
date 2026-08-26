@@ -412,7 +412,10 @@ function onWindowFocus() {
           </div>
 
           <!-- Step selection -->
-          <div v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading" class="text-sm opacity-60">
+          <div
+            v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading"
+            class="text-sm opacity-60"
+          >
             No initial sets available.
           </div>
           <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">

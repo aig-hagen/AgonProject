@@ -30,7 +30,10 @@ import {
   validateLinks,
 } from '@/modules/common/argumentation/save/saveFormat'
 import type { DeserializationResult } from '@/modules/common/save/load'
-import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import {
+  type IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 
 const API_VERSION = 'incomplete-argumentation-framework/v1' as const
 

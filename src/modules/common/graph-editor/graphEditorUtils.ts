@@ -34,7 +34,9 @@ function findNodeLabelDiv(
   const nodeEl = graphEl?.querySelector(`#${CSS.escape(`${graphComponentId}-node-${internalId}`)}`)
   return nodeEl
     ?.closest('.graph-controller__node-container')
-    ?.querySelector<HTMLElement>('.graph-controller__node-label, .graph-controller__node-label-placeholder')
+    ?.querySelector<HTMLElement>(
+      '.graph-controller__node-label, .graph-controller__node-label-placeholder',
+    )
 }
 
 export function adjustNodeLabelFontSize(

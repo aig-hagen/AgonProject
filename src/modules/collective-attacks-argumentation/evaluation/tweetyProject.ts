@@ -19,7 +19,10 @@
 import { useQuery } from '@tanstack/vue-query'
 import { computed, type MaybeRef, unref } from 'vue'
 
-import { type SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import {
+  type SetAF,
+  type SetAfArgumentData,
+} from '@/modules/collective-attacks-argumentation/model'
 import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import {
@@ -43,12 +46,12 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     key: 'classical',
     displayName: 'Classical Semantics',
     semantics: [
-      { key: 'CF',  displayName: 'Conflict-Free' },
+      { key: 'CF', displayName: 'Conflict-Free' },
       { key: 'ADM', displayName: 'Admissible' },
-      { key: 'CO',  displayName: 'Complete' },
-      { key: 'GR',  displayName: 'Grounded' },
-      { key: 'PR',  displayName: 'Preferred' },
-      { key: 'ST',  displayName: 'Stable' },
+      { key: 'CO', displayName: 'Complete' },
+      { key: 'GR', displayName: 'Grounded' },
+      { key: 'PR', displayName: 'Preferred' },
+      { key: 'ST', displayName: 'Stable' },
     ],
   },
   {
@@ -57,23 +60,23 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     semantics: [
       { key: 'SAD', displayName: 'Strongly Admissible' },
       { key: 'SST', displayName: 'Semi-Stable' },
-      { key: 'ID',  displayName: 'Ideal' },
-      { key: 'EA',  displayName: 'Eager' },
-      { key: 'IS',  displayName: 'Initial' },
-      { key: 'UC',  displayName: 'Unchallenged' },
+      { key: 'ID', displayName: 'Ideal' },
+      { key: 'EA', displayName: 'Eager' },
+      { key: 'IS', displayName: 'Initial' },
+      { key: 'UC', displayName: 'Unchallenged' },
     ],
   },
   {
     key: 'non-admissible',
     displayName: 'Non-admissible Semantics',
     semantics: [
-      { key: 'NA',   displayName: 'Naive' },
-      { key: 'STG',  displayName: 'Stage' },
+      { key: 'NA', displayName: 'Naive' },
+      { key: 'STG', displayName: 'Stage' },
       { key: 'STG2', displayName: 'Stage2' },
-      { key: 'CF2',  displayName: 'CF2' },
+      { key: 'CF2', displayName: 'CF2' },
       { key: 'SCF2', displayName: 'SCF2' },
-      { key: 'UD',   displayName: 'Undisputed' },
-      { key: 'SUD',  displayName: 'Strongly Undisputed' },
+      { key: 'UD', displayName: 'Undisputed' },
+      { key: 'SUD', displayName: 'Strongly Undisputed' },
     ],
   },
   {
@@ -88,7 +91,10 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   },
 ].filter((group) => group.semantics.length > 0)
 
-export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
+export {
+  type Semantics,
+  type SemanticsFamily,
+} from '@/modules/common/evaluation/tweety-project/semantics'
 
 interface SetAfRequestBody {
   email: string
@@ -194,8 +200,10 @@ export function useSetAfEvaluationQuery(
 
   const queryKey = computed(() => {
     const mode = unref(modeRef)
-    if (mode === 'credulous') return ['setaf_get_credulous', semanticsRef, modeRef, argumentData] as const
-    if (mode === 'skeptical') return ['setaf_get_skeptical', semanticsRef, modeRef, argumentData] as const
+    if (mode === 'credulous')
+      return ['setaf_get_credulous', semanticsRef, modeRef, argumentData] as const
+    if (mode === 'skeptical')
+      return ['setaf_get_skeptical', semanticsRef, modeRef, argumentData] as const
     return ['setaf_get_models', semanticsRef, modeRef, argumentData] as const
   })
 

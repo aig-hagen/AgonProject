@@ -21,7 +21,10 @@ import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import mealWineJson from '@/modules/dialectical-argumentation/examples/meal_wine.json'
 import murderTrialJson from '@/modules/dialectical-argumentation/examples/murder_trial.json'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import {
+  type AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 import { loadExampleFromJson } from '@/modules/dialectical-argumentation/save/saveFormat'
 
 const exampleJsons: unknown[] = [mealWineJson, murderTrialJson]

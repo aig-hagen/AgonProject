@@ -54,9 +54,7 @@ const exportICCMA: ExportConfig<AbstractArgumentation<ArgumentData>> = {
 
 const exportTGF: ExportConfig<AbstractArgumentation<ArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
-  references: [
-    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
-  ],
+  references: [{ label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' }],
   extension: 'tgf',
   export(document) {
     let numberOfArguments = 0

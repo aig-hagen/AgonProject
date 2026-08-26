@@ -19,7 +19,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { REDO_SHORTCUT, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
+import {
+  REDO_SHORTCUT,
+  TOGGLE_GRID_SHORTCUT,
+  TOGGLE_PHYSICS_SHORTCUT,
+  UNDO_SHORTCUT,
+} from '@/modules/common/shortcuts'
 
 const props = defineProps<{
   linkNames: string[]
@@ -28,7 +33,8 @@ const props = defineProps<{
 
 const linkNamesSlashSeperated = computed(() => props.linkNames.join('/'))
 const linkNamesEnumeration = computed(
-  () => props.linkNames.slice(0, -1).join(', ') + ' and ' + props.linkNames[props.linkNames.length - 1],
+  () =>
+    props.linkNames.slice(0, -1).join(', ') + ' and ' + props.linkNames[props.linkNames.length - 1],
 )
 </script>
 <template>
@@ -41,7 +47,9 @@ const linkNamesEnumeration = computed(
     </thead>
     <tbody>
       <tr>
-        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">Arguments &amp; Attacks</td>
+        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">
+          Arguments &amp; Attacks
+        </td>
       </tr>
       <tr>
         <td>Create argument</td>
@@ -63,8 +71,9 @@ const linkNamesEnumeration = computed(
       <tr v-if="props.allowHyperLinkCreation">
         <td>Create collective attack</td>
         <td>
-          <kbd class="kbd">Shift</kbd>+<kbd class="kbd">Left-click</kbd> on 2 or more arguments to select sources, then
-          <kbd class="kbd">Right-click</kbd> on a selected source, hold and drag towards the target argument
+          <kbd class="kbd">Shift</kbd>+<kbd class="kbd">Left-click</kbd> on 2 or more arguments to
+          select sources, then <kbd class="kbd">Right-click</kbd> on a selected source, hold and
+          drag towards the target argument
         </td>
       </tr>
       <tr v-if="props.linkNames.length > 1">
@@ -79,7 +88,9 @@ const linkNamesEnumeration = computed(
       </tr>
 
       <tr>
-        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">Navigation</td>
+        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">
+          Navigation
+        </td>
       </tr>
       <tr>
         <td>Pan</td>
@@ -95,7 +106,9 @@ const linkNamesEnumeration = computed(
       </tr>
 
       <tr>
-        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">General</td>
+        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">
+          General
+        </td>
       </tr>
       <tr>
         <td>Undo</td>
@@ -121,11 +134,15 @@ const linkNamesEnumeration = computed(
       </tr>
       <tr>
         <td>Toggle grid</td>
-        <td><kbd class="kbd">{{ TOGGLE_GRID_SHORTCUT.key.toUpperCase() }}</kbd></td>
+        <td>
+          <kbd class="kbd">{{ TOGGLE_GRID_SHORTCUT.key.toUpperCase() }}</kbd>
+        </td>
       </tr>
       <tr>
         <td>Toggle physics</td>
-        <td><kbd class="kbd">{{ TOGGLE_PHYSICS_SHORTCUT.key.toUpperCase() }}</kbd></td>
+        <td>
+          <kbd class="kbd">{{ TOGGLE_PHYSICS_SHORTCUT.key.toUpperCase() }}</kbd>
+        </td>
       </tr>
     </tbody>
   </table>

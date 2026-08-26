@@ -53,7 +53,8 @@ export const adfBasicsTutorial: Tutorial = {
         ' shown as a formula next to it on the canvas. The default is <strong>⊤</strong> (tautology) — the argument is always accepted. <strong>Click the formula text</strong> next to any argument to open the condition editor.',
       ],
       advanceOn: 'action',
-      advanceCondition: (ctx, baseline) => ctx.conditionEditorOpenCount > baseline.conditionEditorOpenCount,
+      advanceCondition: (ctx, baseline) =>
+        ctx.conditionEditorOpenCount > baseline.conditionEditorOpenCount,
     },
     {
       id: 'edit-condition',
@@ -84,8 +85,8 @@ export const adfBasicsTutorial: Tutorial = {
     },
     {
       id: 'done',
-      title: 'You\'re all set!',
-      body: 'You\'ve learned the basics of Abstract Dialectical Frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how ADF semantics work.',
+      title: "You're all set!",
+      body: "You've learned the basics of Abstract Dialectical Frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how ADF semantics work.",
       advanceOn: 'button',
       nextTutorialId: 'adf-evaluation',
     },

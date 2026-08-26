@@ -137,7 +137,12 @@ const size = computed(() => props.initialSize ?? { width: 400, height: 360 })
         <slot name="parameters-footer" />
       </div>
 
-      <div v-if="statusStrip" role="alert" class="alert alert-soft py-1.5" :class="statusStrip.kind === 'error' ? 'alert-error' : 'alert-warning'">
+      <div
+        v-if="statusStrip"
+        role="alert"
+        class="alert alert-soft py-1.5"
+        :class="statusStrip.kind === 'error' ? 'alert-error' : 'alert-warning'"
+      >
         <span>{{ statusStrip.message }}</span>
         <button class="btn btn-xs btn-ghost ml-auto" @click="() => refetch()">Retry</button>
       </div>
@@ -149,9 +154,7 @@ const size = computed(() => props.initialSize ?? { width: 400, height: 360 })
 
       <slot v-if="!isPending || isLoading" name="results" />
 
-      <p v-if="isLoading" class="text-base-content/50">
-        Evaluating… {{ remainingSeconds }}s
-      </p>
+      <p v-if="isLoading" class="text-base-content/50">Evaluating… {{ remainingSeconds }}s</p>
     </div>
   </FloatingWindow>
 </template>

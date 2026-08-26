@@ -20,7 +20,10 @@ import type { Example } from '@/modules/common/examples'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import murderTrialJson from '@/modules/probabilistic-argumentation/examples/murder_trial.json'
-import { type PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import {
+  type PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 import { loadExampleFromJson } from '@/modules/probabilistic-argumentation/save/saveFormat'
 
 const exampleJsons: unknown[] = [murderTrialJson]

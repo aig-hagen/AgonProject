@@ -39,12 +39,21 @@ import { useDocumentMetadata } from '@/modules/common/documents/useDocuments'
 import { saveToFile } from '@/modules/common/export/saveFile'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import {
+  type AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 import { availableExports as incompleteExports } from '@/modules/incomplete-argumentation/export'
-import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import {
+  type IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
-import { type PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import {
+  type PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
 
 interface ParamSchema {
@@ -112,7 +121,14 @@ const GENERATE_TIMEOUT_MS = 5_000
 // --- Framework type from URL ---
 const frameworkTypeId = computed<string>(() => {
   const t = route.query.type
-  if (t === 'bipolar' || t === 'incomplete' || t === 'probabilistic' || t === 'adf' || t === 'setaf') return t
+  if (
+    t === 'bipolar' ||
+    t === 'incomplete' ||
+    t === 'probabilistic' ||
+    t === 'adf' ||
+    t === 'setaf'
+  )
+    return t
   return 'abstract'
 })
 
@@ -241,8 +257,10 @@ async function generate() {
       signal: AbortSignal.timeout(GENERATE_TIMEOUT_MS),
     })
     if (!response.ok) {
-      if (response.status === 429) throw new Error('Too many requests — please wait a moment before generating again')
-      if (response.status === 502 || response.status === 503) throw new Error('The server is temporarily unavailable — please try again in a moment')
+      if (response.status === 429)
+        throw new Error('Too many requests — please wait a moment before generating again')
+      if (response.status === 502 || response.status === 503)
+        throw new Error('The server is temporarily unavailable — please try again in a moment')
       const detail = await response.json().catch(() => ({}))
       throw new Error((detail as { detail?: string }).detail ?? `HTTP ${response.status}`)
     }
@@ -311,7 +329,11 @@ async function generate() {
     } else if (data.framework_type === 'adf') {
       const adf = new DialecticalArgumentation<AdfArgumentData>()
       for (let i = 0; i < n; i++) {
-        adf.addArgument(i, { name: String(i + 1), ...circularPos(i), condition: { type: 'tautology' } })
+        adf.addArgument(i, {
+          name: String(i + 1),
+          ...circularPos(i),
+          condition: { type: 'tautology' },
+        })
       }
       for (let i = 0; i < n; i++) {
         adf.setCondition(i, data.conditions[i] ?? { type: 'tautology' })
@@ -322,7 +344,10 @@ async function generate() {
       const setaf = new SetAF<SetAfArgumentData>()
       for (let i = 0; i < n; i++) setaf.addArgument(i, { name: String(i + 1), ...circularPos(i) })
       for (const { attackers, target } of data.collective_attacks) {
-        setaf.addCollectiveAttack(attackers.map((a) => a - 1), target - 1)
+        setaf.addCollectiveAttack(
+          attackers.map((a) => a - 1),
+          target - 1,
+        )
       }
       generated.value = setaf
       stats.value = { nArgs: n, nAttacks: data.collective_attacks.length }
@@ -348,11 +373,7 @@ async function generate() {
 const MAX_EDGES_FOR_EDITOR = 100
 const totalEdges = computed(() => {
   if (stats.value === null) return 0
-  return (
-    stats.value.nAttacks +
-    (stats.value.nSupports ?? 0) +
-    (stats.value.nUncertainAttacks ?? 0)
-  )
+  return stats.value.nAttacks + (stats.value.nSupports ?? 0) + (stats.value.nUncertainAttacks ?? 0)
 })
 const tooManyEdgesForEditor = computed(() => totalEdges.value > MAX_EDGES_FOR_EDITOR)
 
@@ -458,7 +479,6 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
 
       <div v-else class="card bg-base-200 shadow-sm">
         <div class="card-body gap-5">
-
           <!-- Algorithm selector -->
           <div>
             <label class="text-sm font-medium block mb-1">Algorithm</label>
@@ -491,7 +511,8 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
                 <span
                   class="text-sm font-medium tooltip tooltip-right cursor-help"
                   :data-tip="p.description"
-                >{{ formatParamLabel(p.name) }}</span>
+                  >{{ formatParamLabel(p.name) }}</span
+                >
               </div>
               <input
                 type="text"
@@ -507,8 +528,11 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
                 <span
                   class="text-sm font-medium tooltip tooltip-right cursor-help"
                   :data-tip="p.description"
-                >{{ formatParamLabel(p.name) }}</span>
-                <span class="text-sm font-mono text-base-content/60">{{ formatParamValue(p, paramValues) }}</span>
+                  >{{ formatParamLabel(p.name) }}</span
+                >
+                <span class="text-sm font-mono text-base-content/60">{{
+                  formatParamValue(p, paramValues)
+                }}</span>
               </div>
               <input
                 type="range"
@@ -525,7 +549,8 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
                 "
               />
               <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
-                <span>{{ p.min }}</span><span>{{ p.max }}</span>
+                <span>{{ p.min }}</span
+                ><span>{{ p.max }}</span>
               </div>
             </div>
 
@@ -534,7 +559,8 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
                 <span
                   class="text-sm font-medium tooltip tooltip-right cursor-help"
                   :data-tip="p.description"
-                >{{ formatParamLabel(p.name) }}</span>
+                  >{{ formatParamLabel(p.name) }}</span
+                >
               </div>
               <input
                 type="number"
@@ -561,8 +587,11 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
                   <span
                     class="text-sm font-medium tooltip tooltip-right cursor-help"
                     :data-tip="p.description"
-                  >{{ formatParamLabel(p.name) }}</span>
-                  <span class="text-sm font-mono text-base-content/60">{{ formatParamValue(p, typeParamValues) }}</span>
+                    >{{ formatParamLabel(p.name) }}</span
+                  >
+                  <span class="text-sm font-mono text-base-content/60">{{
+                    formatParamValue(p, typeParamValues)
+                  }}</span>
                 </div>
                 <input
                   type="range"
@@ -579,7 +608,8 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
                   "
                 />
                 <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
-                  <span>{{ p.min }}</span><span>{{ p.max }}</span>
+                  <span>{{ p.min }}</span
+                  ><span>{{ p.max }}</span>
                 </div>
               </div>
 
@@ -588,7 +618,8 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
                   <span
                     class="text-sm font-medium tooltip tooltip-right cursor-help"
                     :data-tip="p.description"
-                  >{{ formatParamLabel(p.name) }}</span>
+                    >{{ formatParamLabel(p.name) }}</span
+                  >
                 </div>
                 <input
                   type="number"
@@ -640,42 +671,68 @@ function formatParamValue(p: ParamSchema, values: Record<string, unknown>): stri
       <div v-if="stats !== null" class="card bg-base-200 shadow-sm mt-4">
         <div class="card-body gap-3">
           <p v-if="frameworkTypeId === 'abstract'" class="text-sm text-base-content/70">
-            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{
+              stats.nArgs === 1 ? '' : 's'
+            }}
             with <strong>{{ stats.nAttacks }}</strong> attack{{ stats.nAttacks === 1 ? '' : 's' }}.
           </p>
           <p v-else-if="frameworkTypeId === 'bipolar'" class="text-sm text-base-content/70">
-            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
-            with <strong>{{ stats.nAttacks }}</strong> attack{{ stats.nAttacks === 1 ? '' : 's' }}
-            and <strong>{{ stats.nSupports }}</strong> support{{ stats.nSupports === 1 ? '' : 's' }}.
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{
+              stats.nArgs === 1 ? '' : 's'
+            }}
+            with <strong>{{ stats.nAttacks }}</strong> attack{{
+              stats.nAttacks === 1 ? '' : 's'
+            }}
+            and <strong>{{ stats.nSupports }}</strong> support{{
+              stats.nSupports === 1 ? '' : 's'
+            }}.
           </p>
           <p v-else-if="frameworkTypeId === 'incomplete'" class="text-sm text-base-content/70">
-            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
-            (<strong>{{ stats.nUncertainArgs }}</strong> uncertain)
-            with <strong>{{ stats.nAttacks }}</strong> definite
-            and <strong>{{ stats.nUncertainAttacks }}</strong> uncertain attack{{ stats.nUncertainAttacks === 1 ? '' : 's' }}.
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{
+              stats.nArgs === 1 ? '' : 's'
+            }}
+            (<strong>{{ stats.nUncertainArgs }}</strong> uncertain) with
+            <strong>{{ stats.nAttacks }}</strong> definite and
+            <strong>{{ stats.nUncertainAttacks }}</strong> uncertain attack{{
+              stats.nUncertainAttacks === 1 ? '' : 's'
+            }}.
           </p>
           <p v-else-if="frameworkTypeId === 'probabilistic'" class="text-sm text-base-content/70">
-            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{
+              stats.nArgs === 1 ? '' : 's'
+            }}
             with <strong>{{ stats.nAttacks }}</strong> attack{{ stats.nAttacks === 1 ? '' : 's' }}.
           </p>
           <p v-else-if="frameworkTypeId === 'adf'" class="text-sm text-base-content/70">
-            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{
+              stats.nArgs === 1 ? '' : 's'
+            }}
             with <strong>{{ stats.nAttacks }}</strong> link{{ stats.nAttacks === 1 ? '' : 's' }}.
           </p>
           <p v-else-if="frameworkTypeId === 'setaf'" class="text-sm text-base-content/70">
-            Generated <strong>{{ stats.nArgs }}</strong> argument{{ stats.nArgs === 1 ? '' : 's' }}
-            with <strong>{{ stats.nAttacks }}</strong> collective attack{{ stats.nAttacks === 1 ? '' : 's' }}.
+            Generated <strong>{{ stats.nArgs }}</strong> argument{{
+              stats.nArgs === 1 ? '' : 's'
+            }}
+            with <strong>{{ stats.nAttacks }}</strong> collective attack{{
+              stats.nAttacks === 1 ? '' : 's'
+            }}.
           </p>
           <div class="flex flex-wrap gap-2">
             <span
               class="tooltip tooltip-top"
-              :data-tip="tooManyEdgesForEditor ? `Too many edges to open in editor (maximum is ${MAX_EDGES_FOR_EDITOR})` : undefined"
+              :data-tip="
+                tooManyEdgesForEditor
+                  ? `Too many edges to open in editor (maximum is ${MAX_EDGES_FOR_EDITOR})`
+                  : undefined
+              "
             >
               <button
                 class="btn btn-sm btn-primary"
                 :disabled="tooManyEdgesForEditor"
                 @click="openInEditor"
-              >Open in Editor</button>
+              >
+                Open in Editor
+              </button>
             </span>
             <button
               v-if="frameworkTypeId === 'abstract'"

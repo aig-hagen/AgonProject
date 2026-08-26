@@ -23,14 +23,20 @@ export const collectiveAttacksArgumentationGlossary: TooltipRegistry = {
   SetAF: {
     label: 'SetAF',
     title: 'Argumentation Framework with Collective Attacks (SetAF)',
-    content: ['An argumentation framework with collective attacks $S$ is a tuple $(A, R)$, where $A$ is a finite set of arguments and $R \\subseteq 2^A \\times A$ is the attack relation.'],
+    content: [
+      'An argumentation framework with collective attacks $S$ is a tuple $(A, R)$, where $A$ is a finite set of arguments and $R \\subseteq 2^A \\times A$ is the attack relation.',
+    ],
     reference: NP06,
   },
 
   collectiveAttack: {
     label: 'collective attack',
     title: 'Collective Attack',
-    content: ['A collective attack $(S, b) \\in R$ in a ', { ref: 'SetAF' }, ' means that the set of arguments $S$ jointly attacks argument $b$. Hence, the attack is only successful if all members of $S$ are accepted.'],
+    content: [
+      'A collective attack $(S, b) \\in R$ in a ',
+      { ref: 'SetAF' },
+      ' means that the set of arguments $S$ jointly attacks argument $b$. Hence, the attack is only successful if all members of $S$ are accepted.',
+    ],
     reference: NP06,
   },
 }

@@ -70,10 +70,7 @@ function launch(tutorial: Tutorial) {
           </div>
           <p class="text-xs text-base-content/50 mt-0.5">{{ tutorial.description }}</p>
         </div>
-        <button
-          class="btn btn-primary btn-xs shrink-0"
-          @click="launch(tutorial)"
-        >
+        <button class="btn btn-primary btn-xs shrink-0" @click="launch(tutorial)">
           {{ isTutorialDone(tutorial.id) ? '↺ Restart' : '▶ Start' }}
         </button>
       </div>

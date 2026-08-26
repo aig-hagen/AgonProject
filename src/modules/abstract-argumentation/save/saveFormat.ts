@@ -49,7 +49,10 @@ export type Save = z.infer<typeof SaveSchema>
 
 export const ExampleSaveSchema = SaveSchema.extend(ExampleSaveExtension)
 
-export function saveAsString(argumentation: AbstractArgumentation<ArgumentData>, name: string): string {
+export function saveAsString(
+  argumentation: AbstractArgumentation<ArgumentData>,
+  name: string,
+): string {
   const argumentsSave = Object.create(null)
   for (const [argumentId, argumentData] of argumentation.arguments()) {
     argumentsSave[argumentId] = {

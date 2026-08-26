@@ -24,7 +24,10 @@ import { useRoute, useRouter } from 'vue-router'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
-import { LAST_SELECTED_DOCUMENT_KEY, useDocumentMetadata } from '@/modules/common/documents/useDocuments'
+import {
+  LAST_SELECTED_DOCUMENT_KEY,
+  useDocumentMetadata,
+} from '@/modules/common/documents/useDocuments'
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import { fetchShare } from '@/modules/common/share/useShare'
 
@@ -64,9 +67,7 @@ onMounted(async () => {
     return
   }
 
-  const importModule = modules.find((m) =>
-    m.canLoadFromObject(parsed as Record<string, unknown>),
-  )
+  const importModule = modules.find((m) => m.canLoadFromObject(parsed as Record<string, unknown>))
   if (importModule === undefined) {
     errorMessage.value = 'Share contains an unsupported framework type'
     return

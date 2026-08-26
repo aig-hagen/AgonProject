@@ -26,7 +26,12 @@ export interface GroupedSelectGroup<T> {
   options: T[]
 }
 
-const { modelValue, groups, label, fullWidth = false } = defineProps<{
+const {
+  modelValue,
+  groups,
+  label,
+  fullWidth = false,
+} = defineProps<{
   modelValue: T
   groups: GroupedSelectGroup<T>[]
   label?: string

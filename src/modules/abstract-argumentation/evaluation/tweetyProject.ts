@@ -29,7 +29,13 @@ import { type AbstractArgumentation } from '@/modules/abstract-argumentation/mod
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import {
+  fetchTyped,
+  TWEETY_TIMEOUT_IN_MS,
+  TWEETY_TIMEOUT_UNIT_MS,
+  TweetyResponseSchema,
+  USER_ID,
+} from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -43,12 +49,12 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     key: 'classical',
     displayName: 'Classical Semantics',
     semantics: [
-      { key: 'CF',  displayName: 'Conflict-Free' },
+      { key: 'CF', displayName: 'Conflict-Free' },
       { key: 'ADM', displayName: 'Admissible' },
-      { key: 'CO',  displayName: 'Complete' },
-      { key: 'GR',  displayName: 'Grounded' },
-      { key: 'PR',  displayName: 'Preferred' },
-      { key: 'ST',  displayName: 'Stable' },
+      { key: 'CO', displayName: 'Complete' },
+      { key: 'GR', displayName: 'Grounded' },
+      { key: 'PR', displayName: 'Preferred' },
+      { key: 'ST', displayName: 'Stable' },
     ],
   },
   {
@@ -57,23 +63,23 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     semantics: [
       { key: 'SAD', displayName: 'Strongly Admissible' },
       { key: 'SST', displayName: 'Semi-Stable' },
-      { key: 'ID',  displayName: 'Ideal' },
-      { key: 'EA',  displayName: 'Eager' },
-      { key: 'IS',  displayName: 'Initial' },
-      { key: 'UC',  displayName: 'Unchallenged' },
+      { key: 'ID', displayName: 'Ideal' },
+      { key: 'EA', displayName: 'Eager' },
+      { key: 'IS', displayName: 'Initial' },
+      { key: 'UC', displayName: 'Unchallenged' },
     ],
   },
   {
     key: 'non-admissible',
     displayName: 'Non-admissible Semantics',
     semantics: [
-      { key: 'NA',   displayName: 'Naive' },
-      { key: 'STG',  displayName: 'Stage' },
+      { key: 'NA', displayName: 'Naive' },
+      { key: 'STG', displayName: 'Stage' },
       { key: 'STG2', displayName: 'Stage2' },
-      { key: 'CF2',  displayName: 'CF2' },
+      { key: 'CF2', displayName: 'CF2' },
       { key: 'SCF2', displayName: 'SCF2' },
-      { key: 'UD',   displayName: 'Undisputed' },
-      { key: 'SUD',  displayName: 'Strongly Undisputed' },
+      { key: 'UD', displayName: 'Undisputed' },
+      { key: 'SUD', displayName: 'Strongly Undisputed' },
     ],
   },
   {
@@ -93,7 +99,10 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   },
 ].filter((group) => group.semantics.length > 0)
 
-export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
+export {
+  type Semantics,
+  type SemanticsFamily,
+} from '@/modules/common/evaluation/tweety-project/semantics'
 
 export interface MetaReasonerParameter {
   key: string
@@ -140,7 +149,8 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
       {
         key: 'baseSemantics',
         label: 'Base Semantics',
-        description: 'SCC-decomposable semantics used as the base function for the qualified extensions.',
+        description:
+          'SCC-decomposable semantics used as the base function for the qualified extensions.',
         compatibleSemantics: ['ADM', 'CO', 'GR', 'PR', 'ST'],
       },
     ],
@@ -153,7 +163,8 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
       {
         key: 'baseSemantics',
         label: 'Base Semantics',
-        description: 'SCC-decomposable semantics used as the base function for the semi-qualified extensions.',
+        description:
+          'SCC-decomposable semantics used as the base function for the semi-qualified extensions.',
         compatibleSemantics: ['ADM', 'CO', 'GR', 'PR', 'ST'],
       },
     ],
@@ -175,7 +186,8 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
       {
         key: 'reductSemantics',
         label: 'Reduct Semantics',
-        description: 'Semantics that must not yield a non-empty extension on the reduct of a base extension.',
+        description:
+          'Semantics that must not yield a non-empty extension on the reduct of a base extension.',
         compatibleSemantics: ['CF', 'ADM', 'CO', 'GR', 'PR', 'ST', 'UD', 'SUD'],
       },
     ],
@@ -189,7 +201,8 @@ export const KNOWN_META_REASONERS: MetaReasoner[] = [
       {
         key: 'selectionFunction',
         label: 'Selection Function',
-        description: 'Selects which initial sets may be added to the extension at each step of the serialisation.',
+        description:
+          'Selects which initial sets may be added to the extension at each step of the serialisation.',
         options: SELECTION_FUNCTIONS,
         default: KEY_DEFAULT_SELECTION_FUNCTION,
       },
@@ -345,8 +358,7 @@ export function useExtensionEvaluationQuery(
 
   const isModelResult = (
     data: EvaluationQueryResult,
-  ): data is { evaluationDurationInMs: number; extensions: number[][] } =>
-    'extensions' in data
+  ): data is { evaluationDurationInMs: number; extensions: number[][] } => 'extensions' in data
 
   const queryKey = computed(() => {
     const mode = unref(modeRef)

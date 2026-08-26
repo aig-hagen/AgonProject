@@ -24,7 +24,10 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
-import { abstractArgumentationGlossary, abstractArgumentationRankingGlossary } from '@/modules/abstract-argumentation/glossary'
+import {
+  abstractArgumentationGlossary,
+  abstractArgumentationRankingGlossary,
+} from '@/modules/abstract-argumentation/glossary'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import type { DocumentsDB } from '@/modules/common/documents/db'
@@ -35,7 +38,7 @@ import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentat
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
 
 // Declared to prevent Vue from warning about unrecognized attrs (same pattern as GenerateView).
- 
+
 const { modules: _modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<Objectish>[]
@@ -48,12 +51,20 @@ interface GlossaryModule {
 }
 
 const glossaryModules: GlossaryModule[] = [
-  { prefix: 'AF', label: 'Abstract AF', glossary: { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary } },
+  {
+    prefix: 'AF',
+    label: 'Abstract AF',
+    glossary: { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary },
+  },
   { prefix: 'BAF', label: 'Bipolar AF', glossary: bipolarArgumentationGlossary },
   { prefix: 'ADF', label: 'Dialectical AF', glossary: dialecticalArgumentationGlossary },
   { prefix: 'iAF', label: 'Incomplete AF', glossary: incompleteArgumentationGlossary },
   { prefix: 'PAF', label: 'Probabilistic AF', glossary: probabilisticArgumentationGlossary },
-  { prefix: 'SetAF', label: 'Collective Attacks', glossary: collectiveAttacksArgumentationGlossary },
+  {
+    prefix: 'SetAF',
+    label: 'Collective Attacks',
+    glossary: collectiveAttacksArgumentationGlossary,
+  },
 ]
 
 // Combined map for cross-module ref resolution: termKey → { definition, modulePrefix }
@@ -96,8 +107,9 @@ const sortedTerms = computed(() =>
 const filteredTerms = computed(() => {
   const q = searchQuery.value.toLowerCase().trim()
   if (!q) return sortedTerms.value
-  return sortedTerms.value.filter(([key, def]) =>
-    (def.title ?? def.label ?? key).toLowerCase().includes(q) || key.toLowerCase().includes(q),
+  return sortedTerms.value.filter(
+    ([key, def]) =>
+      (def.title ?? def.label ?? key).toLowerCase().includes(q) || key.toLowerCase().includes(q),
   )
 })
 
@@ -213,9 +225,7 @@ watch(
         <div v-if="activeDefinition" class="max-w-2xl">
           <div class="flex items-start gap-2 mb-4">
             <h2 class="text-xl font-bold leading-snug">
-              <KatexInlineElement
-                :text="activeDefinition.title ?? activeDefinition.label"
-              />
+              <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
             </h2>
             <a
               v-if="activeDefinition.reference"

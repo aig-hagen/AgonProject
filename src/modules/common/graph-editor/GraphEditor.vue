@@ -93,7 +93,11 @@ import { EntryState, type GridVisibility } from '@/modules/common/main-menu/type
 import { getNextName } from '@/modules/common/nextName'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
-import { isShortcut, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT } from '@/modules/common/shortcuts'
+import {
+  isShortcut,
+  TOGGLE_GRID_SHORTCUT,
+  TOGGLE_PHYSICS_SHORTCUT,
+} from '@/modules/common/shortcuts'
 import { useTheme } from '@/modules/common/theme/useTheme'
 import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
@@ -109,7 +113,22 @@ const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
 
-const { state, linkConfigs, historyState, nodeWeights, nodeOutlines, nodeAnnotations, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false, tutorials, defaultTutorialId, tutorialContextExtra, documentId } = defineProps<{
+const {
+  state,
+  linkConfigs,
+  historyState,
+  nodeWeights,
+  nodeOutlines,
+  nodeAnnotations,
+  graphStyle,
+  allowLinkCreation = true,
+  allowLinkDeletion = true,
+  allowHyperLinkCreation = false,
+  tutorials,
+  defaultTutorialId,
+  tutorialContextExtra,
+  documentId,
+} = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
@@ -133,14 +152,25 @@ if (db === undefined) {
 }
 
 const { isDark } = useTheme()
-const { graphStyle: graphStyleSetting, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints } = useSettings()
+const {
+  graphStyle: graphStyleSetting,
+  defaultShowGrid,
+  defaultGridType,
+  gridCellScale,
+  snapMode,
+  showHints,
+} = useSettings()
 const effectiveStyle = computed<GraphStyle>(() => {
   if (graphStyle !== undefined) return graphStyle
   switch (graphStyleSetting.value) {
-    case 'high-contrast': return GRAPH_STYLE_HIGH_CONTRAST
-    case 'minimal': return GRAPH_STYLE_MINIMAL
-    case 'library': return GRAPH_STYLE_LIBRARY
-    default: return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
+    case 'high-contrast':
+      return GRAPH_STYLE_HIGH_CONTRAST
+    case 'minimal':
+      return GRAPH_STYLE_MINIMAL
+    case 'library':
+      return GRAPH_STYLE_LIBRARY
+    default:
+      return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
   }
 })
 
@@ -330,13 +360,25 @@ function applyGridVisibility(visibility: GridVisibility) {
   graphComponentRef.value?.setShowGrid(effective === 'on')
   graphComponentRef.value?.setAutoShowGrid(effective === 'auto')
 }
-watch(defaultShowGrid, (v) => { showGrid.value = v })
-watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
-watch(graphStyleSetting, () => { setGraph(state, false) })
-watch(physicsMode, () => { tutorialPhysicsToggleCount.value++ })
-watch(showGrid, () => { tutorialGridToggleCount.value++ })
+watch(defaultShowGrid, (v) => {
+  showGrid.value = v
+})
+watch(defaultGridType, (type) => {
+  graphComponentRef.value?.setGridType(type)
+})
+watch(graphStyleSetting, () => {
+  setGraph(state, false)
+})
+watch(physicsMode, () => {
+  tutorialPhysicsToggleCount.value++
+})
+watch(showGrid, () => {
+  tutorialGridToggleCount.value++
+})
 watch(showGrid, applyGridVisibility)
-watch(gridCellScale, (scale) => { graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * scale) })
+watch(gridCellScale, (scale) => {
+  graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * scale)
+})
 watch(snapMode, (enabled) => {
   graphComponentRef.value?.setSnapToGrid(enabled)
   applyGridVisibility(showGrid.value)
@@ -417,15 +459,16 @@ function onNodeDeleted(
   triggerSettle()
 }
 
-function onHyperLinkCreated(
-  link: { id: string; label?: string },
-  cause: EVENT_CAUSE,
-) {
+function onHyperLinkCreated(link: { id: string; label?: string }, cause: EVENT_CAUSE) {
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
   const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
   const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
   const publicTargetId = idMapping.getOrFail(internalTargetId)
-  emit('hyperLinkCreated', { sourceIds: publicSourceIds, targetId: publicTargetId, type: selectedLinkType.value })
+  emit('hyperLinkCreated', {
+    sourceIds: publicSourceIds,
+    targetId: publicTargetId,
+    type: selectedLinkType.value,
+  })
   triggerSettle()
   void nextTick(() => {
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
@@ -434,23 +477,18 @@ function onHyperLinkCreated(
   })
 }
 
-function onHyperLinkDeleted(
-  link: { id: string; label?: string },
-  cause: EVENT_CAUSE,
-) {
+function onHyperLinkDeleted(link: { id: string; label?: string }, cause: EVENT_CAUSE) {
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
   const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
-  if (!internalSourceIds.every((id) => idMapping.has(id)) || !idMapping.has(internalTargetId)) return
+  if (!internalSourceIds.every((id) => idMapping.has(id)) || !idMapping.has(internalTargetId))
+    return
   const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
   const publicTargetId = idMapping.getOrFail(internalTargetId)
   emit('hyperLinkDeleted', { sourceIds: publicSourceIds, targetId: publicTargetId })
   triggerSettle()
 }
 
-function openLinkTypeSwitch(
-  link: { id: string; label?: string },
-  event: PointerEvent,
-) {
+function openLinkTypeSwitch(link: { id: string; label?: string }, event: PointerEvent) {
   if (event.button !== 0) return
   arrowSwitcherTarget.value = {
     linkId: link.id,
@@ -583,10 +621,15 @@ function setupZoomAndDragObservers() {
     if (transform) {
       const m = /translate\(([^,]+),([^)]+)\)\s*scale\(([^)]+)\)/.exec(transform)
       if (m) {
-        const tx = parseFloat(m[1]!); const ty = parseFloat(m[2]!); const k = parseFloat(m[3]!)
+        const tx = parseFloat(m[1]!)
+        const ty = parseFloat(m[2]!)
+        const k = parseFloat(m[3]!)
         if (Math.abs(k - prevTransformScale) > 0.001) tutorialZoomCount.value++
-        else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5) tutorialPanCount.value++
-        prevTransformScale = k; prevTransformTx = tx; prevTransformTy = ty
+        else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5)
+          tutorialPanCount.value++
+        prevTransformScale = k
+        prevTransformTx = tx
+        prevTransformTy = ty
         void saveViewport({ k, x: tx, y: ty })
       }
     }
@@ -624,7 +667,11 @@ function setupZoomAndDragObservers() {
       liveNodePositions.value = updated
     }
   })
-  dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
+  dragObserver.observe(zoomGroup, {
+    attributes: true,
+    attributeFilter: ['transform'],
+    subtree: true,
+  })
 }
 
 onMounted(() => {
@@ -679,7 +726,10 @@ onMounted(() => {
   if (graphHost && svgCanvas) {
     let lastTap: { time: number; x: number; y: number } | null = null
     const handleDoubleTap = (event: TouchEvent) => {
-      if (event.touches.length !== 1) { lastTap = null; return }
+      if (event.touches.length !== 1) {
+        lastTap = null
+        return
+      }
       const touch = event.changedTouches[0]!
       const now = Date.now()
       if (
@@ -688,24 +738,34 @@ onMounted(() => {
         Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
       ) {
         // Query fresh — setGraph recreates the SVG element so a captured reference goes stale.
-        const currentSvgCanvas = containerRef.value?.querySelector('.graph-controller__graph-canvas')
-        currentSvgCanvas?.dispatchEvent(new MouseEvent('dblclick', {
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          bubbles: true,
-          cancelable: true,
-        }))
+        const currentSvgCanvas = containerRef.value?.querySelector(
+          '.graph-controller__graph-canvas',
+        )
+        currentSvgCanvas?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
         lastTap = null
       } else {
         lastTap = { time: now, x: touch.clientX, y: touch.clientY }
       }
     }
     graphHost.addEventListener('touchstart', handleDoubleTap, { capture: true })
-    doubleTapCleanup = () => graphHost.removeEventListener('touchstart', handleDoubleTap, { capture: true })
+    doubleTapCleanup = () =>
+      graphHost.removeEventListener('touchstart', handleDoubleTap, { capture: true })
 
     const handleMiddleClick = (event: MouseEvent) => {
       if (event.button !== 1) return
-      if ((event.target as Element)?.closest('.graph-controller__node-container, .graph-controller__link')) return
+      if (
+        (event.target as Element)?.closest(
+          '.graph-controller__node-container, .graph-controller__link',
+        )
+      )
+        return
       event.preventDefault()
       if (state.nodes.length === 0) return
       if (graphComponentRef.value === null) return
@@ -724,7 +784,9 @@ onMounted(() => {
     middleClickCleanup = () => graphHost.removeEventListener('auxclick', handleMiddleClick)
   }
 
-  const ctrlSnapGraphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+  const ctrlSnapGraphHost = containerRef.value?.querySelector<HTMLElement>(
+    '.graph-controller__graph-host',
+  )
   if (ctrlSnapGraphHost) {
     const nodeIdPrefix = `${graphComponentId}-node-`
     let draggingNodeId: number | null = null
@@ -768,7 +830,12 @@ onMounted(() => {
       }
       if (!isVisible.value) return
       const target = event.target as Element
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.getAttribute('contenteditable') === 'true') return
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.getAttribute('contenteditable') === 'true'
+      )
+        return
       if (isShortcut(TOGGLE_GRID_SHORTCUT, event)) {
         event.preventDefault()
         toggleGrid()
@@ -799,14 +866,22 @@ onMounted(() => {
   // The graph-component library only commits a node/link label edit on Enter; clicking
   // away discards it. We force a commit by simulating the same Enter keyup the library
   // listens for before the click can blur the input out from under it.
-  const renameCommitGraphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+  const renameCommitGraphHost = containerRef.value?.querySelector<HTMLElement>(
+    '.graph-controller__graph-host',
+  )
   if (renameCommitGraphHost) {
     const handleRenameCommitPointerDown = (event: PointerEvent) => {
       const activeElement = document.activeElement
       if (!(activeElement instanceof HTMLInputElement)) return
-      if (activeElement.id !== 'node-label-input-field' && activeElement.id !== 'link-label-input-field') return
+      if (
+        activeElement.id !== 'node-label-input-field' &&
+        activeElement.id !== 'link-label-input-field'
+      )
+        return
       if (activeElement.contains(event.target as Node)) return
-      activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }))
+      activeElement.dispatchEvent(
+        new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }),
+      )
     }
     renameCommitGraphHost.addEventListener('pointerdown', handleRenameCommitPointerDown, true)
 
@@ -848,12 +923,16 @@ function toArrowType(linkType: LinkType): ArrowType {
 function applyHyperLinkSourceColor(hyperLinkId: string, color: string): void {
   const el = graphComponentRef.value?.$el as Element | undefined
   if (!el) return
-  const targetPath = el.querySelector(`#${CSS.escape(`${graphComponentId}-hyperlink-${hyperLinkId}`)}`)
+  const targetPath = el.querySelector(
+    `#${CSS.escape(`${graphComponentId}-hyperlink-${hyperLinkId}`)}`,
+  )
   const container = targetPath?.closest('.graph-controller__hyperlink-container')
   if (!container) return
-  container.querySelectorAll<SVGPathElement>('.graph-controller__hyperlink-source-path').forEach((path) => {
-    path.style.stroke = color
-  })
+  container
+    .querySelectorAll<SVGPathElement>('.graph-controller__hyperlink-source-path')
+    .forEach((path) => {
+      path.style.stroke = color
+    })
 }
 
 function applyLinkDash(linkId: string, dashArray?: string): void {
@@ -875,16 +954,25 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   const preservedPositions = new Map<number, { x: number; y: number }>()
   if (physicsMode.value !== 'off') {
     for (const internalId of idMapping.inputIds()) {
-      preservedPositions.set(idMapping.getOrFail(internalId), graphComponent.getNodePosition(internalId))
+      preservedPositions.set(
+        idMapping.getOrFail(internalId),
+        graphComponent.getNodePosition(internalId),
+      )
     }
   }
   // Capture the D3 zoom state before setGraph destroys and recreates the SVG canvas.
   // setGraph resets D3 zoom to identity; restoring it keeps the graph visually stable.
   // Only for in-place redraws (center=false) — initial renders should use the library defaults.
-  const savedZoom = center ? null : (() => {
-    const z = (containerRef.value?.querySelector('.graph-controller__graph-canvas') as (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null)?.__zoom
-    return z != null ? { k: z.k, x: z.x, y: z.y } : null
-  })()
+  const savedZoom = center
+    ? null
+    : (() => {
+        const z = (
+          containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+            | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
+            | null
+        )?.__zoom
+        return z != null ? { k: z.k, x: z.x, y: z.y } : null
+      })()
   idGenerator = new IdGenerator()
   idMapping = new IdMapping()
   liveNodePositions.value = new Map()
@@ -943,7 +1031,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
       const internalTargetId = idMapping.getOrFailReverse(link.targetId)
       applyLinkDash(`${internalSourceId}-${internalTargetId}`, linkConfigs[link.type]?.dashArray)
     }
-    for (const hyperLink of (state.hyperLinks ?? [])) {
+    for (const hyperLink of state.hyperLinks ?? []) {
       const internalSourceIds = hyperLink.sourceIds
         .map((id) => idMapping.getOrFailReverse(id))
         .sort((a, b) => a - b)
@@ -954,13 +1042,20 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     }
     for (const importedNode of importedNodes) {
       const node = state.nodes.find((n) => n.id === importedNode.idImported)
-      if (node?.label) adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, importedNode.id, node.label)
+      if (node?.label)
+        adjustNodeLabelFontSize(
+          graphComponentRef.value?.$el as Element | undefined,
+          graphComponentId,
+          importedNode.id,
+          node.label,
+        )
     }
     // setGraph recreates the SVG canvas and resets D3 zoom to identity. Restore the
     // captured zoom so node visual positions don't jump after an in-place redraw.
     if (savedZoom !== null) {
       const newSvgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-        (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null
+        | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
+        | null
       const newG = newSvgEl?.querySelector(':scope > g') as SVGGElement | null
       if (newSvgEl && newG && newSvgEl.__zoom != null) {
         const newZoom = Object.create(Object.getPrototypeOf(newSvgEl.__zoom))
@@ -968,7 +1063,10 @@ function setGraph(state: GraphEditorState, center: boolean): void {
         newZoom.x = savedZoom.x
         newZoom.y = savedZoom.y
         newSvgEl.__zoom = newZoom
-        newG.setAttribute('transform', `translate(${savedZoom.x},${savedZoom.y}) scale(${savedZoom.k})`)
+        newG.setAttribute(
+          'transform',
+          `translate(${savedZoom.x},${savedZoom.y}) scale(${savedZoom.k})`,
+        )
       }
     }
     // setGraph rebuilds the graph DOM, potentially replacing the zoom group element that
@@ -1027,7 +1125,14 @@ function onLabelEdited(
   }
   const publicId = idMapping.getOrFail(privateId)
   emit('nodeLabelEdited', { id: publicId, label: label })
-  nextTick(() => adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, privateId, label))
+  nextTick(() =>
+    adjustNodeLabelFontSize(
+      graphComponentRef.value?.$el as Element | undefined,
+      graphComponentId,
+      privateId,
+      label,
+    ),
+  )
 }
 
 const arrowSwitcherTarget = shallowRef<
@@ -1060,7 +1165,10 @@ function applyNodeWeights(weights: Map<NodeId, number> | undefined) {
   previousBadgeInternalIds = activeInternalIds
 }
 
-watch(() => nodeWeights, (weights) => applyNodeWeights(weights))
+watch(
+  () => nodeWeights,
+  (weights) => applyNodeWeights(weights),
+)
 
 let previousNodeOutlines = new Map<NodeId, NodeOutline>()
 
@@ -1086,7 +1194,10 @@ function applyNodeOutlineUpdates(outlines: Map<NodeId, NodeOutline> | undefined)
   previousNodeOutlines = next
 }
 
-watch(() => nodeOutlines, (outlines) => applyNodeOutlineUpdates(outlines))
+watch(
+  () => nodeOutlines,
+  (outlines) => applyNodeOutlineUpdates(outlines),
+)
 
 let previousAnnotationContent = new Map<NodeId, string>()
 
@@ -1117,9 +1228,15 @@ function applyAnnotationContentUpdates(
   previousAnnotationContent = nextContent
 }
 
-watch(() => nodeAnnotations, (annotations) => applyAnnotationContentUpdates(annotations))
+watch(
+  () => nodeAnnotations,
+  (annotations) => applyAnnotationContentUpdates(annotations),
+)
 
-function onAnnotationClicked(annotation: { anchorId: number; content: string }, event: PointerEvent) {
+function onAnnotationClicked(
+  annotation: { anchorId: number; content: string },
+  event: PointerEvent,
+) {
   if (!idMapping.has(annotation.anchorId)) return
   const publicId = idMapping.getOrFail(annotation.anchorId)
   emit('annotationClicked', { id: publicId, content: annotation.content }, event)
@@ -1149,7 +1266,9 @@ const liveNodePositions = shallowRef<Map<NodeId, { x: number; y: number }>>(new 
 // the dragObserver continues to populate liveNodePositions normally.
 watch(
   () => state.stateId,
-  () => { liveNodePositions.value = new Map() },
+  () => {
+    liveNodePositions.value = new Map()
+  },
 )
 
 const overlayNodes = computed(() => {
@@ -1273,34 +1392,34 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
         <div class="w-fit">
           <MainMenu
             @new="emit('new')"
-          @load="emit('load')"
-          @generate="emit('generate')"
-          :show-save="EntryState.ENABLE"
-          :layouts-to-show="[
-            Layout.TopToBottom,
-            Layout.BottomToTop,
-            Layout.LeftToRight,
-            Layout.RightToLeft,
-            Layout.ForceDirected,
-            Layout.Neato,
-            Layout.Circular,
-            Layout.Radial,
-          ]"
-          @save="emit('save')"
-          :show-evaluate="EntryState.ENABLE"
-          @evaluate="emit('open-extension-window')"
-          :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
-          @export="isExportOpened = !isExportOpened"
-          :show-share="EntryState.ENABLE"
-          @share="emit('share')"
-          @layout="doLayout($event)"
-          :show-undo="historyState.canUndo ? EntryState.ENABLE : EntryState.DISABLE"
-          @undo="emit('undo')"
-          :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
-          @redo="emit('redo')"
-          @help="isHelpOpened = !isHelpOpened"
-          @settings="settingsDialog?.open()"
-          @tutorial="isTutorialWindowOpen = !isTutorialWindowOpen"
+            @load="emit('load')"
+            @generate="emit('generate')"
+            :show-save="EntryState.ENABLE"
+            :layouts-to-show="[
+              Layout.TopToBottom,
+              Layout.BottomToTop,
+              Layout.LeftToRight,
+              Layout.RightToLeft,
+              Layout.ForceDirected,
+              Layout.Neato,
+              Layout.Circular,
+              Layout.Radial,
+            ]"
+            @save="emit('save')"
+            :show-evaluate="EntryState.ENABLE"
+            @evaluate="emit('open-extension-window')"
+            :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
+            @export="isExportOpened = !isExportOpened"
+            :show-share="EntryState.ENABLE"
+            @share="emit('share')"
+            @layout="doLayout($event)"
+            :show-undo="historyState.canUndo ? EntryState.ENABLE : EntryState.DISABLE"
+            @undo="emit('undo')"
+            :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
+            @redo="emit('redo')"
+            @help="isHelpOpened = !isHelpOpened"
+            @settings="settingsDialog?.open()"
+            @tutorial="isTutorialWindowOpen = !isTutorialWindowOpen"
           />
           <div ref="mainMenuBottom" class="h-0"></div>
         </div>
@@ -1317,7 +1436,10 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="selectedLinkType = linkKey"
             >
               <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5 opacity-70" />
-              <ArrowLongRightIcon v-else-if="linkKey === LinkType.SINGLE" class="size-5 opacity-70" />
+              <ArrowLongRightIcon
+                v-else-if="linkKey === LinkType.SINGLE"
+                class="size-5 opacity-70"
+              />
               <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />
             </button>
           </div>
@@ -1360,13 +1482,21 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
     </div>
     <slot
       name="evaluationExtensions"
-      :on-highlight="(h: Highlight | undefined) => { extensionHighlightRef = h }"
+      :on-highlight="
+        (h: Highlight | undefined) => {
+          extensionHighlightRef = h
+        }
+      "
     ></slot>
     <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
     <slot name="evaluationRanking"></slot>
     <slot
       name="evaluationSerialisation"
-      :on-highlight="(h: Highlight | undefined) => { serialisationHighlightRef = h }"
+      :on-highlight="
+        (h: Highlight | undefined) => {
+          serialisationHighlightRef = h
+        }
+      "
     ></slot>
     <TutorialOverlay
       v-if="tutorials && showHints"
@@ -1388,7 +1518,11 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       :context="tutorialContext"
       v-model:open="isTutorialWindowOpen"
     />
-    <WindowHelp :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" v-model:open="isHelpOpened" />
+    <WindowHelp
+      :link-names="linkNames"
+      :allow-hyper-link-creation="allowHyperLinkCreation"
+      v-model:open="isHelpOpened"
+    />
     <WindowSettings ref="settings-dialog" />
   </div>
 </template>

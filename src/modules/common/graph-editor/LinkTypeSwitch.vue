@@ -60,10 +60,7 @@ onClickOutside(floating, () => emit('close'), {
       <li v-for="(config, linkType) in linkConfigs" :key="linkType">
         <a @click="emit('update:arrowType', linkType)"
           ><component :is="config!.icon" v-if="config!.icon" class="size-5 opacity-70" />
-          <ArrowLongRightIcon
-            v-else-if="linkType === LinkType.SINGLE"
-            class="size-5 opacity-70"
-          />
+          <ArrowLongRightIcon v-else-if="linkType === LinkType.SINGLE" class="size-5 opacity-70" />
           <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />{{ config!.displayName }}</a
         >
       </li>

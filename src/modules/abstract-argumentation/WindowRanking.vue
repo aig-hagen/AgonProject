@@ -78,7 +78,9 @@ function resolveSemanticFromKey(key: string): RankingSemantic {
 const selectedSemantic = shallowRef<RankingSemantic>(
   resolveSemanticFromKey(instanceState.semanticKey),
 )
-const args = ref<RankingArgs>(instanceState.args ?? defaultRankingArgsFor(instanceState.semanticKey))
+const args = ref<RankingArgs>(
+  instanceState.args ?? defaultRankingArgsFor(instanceState.semanticKey),
+)
 
 watch(selectedSemantic, (semantic, previous) => {
   if (previous !== undefined && semantic.key !== previous.key) {
@@ -211,7 +213,8 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
       </ParameterField>
       <template v-for="param in selectedSemantic.parameters ?? []" :key="param.key">
         <div class="flex flex-col gap-0.5">
-          <HoverTooltip class="label text-xs w-fit">{{ param.label }}
+          <HoverTooltip class="label text-xs w-fit"
+            >{{ param.label }}
             <template #content>
               <span class="text-xs">{{ param.description }}</span>
             </template>

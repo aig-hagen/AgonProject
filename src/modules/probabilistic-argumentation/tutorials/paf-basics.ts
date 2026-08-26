@@ -21,7 +21,8 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const pafBasicsTutorial: Tutorial = {
   id: 'paf-basics',
   name: 'Basic PAF Tutorial',
-  description: 'Learn how to create arguments and attacks, and how to assign probabilities to them.',
+  description:
+    'Learn how to create arguments and attacks, and how to assign probabilities to them.',
   steps: [
     {
       id: 'welcome',
@@ -75,7 +76,7 @@ export const pafBasicsTutorial: Tutorial = {
     },
     {
       id: 'done',
-      title: 'You\'re all set!',
+      title: "You're all set!",
       body: 'You can now build probabilistic argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to compute acceptance probabilities under various semantics.',
       advanceOn: 'button',
       nextTutorialId: 'paf-evaluation',

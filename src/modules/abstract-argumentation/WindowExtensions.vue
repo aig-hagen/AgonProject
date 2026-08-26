@@ -93,7 +93,9 @@ function resolveSemanticFromKey(key: string): ExtensionSemanticsOption {
 // (`options`, e.g. Serialisable's selection/termination function) - this normalizes both into
 // the same { key, displayName } shape for rendering and notation formatting.
 function paramOptions(param: MetaReasonerParameter): { key: string; displayName: string }[] {
-  return param.options ?? (param.compatibleSemantics ?? []).map((key) => resolveSemanticFromKey(key))
+  return (
+    param.options ?? (param.compatibleSemantics ?? []).map((key) => resolveSemanticFromKey(key))
+  )
 }
 
 const selectedSemantic = shallowRef<ExtensionSemanticsOption>(
@@ -211,10 +213,7 @@ const windowTitle = computed(() => {
   >
     <template #parameters>
       <div class="@container basis-full">
-        <div
-          class="grid gap-3"
-          :class="hasFourParamFields ? GRID_COLS_UP_TO_4 : GRID_COLS_UP_TO_2"
-        >
+        <div class="grid gap-3" :class="hasFourParamFields ? GRID_COLS_UP_TO_4 : GRID_COLS_UP_TO_2">
           <ParameterField label="Semantics" min-width="10rem">
             <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
           </ParameterField>

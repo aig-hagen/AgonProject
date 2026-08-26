@@ -21,12 +21,21 @@ import { computed, type MaybeRef, unref } from 'vue'
 
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import {
+  fetchTyped,
+  TWEETY_TIMEOUT_IN_MS,
+  TWEETY_TIMEOUT_UNIT_MS,
+  TweetyResponseSchema,
+  USER_ID,
+} from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserScores } from '@/modules/common/evaluation/tweety-project/rankingScore'
 import type { SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
 import { IdMapping, type UUID } from '@/modules/common/ids'
-import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import type {
+  PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 
 const ENDPOINT = '/paf'
 
@@ -39,12 +48,12 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     key: 'classical',
     displayName: 'Classical Semantics',
     semantics: [
-      { key: 'CF',  displayName: 'Conflict-Free' },
+      { key: 'CF', displayName: 'Conflict-Free' },
       { key: 'ADM', displayName: 'Admissible' },
-      { key: 'CO',  displayName: 'Complete' },
-      { key: 'GR',  displayName: 'Grounded' },
-      { key: 'PR',  displayName: 'Preferred' },
-      { key: 'ST',  displayName: 'Stable' },
+      { key: 'CO', displayName: 'Complete' },
+      { key: 'GR', displayName: 'Grounded' },
+      { key: 'PR', displayName: 'Preferred' },
+      { key: 'ST', displayName: 'Stable' },
     ],
   },
   {
@@ -53,23 +62,23 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     semantics: [
       { key: 'SAD', displayName: 'Strongly Admissible' },
       { key: 'SST', displayName: 'Semi-Stable' },
-      { key: 'ID',  displayName: 'Ideal' },
-      { key: 'EA',  displayName: 'Eager' },
-      { key: 'IS',  displayName: 'Initial' },
-      { key: 'UC',  displayName: 'Unchallenged' },
+      { key: 'ID', displayName: 'Ideal' },
+      { key: 'EA', displayName: 'Eager' },
+      { key: 'IS', displayName: 'Initial' },
+      { key: 'UC', displayName: 'Unchallenged' },
     ],
   },
   {
     key: 'non-admissible',
     displayName: 'Non-admissible Semantics',
     semantics: [
-      { key: 'NA',   displayName: 'Naive' },
-      { key: 'STG',  displayName: 'Stage' },
+      { key: 'NA', displayName: 'Naive' },
+      { key: 'STG', displayName: 'Stage' },
       { key: 'STG2', displayName: 'Stage2' },
-      { key: 'CF2',  displayName: 'CF2' },
+      { key: 'CF2', displayName: 'CF2' },
       { key: 'SCF2', displayName: 'SCF2' },
-      { key: 'UD',   displayName: 'Undisputed' },
-      { key: 'SUD',  displayName: 'Strongly Undisputed' },
+      { key: 'UD', displayName: 'Undisputed' },
+      { key: 'SUD', displayName: 'Strongly Undisputed' },
     ],
   },
   {
@@ -84,7 +93,10 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   },
 ]
 
-export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
+export {
+  type Semantics,
+  type SemanticsFamily,
+} from '@/modules/common/evaluation/tweety-project/semantics'
 
 export type PafEntry = { id: ArgumentId; name: string; probability: number }
 
@@ -115,7 +127,10 @@ async function fetchPaf(
   attackProbabilities: number[],
   semantics: string,
   solver: string,
-): Promise<{ evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }> }> {
+): Promise<{
+  evaluationDurationInMs: number
+  scores: Array<{ argumentId: number; score: number }>
+}> {
   const body: PafRequestBody = {
     email: USER_ID,
     cmd,
@@ -168,21 +183,42 @@ export function usePafEvaluationQuery(
     return [prefix, semanticsRef, modeRef, solverRef, argumentData] as const
   })
 
-  type RawResult = { evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }> }
+  type RawResult = {
+    evaluationDurationInMs: number
+    scores: Array<{ argumentId: number; score: number }>
+  }
 
   const queryResult = useQuery<RawResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
-      const [, semantics, mode, solver, { attacks, numberOfArguments, argumentProbabilities, attackProbabilities }] =
-        queryKey as [
-          string,
-          string,
-          string,
-          string,
-          { attacks: number[][]; numberOfArguments: number; argumentProbabilities: number[]; attackProbabilities: number[] },
-        ]
+      const [
+        ,
+        semantics,
+        mode,
+        solver,
+        { attacks, numberOfArguments, argumentProbabilities, attackProbabilities },
+      ] = queryKey as [
+        string,
+        string,
+        string,
+        string,
+        {
+          attacks: number[][]
+          numberOfArguments: number
+          argumentProbabilities: number[]
+          attackProbabilities: number[]
+        },
+      ]
       const cmd = mode === 'skeptical' ? 'get_skeptical' : 'get_credulous'
-      return fetchPaf(cmd, numberOfArguments, attacks, argumentProbabilities, attackProbabilities, semantics, solver)
+      return fetchPaf(
+        cmd,
+        numberOfArguments,
+        attacks,
+        argumentProbabilities,
+        attackProbabilities,
+        semantics,
+        solver,
+      )
     },
     enabled,
   })

@@ -91,8 +91,8 @@ export const iafBasicsTutorial: Tutorial = {
     },
     {
       id: 'done',
-      title: 'You\'re all set!',
-      body: 'You\'ve learned the basics of incomplete argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how uncertainty affects which arguments are accepted.',
+      title: "You're all set!",
+      body: "You've learned the basics of incomplete argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how uncertainty affects which arguments are accepted.",
       advanceOn: 'button',
       nextTutorialId: 'iaf-evaluation',
     },

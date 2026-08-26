@@ -27,6 +27,11 @@
     aria-hidden="true"
     data-slot="icon"
   >
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 2" d="M17.25 8.25 L21 12m0 0l-3.75 3.75M3.75 12h16.5" />
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-dasharray="3 2"
+      d="M17.25 8.25 L21 12m0 0l-3.75 3.75M3.75 12h16.5"
+    />
   </svg>
 </template>

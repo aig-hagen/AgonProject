@@ -46,7 +46,11 @@ function nodePrec(node: FormulaNode): number {
   }
 }
 
-function toStringInner(node: FormulaNode, argNames: Map<number, string>, parentPrec: number): string {
+function toStringInner(
+  node: FormulaNode,
+  argNames: Map<number, string>,
+  parentPrec: number,
+): string {
   const s = toStringRaw(node, argNames)
   const myPrec = nodePrec(node)
   return myPrec < parentPrec ? `(${s})` : s
@@ -63,13 +67,9 @@ function toStringRaw(node: FormulaNode, argNames: Map<number, string>): string {
     case 'negation':
       return `¬${toStringInner(node.child, argNames, PREC_NEGATION)}`
     case 'conjunction':
-      return node.children
-        .map((c) => toStringInner(c, argNames, PREC_CONJUNCTION))
-        .join(' ∧ ')
+      return node.children.map((c) => toStringInner(c, argNames, PREC_CONJUNCTION)).join(' ∧ ')
     case 'disjunction':
-      return node.children
-        .map((c) => toStringInner(c, argNames, PREC_DISJUNCTION + 1))
-        .join(' ∨ ')
+      return node.children.map((c) => toStringInner(c, argNames, PREC_DISJUNCTION + 1)).join(' ∨ ')
   }
 }
 

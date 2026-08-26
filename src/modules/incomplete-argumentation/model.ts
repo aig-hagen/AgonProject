@@ -67,15 +67,13 @@ export class IncompleteArgumentation<ArgumentDataT extends IafArgumentData> {
 
   hasDefiniteAttack(sourceId: ArgumentId, targetId: ArgumentId): boolean {
     return (
-      this.g.hasEdge(sourceId, targetId) &&
-      this.g.getEdge(sourceId, targetId) === Edge.DEFINITE
+      this.g.hasEdge(sourceId, targetId) && this.g.getEdge(sourceId, targetId) === Edge.DEFINITE
     )
   }
 
   hasUncertainAttack(sourceId: ArgumentId, targetId: ArgumentId): boolean {
     return (
-      this.g.hasEdge(sourceId, targetId) &&
-      this.g.getEdge(sourceId, targetId) === Edge.UNCERTAIN
+      this.g.hasEdge(sourceId, targetId) && this.g.getEdge(sourceId, targetId) === Edge.UNCERTAIN
     )
   }
 

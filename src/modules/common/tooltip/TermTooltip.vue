@@ -38,8 +38,15 @@ const definition = computed(() => registry[id])
   <HoverTooltip v-if="definition">
     <slot><KatexInlineElement :text="definition.label" /></slot>
     <template #content>
-      <div v-if="definition.title || definition.reference" class="flex items-center justify-between mb-2 pb-1 border-b border-base-300">
-        <KatexInlineElement v-if="definition.title" :text="definition.title" class="font-semibold text-xs" />
+      <div
+        v-if="definition.title || definition.reference"
+        class="flex items-center justify-between mb-2 pb-1 border-b border-base-300"
+      >
+        <KatexInlineElement
+          v-if="definition.title"
+          :text="definition.title"
+          class="font-semibold text-xs"
+        />
         <a
           v-if="definition.reference"
           :href="definition.reference.href"
@@ -53,7 +60,7 @@ const definition = computed(() => registry[id])
       </div>
       <span>
         <template v-for="(part, i) in definition.content" :key="i">
-          <KatexInlineElement v-if="typeof part === 'string'" :text="(part as string)" />
+          <KatexInlineElement v-if="typeof part === 'string'" :text="part as string" />
           <!-- Recursive: inline refs expand into nested TermTooltips automatically. -->
           <TermTooltip v-else :id="part.ref">
             <KatexInlineElement v-if="part.label" :text="part.label" />

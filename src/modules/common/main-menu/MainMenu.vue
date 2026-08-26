@@ -109,7 +109,6 @@ const otherLayoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
 })
 
 const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.value).length > 0)
-
 </script>
 <template>
   <div class="dropdown pointer-events-auto">
@@ -159,7 +158,10 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
                     </a>
                     <div tabindex="-1" class="dropdown-content p-0">
                       <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
-                        <li v-for="(layoutData, layoutType) in directedLayoutDatasToShow" :key="layoutType">
+                        <li
+                          v-for="(layoutData, layoutType) in directedLayoutDatasToShow"
+                          :key="layoutType"
+                        >
                           <a @click="onClickLayout(layoutType)"
                             ><component :is="layoutData.icon" class="size-5 opacity-70" />{{
                               layoutData.name

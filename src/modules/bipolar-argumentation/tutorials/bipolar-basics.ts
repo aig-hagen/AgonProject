@@ -83,7 +83,7 @@ export const bipolarBasicsTutorial: Tutorial = {
     },
     {
       id: 'done',
-      title: 'You\'re all set!',
+      title: "You're all set!",
       body: 'You can now build bipolar argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how supports affect which arguments are accepted.',
       advanceOn: 'button',
       nextTutorialId: 'bipolar-evaluation',

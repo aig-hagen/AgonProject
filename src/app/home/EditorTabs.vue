@@ -81,7 +81,10 @@ function openClearAllModal() {
         </button>
       </div>
     </div>
-    <div v-if="data.length > 0" class="flex items-center px-1 gap-0.5 shrink-0 border-b border-base-300">
+    <div
+      v-if="data.length > 0"
+      class="flex items-center px-1 gap-0.5 shrink-0 border-b border-base-300"
+    >
       <button
         class="btn btn-square btn-xs btn-ghost"
         :disabled="sharing"
@@ -115,7 +118,14 @@ function openClearAllModal() {
         Save your data before closing if you want to keep it.
       </p>
       <div class="modal-action">
-        <button ref="clearAllButton" class="btn btn-error btn-sm" @click="clearAllModal?.close(); emit('clearAll')">
+        <button
+          ref="clearAllButton"
+          class="btn btn-error btn-sm"
+          @click="
+            clearAllModal?.close()
+            emit('clearAll')
+          "
+        >
           <TrashIcon class="size-4" />Delete all
         </button>
       </div>

@@ -18,7 +18,9 @@
  */
 @import 'tailwindcss';
 @plugin "daisyui" {
-  themes: light --default, dark;
+  themes:
+    light --default,
+    dark;
 }
 
 html,
@@ -33,7 +35,6 @@ body {
 .graph-controller__grid-line {
   stroke: var(--color-base-300, #ddd);
 }
-
 
 .graph-controller__link,
 .graph-controller__hyperlink-source-path,
@@ -125,4 +126,3 @@ body {
 .graph-controller__label-input:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--graph-node-stroke-color, #5a87a8) 35%, transparent);
 }
-

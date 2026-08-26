@@ -38,7 +38,10 @@ const open = defineModel('open', { required: true })
   >
     <div class="p-4">
       <HelpLinks />
-      <HelpControls :link-names="props.linkNames" :allow-hyper-link-creation="props.allowHyperLinkCreation" />
+      <HelpControls
+        :link-names="props.linkNames"
+        :allow-hyper-link-creation="props.allowHyperLinkCreation"
+      />
     </div>
   </FloatingWindow>
 </template>
