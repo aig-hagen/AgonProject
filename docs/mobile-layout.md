@@ -396,28 +396,38 @@ evaluation, so they **cannot** be a separate full-screen view. Design from
 
 ## Implementation phases
 
-0. **Contracts and parity baseline.** Inventory desktop actions for all six modules. Extract the
+Status legend: ✅ done · 🟡 partial · ⬜ not started. Status tracks *behaviour*; bringing each
+surface up to its mockup is a separate cross-cutting effort tracked in
+[Visual-polish backlog](#visual-polish-backlog-mockup-parity).
+
+0. ✅ **Contracts and parity baseline.** Inventory desktop actions for all six modules. Extract the
    home controller, graph command surface, window bodies/controllers, and typed module
    capabilities. Add tests around the extracted behavior before changing presentation.
-1. **Platform foundation and device spike.** `useLayoutMode()` + separate input capabilities;
+1. 🟡 **Platform foundation and device spike.** `useLayoutMode()` + separate input capabilities;
    surface/history model; accessible `BottomSheet.vue`; safe-area/dynamic-viewport utilities.
    On real iOS and Android devices verify double-tap creation, rename keyboard behavior,
    pan/pinch, hold, hold-drag linking with node movement disabled, link tapping, and SETAF source
    selection. Agree the gesture thresholds before continuing.
-2. **Home + plain-AF editor shell.** *Home* / *NewDoc* with full rename/save/delete parity; the
+   — *Foundation (layout mode, BottomSheet, viewport utils) is built. The **real-device gesture
+   spike** — tap/hold node gestures and agreed thresholds — is **not done**; it blocks the iAF node
+   context menu and SETAF (see deferrals below).*
+2. ✅ **Home + plain-AF editor shell.** *Home* / *NewDoc* with full rename/save/delete parity; the
    mobile editor with switcher chip, top bar, bottom command bar, Fit-to-view, relayout, undo/redo,
    menu, and toast notifications. Plain AF must be fully editable and survive switching surfaces,
    rotation, and keyboard opening.
-3. **Core sheets.** Menu, Settings, Relayout, Help; extension evaluation first; Export picker,
+3. ✅ **Core sheets.** Menu, Settings, Relayout, Help; extension evaluation first; Export picker,
    SVG preview, and corrected LaTeX flow. Extracted bodies must continue to render in desktop
-   floating windows without regression.
-4. **Advanced evaluation.** Ranking, ADF interpretations, PAF ranking/probability results, and
+   floating windows without regression. — *Behaviour in place; visual parity pending.*
+4. ✅ **Advanced evaluation.** Ranking, ADF interpretations, PAF ranking/probability results, and
    serialisation sequence + interactive modes in the shared evaluation host.
-5. **Per-type interactions.** BAF, iAF, ADF, PAF, and SETAF selectors/context actions/sheets;
+5. 🟡 **Per-type interactions.** BAF, iAF, ADF, PAF, and SETAF selectors/context actions/sheets;
    add the SETAF mockup before implementing it.
-6. **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
+   — *BAF/iAF/ADF/PAF on-canvas selectors and tap-to-edit sheets are built. **Deferred:** the iAF
+   node context menu (needs the Phase 1 gesture spike) and **SETAF** entirely (needs the gesture
+   spike, a mockup, and Decision #5).*
+6. ⬜ **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
    Share-open, and Third-party.
-7. **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
+7. ⬜ **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
    performance/memory checks with many documents and evaluation configs, desktop regression,
    and documentation/help alignment.
 
