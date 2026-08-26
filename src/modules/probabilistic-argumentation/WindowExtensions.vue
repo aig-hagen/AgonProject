@@ -47,12 +47,16 @@ const {
   instanceOffset = 0,
   documentId,
   stateKey,
+  suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
   instanceState: PafWindowInstanceState
   instanceOffset?: number
   documentId?: DocumentId
   stateKey?: string
+  suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -106,12 +110,13 @@ const query = usePafEvaluationQuery(
 
 const { data } = query
 
-watch(data, (d) => {
-  emit(
-    'setWeights',
-    d === undefined ? [] : d.entries.map((e) => ({ id: e.id, weight: e.probability })),
-  )
-})
+// Suppressed instances (all but the active one in the compact host) own no node weights.
+const emittedWeights = computed(() =>
+  suppressed || data.value === undefined
+    ? []
+    : data.value.entries.map((e) => ({ id: e.id, weight: e.probability })),
+)
+watch(emittedWeights, (w) => emit('setWeights', w))
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
@@ -123,6 +128,7 @@ const windowTitle = computed(() => {
 <template>
   <BaseEvaluationWindow
     :title="windowTitle"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 400, height: 420 }"

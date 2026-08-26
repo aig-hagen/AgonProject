@@ -276,6 +276,10 @@ watch(isDark, () => {
   setGraph(state, false)
 })
 
+// Opened by the compact Evaluate button; owned by the module so its evaluation host
+// (rendered in the module's editor slot) and this button share one open state.
+const evaluationOpen = defineModel<boolean>('evaluationOpen', { default: false })
+
 const emit = defineEmits<{
   load: []
   new: []
@@ -1593,7 +1597,7 @@ defineExpose({
         </button>
         <button
           class="btn btn-primary flex-col h-auto py-1 gap-0.5 flex-1 max-w-40"
-          @click="emit('open-extension-window')"
+          @click="evaluationOpen = true"
         >
           <PlayIcon class="size-6" />
           <span class="text-[0.65rem] font-normal">Evaluate</span>

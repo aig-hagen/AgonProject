@@ -25,6 +25,7 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
+import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -36,6 +37,7 @@ import {
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
@@ -306,6 +308,20 @@ function updateEvaluationInstance(updated: PafWindowInstanceState) {
   )
 }
 
+// --- Compact evaluation host (mobile) ---
+
+const { layoutMode } = useLayoutMode()
+const evaluationHostOpen = ref(false)
+const activeExtensionId = ref<string | undefined>(undefined)
+const extensionChips = computed<EvaluationChip[]>(() =>
+  evaluationInstances.value.map((i) => ({ id: i.id, label: i.semanticKey, kind: 'extension' })),
+)
+
+// The node weights come from the active config only; clear them when the sheet closes.
+watch(evaluationHostOpen, (isOpen) => {
+  if (!isOpen && layoutMode.value === 'compact') nodeWeights.value = new Map()
+})
+
 provide(TOOLTIP_REGISTRY_KEY, {
   ...abstractArgumentationGlossary,
   ...probabilisticArgumentationGlossary,
@@ -392,11 +408,41 @@ function onPopupKeydown(event: KeyboardEvent) {
       @redo="emit('redo')"
       @save="emit('save')"
       @share="emit('share')"
+      v-model:evaluation-open="evaluationHostOpen"
       @open-extension-window="addEvaluationInstance()"
     >
       <template #evaluationExtensions>
+        <!-- Compact: one host sheet with a chip switcher over all saved configs. -->
+        <EvaluationHost
+          v-if="layoutMode === 'compact'"
+          v-model:open="evaluationHostOpen"
+          v-model:active-id="activeExtensionId"
+          :chips="extensionChips"
+          @add="addEvaluationInstance()"
+          @remove="removeEvaluationInstance($event)"
+        >
+          <template #default="{ activeId }">
+            <WindowExtensions
+              v-for="instance in evaluationInstances"
+              v-show="instance.id === activeId"
+              :key="instance.id"
+              hosted
+              :input="evaluationInput"
+              :instance-state="instance"
+              :document-id="documentId"
+              :state-key="`${instance.id}:window`"
+              :suppressed="instance.id !== activeId"
+              @update:instance-state="updateEvaluationInstance($event)"
+              @set-weights="(w) => instance.id === activeId && onSetWeights(w)"
+              @evaluate="evaluationCount++"
+            />
+          </template>
+        </EvaluationHost>
+
+        <!-- Regular: one floating window per saved config. -->
         <WindowExtensions
           v-for="(instance, index) in evaluationInstances"
+          v-else
           :key="instance.id"
           :input="evaluationInput"
           :instance-state="instance"

@@ -48,12 +48,16 @@ const {
   instanceOffset = 0,
   documentId,
   stateKey,
+  suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<SetAF<SetAfArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
   documentId?: DocumentId
   stateKey?: string
+  suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -107,9 +111,11 @@ const {
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query)
 
-watch(currentHighlight, (h) => emit('highlight', h))
+// Suppressed instances (all but the active one in the compact host) emit no highlight.
+const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
+watch(emittedHighlight, (h) => emit('highlight', h))
 function onWindowFocus() {
-  emit('highlight', currentHighlight.value)
+  emit('highlight', emittedHighlight.value)
 }
 
 const windowTitle = computed(() => {
@@ -126,6 +132,7 @@ const windowTitle = computed(() => {
 <template>
   <BaseEvaluationWindow
     :title="windowTitle"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-size="{ width: 400, height: 360 }"
     :query="query"

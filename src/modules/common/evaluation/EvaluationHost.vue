@@ -1,0 +1,116 @@
+<!--
+  AgonProject - The platform to explore different approaches to formal argumentation.
+
+  Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<script setup lang="ts">
+import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { watch } from 'vue'
+
+import type { EvaluationKind } from '@/modules/common/evaluation/types'
+import BottomSheet from '@/modules/common/window/BottomSheet.vue'
+
+export interface EvaluationChip {
+  id: string
+  label: string
+  kind: EvaluationKind
+}
+
+// Compact-only host: one sheet over all saved evaluation configs. Owns navigation
+// (the chip row), add/remove, and which config is active; each kind's parameter and
+// result body is rendered by the module through the default slot.
+const { chips } = defineProps<{ chips: EvaluationChip[] }>()
+
+const open = defineModel<boolean>('open', { required: true })
+const activeId = defineModel<string | undefined>('activeId', { default: undefined })
+
+const emit = defineEmits<{ add: []; remove: [id: string] }>()
+
+// Icon-free kind marker; extensions are all that ship in phase 3, ranking and
+// serialisation slot in during phase 4.
+const KIND_GLYPH: Record<EvaluationKind, string> = {
+  extension: '{ }',
+  ranking: '≻',
+  serialisation: '→',
+}
+
+function selectLast() {
+  activeId.value = chips.length > 0 ? chips[chips.length - 1]!.id : undefined
+}
+
+// A config highlights the canvas only while the sheet is open (mirrors desktop's
+// active-window behaviour); closing the sheet clears the active selection.
+watch(open, (isOpen) => {
+  if (!isOpen) activeId.value = undefined
+  else if (!chips.some((c) => c.id === activeId.value)) selectLast()
+})
+
+// While open, keep a valid config selected as chips are added or removed; a newly
+// added config becomes active.
+watch(
+  () => chips.map((c) => c.id).join('|'),
+  () => {
+    if (open.value && !chips.some((c) => c.id === activeId.value)) selectLast()
+  },
+)
+</script>
+
+<template>
+  <!-- Non-modal docked sheet: the graph stays visible and interactive above it, and
+       tapping the canvas does not dismiss it. Starts at a low peek, drag up for full. -->
+  <BottomSheet v-model:open="open" title="Evaluate" :modal="false" peek-height="50dvh">
+    <div class="flex flex-col gap-3 pb-4">
+      <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-0 flex gap-1.5 overflow-x-auto py-1">
+          <button
+            v-for="chip in chips"
+            :key="chip.id"
+            class="btn btn-sm shrink-0 gap-1.5"
+            :class="chip.id === activeId ? 'btn-primary' : 'btn-ghost bg-base-200'"
+            @click="activeId = chip.id"
+          >
+            <span class="font-mono text-[0.7rem] opacity-70">{{ KIND_GLYPH[chip.kind] }}</span>
+            {{ chip.label }}
+          </button>
+        </div>
+        <button
+          class="btn btn-sm btn-square btn-ghost shrink-0"
+          aria-label="Add evaluation"
+          @click="emit('add')"
+        >
+          <PlusIcon class="size-5" />
+        </button>
+        <button
+          v-if="activeId"
+          class="btn btn-sm btn-square btn-ghost shrink-0 text-error"
+          aria-label="Remove evaluation"
+          @click="emit('remove', activeId)"
+        >
+          <TrashIcon class="size-5" />
+        </button>
+      </div>
+
+      <div v-if="chips.length === 0" class="flex flex-col items-center gap-3 py-10 text-center">
+        <p class="opacity-60 text-sm">No evaluation yet.</p>
+        <button class="btn btn-primary gap-2" @click="emit('add')">
+          <PlusIcon class="size-5" /> Add evaluation
+        </button>
+      </div>
+
+      <slot v-else :active-id="activeId" />
+    </div>
+  </BottomSheet>
+</template>

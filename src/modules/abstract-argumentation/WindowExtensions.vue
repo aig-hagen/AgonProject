@@ -54,6 +54,7 @@ const {
   documentId,
   stateKey,
   suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: ExtensionWindowInstanceState
@@ -61,6 +62,7 @@ const {
   documentId?: DocumentId
   stateKey?: string
   suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -201,6 +203,7 @@ const windowTitle = computed(() => {
 <template>
   <BaseEvaluationWindow
     :title="windowTitle"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-size="{ width: 400, height: 360 }"
     :active="isActive"
