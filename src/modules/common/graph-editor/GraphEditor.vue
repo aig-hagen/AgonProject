@@ -59,6 +59,8 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
+  GRAPH_EDITOR_LAYOUTS,
+  type GraphEditorCommands,
   type GraphEditorState,
   type Highlight,
   type HistoryState,
@@ -770,13 +772,8 @@ onMounted(() => {
       if (state.nodes.length === 0) return
       if (graphComponentRef.value === null) return
 
-      const margin = ARGUMENT_RADIUS_IN_PX * 2
       tutorialCenterCount.value++
-      graphComponentRef.value.centerView(
-        { top: margin, right: margin, bottom: margin, left: margin },
-        undefined,
-        1,
-      )
+      fitToView()
     }
     // Attach to graphHost (not svgCanvas) — setGraph recreates the SVG element so a
     // listener on svgCanvas would be on a detached element after the first redraw.
@@ -1083,17 +1080,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   })
 
   if (center) {
-    const margin = ARGUMENT_RADIUS_IN_PX * 2
-    graphComponent.centerView(
-      {
-        top: margin,
-        right: margin,
-        bottom: margin,
-        left: margin,
-      },
-      undefined,
-      1,
-    )
+    fitToView()
   }
 }
 
@@ -1289,6 +1276,17 @@ onUnmounted(() => {
   renameCommitCleanup?.()
 })
 
+function fitToView() {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) return
+  const margin = ARGUMENT_RADIUS_IN_PX * 2
+  graphComponent.centerView(
+    { top: margin, right: margin, bottom: margin, left: margin },
+    undefined,
+    1,
+  )
+}
+
 function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
     return
@@ -1321,12 +1319,7 @@ function doLayout(layout: Layout) {
   if (wasPhysicsOn) {
     triggerSettle()
   } else {
-    const margin = ARGUMENT_RADIUS_IN_PX * 2
-    graphComponentRef.value.centerView(
-      { top: margin, right: margin, bottom: margin, left: margin },
-      undefined,
-      1,
-    )
+    fitToView()
   }
 }
 
@@ -1336,6 +1329,37 @@ const exportButtonRef = useTemplateRef('exportButton')
 const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
 
 const isTouchDevice = useMediaQuery('(pointer: coarse)')
+
+// Command surface a shell drives instead of the editor's own chrome. The desktop
+// main menu and toolbar still call these same functions; nothing here changes their
+// behaviour, it only makes them reachable from outside.
+function openExport() {
+  isExportOpened.value = true
+}
+function openSettings() {
+  settingsDialog.value?.open()
+}
+function openHelp() {
+  isHelpOpened.value = true
+}
+function openTutorials() {
+  isTutorialWindowOpen.value = true
+}
+
+defineExpose({
+  fitToView,
+  applyLayout: doLayout,
+  toggleGrid,
+  toggleNodePhysics,
+  openExport,
+  openSettings,
+  openHelp,
+  openTutorials,
+  gridVisibility: showGrid,
+  physicsMode,
+  hasRanking: hasRankingSlot,
+  hasSerialisation: hasSerialisationSlot,
+} satisfies GraphEditorCommands)
 </script>
 <template>
   <div
@@ -1395,16 +1419,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
             @load="emit('load')"
             @generate="emit('generate')"
             :show-save="EntryState.ENABLE"
-            :layouts-to-show="[
-              Layout.TopToBottom,
-              Layout.BottomToTop,
-              Layout.LeftToRight,
-              Layout.RightToLeft,
-              Layout.ForceDirected,
-              Layout.Neato,
-              Layout.Circular,
-              Layout.Radial,
-            ]"
+            :layouts-to-show="GRAPH_EDITOR_LAYOUTS"
             @save="emit('save')"
             :show-evaluate="EntryState.ENABLE"
             @evaluate="emit('open-extension-window')"
