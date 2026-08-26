@@ -488,18 +488,6 @@ function onPopupKeydown(event: KeyboardEvent) {
         </button>
       </template>
 
-      <!-- Compact: PAF-specific trailing action on the bottom command bar. -->
-      <template #commandBarExtra>
-        <button
-          class="btn btn-ghost flex-col h-auto py-1 gap-0.5"
-          :class="{ 'text-primary': isProbabilitiesOpen }"
-          @click="isProbabilitiesOpen = !isProbabilitiesOpen"
-        >
-          <AdjustmentsHorizontalIcon class="size-6 opacity-70" />
-          <span class="text-[0.65rem] font-normal">Probabilities</span>
-        </button>
-      </template>
-
       <template #nodeOverlay="{ nodes }">
         <text
           v-for="label in getAttackProbabilityLabels(nodes)"

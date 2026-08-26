@@ -99,35 +99,40 @@ watch(
        tapping the canvas does not dismiss it. Starts at a low peek, drag up for full. -->
   <BottomSheet v-model:open="open" title="Evaluate" :modal="false" peek-height="50dvh">
     <div class="flex flex-col gap-3 pb-4">
-      <div class="flex items-center gap-2">
-        <div class="flex-1 min-w-0 flex gap-1.5 overflow-x-auto py-1">
+      <div class="flex items-center gap-2 -mx-1 px-1 overflow-x-auto">
+        <div class="flex-1 min-w-0 flex gap-2 py-1">
           <button
             v-for="chip in chips"
             :key="chip.id"
-            class="btn btn-sm shrink-0 gap-1.5"
-            :class="chip.id === activeId ? 'btn-primary' : 'btn-ghost bg-base-200'"
+            class="flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-sm font-medium whitespace-nowrap shrink-0 transition-colors"
+            :class="
+              chip.id === activeId
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-base-300 bg-base-100 text-base-content/70'
+            "
+            :aria-pressed="chip.id === activeId"
             @click="activeId = chip.id"
           >
-            <span class="font-mono text-[0.7rem] opacity-70">{{ KIND_GLYPH[chip.kind] }}</span>
+            <span class="font-mono text-xs opacity-70">{{ KIND_GLYPH[chip.kind] }}</span>
             {{ chip.label }}
           </button>
         </div>
         <button
-          class="btn btn-sm btn-square btn-ghost shrink-0"
-          :class="{ 'btn-active': addMenuOpen }"
+          v-if="activeId"
+          class="grid place-items-center size-9 rounded-full border border-base-300 bg-base-100 text-error/80 shrink-0"
+          aria-label="Remove evaluation"
+          @click="emit('remove', activeId)"
+        >
+          <TrashIcon class="size-5" />
+        </button>
+        <button
+          class="grid place-items-center size-9 rounded-full border shrink-0 transition-colors"
+          :class="addMenuOpen ? 'border-primary bg-primary/10 text-primary' : 'border-base-300 bg-base-100'"
           aria-label="Add evaluation"
           :aria-expanded="addKinds.length > 1 ? addMenuOpen : undefined"
           @click="onAddClick"
         >
           <PlusIcon class="size-5" />
-        </button>
-        <button
-          v-if="activeId"
-          class="btn btn-sm btn-square btn-ghost shrink-0 text-error"
-          aria-label="Remove evaluation"
-          @click="emit('remove', activeId)"
-        >
-          <TrashIcon class="size-5" />
         </button>
       </div>
 

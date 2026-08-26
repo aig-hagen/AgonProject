@@ -18,9 +18,12 @@
 -->
 <script setup lang="ts" generic="DocumentT">
 import {
+  ArrowDownTrayIcon,
   ArrowTopRightOnSquareIcon,
   ChevronLeftIcon,
+  ChevronRightIcon,
   CodeBracketIcon,
+  DocumentTextIcon,
   PhotoIcon,
   ShareIcon,
 } from '@heroicons/vue/24/outline'
@@ -123,44 +126,73 @@ function download(config: ExportConfig<DocumentT>) {
 <template>
   <div class="pb-4">
     <!-- Format picker -->
-    <div v-if="screen === 'picker'" class="flex flex-col gap-4">
+    <div v-if="screen === 'picker'" class="flex flex-col gap-5">
+      <!-- One-tap share, kept apart from the format flow. -->
       <button
         v-if="quickShare"
-        class="btn btn-primary btn-block justify-start gap-3"
+        class="flex items-center gap-3 h-14 px-4 rounded-2xl bg-primary text-primary-content shadow-md shadow-primary/30"
         @click="quickShare()"
       >
         <ShareIcon class="size-5" />
-        <span class="flex-1 text-left">Copy share link</span>
+        <span class="flex-1 text-left font-semibold">Copy share link</span>
       </button>
 
       <section v-if="codeConfig" class="flex flex-col gap-2">
-        <h3 class="text-xs font-semibold uppercase opacity-60 px-1">Image</h3>
-        <button class="btn btn-block justify-start gap-3 h-auto py-3" @click="screen = 'svg'">
-          <PhotoIcon class="size-5 opacity-70" />
-          <span class="flex-1 text-left">SVG</span>
-          <ChevronLeftIcon class="size-4 opacity-40 rotate-180" />
+        <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
+          Image
+        </h3>
+        <button
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
+          @click="screen = 'svg'"
+        >
+          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+            <PhotoIcon class="size-5 text-primary" />
+          </span>
+          <span class="flex-1 min-w-0 flex flex-col leading-tight">
+            <b class="text-sm font-semibold">SVG image</b>
+            <span class="text-xs text-base-content/60 truncate">Rendered diagram — with style options</span>
+          </span>
+          <span class="badge badge-sm badge-ghost text-primary/80 shrink-0">Preview</span>
+          <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
         </button>
       </section>
 
       <section class="flex flex-col gap-2">
-        <h3 class="text-xs font-semibold uppercase opacity-60 px-1">Code &amp; data</h3>
+        <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
+          Code &amp; data
+        </h3>
         <button
           v-if="codeConfig"
-          class="btn btn-block justify-start gap-3 h-auto py-3"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
           @click="screen = 'code'"
         >
-          <CodeBracketIcon class="size-5 opacity-70" />
-          <span class="flex-1 text-left">{{ codeConfig.name }}</span>
-          <ChevronLeftIcon class="size-4 opacity-40 rotate-180" />
+          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+            <CodeBracketIcon class="size-5 text-primary" />
+          </span>
+          <span class="flex-1 min-w-0 flex flex-col leading-tight">
+            <b class="text-sm font-semibold">{{ codeConfig.name }}</b>
+            <span class="text-xs text-base-content/60 truncate">{{
+              codeConfig.description ?? 'Copy code & \\usepackage line'
+            }}</span>
+          </span>
+          <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
         </button>
         <button
           v-for="config in dataConfigs"
           :key="config.name"
-          class="btn btn-block justify-start gap-3 h-auto py-3"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
           @click="download(config)"
         >
-          <span class="flex-1 text-left">{{ config.name }}</span>
-          <span class="text-[0.65rem] opacity-50">.{{ config.extension }}</span>
+          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+            <DocumentTextIcon class="size-5 text-primary" />
+          </span>
+          <span class="flex-1 min-w-0 flex flex-col leading-tight">
+            <b class="text-sm font-semibold">{{ config.name }}</b>
+            <span class="text-xs text-base-content/60 truncate">{{
+              config.description ?? `.${config.extension} file`
+            }}</span>
+          </span>
+          <ArrowDownTrayIcon class="size-5 shrink-0 opacity-40" />
         </button>
       </section>
     </div>

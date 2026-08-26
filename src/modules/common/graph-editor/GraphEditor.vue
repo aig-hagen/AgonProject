@@ -41,7 +41,7 @@ import {
   Bars3Icon,
   BarsArrowUpIcon,
   BookOpenIcon,
-  ChevronLeftIcon,
+  ChevronDownIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
   PhotoIcon,
@@ -1553,29 +1553,34 @@ defineExpose({
     <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
     <template v-if="layoutMode === 'compact'">
       <header
-        class="absolute top-0 inset-x-0 z-20 flex items-center gap-2 px-2 h-12 bg-base-100/95 backdrop-blur border-b border-base-300"
+        class="absolute top-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2.5 h-14 bg-base-200/95 backdrop-blur border-b border-base-300"
         style="padding-top: env(safe-area-inset-top)"
       >
+        <!-- Switcher chip: back to home / document picker -->
         <button
-          class="btn btn-sm btn-ghost gap-2 min-w-0 flex-1 justify-start"
+          class="flex items-center gap-2 h-10 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
+          aria-label="Back to documents"
           @click="emit('home')"
         >
-          <ChevronLeftIcon class="size-5 shrink-0 opacity-70" />
-          <span v-if="typeBadge" class="badge badge-sm badge-neutral shrink-0">{{
-            typeBadge
-          }}</span>
-          <span class="truncate">{{ documentName || 'Untitled' }}</span>
+          <span class="grid place-items-center size-7 shrink-0 rounded-lg bg-primary/25 text-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-[1.1rem]">
+              <circle cx="7" cy="7" r="3" />
+              <circle cx="17" cy="17" r="3" />
+              <path d="M9.5 9.5 14.5 14.5" />
+            </svg>
+          </span>
+          <span class="flex flex-col items-start min-w-0 leading-tight">
+            <span class="text-sm font-semibold truncate max-w-38">{{
+              documentName || 'Untitled'
+            }}</span>
+            <span v-if="typeBadge" class="text-[0.7rem] text-base-content/60 truncate max-w-38">{{
+              typeBadge
+            }}</span>
+          </span>
+          <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
         </button>
         <button
-          class="btn btn-sm btn-square btn-ghost"
-          :disabled="!historyState.canUndo"
-          aria-label="Undo"
-          @click="emit('undo')"
-        >
-          <ArrowUturnLeftIcon class="size-5 opacity-70" />
-        </button>
-        <button
-          class="btn btn-sm btn-square btn-ghost"
+          class="btn btn-square btn-ghost"
           aria-label="Menu"
           @click="isMenuOpen = true"
         >
@@ -1583,31 +1588,57 @@ defineExpose({
         </button>
       </header>
 
+      <!-- Fixed 5-button command bar: two small actions flank the prominent Evaluate. -->
       <nav
-        class="absolute bottom-0 inset-x-0 z-20 flex items-stretch justify-around gap-1 px-2 pt-1 bg-base-100/95 backdrop-blur border-t border-base-300"
-        style="padding-bottom: max(env(safe-area-inset-bottom), 0.25rem)"
+        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-3 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
+        style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
       >
-        <button class="btn btn-ghost flex-col h-auto py-1 gap-0.5" @click="fitToView">
-          <ArrowsPointingInIcon class="size-6 opacity-70" />
-          <span class="text-[0.65rem] font-normal">Fit</span>
-        </button>
-        <button class="btn btn-ghost flex-col h-auto py-1 gap-0.5" @click="isRelayoutOpen = true">
-          <Squares2X2Icon class="size-6 opacity-70" />
-          <span class="text-[0.65rem] font-normal">Relayout</span>
-        </button>
+        <div class="flex gap-2">
+          <button
+            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            aria-label="Fit to view"
+            title="Fit to view"
+            @click="fitToView"
+          >
+            <ArrowsPointingInIcon class="size-6 opacity-70" />
+          </button>
+          <button
+            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            aria-label="Relayout"
+            title="Relayout"
+            @click="isRelayoutOpen = true"
+          >
+            <Squares2X2Icon class="size-6 opacity-70" />
+          </button>
+        </div>
+
         <button
-          class="btn btn-primary flex-col h-auto py-1 gap-0.5 flex-1 max-w-40"
+          class="btn btn-primary h-13 rounded-2xl px-6 gap-2 text-base font-semibold shadow-md shadow-primary/30"
           @click="evaluationOpen = true"
         >
           <PlayIcon class="size-6" />
-          <span class="text-[0.65rem] font-normal">Evaluate</span>
+          Evaluate
         </button>
-        <button class="btn btn-ghost flex-col h-auto py-1 gap-0.5" @click="isExportOpened = true">
-          <PhotoIcon class="size-6 opacity-70" />
-          <span class="text-[0.65rem] font-normal">Export</span>
-        </button>
-        <!-- Module-specific trailing action(s), e.g. PAF's Probabilities. -->
-        <slot name="commandBarExtra" />
+
+        <div class="flex gap-2">
+          <button
+            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            aria-label="Export"
+            title="Export"
+            @click="isExportOpened = true"
+          >
+            <PhotoIcon class="size-6 opacity-70" />
+          </button>
+          <button
+            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            :disabled="!historyState.canUndo"
+            aria-label="Undo"
+            title="Undo"
+            @click="emit('undo')"
+          >
+            <ArrowUturnLeftIcon class="size-6 opacity-70" />
+          </button>
+        </div>
       </nav>
 
       <!-- On-canvas creation-mode selectors, bottom-left, clear of the command bar.

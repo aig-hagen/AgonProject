@@ -482,3 +482,59 @@ Each phase adds tests for its behavior rather than deferring testing to the end.
   use the Web Share API as a progressive enhancement where file sharing is supported.
 - Confirm resizing across the compact breakpoint can preserve one controller/editor instance; if
   it cannot, persist and restore all transient state deliberately before enabling live switching.
+
+## Visual-polish backlog (mockup parity)
+
+The initial mobile build wired up behaviour; a second pass brings each surface up to the mockups'
+visual standard. Dropping features the code does not support (e.g. relative timestamps, a
+"Coming soon" PNG teaser) is fine — but the *layout and styling* of the mockups are the target.
+
+Done so far:
+
+- **Top bar** — switcher chip (icon tile + name/type + chevron) on the left, Menu on the right.
+- **Bottom command bar** — fixed 5-button layout: two small actions (Fit, Relayout) · prominent
+  Evaluate · two small actions (Export, Undo). Undo moved down from the top bar; the injectable
+  `#commandBarExtra` slot was removed and PAF's Probabilities button dropped from the bar (per-node
+  probability editing is reached by tapping a node/annotation).
+- **Evaluate sheet** — chip switcher restyled to rounded-full pills with per-kind glyphs and a
+  trailing add/delete pill (chrome only; see the rework note below for the body).
+- **Export sheet** — picker rebuilt as bordered card rows (icon tile + bold name + subtitle,
+  trailing chevron or download glyph) with `IMAGE` / `CODE & DATA` sections. Added optional
+  `ExportConfig.description` for the subtitles.
+
+### Evaluate UI: mobile-native rework (future)
+
+The Evaluate sheet still reuses the desktop evaluation body (`EvaluationCard` + the module
+`#parameters`/`#results` slots, shared with the floating windows). The chip switcher is
+mockup-styled, but the *interior* was left alone to avoid desktop regressions. A proper rework,
+purpose-built for mobile rather than adapted from the desktop card, should:
+
+- Replace the collapsed "semantics·mode summary" header with the mockup's always-visible
+  parameter row — a wide **Semantics** control + a narrow **Mode** control as tap-to-open pickers
+  (not desktop `<select>`s), sized for touch (~44px rows).
+- Add the **glossary reveal**: an ⓘ next to Semantics that expands an inline definition card for
+  the selected semantics, with a reference link out (this is a *new feature*, wired to the existing
+  glossary data — see [`glossary.ts`](../src/modules/*/glossary.ts)).
+- Restyle the **results** to the mockup: a `N extensions · tap to show on canvas` + timing header,
+  and result rows as large tappable cards with a state dot and a `shown` marker for the active one.
+- Do this without regressing the desktop floating-window evaluation. Either branch the shared body
+  on `layoutMode`, or split a dedicated compact evaluation body so the two can diverge cleanly.
+- Cover ranking / serialisation / ADF-interpretation / PAF-probability result kinds, not just
+  extensions.
+
+### Remaining surfaces needing a mockup-parity pass
+
+Each should be reconciled against its artboard the way the top/bottom bars, Evaluate chips, and
+Export picker were. Behaviour is largely in place; this is styling + layout.
+
+- **Menu** (*Menu*) — section grouping, row styling, iconography vs. the mockup.
+- **Settings** (*Settings*) — control styling and grouping.
+- **Relayout** (*Relayout*) — option cards / preview.
+- **Help** (*Help*) — gesture cheat-sheet layout.
+- **Home** (*Home* / *NewDoc*) — document list rows, type chips, new-document flow.
+- **Per-type editors** — *BafLink*, *IafEditor*, *AdfNode*, *PafProbabilities* on-canvas selectors
+  and sheets: verify against artboards after the gesture spike lands.
+- **SETAF** (*collective attacks*) — still needs a mockup before implementation (Decision #5).
+- **Tutorials** (*Tutorial*) — mobile overlay + picker.
+- **Standalone views** — Generate, Glossary, Share-open, Third-party.
+- **Toasts / notifications** — the docked top-center pill shown across mockups.
