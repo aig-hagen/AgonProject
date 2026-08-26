@@ -117,6 +117,7 @@ export const dialecticalArgumentationModule: ModuleConfig<
   examples: datasets,
   initialCotent: initialDialecticalArgumentation,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },

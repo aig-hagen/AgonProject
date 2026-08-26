@@ -84,6 +84,7 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   examples: datasets,
   initialCotent: initialSetAF,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },

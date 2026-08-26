@@ -18,6 +18,7 @@
  */
 import type { Objectish } from 'immer'
 
+import type { EvaluationKind } from '@/modules/common/evaluation/types'
 import type { Example } from '@/modules/common/examples'
 import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
 import type { DeserializationResult } from '@/modules/common/save/load'
@@ -70,6 +71,11 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * work with models associated with this module.
    */
   editorComponent: EditorComponent<DocumentT>
+  /**
+   * Evaluation windows this module offers on the graph editor. A shell reads this to
+   * decide which evaluation entry points to render.
+   */
+  evaluationKinds: EvaluationKind[]
   /**
    * Check the loaded data object can be loaded to a model.
    * This is user import data previously saved to disk.

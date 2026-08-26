@@ -74,6 +74,7 @@ export const probabilisticArgumentationModule: ModuleConfig<
   examples: datasets,
   initialCotent: initialProbabilisticArgumentation,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },
