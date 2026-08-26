@@ -55,6 +55,7 @@ const {
   documentId,
   stateKey,
   suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: RankingWindowInstanceState
@@ -62,6 +63,7 @@ const {
   documentId?: DocumentId
   stateKey?: string
   suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -180,11 +182,13 @@ function computeWeights() {
       }))
 }
 
-watch(data, () => emit('setWeights', computeWeights()), { immediate: true })
+// Suppressed instances (all but the active one in the compact host, and unfocused
+// windows on desktop) own no node weights, so switching config swaps the badges.
+const emittedWeights = computed(() => (suppressed ? [] : computeWeights()))
+watch(emittedWeights, (w) => emit('setWeights', w), { immediate: true })
 
 function onWindowFocus() {
   emit('focus')
-  emit('setWeights', computeWeights())
 }
 
 const isActive = computed(() => !suppressed && data.value !== undefined)
@@ -193,6 +197,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
 <template>
   <BaseEvaluationWindow
     :title="`${selectedSemantic.displayName} · Ranking`"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 480, height: 400 }"

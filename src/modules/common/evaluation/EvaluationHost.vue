@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 
 import type { EvaluationKind } from '@/modules/common/evaluation/types'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
@@ -32,20 +32,46 @@ export interface EvaluationChip {
 // Compact-only host: one sheet over all saved evaluation configs. Owns navigation
 // (the chip row), add/remove, and which config is active; each kind's parameter and
 // result body is rendered by the module through the default slot.
-const { chips } = defineProps<{ chips: EvaluationChip[] }>()
+const { chips, addKinds = ['extension'] } = defineProps<{
+  chips: EvaluationChip[]
+  /** Kinds the module lets you add; more than one shows a picker on the add button. */
+  addKinds?: EvaluationKind[]
+}>()
 
 const open = defineModel<boolean>('open', { required: true })
 const activeId = defineModel<string | undefined>('activeId', { default: undefined })
 
-const emit = defineEmits<{ add: []; remove: [id: string] }>()
+const emit = defineEmits<{ add: [kind: EvaluationKind]; remove: [id: string] }>()
 
-// Icon-free kind marker; extensions are all that ship in phase 3, ranking and
-// serialisation slot in during phase 4.
+// Icon-free kind marker; on the chip row and the add picker.
 const KIND_GLYPH: Record<EvaluationKind, string> = {
   extension: '{ }',
   ranking: '≻',
   serialisation: '→',
 }
+const KIND_LABEL: Record<EvaluationKind, string> = {
+  extension: 'Extension semantics',
+  ranking: 'Ranking semantics',
+  serialisation: 'Serialisation',
+}
+
+// With a single addable kind the add button adds it directly; with several it toggles
+// an inline picker (a dropdown would clip against the sheet's scroll container).
+const addMenuOpen = ref(false)
+
+function onAddClick() {
+  if (addKinds.length <= 1) emit('add', addKinds[0] ?? 'extension')
+  else addMenuOpen.value = !addMenuOpen.value
+}
+
+function chooseKind(kind: EvaluationKind) {
+  addMenuOpen.value = false
+  emit('add', kind)
+}
+
+watch(open, (isOpen) => {
+  if (!isOpen) addMenuOpen.value = false
+})
 
 function selectLast() {
   activeId.value = chips.length > 0 ? chips[chips.length - 1]!.id : undefined
@@ -88,8 +114,10 @@ watch(
         </div>
         <button
           class="btn btn-sm btn-square btn-ghost shrink-0"
+          :class="{ 'btn-active': addMenuOpen }"
           aria-label="Add evaluation"
-          @click="emit('add')"
+          :aria-expanded="addKinds.length > 1 ? addMenuOpen : undefined"
+          @click="onAddClick"
         >
           <PlusIcon class="size-5" />
         </button>
@@ -103,14 +131,29 @@ watch(
         </button>
       </div>
 
-      <div v-if="chips.length === 0" class="flex flex-col items-center gap-3 py-10 text-center">
+      <!-- Inline kind picker (multi-kind modules only). -->
+      <div v-if="addMenuOpen" class="flex flex-col gap-1 rounded-field bg-base-200/60 p-1">
+        <button
+          v-for="kind in addKinds"
+          :key="kind"
+          class="btn btn-sm btn-ghost justify-start gap-2"
+          @click="chooseKind(kind)"
+        >
+          <span class="font-mono text-[0.7rem] opacity-70 w-4 text-center">{{
+            KIND_GLYPH[kind]
+          }}</span>
+          {{ KIND_LABEL[kind] }}
+        </button>
+      </div>
+
+      <div v-if="chips.length === 0 && !addMenuOpen" class="flex flex-col items-center gap-3 py-10 text-center">
         <p class="opacity-60 text-sm">No evaluation yet.</p>
-        <button class="btn btn-primary gap-2" @click="emit('add')">
+        <button class="btn btn-primary gap-2" @click="onAddClick">
           <PlusIcon class="size-5" /> Add evaluation
         </button>
       </div>
 
-      <slot v-else :active-id="activeId" />
+      <slot v-if="chips.length > 0" :active-id="activeId" />
     </div>
   </BottomSheet>
 </template>
