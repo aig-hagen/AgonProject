@@ -20,7 +20,7 @@
 import { computed } from 'vue'
 
 import type { NodeId } from '@/modules/common/graph-editor/graphEditor'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 import {
   type FormulaNode,
   formulaToString,
@@ -64,7 +64,7 @@ const formulaPreview = computed(() => formulaToString(argument.value.condition, 
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     :title="`Condition for ${argument.name}`"
     :initial-position="{ x: 128, y: 64 }"
@@ -81,5 +81,5 @@ const formulaPreview = computed(() => formulaToString(argument.value.condition, 
         <p class="font-mono text-sm">{{ formulaPreview }}</p>
       </div>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

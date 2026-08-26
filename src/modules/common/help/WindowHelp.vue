@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const props = defineProps<{
   linkNames: string[]
@@ -30,7 +30,7 @@ const open = defineModel('open', { required: true })
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Help"
     :initial-position="{ x: 256, y: 256 }"
@@ -43,5 +43,5 @@ const open = defineModel('open', { required: true })
         :allow-hyper-link-creation="props.allowHyperLinkCreation"
       />
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

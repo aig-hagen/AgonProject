@@ -21,7 +21,7 @@ import { computed, onUnmounted, type Ref, ref, watch } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import { TWEETY_TIMEOUT_IN_MS } from '@/modules/common/evaluation/tweety-project/fetch'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 export interface EvaluationWindowQuery {
   status: Readonly<Ref<string>>
@@ -111,7 +111,7 @@ const size = computed(() => props.initialSize ?? { width: 400, height: 360 })
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="internalOpen"
     v-model:params-open="paramsOpen"
     card
@@ -156,5 +156,5 @@ const size = computed(() => props.initialSize ?? { width: 400, height: 360 })
 
       <p v-if="isLoading" class="text-base-content/50">Evaluating… {{ remainingSeconds }}s</p>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

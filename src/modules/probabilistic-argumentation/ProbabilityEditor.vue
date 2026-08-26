@@ -21,7 +21,7 @@ import { computed } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import type { Input } from '@/modules/common/evaluation/types'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 import type {
   PafArgumentData,
   ProbabilisticArgumentation,
@@ -77,7 +77,7 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Probabilities"
     :initial-position="{ x: 128, y: 64 }"
@@ -150,5 +150,5 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
         Add arguments to the graph to set their probabilities.
       </p>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

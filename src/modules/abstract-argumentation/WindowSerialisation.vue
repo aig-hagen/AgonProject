@@ -40,7 +40,7 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import { IdMapping } from '@/modules/common/ids'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const {
   input,
@@ -297,7 +297,7 @@ function onWindowFocus() {
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="isOpen"
     v-model:params-open="paramsOpen"
     card
@@ -440,5 +440,5 @@ function onWindowFocus() {
         </div>
       </template>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

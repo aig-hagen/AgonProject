@@ -32,7 +32,7 @@ import { computed, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import { useSettings } from '@/modules/common/settings/useSettings'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 import type { ExportConfig, ExportFileData } from '.'
 
@@ -188,7 +188,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Export"
     :initial-position="{ x: 64, y: 128 }"
@@ -338,7 +338,7 @@ watchEffect(() => {
         </div>
       </div>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>
 <style scoped>
 :deep(.cm-editor) {

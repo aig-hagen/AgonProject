@@ -22,7 +22,7 @@ import { inject } from 'vue'
 
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const { tutorials, context } = defineProps<{
   tutorials: Tutorial[]
@@ -44,7 +44,7 @@ function launch(tutorial: Tutorial) {
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Tutorials"
     :initial-position="{ x: 128, y: 128 }"
@@ -75,5 +75,5 @@ function launch(tutorial: Tutorial) {
         </button>
       </div>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>
