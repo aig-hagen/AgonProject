@@ -1,6 +1,6 @@
 ## Bugs and Issues
 
-
+- double request limit per minute
 
 ## Features
 
