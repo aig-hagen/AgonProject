@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    a { color: #3e6a8a; } a:hover { color: #2b4d66; }
+    .badge { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 11px; background: #eef2f6; color: #3e6a8a; font-size: 11px; font-weight: 700; flex: none; }
+    .type { border: 1px solid #e4e4e7; border-radius: 14px; background: #ffffff; }
+    .thead { display: flex; align-items: center; gap: 12px; padding: 12px; cursor: pointer; }
+    .thead b { font-size: 15px; font-weight: 600; }
+    .thead p { margin: 2px 0 0; font-size: 12px; color: #7a7a83; line-height: 1.35; }
+    .exchip { font-size: 13px; padding: 7px 12px; border-radius: 999px; background: #f1f5f8; color: #3e6a8a; cursor: pointer; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #fafafa; color: #1b1b1f; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!-- Top bar with back to Home -->
+  <div style="height: 58px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 12px 0 8px; background: #ffffff; border-bottom: 1px solid #eee;">
+    <button style="display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; border: none; background: transparent; cursor: pointer;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4a4a52" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <span style="flex: 1; font-size: 18px; font-weight: 700;">New document</span>
+  </div>
+
+  <div style="flex: 1; overflow-y: auto; padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 10px;">
+
+    <!-- Abstract: expanded, showing examples + actions -->
+    <div class="type" style="border-color: #cfdcE6; box-shadow: 0 1px 4px #5a87a815;">
+      <div class="thead">
+        <span class="badge" style="background: #5a87a8; color: #ffffff;">AF</span>
+        <span style="flex: 1;">
+          <b>Abstract Argumentation</b>
+          <p>The foundational model: arguments and directed attacks.</p>
+        </span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9a9aa2" stroke-width="2.2" style="transform: rotate(180deg);"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div style="padding: 0 14px 14px;">
+        <div style="font-size: 11px; font-weight: 700; color: #9a9aa2; letter-spacing: 0.04em; margin: 2px 0 8px;">OPEN EXAMPLE</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+          <span class="exchip">Meal &amp; wine</span>
+          <span class="exchip">Two cycles</span>
+          <span class="exchip">Unique stable</span>
+          <span class="exchip">Initial sets</span>
+          <span class="exchip">Grounded / ideal</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; height: 46px; border-radius: 12px; border: none; background: #5a87a8; color: #ffffff; font-size: 14px; font-weight: 600; cursor: pointer;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9"><path d="M12 5v14M5 12h14"/></svg>
+            Create new
+          </button>
+          <button style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; height: 46px; border-radius: 12px; border: 1px solid #d7e3ec; background: #ffffff; color: #3e6a8a; font-size: 14px; font-weight: 600; cursor: pointer;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="1.7"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>
+            Generate
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- collapsed types -->
+    <div class="type"><div class="thead">
+      <span class="badge">BAF</span>
+      <span style="flex: 1;"><b>Bipolar Argumentation</b><p>Relations can be either attacking or supporting.</p></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c0c0c6" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+    </div></div>
+
+    <div class="type"><div class="thead">
+      <span class="badge">ADF</span>
+      <span style="flex: 1;"><b>Dialectical Argumentation</b><p>Relations modelled via propositional acceptance conditions.</p></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c0c0c6" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+    </div></div>
+
+    <div class="type"><div class="thead">
+      <span class="badge">SetAF</span>
+      <span style="flex: 1;"><b>Collective Attacks</b><p>Sets of arguments can collectively attack a target.</p></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c0c0c6" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+    </div></div>
+
+    <div class="type"><div class="thead">
+      <span class="badge">iAF</span>
+      <span style="flex: 1;"><b>Incomplete Argumentation</b><p>Certain vs. uncertain arguments and attacks.</p></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c0c0c6" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+    </div></div>
+
+    <div class="type"><div class="thead">
+      <span class="badge">PAF</span>
+      <span style="flex: 1;"><b>Probabilistic Argumentation</b><p>Probability values between 0 and 1 quantify uncertainty.</p></span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c0c0c6" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+    </div></div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

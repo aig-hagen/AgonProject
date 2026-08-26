@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    a { color: #3e6a8a; } a:hover { color: #2b4d66; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .chip { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid #e4e4e7; background: #ffffff; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; flex: none; }
+    .chip.on { border-color: #5a87a8; background: #eef3f7; color: #2b4d66; }
+    .score { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 10px; border: 1px solid; font-size: 14px; color: #1b1b1f; min-width: 74px; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #ffffff; color: #1b1b1f; position: relative; overflow: hidden;">
+
+  <!-- Canvas behind: ranking sets NUMBER BADGES on nodes (not highlight) -->
+  <div style="position: absolute; inset: 0; background: #ffffff;">
+    <svg width="390" height="360" viewBox="0 0 390 360" style="position: absolute; top: 30px; left: 0;">
+      <defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#5a87a8"/></marker></defs>
+      <g stroke="#5a87a8" stroke-width="2.4" marker-end="url(#ah4)" fill="none">
+        <path d="M150 95 L118 178"/><path d="M138 220 L232 220"/><path d="M258 182 L214 98"/>
+      </g>
+      <g class="mono" font-size="17" text-anchor="middle">
+        <g><circle cx="180" cy="70" r="26" fill="#99b7d5" stroke="#5a87a8" stroke-width="1.6"/><text x="180" y="76">a</text>
+           <circle cx="204" cy="48" r="12" fill="#ffffff" stroke="#5a87a8" stroke-width="1.4"/><text x="204" y="52" font-size="11">.62</text></g>
+        <g><circle cx="110" cy="210" r="26" fill="#99b7d5" stroke="#5a87a8" stroke-width="1.6"/><text x="110" y="216">b</text>
+           <circle cx="134" cy="188" r="12" fill="#ffffff" stroke="#5a87a8" stroke-width="1.4"/><text x="134" y="192" font-size="11">.31</text></g>
+        <g><circle cx="262" cy="220" r="26" fill="#99b7d5" stroke="#5a87a8" stroke-width="1.6"/><text x="262" y="226">c</text>
+           <circle cx="286" cy="198" r="12" fill="#ffffff" stroke="#5a87a8" stroke-width="1.4"/><text x="286" y="202" font-size="11">.50</text></g>
+      </g>
+    </svg>
+  </div>
+  <div style="position: absolute; inset: 0; background: #0000000d;"></div>
+
+  <!-- Bottom sheet -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 512px; background: #ffffff; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -6px 24px #00000022; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: center; padding: 8px 0 4px;">
+      <div style="width: 40px; height: 5px; border-radius: 999px; background: #d4d4d8;"></div>
+    </div>
+
+    <!-- same switcher, now the ranking chip is active -->
+    <div style="display: flex; gap: 8px; padding: 6px 14px 12px; overflow-x: auto;">
+      <div class="chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9"><path d="M9 4H7a2 2 0 0 0-2 2c0 3-1 4-2 4v0c1 0 2 1 2 4a2 2 0 0 0 2 2h2M15 4h2a2 2 0 0 1 2 2c0 3 1 4 2 4v0c-1 0-2 1-2 4a2 2 0 0 1-2 2h-2"/></svg>
+        Grounded
+      </div>
+      <div class="chip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9"><path d="M9 4H7a2 2 0 0 0-2 2c0 3-1 4-2 4v0c1 0 2 1 2 4a2 2 0 0 0 2 2h2M15 4h2a2 2 0 0 1 2 2c0 3 1 4 2 4v0c-1 0-2 1-2 4a2 2 0 0 1-2 2h-2"/></svg>
+        Preferred
+      </div>
+      <div class="chip on">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="1.9"><path d="M11 5h10M11 12h10M11 19h10M3 7l2-2 2 2M5 5v14"/></svg>
+        Categorizer
+      </div>
+      <div class="chip" style="width: 38px; padding: 0; justify-content: center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a4a52" stroke-width="1.9"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+    </div>
+
+    <!-- ranking params: semantics only (no Mode) -->
+    <div style="display: flex; gap: 10px; padding: 0 16px 14px;">
+      <label style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; color: #7a7a83; font-weight: 500;">Ranking semantics</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 10px; background: #f7f7f8; font-size: 14px;">Categorizer<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9aa2" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
+      </label>
+    </div>
+
+    <div style="flex: 1; overflow-y: auto; padding: 0 16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px;">
+        <span style="font-size: 12px; color: #7a7a83;">Node badges show ranking scores</span>
+        <span style="font-size: 11px; color: #a0a0a8;">24&nbsp;ms</span>
+      </div>
+      <!-- numerical scores as colored chips (matches WindowRanking) -->
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+        <div class="score" style="background: hsl(120,55%,90%); border-color: hsl(120,55%,62%);"><b style="font-weight: 600;">a</b><span class="mono" style="font-size: 12px; opacity: 0.6;">0.62</span></div>
+        <div class="score" style="background: hsl(75,55%,90%); border-color: hsl(75,55%,62%);"><b style="font-weight: 600;">c</b><span class="mono" style="font-size: 12px; opacity: 0.6;">0.50</span></div>
+        <div class="score" style="background: hsl(35,55%,90%); border-color: hsl(35,55%,62%);"><b style="font-weight: 600;">b</b><span class="mono" style="font-size: 12px; opacity: 0.6;">0.31</span></div>
+      </div>
+      <!-- lattice orderings render instead as: a ≻ c ≻ b -->
+      <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: #f7f7f8; font-size: 12px; color: #7a7a83;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9a9aa2" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+        Lattice semantics instead show an order: <span class="mono" style="color: #4a4a52;">a&nbsp;≻&nbsp;c&nbsp;≻&nbsp;b</span>
+      </div>
+    </div>
+
+    <div style="flex: none; display: flex; gap: 10px; padding: 12px 16px 18px; border-top: 1px solid #f0f0f2;">
+      <button style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 12px; border: 1px solid #e4e4e7; background: #ffffff; font-size: 14px; font-weight: 500; color: #4a4a52; cursor: pointer;">Copy ranking</button>
+      <button style="width: 46px; display: grid; place-items: center; height: 46px; border-radius: 12px; border: 1px solid #e4e4e7; background: #ffffff; cursor: pointer;">
+        <span class="mono" style="font-size: 13px; color: #4a4a52;">TeX</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
