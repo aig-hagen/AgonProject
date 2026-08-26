@@ -160,19 +160,21 @@ must not delete after the pointer has moved far enough to begin link creation. D
 must also be available from an explicit contextual menu; gesture-only deletion is not sufficient
 for discoverability or accessibility.
 
-Before implementation, complete this primary-action table and use it as the source for Help and
-tutorial wording:
+**Settled** (Decision #3, source for Help and tutorial wording):
 
 | Module | Node tap | Node hold | Node hold-drag | Edge tap |
 |--------|----------|-----------|----------------|----------|
-| AF / BAF | Rename | Delete menu/action | Create selected link type | BAF: change type / delete; AF: delete menu |
+| AF | Rename | Delete menu/action | Create attack | Delete menu |
+| BAF | Rename | Delete menu/action | Create selected link type | Change type / delete |
 | iAF | Context menu: rename, certainty, delete | Delete menu/action | Create selected attack type | Change certainty / delete |
 | ADF | Open acceptance-condition sheet; rename is an action in that sheet | Delete menu/action | Disabled | Not applicable (links derive from conditions) |
 | PAF | Open/jump to probability row; rename is a contextual action | Delete menu/action | Create attack | Open attack probability / delete |
 | SETAF | Toggle source selection; contextual action provides rename | Delete menu/action | From selected source(s), create attack | Delete menu |
 
-The exact tap behavior for iAF, PAF, and SETAF is a product decision; the entries above are the
-recommended defaults and remove the conflict between generic rename and type-specific editing.
+For iAF, PAF, and SETAF, tap is claimed by the type-specific action and **rename lives behind a
+contextual menu** rather than being the direct tap — this removes the conflict between a generic
+rename and type-specific editing. Phase 3 only needs the AF/BAF rows (for Help); the rest are
+fixed here so Help wording and Phase 5 do not churn.
 
 **Notifications** ([`NotificationsDisplay.vue`](/src/modules/common/notifications/NotificationsDisplay.vue))
 render as a **top-center toast** that auto-dismisses (the bottom is occupied by the command
@@ -279,6 +281,11 @@ Full screen, one control per setting from
 
 Physics and grid toggles live **only** here (desktop exposes them via the `p`/`g` keyboard
 shortcuts, which mobile lacks) — no bottom-bar buttons for them.
+
+*Implementation note:* the existing [`WindowSettings.vue`](/src/modules/common/settings/WindowSettings.vue)
+`<dialog>` already reads well and fits a phone screen, so it is **kept as-is on mobile** rather
+than being reworked onto the sheet seam. It is the one core surface that does not move to
+`WindowShell`/`BottomSheet` in Phase 3.
 
 ### Relayout (*Relayout*)
 
@@ -456,9 +463,13 @@ Each phase adds tests for its behavior rather than deferring testing to the end.
    tap-to-select proves too disruptive to rename and normal navigation in the device spike.
 6. **Document timestamps.** Add `createdAt`/`updatedAt` with an IndexedDB migration, or remove the
    relative-time labels from the mockup? Recommended initial scope: remove the timestamps.
-7. **Evaluation navigation.** One aggregate sheet with kind-specific bodies, or a separate sheet
-   per kind? Recommended: one host/switcher as designed, while keeping each kind's controller and
-   result component independent.
+7. **Evaluation navigation.** *Settled:* one aggregate **host sheet** owns the chip-row switcher,
+   add/remove, and active-config state, while each kind keeps its own parameter and result body
+   (no flattened result model). The host iterates the module's existing
+   `extensionInstances`/`rankingInstances`/… arrays, so desktop stays N floating windows and mobile
+   becomes one sheet over the same saved-config state. This requires extending the module
+   capability contract (today `moduleConfig` only declares *which* kinds exist) so the host can pick
+   the right parameter/result body per kind — that extension is Phase 3 work, not Phase 4.
 
 ## Technical validation gates
 
