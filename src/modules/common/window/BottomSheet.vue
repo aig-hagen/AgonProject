@@ -24,10 +24,21 @@ import { useVisualViewport } from '@/modules/common/layout/useVisualViewport'
 
 const open = defineModel<boolean>('open', { required: true })
 
-const { title, fullHeight = false } = defineProps<{
+const {
+  title,
+  fullHeight = false,
+  modal = true,
+  peekHeight,
+} = defineProps<{
   title: string
   /** Start expanded to the full snap point instead of sizing to content. */
   fullHeight?: boolean
+  /** Modal (default): a backdrop blocks and dismisses. Non-modal: no backdrop, so
+      the content behind the sheet stays visible and interactive. */
+  modal?: boolean
+  /** When set, the sheet gets a low "peek" snap at this CSS height (e.g. '48dvh')
+      as its default, draggable up to full — for a docked, non-modal sheet. */
+  peekHeight?: string
 }>()
 
 const emit = defineEmits<{ close: [] }>()
@@ -37,8 +48,21 @@ const titleId = useId()
 
 const { keyboardInset } = useVisualViewport()
 
-// Snap state: content-driven default, or the full-height snap point.
-const expanded = ref(fullHeight)
+// Snap points: content-driven, the low peek height, or full.
+type Snap = 'content' | 'peek' | 'full'
+function initialSnap(): Snap {
+  if (fullHeight) return 'full'
+  if (peekHeight !== undefined) return 'peek'
+  return 'content'
+}
+const snap = ref<Snap>(initialSnap())
+const panelHeight = computed(() =>
+  snap.value === 'full'
+    ? 'var(--sheet-max-height)'
+    : snap.value === 'peek'
+      ? peekHeight
+      : undefined,
+)
 // Downward drag offset in px while a drag is in progress; 0 when settled.
 const dragOffset = ref(0)
 const dragging = ref(false)
@@ -61,10 +85,13 @@ function close() {
 watch(open, async (isOpen, wasOpen) => {
   if (isOpen && !wasOpen) {
     restoreFocus = document.activeElement as HTMLElement | null
-    expanded.value = fullHeight
+    snap.value = initialSnap()
     dragOffset.value = 0
-    await nextTick()
-    focusFirst()
+    // A non-modal sheet must not steal focus from the content behind it.
+    if (modal) {
+      await nextTick()
+      focusFirst()
+    }
   } else if (!isOpen && wasOpen) {
     emit('close')
     restoreFocus?.focus?.()
@@ -93,7 +120,8 @@ function onKeydown(event: KeyboardEvent) {
     close()
     return
   }
-  if (event.key !== 'Tab') return
+  // Only a modal sheet traps Tab; a docked sheet lets focus reach the canvas behind.
+  if (event.key !== 'Tab' || !modal) return
   const focusable = focusableElements()
   if (focusable.length === 0) {
     event.preventDefault()
@@ -122,14 +150,18 @@ function onHandlePointerMove(event: PointerEvent) {
   if (!dragging.value || event.pointerId !== pointerId) return
   const delta = event.clientY - dragStartY
   dragOffset.value = Math.max(0, delta)
-  if (delta < -EXPAND_THRESHOLD) expanded.value = true
+  if (delta < -EXPAND_THRESHOLD) snap.value = 'full'
 }
 
 function onHandlePointerUp(event: PointerEvent) {
   if (!dragging.value || event.pointerId !== pointerId) return
   dragging.value = false
   pointerId = null
-  if (dragOffset.value > CLOSE_THRESHOLD) {
+  // From full, a downward drag settles to the peek snap (never straight to closed)
+  // when the sheet has one; otherwise a far enough drag dismisses it.
+  if (snap.value === 'full' && peekHeight !== undefined) {
+    if (dragOffset.value > EXPAND_THRESHOLD) snap.value = 'peek'
+  } else if (dragOffset.value > CLOSE_THRESHOLD) {
     close()
   }
   dragOffset.value = 0
@@ -140,7 +172,7 @@ function onHandlePointerUp(event: PointerEvent) {
   <Teleport to="body">
     <Transition name="sheet-fade">
       <div
-        v-if="open"
+        v-if="open && modal"
         class="sheet-backdrop fixed inset-0 z-50 bg-black/40"
         @click="close"
         aria-hidden="true"
@@ -151,13 +183,14 @@ function onHandlePointerUp(event: PointerEvent) {
         v-if="open"
         ref="sheet"
         role="dialog"
-        aria-modal="true"
+        :aria-modal="modal"
         :aria-labelledby="titleId"
         tabindex="-1"
         class="sheet-panel fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-base-100 shadow-lg/30 outline-none"
-        :class="{ 'sheet-panel--expanded': expanded, 'sheet-panel--dragging': dragging }"
+        :class="{ 'sheet-panel--dragging': dragging }"
         :style="{
           transform: `translateY(${dragOffset}px)`,
+          height: panelHeight,
           paddingBottom: bottomInset,
           '--sheet-max-height': '90dvh',
         }"
@@ -185,7 +218,7 @@ function onHandlePointerUp(event: PointerEvent) {
           </button>
         </header>
         <div class="sheet-body flex-1 overflow-y-auto overscroll-contain px-4">
-          <slot :expanded="expanded" />
+          <slot :expanded="snap === 'full'" />
         </div>
         <footer v-if="$slots.footer" class="shrink-0 border-t border-base-300 px-4 pt-3">
           <slot name="footer" />
@@ -199,10 +232,6 @@ function onHandlePointerUp(event: PointerEvent) {
 .sheet-panel {
   max-height: var(--sheet-max-height);
   touch-action: none;
-}
-
-.sheet-panel--expanded {
-  height: var(--sheet-max-height);
 }
 
 .sheet-body {
