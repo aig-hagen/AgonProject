@@ -128,7 +128,9 @@ function loadFile() {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen w-screen m-0 bg-base-100 overflow-hidden">
+  <!-- Dynamic viewport height so the bottom command bar tracks iOS/Android browser chrome
+       showing/hiding, instead of sitting behind it as 100vh would. -->
+  <div class="flex flex-col h-dvh w-screen m-0 bg-base-100 overflow-hidden">
     <!-- Header for the Documents/New surfaces; the editor surface uses GraphEditor's own top bar. -->
     <header
       v-if="surface !== 'editor'"
