@@ -45,6 +45,11 @@ import {
   undoContent,
 } from '@/modules/common/state'
 
+/** The controller object shared by the desktop and mobile home shells. */
+export type HomeController<DocumentT extends Objectish> = ReturnType<
+  typeof useHomeController<DocumentT>
+>
+
 /**
  * Presentation-neutral controller owning document lifecycle, history, file I/O,
  * sharing and notifications. Both the desktop and the mobile home shells consume

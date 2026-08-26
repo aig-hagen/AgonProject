@@ -19,16 +19,14 @@
 <script setup lang="ts" generic="DocumentT extends Objectish">
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { provide, useTemplateRef } from 'vue'
-import { useRouter } from 'vue-router'
+import { provide } from 'vue'
 
-import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
-import LayoutTabs from '@/app/home/EditorTabs.vue'
+import HomeViewDesktop from '@/app/home/HomeViewDesktop.vue'
+import HomeViewMobile from '@/app/home/HomeViewMobile.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { useHomeController } from '@/app/home/useHomeController'
 import { DOCUMENTS_DB_INJECTION_KEY, type DocumentsDB } from '@/modules/common/documents/db'
-import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
-import ShareModal from '@/modules/common/share/ShareModal.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
 const { db, modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>
@@ -37,111 +35,13 @@ const { db, modules } = defineProps<{
 
 provide(DOCUMENTS_DB_INJECTION_KEY, db)
 
-const router = useRouter()
+// One controller instance, shared by both shells so state survives the breakpoint.
+const controller = useHomeController(db, modules)
 
-const {
-  notifications,
-  documents,
-  deleteDocument,
-  renameDocument,
-  selectedDocumentId,
-  selectDocument,
-  documentModule,
-  documentLoading,
-  documentState,
-  loadedDocuments,
-  updateDocument,
-  overrideWithContent,
-  createAndSelectBlankDocument,
-  createDocumentWithContent,
-  undo,
-  redo,
-  showCreate,
-  historyState,
-  handleEditorShortcut,
-  loadFromFileInput,
-  shareUrl,
-  shareDocument,
-  isSharing,
-  shareCopied,
-  quickShareDocument,
-  saveAsFile,
-  exportAsFile,
-} = useHomeController(db, modules)
-
-const fileInput = useTemplateRef<HTMLInputElement>('file-input')
-
-function loadFile() {
-  fileInput.value?.click()
-}
+const { layoutMode } = useLayoutMode()
 </script>
 
 <template>
-  <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
-    <LayoutTabs
-      class="flex-none"
-      :data="documents.map((document) => ({ id: document.id, name: document.name }))"
-      :selected="selectedDocumentId"
-      @select="selectDocument($event)"
-      @create="createAndSelectBlankDocument"
-      @delete="deleteDocument($event)"
-      @clear-all="documents.forEach((d) => deleteDocument(d.id))"
-      @rename="(id, name) => renameDocument(id, name)"
-      :db="db"
-      :modules="modules"
-      @save="saveAsFile($event)"
-      :show-create="showCreate"
-      :sharing="isSharing"
-      :share-copied="shareCopied"
-      @quick-share="quickShareDocument"
-    />
-    <main class="border-t -mt-px border-base-300 editor flex-1 overflow-hidden">
-      <div class="relative h-full w-full">
-        <BlankDocumentCanvas
-          v-if="selectedDocumentId === undefined"
-          :module-cards="modules"
-          @open="createDocumentWithContent"
-        ></BlankDocumentCanvas>
-        <BlankDocumentCanvas
-          v-if="!documentLoading && documentState === undefined"
-          :module-cards="modules"
-          :source-document-id="selectedDocumentId"
-          @open="overrideWithContent"
-        ></BlankDocumentCanvas>
-        <component
-          tabindex="0"
-          v-for="loadedDocument of loadedDocuments"
-          v-show="loadedDocument.id === selectedDocumentId"
-          :key="loadedDocument.id"
-          :is="loadedDocument.module.editorComponent"
-          @change="
-            (state) => {
-              if (loadedDocument.id === selectedDocumentId) updateDocument(state)
-            }
-          "
-          @new="createAndSelectBlankDocument"
-          @load="loadFile"
-          @generate="router.push(documentModule?.generateHref ?? '/generate')"
-          :state="loadedDocument.state"
-          :document-id="loadedDocument.id"
-          :history-state="historyState"
-          @keydown="handleEditorShortcut"
-          @undo="undo"
-          @redo="redo"
-          @save="saveAsFile(loadedDocument.id)"
-          @share="shareDocument(loadedDocument.id)"
-          @export="exportAsFile(loadedDocument.id, $event)"
-        />
-      </div>
-    </main>
-  </div>
-  <NotificationsDisplay :notifications="notifications" />
-  <ShareModal :url="shareUrl" @close="shareUrl = null" />
-  <input
-    ref="file-input"
-    type="file"
-    v-show="false"
-    accept="application/json"
-    @change="loadFromFileInput($event)"
-  />
+  <HomeViewMobile v-if="layoutMode === 'compact'" :modules="modules" :controller="controller" />
+  <HomeViewDesktop v-else :db="db" :modules="modules" :controller="controller" />
 </template>
