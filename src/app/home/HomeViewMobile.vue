@@ -87,7 +87,7 @@ function loadFile() {
 
 <template>
   <div class="flex flex-col h-screen w-screen m-0 bg-base-100 overflow-hidden">
-    <!-- TEMPORARY top bar; replaced by the compact chrome inside GraphEditor in increment 2. -->
+    <!-- Header for the Documents/New surfaces; the editor surface uses GraphEditor's own top bar. -->
     <header
       v-if="surface !== 'editor'"
       class="flex-none flex items-center gap-2 px-3 h-12 border-b border-base-300"
@@ -145,6 +145,7 @@ function loadFile() {
           :state="loadedDocument.state"
           :document-id="loadedDocument.id"
           :document-name="selectedName"
+          :type-badge="loadedDocument.module.newNamePrefix"
           :history-state="historyState"
           @keydown="handleEditorShortcut"
           @undo="undo"

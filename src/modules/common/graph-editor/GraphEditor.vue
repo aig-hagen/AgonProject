@@ -31,10 +31,26 @@ import {
   type PositionSnapshot,
 } from '@aig-hagen/graph-component/lib'
 import {
+  AcademicCapIcon,
+  ArrowDownTrayIcon,
   ArrowLongRightIcon,
+  ArrowsPointingInIcon,
+  ArrowUpTrayIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+  Bars3Icon,
   BarsArrowUpIcon,
+  BookOpenIcon,
+  ChevronLeftIcon,
+  Cog6ToothIcon,
+  DocumentPlusIcon,
   PhotoIcon,
+  PlayIcon,
+  QuestionMarkCircleIcon,
   QueueListIcon,
+  ShareIcon,
+  SparklesIcon,
+  Squares2X2Icon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
@@ -89,7 +105,8 @@ import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
-import { Layout } from '@/modules/common/main-menu/layouting'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
+import { Layout, layoutDatas } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState, type GridVisibility } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
@@ -105,6 +122,7 @@ import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 import WindowTutorials from '@/modules/common/tutorial/WindowTutorials.vue'
+import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
@@ -130,6 +148,8 @@ const {
   defaultTutorialId,
   tutorialContextExtra,
   documentId,
+  documentName,
+  typeBadge,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
@@ -146,6 +166,10 @@ const {
   tutorialContextExtra?: Partial<TutorialContext>
   tutorialRefs?: Record<string, HTMLElement | null>
   documentId: number
+  /** Compact chrome only: the open document's name, shown in the switcher chip. */
+  documentName?: string
+  /** Compact chrome only: short module badge (e.g. `AF`) shown in the switcher chip. */
+  typeBadge?: string
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -332,6 +356,7 @@ const emit = defineEmits<{
   redo: []
   save: []
   share: []
+  home: []
   'open-extension-window': []
   'open-ranking-window': []
   'open-serialisation-window': []
@@ -1330,6 +1355,24 @@ const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
 
 const isTouchDevice = useMediaQuery('(pointer: coarse)')
 
+// --- Compact (mobile) chrome ---
+// In the compact layout the desktop left-edge cluster and main menu are hidden and
+// replaced by a top bar + bottom command bar rendered below, plus Menu/Relayout sheets.
+const { layoutMode } = useLayoutMode()
+const isMenuOpen = ref(false)
+const isRelayoutOpen = ref(false)
+const relayoutOptions = GRAPH_EDITOR_LAYOUTS.map((layout) => ({ layout, ...layoutDatas[layout] }))
+
+function relayoutTo(layout: Layout) {
+  doLayout(layout)
+  isRelayoutOpen.value = false
+}
+
+function runFromMenu(action: () => void) {
+  isMenuOpen.value = false
+  action()
+}
+
 // Command surface a shell drives instead of the editor's own chrome. The desktop
 // main menu and toolbar still call these same functions; nothing here changes their
 // behaviour, it only makes them reachable from outside.
@@ -1398,7 +1441,7 @@ defineExpose({
     </svg>
     <div
       class="pointer-events-none w-full opacity-50 absolute inset-0 flex items-center"
-      v-if="state.nodes.length === 0 && showHints"
+      v-if="layoutMode === 'regular' && state.nodes.length === 0 && showHints"
     >
       <div class="m-auto w-fit">
         <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
@@ -1411,7 +1454,10 @@ defineExpose({
       @update:arrow-type="updateLinkType(arrowSwitcherTarget.linkId, $event)"
       @close="arrowSwitcherTarget = undefined"
     />
-    <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
+    <div
+      v-if="layoutMode === 'regular'"
+      class="absolute top-4 bottom-4 left-4 flex flex-col justify-between"
+    >
       <div class="flex flex-1 flex-col justify-between">
         <div class="w-fit">
           <MainMenu
@@ -1495,6 +1541,151 @@ defineExpose({
       </div>
       <div class="flex flex-1 items-end pointer-events-none"></div>
     </div>
+
+    <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
+    <template v-if="layoutMode === 'compact'">
+      <header
+        class="absolute top-0 inset-x-0 z-20 flex items-center gap-2 px-2 h-12 bg-base-100/95 backdrop-blur border-b border-base-300"
+        style="padding-top: env(safe-area-inset-top)"
+      >
+        <button
+          class="btn btn-sm btn-ghost gap-2 min-w-0 flex-1 justify-start"
+          @click="emit('home')"
+        >
+          <ChevronLeftIcon class="size-5 shrink-0 opacity-70" />
+          <span v-if="typeBadge" class="badge badge-sm badge-neutral shrink-0">{{
+            typeBadge
+          }}</span>
+          <span class="truncate">{{ documentName || 'Untitled' }}</span>
+        </button>
+        <button
+          class="btn btn-sm btn-square btn-ghost"
+          :disabled="!historyState.canUndo"
+          aria-label="Undo"
+          @click="emit('undo')"
+        >
+          <ArrowUturnLeftIcon class="size-5 opacity-70" />
+        </button>
+        <button
+          class="btn btn-sm btn-square btn-ghost"
+          aria-label="Menu"
+          @click="isMenuOpen = true"
+        >
+          <Bars3Icon class="size-6 opacity-70" />
+        </button>
+      </header>
+
+      <nav
+        class="absolute bottom-0 inset-x-0 z-20 flex items-stretch justify-around gap-1 px-2 pt-1 bg-base-100/95 backdrop-blur border-t border-base-300"
+        style="padding-bottom: max(env(safe-area-inset-bottom), 0.25rem)"
+      >
+        <button class="btn btn-ghost flex-col h-auto py-1 gap-0.5" @click="fitToView">
+          <ArrowsPointingInIcon class="size-6 opacity-70" />
+          <span class="text-[0.65rem] font-normal">Fit</span>
+        </button>
+        <button class="btn btn-ghost flex-col h-auto py-1 gap-0.5" @click="isRelayoutOpen = true">
+          <Squares2X2Icon class="size-6 opacity-70" />
+          <span class="text-[0.65rem] font-normal">Relayout</span>
+        </button>
+        <button
+          class="btn btn-primary flex-col h-auto py-1 gap-0.5 flex-1 max-w-40"
+          @click="emit('open-extension-window')"
+        >
+          <PlayIcon class="size-6" />
+          <span class="text-[0.65rem] font-normal">Evaluate</span>
+        </button>
+        <button class="btn btn-ghost flex-col h-auto py-1 gap-0.5" @click="isExportOpened = true">
+          <PhotoIcon class="size-6 opacity-70" />
+          <span class="text-[0.65rem] font-normal">Export</span>
+        </button>
+      </nav>
+
+      <BottomSheet v-model:open="isMenuOpen" title="Menu">
+        <div class="flex flex-col gap-4 pb-4">
+          <section class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold uppercase opacity-60 px-1">Document</h3>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('new'))"
+            >
+              <DocumentPlusIcon class="size-5 opacity-70" /> New document
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('load'))"
+            >
+              <ArrowUpTrayIcon class="size-5 opacity-70" /> Open file…
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('save'))"
+            >
+              <ArrowDownTrayIcon class="size-5 opacity-70" /> Save to device
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('generate'))"
+            >
+              <SparklesIcon class="size-5 opacity-70" /> Generate random…
+            </button>
+          </section>
+          <section class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold uppercase opacity-60 px-1">Edit</h3>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              :disabled="!historyState.canRedo"
+              @click="runFromMenu(() => emit('redo'))"
+            >
+              <ArrowUturnRightIcon class="size-5 opacity-70" /> Redo
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('share'))"
+            >
+              <ShareIcon class="size-5 opacity-70" /> Share link…
+            </button>
+          </section>
+          <section class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold uppercase opacity-60 px-1">App</h3>
+            <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openSettings)">
+              <Cog6ToothIcon class="size-5 opacity-70" /> Settings
+            </button>
+            <button
+              v-if="tutorials"
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(openTutorials)"
+            >
+              <AcademicCapIcon class="size-5 opacity-70" /> Tutorials
+            </button>
+            <RouterLink
+              to="/glossary"
+              class="btn btn-ghost justify-start gap-3"
+              @click="isMenuOpen = false"
+            >
+              <BookOpenIcon class="size-5 opacity-70" /> Glossary
+            </RouterLink>
+            <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openHelp)">
+              <QuestionMarkCircleIcon class="size-5 opacity-70" /> Help
+            </button>
+          </section>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet v-model:open="isRelayoutOpen" title="Relayout">
+        <div class="grid grid-cols-2 gap-2 pb-4">
+          <button
+            v-for="option in relayoutOptions"
+            :key="option.layout"
+            class="btn btn-outline justify-start gap-3 h-auto py-3"
+            @click="relayoutTo(option.layout)"
+          >
+            <component :is="option.icon" class="size-5 opacity-70" />
+            {{ option.name }}
+          </button>
+        </div>
+      </BottomSheet>
+    </template>
+
     <slot
       name="evaluationExtensions"
       :on-highlight="
