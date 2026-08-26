@@ -283,6 +283,48 @@ const tutorialRefs = computed(() => ({
     v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance()"
   >
+    <template #canvasSelector>
+      <!-- Compact twin of the desktop argument-type toolbar (horizontal). -->
+      <div class="join shadow-md" title="Argument type">
+        <button
+          class="join-item btn btn-sm btn-square"
+          :class="isDefiniteArgumentMode ? 'btn-primary' : 'btn-neutral'"
+          :aria-pressed="isDefiniteArgumentMode"
+          aria-label="Definite argument"
+          @click="isDefiniteArgumentMode = true"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="size-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+        </button>
+        <button
+          class="join-item btn btn-sm btn-square"
+          :class="!isDefiniteArgumentMode ? 'btn-primary' : 'btn-neutral'"
+          :aria-pressed="!isDefiniteArgumentMode"
+          aria-label="Uncertain argument"
+          @click="isDefiniteArgumentMode = false"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="size-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-dasharray="3 2"
+          >
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+        </button>
+      </div>
+    </template>
     <template #toolbar>
       <div ref="argumentModeButton" class="join join-vertical mb-2" title="Argument type">
         <button

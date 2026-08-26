@@ -19,8 +19,7 @@
 <script setup lang="ts">
 import { offset, useFloating } from '@floating-ui/vue'
 import { ArrowLongRightIcon } from '@heroicons/vue/24/outline'
-import { onClickOutside } from '@vueuse/core'
-import { toRef, useTemplateRef } from 'vue'
+import { onBeforeUnmount, onMounted, toRef, useTemplateRef } from 'vue'
 
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import { type LinkConfigs, LinkType } from '@/modules/common/graph-editor/graphEditor'
@@ -49,16 +48,33 @@ const { floatingStyles } = useFloating(
   },
 )
 
-onClickOutside(floating, () => emit('close'), {
-  ignore: [reference],
-})
+// Dismiss on an outside pointerdown, not click: the tap that opens this popover ends in
+// a trailing `click` (delayed on touch) that a click-based outside handler would read as
+// an outside click and close it immediately. A single tap has one pointerdown, already
+// spent opening the switcher, so pointerdown-outside only fires on a genuine next tap.
+function onOutsidePointerDown(event: PointerEvent) {
+  const path = event.composedPath()
+  if (floating.value !== null && path.includes(floating.value)) return
+  if (path.includes(reference)) return
+  emit('close')
+}
+onMounted(() =>
+  // Register a frame later so the opening gesture's own events can't reach it.
+  requestAnimationFrame(() =>
+    document.addEventListener('pointerdown', onOutsidePointerDown, true),
+  ),
+)
+onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutsidePointerDown, true))
 </script>
 
 <template>
   <div tabindex="0" ref="floating" :style="floatingStyles">
     <ul class="dropdown menu rounded-box bg-base-100 shadow-sm/30">
       <li v-for="(config, linkType) in linkConfigs" :key="linkType">
-        <a @click="emit('update:arrowType', linkType)"
+        <!-- Select on pointerdown, not click: the edge tap that opens this popover mounts an
+             option right under the finger, and its trailing synthetic click would otherwise
+             select that option immediately. .prevent also suppresses that synthetic click. -->
+        <a @pointerdown.prevent="emit('update:arrowType', linkType)"
           ><component :is="config!.icon" v-if="config!.icon" class="size-5 opacity-70" />
           <ArrowLongRightIcon v-else-if="linkType === LinkType.SINGLE" class="size-5 opacity-70" />
           <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />{{ config!.displayName }}</a

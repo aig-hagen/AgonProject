@@ -1606,7 +1606,36 @@ defineExpose({
           <PhotoIcon class="size-6 opacity-70" />
           <span class="text-[0.65rem] font-normal">Export</span>
         </button>
+        <!-- Module-specific trailing action(s), e.g. PAF's Probabilities. -->
+        <slot name="commandBarExtra" />
       </nav>
+
+      <!-- On-canvas creation-mode selectors, bottom-left, clear of the command bar.
+           The generic link-type toggle is driven by linkConfigs; modules stack their
+           own selectors (e.g. iAF argument certainty) above it via #canvasSelector. -->
+      <div
+        v-if="enableLinkSwitching || !!slots.canvasSelector"
+        class="absolute left-3 z-10 flex flex-col items-start gap-2"
+        style="bottom: calc(env(safe-area-inset-bottom, 0px) + 4.75rem)"
+      >
+        <slot name="canvasSelector" />
+        <div v-if="enableLinkSwitching" class="join shadow-md">
+          <button
+            v-for="(linkConfig, linkKey) in linkConfigs"
+            :key="linkKey"
+            class="join-item btn btn-sm btn-square"
+            :class="selectedLinkType === linkKey ? 'btn-primary' : 'btn-neutral'"
+            :aria-label="linkConfig!.displayName"
+            :aria-pressed="selectedLinkType === linkKey"
+            :title="linkConfig!.displayName"
+            @click="selectedLinkType = linkKey"
+          >
+            <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5" />
+            <ArrowLongRightIcon v-else-if="linkKey === LinkType.SINGLE" class="size-5" />
+            <ArrowDoubleLongRightIcon v-else class="size-5" />
+          </button>
+        </div>
+      </div>
 
       <BottomSheet v-model:open="isMenuOpen" title="Menu">
         <div class="flex flex-col gap-4 pb-4">

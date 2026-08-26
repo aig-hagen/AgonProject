@@ -87,6 +87,11 @@ const evaluationInput = computed<Input<ProbabilisticArgumentation<PafArgumentDat
 const renderedState = shallowRef(state)
 const editorState = shallowRef(transformToEditorState(state, true))
 const isProbabilitiesOpen = ref(false)
+// Compact: which row the Probabilities sheet should jump to after a node/attack tap.
+const probabilityFocusKey = ref<string | undefined>(undefined)
+watch(isProbabilitiesOpen, (isOpen) => {
+  if (!isOpen) probabilityFocusKey.value = undefined
+})
 
 watch(
   () => state,
@@ -257,6 +262,13 @@ const argumentAnnotations = computed(() => {
 
 function onAnnotationClicked(data: { id: NodeId; content: string }, event: PointerEvent) {
   event.stopPropagation()
+  // Compact: jump to the argument's row in the Probabilities sheet instead of the
+  // desktop inline slider popup, which has no thumb-reachable place to sit.
+  if (layoutMode.value === 'compact') {
+    probabilityFocusKey.value = `arg-${data.id}`
+    isProbabilitiesOpen.value = true
+    return
+  }
   editingLabel.value = {
     key: `arg-${data.id}`,
     x: 0,
@@ -352,6 +364,14 @@ const editingValue = ref(0)
 
 function openEditor(event: MouseEvent, label: ProbabilityLabel) {
   event.stopPropagation()
+  if (layoutMode.value === 'compact') {
+    probabilityFocusKey.value =
+      label.type === 'attack'
+        ? `atk-${label.sourceId}-${label.targetId}`
+        : `arg-${label.id}`
+    isProbabilitiesOpen.value = true
+    return
+  }
   editingLabel.value = { ...label, screenX: event.clientX, screenY: event.clientY }
   editingValue.value = label.value
 }
@@ -468,6 +488,18 @@ function onPopupKeydown(event: KeyboardEvent) {
         </button>
       </template>
 
+      <!-- Compact: PAF-specific trailing action on the bottom command bar. -->
+      <template #commandBarExtra>
+        <button
+          class="btn btn-ghost flex-col h-auto py-1 gap-0.5"
+          :class="{ 'text-primary': isProbabilitiesOpen }"
+          @click="isProbabilitiesOpen = !isProbabilitiesOpen"
+        >
+          <AdjustmentsHorizontalIcon class="size-6 opacity-70" />
+          <span class="text-[0.65rem] font-normal">Probabilities</span>
+        </button>
+      </template>
+
       <template #nodeOverlay="{ nodes }">
         <text
           v-for="label in getAttackProbabilityLabels(nodes)"
@@ -503,6 +535,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       :input="evaluationInput"
       :document-id="documentId"
       state-key="probabilities:window"
+      :focus-key="probabilityFocusKey"
       @change-argument-probability="onChangeArgumentProbability"
       @change-attack-probability="onChangeAttackProbability"
     />

@@ -174,7 +174,7 @@ function onHandlePointerUp(event: PointerEvent) {
       <div
         v-if="open && modal"
         class="sheet-backdrop fixed inset-0 z-50 bg-black/40"
-        @click="close"
+        @pointerdown="close"
         aria-hidden="true"
       ></div>
     </Transition>
