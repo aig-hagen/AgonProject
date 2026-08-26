@@ -18,7 +18,9 @@
 -->
 <script setup lang="ts">
 import HelpControls from '@/modules/common/help/HelpControls.vue'
+import HelpGestures from '@/modules/common/help/HelpGestures.vue'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const props = defineProps<{
@@ -27,6 +29,8 @@ const props = defineProps<{
 }>()
 
 const open = defineModel('open', { required: true })
+
+const { layoutMode } = useLayoutMode()
 </script>
 
 <template>
@@ -38,7 +42,13 @@ const open = defineModel('open', { required: true })
   >
     <div class="p-4">
       <HelpLinks />
+      <HelpGestures
+        v-if="layoutMode === 'compact'"
+        :link-names="props.linkNames"
+        :allow-hyper-link-creation="props.allowHyperLinkCreation"
+      />
       <HelpControls
+        v-else
         :link-names="props.linkNames"
         :allow-hyper-link-creation="props.allowHyperLinkCreation"
       />
