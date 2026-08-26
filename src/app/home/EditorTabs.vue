@@ -122,8 +122,10 @@ function openClearAllModal() {
           ref="clearAllButton"
           class="btn btn-error btn-sm"
           @click="
-            clearAllModal?.close()
-            emit('clearAll')
+            () => {
+              clearAllModal?.close()
+              emit('clearAll')
+            }
           "
         >
           <TrashIcon class="size-4" />Delete all
