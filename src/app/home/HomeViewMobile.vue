@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts" generic="DocumentT extends Objectish">
 import type { Objectish } from 'immer'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, provide, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
@@ -26,6 +26,7 @@ import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { HomeController } from '@/app/home/useHomeController'
 import { useHomeSurface } from '@/app/home/useHomeSurface'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
+import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
 import ShareModal from '@/modules/common/share/ShareModal.vue'
 
 const { modules, controller } = defineProps<{
@@ -51,9 +52,13 @@ const {
   loadedDocuments,
   shareUrl,
   shareDocument,
+  quickShareDocument,
   saveAsFile,
   exportAsFile,
 } = controller
+
+// Let deep editor surfaces (e.g. the export sheet) trigger a quick share.
+provide(QUICK_SHARE_KEY, quickShareDocument)
 
 const router = useRouter()
 

@@ -31,6 +31,8 @@ import { computed, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
+import ExportSheet from '@/modules/common/export/ExportSheet.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
 
@@ -50,6 +52,7 @@ const soureViewRef = useTemplateRef('soureView')
 const editorView = shallowRef<EditorView | undefined>(undefined)
 
 const { gridCellScale } = useSettings()
+const { layoutMode } = useLayoutMode()
 
 const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exportConfigs[0])
 const selectedArgumentStyle = shallowRef<string>('standard')
@@ -90,6 +93,10 @@ function copyPackageLine() {
 
 const exportResult = computed(() => {
   if (!open.value) {
+    return undefined
+  }
+  // The compact layout renders ExportSheet, which owns its own export computation.
+  if (layoutMode.value === 'compact') {
     return undefined
   }
   if (selectedExportConfig.value === undefined) {
@@ -194,7 +201,13 @@ watchEffect(() => {
     :initial-position="{ x: 64, y: 128 }"
     :intitalSize="{ width: 700, height: 480 }"
   >
-    <div class="p-4">
+    <ExportSheet
+      v-if="layoutMode === 'compact'"
+      :input="input"
+      :export-configs="exportConfigs"
+      @export="emit('export', $event)"
+    />
+    <div v-else class="p-4">
       <fieldset class="fieldset">
         <div class="flex gap-2 flex-wrap">
           <label class="select select-sm w-66">
