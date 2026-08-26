@@ -1304,6 +1304,10 @@ onUnmounted(() => {
 function fitToView() {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) return
+  // Centering math divides by the container size; a 0×0 box (e.g. while hidden in a
+  // display:none surface) yields NaN transforms, so skip until the container is laid out.
+  const container = containerRef.value
+  if (!container || container.clientWidth === 0 || container.clientHeight === 0) return
   const margin = ARGUMENT_RADIUS_IN_PX * 2
   graphComponent.centerView(
     { top: margin, right: margin, bottom: margin, left: margin },

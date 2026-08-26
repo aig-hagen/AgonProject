@@ -23,13 +23,15 @@ import {
   type Notification,
   NotificationType,
 } from '@/modules/common/notifications/useNotifications'
-const { notifications } = defineProps<{
+const { notifications, placement = 'end' } = defineProps<{
   notifications: Notification[]
+  /** Horizontal placement of the toast stack. Mobile uses `center` to clear the command bar. */
+  placement?: 'end' | 'center'
 }>()
 </script>
 
 <template>
-  <div class="toast toast-top toast-end">
+  <div class="toast toast-top" :class="placement === 'center' ? 'toast-center' : 'toast-end'">
     <div
       v-for="notification of notifications"
       :key="notification.key"

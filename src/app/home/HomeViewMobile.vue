@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts" generic="DocumentT extends Objectish">
 import type { Objectish } from 'immer'
-import { computed, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
@@ -62,6 +62,18 @@ const { surface, goTo } = useHomeSurface(() =>
     : documents.value.length > 0
       ? 'documents'
       : 'new',
+)
+
+// Only mount the editor once its surface is actually shown, then keep it mounted so
+// state survives later surface switches. Mounting it while the editor surface is hidden
+// (display:none) would run the graph library's layout math on a 0×0 box → NaN transforms.
+const editorMounted = ref(false)
+watch(
+  surface,
+  (value) => {
+    if (value === 'editor') editorMounted.value = true
+  },
+  { immediate: true },
 )
 
 const selectedName = computed(
@@ -125,39 +137,41 @@ function loadFile() {
         <BlankDocumentCanvas :module-cards="modules" @open="createFromNew" />
       </div>
 
-      <!-- Editor surface: kept mounted across surface switches -->
+      <!-- Editor surface: mounted on first visit, then kept mounted across surface switches -->
       <div v-show="surface === 'editor'" class="absolute inset-0">
-        <component
-          tabindex="0"
-          v-for="loadedDocument of loadedDocuments"
-          v-show="loadedDocument.id === selectedDocumentId"
-          :key="loadedDocument.id"
-          :is="loadedDocument.module.editorComponent"
-          @change="
-            (state) => {
-              if (loadedDocument.id === selectedDocumentId) updateDocument(state)
-            }
-          "
-          @new="goTo('new')"
-          @load="loadFile"
-          @generate="router.push(documentModule?.generateHref ?? '/generate')"
-          @home="goTo('documents')"
-          :state="loadedDocument.state"
-          :document-id="loadedDocument.id"
-          :document-name="selectedName"
-          :type-badge="loadedDocument.module.newNamePrefix"
-          :history-state="historyState"
-          @keydown="handleEditorShortcut"
-          @undo="undo"
-          @redo="redo"
-          @save="saveAsFile(loadedDocument.id)"
-          @share="shareDocument(loadedDocument.id)"
-          @export="exportAsFile(loadedDocument.id, $event)"
-        />
+        <template v-if="editorMounted">
+          <component
+            tabindex="0"
+            v-for="loadedDocument of loadedDocuments"
+            v-show="loadedDocument.id === selectedDocumentId"
+            :key="loadedDocument.id"
+            :is="loadedDocument.module.editorComponent"
+            @change="
+              (state) => {
+                if (loadedDocument.id === selectedDocumentId) updateDocument(state)
+              }
+            "
+            @new="goTo('new')"
+            @load="loadFile"
+            @generate="router.push(documentModule?.generateHref ?? '/generate')"
+            @home="goTo('documents')"
+            :state="loadedDocument.state"
+            :document-id="loadedDocument.id"
+            :document-name="selectedName"
+            :type-badge="loadedDocument.module.newNamePrefix"
+            :history-state="historyState"
+            @keydown="handleEditorShortcut"
+            @undo="undo"
+            @redo="redo"
+            @save="saveAsFile(loadedDocument.id)"
+            @share="shareDocument(loadedDocument.id)"
+            @export="exportAsFile(loadedDocument.id, $event)"
+          />
+        </template>
       </div>
     </main>
   </div>
-  <NotificationsDisplay :notifications="notifications" />
+  <NotificationsDisplay :notifications="notifications" placement="center" />
   <ShareModal :url="shareUrl" @close="shareUrl = null" />
   <input
     ref="file-input"
