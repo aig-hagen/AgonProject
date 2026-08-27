@@ -1,0 +1,2384 @@
+<!doctype html>
+<html lang="en" data-mode="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgonProject Heritage Blue theme specification</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page: #f4f7fa;
+        --surface: #ffffff;
+        --surface-raised: #ffffff;
+        --surface-muted: #eaf0f5;
+        --surface-strong: #dce5ed;
+        --text: #162536;
+        --text-muted: #526475;
+        --text-subtle: #657786;
+        --border: #c5d2de;
+        --border-strong: #8ea3b5;
+        --primary: #004c97;
+        --primary-hover: #003f7d;
+        --primary-active: #003568;
+        --on-primary: #ffffff;
+        --secondary: #d29551;
+        --on-secondary: #24180b;
+        --accent: #9a5a19;
+        --on-accent: #ffffff;
+        --link: #005ea8;
+        --focus: #b06e26;
+        --info: #0c6f9f;
+        --info-soft: #e1f2f9;
+        --on-info: #ffffff;
+        --success: #247a52;
+        --success-soft: #e3f3ea;
+        --on-success: #ffffff;
+        --warning: #8a5700;
+        --warning-soft: #fff1cf;
+        --on-warning: #ffffff;
+        --danger: #b3263e;
+        --danger-soft: #fbe7eb;
+        --on-danger: #ffffff;
+        --scrim: #07131fcc;
+        --selection: #c6e4fa;
+        --disabled: #7d8b97;
+        --graph-canvas: #fbfdff;
+        --graph-grid: #d5e0e8;
+        --graph-node: #d9ad79;
+        --graph-node-stroke: #85501c;
+        --graph-node-text: #26190c;
+        --graph-edge: #29475e;
+        --graph-drag: #0076b8;
+        --graph-hyperlink: #9e3f52;
+        --graph-accepted: #22623f;
+        --graph-accepted-soft: #bfe7cf;
+        --graph-rejected: #98293c;
+        --graph-rejected-soft: #f3c5cc;
+        --graph-undecided: #3a5a78;
+        --graph-undecided-soft: #cbddeb;
+        --rank-low: #b85435;
+        --rank-mid: #b47a17;
+        --rank-high: #2f7a50;
+        --paper: #ffffff;
+        --paper-ink: #17212b;
+        --code-selection: #c9dcf4;
+        --shadow-color: 16 35 51;
+        --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.1);
+        --shadow-md: 0 8px 24px rgb(var(--shadow-color) / 0.14);
+        --shadow-lg: 0 18px 52px rgb(var(--shadow-color) / 0.2);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        transition:
+          background-color 180ms ease,
+          color 180ms ease;
+      }
+
+      button,
+      input,
+      select {
+        color: inherit;
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      code,
+      .token-value,
+      .node-label,
+      .brand-mark {
+        font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+      }
+
+      a {
+        color: var(--link);
+      }
+
+      .page-shell {
+        width: min(1440px, 100%);
+        margin: 0 auto;
+        padding: 32px clamp(16px, 3vw, 44px) 80px;
+      }
+
+      .topbar {
+        position: sticky;
+        z-index: 50;
+        top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 10px 12px 10px 18px;
+        border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+        border-radius: 18px;
+        background: color-mix(in srgb, var(--surface) 88%, transparent);
+        box-shadow: var(--shadow-md);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        flex: none;
+        place-items: center;
+        border-radius: 10px;
+        background: var(--primary);
+        color: var(--on-primary);
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: -0.08em;
+      }
+
+      .brand-title {
+        overflow: hidden;
+        font-size: 13px;
+        font-weight: 760;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .brand-subtitle {
+        margin-top: 1px;
+        color: var(--text-muted);
+        font-size: 10px;
+      }
+
+      .topbar-controls,
+      .segmented,
+      .direction-list {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .topbar-controls {
+        justify-content: flex-end;
+      }
+
+      .segmented {
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-muted);
+      }
+
+      .segmented button,
+      .direction-button {
+        min-height: 32px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .segmented button[aria-pressed='true'] {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(290px, 0.7fr);
+        gap: clamp(24px, 5vw, 80px);
+        padding: 86px 0 52px;
+        align-items: end;
+      }
+
+      .eyebrow,
+      .section-kicker,
+      .mini-label {
+        margin: 0 0 10px;
+        color: var(--accent);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 820px;
+        margin: 0;
+        font-size: clamp(42px, 7vw, 86px);
+        font-weight: 720;
+        letter-spacing: -0.065em;
+        line-height: 0.94;
+      }
+
+      h1 span {
+        color: var(--primary);
+      }
+
+      .lede {
+        max-width: 760px;
+        margin: 25px 0 0;
+        color: var(--text-muted);
+        font-size: clamp(16px, 1.6vw, 21px);
+        line-height: 1.55;
+      }
+
+      .hero-note {
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .hero-note h2 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+
+      .hero-note p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .hero-note strong {
+        color: var(--text);
+      }
+
+      .section {
+        padding: 54px 0;
+        border-top: 1px solid var(--border);
+      }
+
+      .section-heading {
+        display: grid;
+        grid-template-columns: minmax(0, 0.62fr) minmax(280px, 0.38fr);
+        gap: 36px;
+        margin-bottom: 28px;
+        align-items: end;
+      }
+
+      h2.section-title {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 48px);
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        line-height: 1.05;
+      }
+
+      .section-description {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .direction-list {
+        align-items: stretch;
+        margin: 0 0 20px;
+        overflow-x: auto;
+        padding-bottom: 3px;
+      }
+
+      .direction-button {
+        display: grid;
+        min-width: 210px;
+        min-height: 68px;
+        padding: 11px 13px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        text-align: left;
+      }
+
+      .direction-button[aria-pressed='true'] {
+        border-color: var(--primary);
+        box-shadow: inset 0 0 0 1px var(--primary);
+        color: var(--text);
+      }
+
+      .direction-button-name {
+        font-size: 13px;
+        font-weight: 780;
+      }
+
+      .direction-button-summary {
+        margin-top: 3px;
+        color: var(--text-muted);
+        font-size: 10px;
+        font-weight: 550;
+      }
+
+      .direction-button-swatches {
+        display: flex;
+        gap: 4px;
+        margin-top: 8px;
+      }
+
+      .direction-button-swatches i {
+        width: 25px;
+        height: 5px;
+        border-radius: 20px;
+      }
+
+      .proposal-intro {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .proposal-copy {
+        padding: 27px;
+      }
+
+      .proposal-index {
+        color: var(--accent);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .proposal-name {
+        margin: 8px 0 0;
+        font-size: clamp(24px, 4vw, 42px);
+        letter-spacing: -0.04em;
+      }
+
+      .proposal-tagline {
+        margin: 10px 0 0;
+        color: var(--text-muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .proposal-rationale {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 25px;
+      }
+
+      .rationale-block h4 {
+        margin: 0 0 5px;
+        font-size: 11px;
+      }
+
+      .rationale-block p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .palette-card {
+        display: grid;
+        grid-template-rows: repeat(5, minmax(52px, 1fr));
+        overflow: hidden;
+      }
+
+      .palette-band {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 11px 14px;
+        color: var(--band-on);
+      }
+
+      .palette-band strong,
+      .palette-band span {
+        font-size: 10px;
+      }
+
+      .workspace {
+        overflow: hidden;
+      }
+
+      .workspace-bar {
+        display: flex;
+        min-height: 48px;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 11px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-muted);
+      }
+
+      .workspace-tab {
+        padding: 8px 11px;
+        border-radius: 8px;
+        color: var(--text-muted);
+        font-size: 11px;
+        font-weight: 680;
+      }
+
+      .workspace-tab.active {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .workspace-spacer {
+        flex: 1;
+      }
+
+      .icon-button {
+        display: grid;
+        width: 31px;
+        height: 31px;
+        place-items: center;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-muted);
+      }
+
+      .icon-button:hover {
+        background: var(--surface-strong);
+        color: var(--text);
+      }
+
+      .workspace-main {
+        position: relative;
+        display: grid;
+        min-height: 460px;
+        grid-template-columns: 52px 1fr;
+        background: var(--graph-canvas);
+      }
+
+      .toolrail {
+        z-index: 4;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px;
+        border-right: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .toolrail .icon-button.active {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+
+      .graph-stage {
+        position: relative;
+        min-width: 0;
+        overflow: hidden;
+        background-color: var(--graph-canvas);
+        background-image: radial-gradient(var(--graph-grid) 0.75px, transparent 0.75px);
+        background-size: 19px 19px;
+      }
+
+      .graph-stage svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .graph-edge {
+        fill: none;
+        stroke: var(--graph-edge);
+        stroke-width: 2.2;
+      }
+
+      .graph-node circle {
+        fill: var(--graph-node);
+        stroke: var(--graph-node-stroke);
+        stroke-width: 2;
+      }
+
+      .graph-node text {
+        fill: var(--graph-node-text);
+        font-size: 13px;
+        font-weight: 750;
+        text-anchor: middle;
+      }
+
+      .graph-node.accepted circle {
+        fill: var(--graph-accepted-soft);
+        stroke: var(--graph-accepted);
+      }
+
+      .graph-node.rejected circle {
+        fill: var(--graph-rejected-soft);
+        stroke: var(--graph-rejected);
+      }
+
+      .graph-node.undecided circle {
+        fill: var(--graph-undecided-soft);
+        stroke: var(--graph-undecided);
+      }
+
+      .floating-window {
+        position: absolute;
+        z-index: 5;
+        top: 24px;
+        right: 22px;
+        width: min(330px, calc(100% - 44px));
+        overflow: hidden;
+        border: 1px solid var(--border-strong);
+        border-radius: 15px;
+        background: var(--surface-raised);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .window-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 13px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-muted);
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .window-header::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--success);
+        content: '';
+      }
+
+      .window-content {
+        padding: 15px;
+      }
+
+      .result-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+      }
+
+      .result-row:last-child {
+        border-bottom: 0;
+      }
+
+      .result-pill {
+        padding: 4px 7px;
+        border-radius: 999px;
+        background: var(--success-soft);
+        color: var(--success);
+        font-size: 9px;
+        font-weight: 800;
+      }
+
+      .preview-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+        gap: 18px;
+      }
+
+      .component-panel {
+        padding: 22px;
+      }
+
+      .component-panel h3,
+      .graph-legend h3,
+      .role-group h3 {
+        margin: 0 0 5px;
+        font-size: 15px;
+      }
+
+      .component-panel > p,
+      .graph-legend > p {
+        margin: 0 0 19px;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .showcase-block + .showcase-block {
+        margin-top: 22px;
+        padding-top: 19px;
+        border-top: 1px solid var(--border);
+      }
+
+      .showcase-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .button {
+        min-height: 36px;
+        padding: 0 13px;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        background: var(--surface-muted);
+        color: var(--text);
+        font-size: 11px;
+        font-weight: 740;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .button.primary {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+
+      .button.primary:hover {
+        background: var(--primary-hover);
+      }
+
+      .button.secondary {
+        background: var(--secondary);
+        color: var(--on-secondary);
+      }
+
+      .button.outline {
+        border-color: var(--border-strong);
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .button.danger {
+        background: var(--danger);
+        color: var(--on-danger);
+      }
+
+      .button:focus-visible,
+      .sample-input:focus {
+        outline: 3px solid color-mix(in srgb, var(--focus) 45%, transparent);
+        outline-offset: 2px;
+      }
+
+      .button:disabled {
+        background: var(--surface-strong);
+        color: var(--disabled);
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .sample-input {
+        min-height: 39px;
+        width: min(250px, 100%);
+        border: 1px solid var(--border-strong);
+        border-radius: 9px;
+        outline: 0;
+        background: var(--surface);
+        padding: 0 11px;
+        font-size: 11px;
+      }
+
+      .toggle {
+        position: relative;
+        width: 42px;
+        height: 23px;
+        border-radius: 999px;
+        background: var(--primary);
+      }
+
+      .toggle::after {
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        width: 17px;
+        height: 17px;
+        border-radius: 50%;
+        background: var(--on-primary);
+        box-shadow: var(--shadow-sm);
+        content: '';
+      }
+
+      .alert-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .alert {
+        padding: 11px 12px;
+        border: 1px solid color-mix(in srgb, var(--alert-color) 35%, var(--border));
+        border-radius: 10px;
+        background: var(--alert-soft);
+        color: var(--alert-color);
+        font-size: 10px;
+        font-weight: 720;
+      }
+
+      .rank-scale {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+
+      .rank-scale span {
+        display: grid;
+        min-height: 42px;
+        place-items: center;
+        color: var(--paper-ink);
+        font-size: 9px;
+        font-weight: 850;
+      }
+
+      .graph-legend {
+        padding: 22px;
+      }
+
+      .legend-list {
+        display: grid;
+        gap: 9px;
+      }
+
+      .legend-row {
+        display: grid;
+        grid-template-columns: 25px minmax(105px, 0.35fr) 1fr;
+        gap: 9px;
+        align-items: center;
+        font-size: 10px;
+      }
+
+      .legend-dot {
+        width: 21px;
+        height: 21px;
+        border: 2px solid var(--dot-stroke);
+        border-radius: 50%;
+        background: var(--dot-fill);
+      }
+
+      .legend-name {
+        font-weight: 760;
+      }
+
+      .legend-use {
+        color: var(--text-muted);
+        line-height: 1.35;
+      }
+
+      .paper-preview {
+        margin-top: 18px;
+        padding: 22px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--paper);
+        color: var(--paper-ink);
+        box-shadow: var(--shadow-md);
+      }
+
+      .paper-preview h4 {
+        margin: 0 0 10px;
+        font-family: Georgia, serif;
+        font-size: 16px;
+      }
+
+      .paper-preview pre {
+        margin: 0;
+        overflow: hidden;
+        color: var(--paper-ink);
+        font-size: 9px;
+        line-height: 1.7;
+        white-space: pre-wrap;
+      }
+
+      .decision-card {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 13px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+      }
+
+      .decision-card + .decision-card {
+        margin-top: 9px;
+      }
+
+      .decision-number {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        place-items: center;
+        border-radius: 9px;
+        background: var(--surface-muted);
+        color: var(--primary);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      .decision-card h3 {
+        margin: 1px 0 5px;
+        font-size: 13px;
+      }
+
+      .decision-card p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .recommendation {
+        color: var(--primary);
+        font-weight: 750;
+      }
+
+      .role-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .role-toolbar p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 11px;
+      }
+
+      .role-groups {
+        display: grid;
+        gap: 16px;
+      }
+
+      .role-group {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--surface);
+      }
+
+      .role-group-header {
+        padding: 17px 18px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface-muted);
+      }
+
+      .role-group-header p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 10px;
+      }
+
+      .role-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .role-table th,
+      .role-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 10px;
+        line-height: 1.45;
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      .role-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .role-table th {
+        color: var(--text-muted);
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .token-cell {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        white-space: nowrap;
+      }
+
+      .token-swatch {
+        width: 26px;
+        height: 26px;
+        flex: none;
+        border: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+        border-radius: 8px;
+        background: var(--swatch);
+      }
+
+      .token-value {
+        color: var(--text-muted);
+        font-size: 9px;
+        white-space: nowrap;
+      }
+
+      .contrast-badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: var(--success-soft);
+        color: var(--success);
+        font-size: 8px;
+        font-weight: 850;
+        white-space: nowrap;
+      }
+
+      .contrast-badge.review {
+        background: var(--warning-soft);
+        color: var(--warning);
+      }
+
+      .ownership-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .ownership-card {
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+      }
+
+      .ownership-card h3 {
+        margin: 0 0 6px;
+        font-size: 13px;
+      }
+
+      .ownership-card p,
+      .ownership-card li {
+        color: var(--text-muted);
+        font-size: 10px;
+        line-height: 1.5;
+      }
+
+      .ownership-card ul {
+        margin: 10px 0 0;
+        padding-left: 17px;
+      }
+
+      footer {
+        padding: 36px 0 0;
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 10px;
+        line-height: 1.5;
+      }
+
+      .mobile-note {
+        display: none;
+      }
+
+      @media (max-width: 820px) {
+        .page-shell {
+          padding-top: 14px;
+        }
+
+        .topbar {
+          top: 7px;
+        }
+
+        .brand-subtitle,
+        .mode-label {
+          display: none;
+        }
+
+        .hero,
+        .section-heading,
+        .proposal-intro,
+        .preview-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 58px;
+        }
+
+        .section-description {
+          max-width: 620px;
+        }
+
+        .palette-card {
+          grid-template-rows: repeat(5, 48px);
+        }
+
+        .ownership-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .role-table th:nth-child(4),
+        .role-table td:nth-child(4) {
+          display: none;
+        }
+
+        .mobile-note {
+          display: block;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .topbar {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .topbar-controls {
+          justify-content: space-between;
+        }
+
+        h1 {
+          font-size: 45px;
+        }
+
+        .proposal-rationale,
+        .alert-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .workspace-main {
+          min-height: 510px;
+          grid-template-columns: 1fr;
+        }
+
+        .toolrail {
+          flex-direction: row;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .floating-window {
+          top: auto;
+          right: 12px;
+          bottom: 12px;
+          width: calc(100% - 24px);
+        }
+
+        .role-table th:nth-child(3),
+        .role-table td:nth-child(3) {
+          display: none;
+        }
+
+        .role-table th,
+        .role-table td {
+          padding: 10px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <nav class="topbar" aria-label="Theme specification controls">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">AG</div>
+          <div>
+            <div class="brand-title">AgonProject theme specification</div>
+            <div class="brand-subtitle">Heritage Blue · approved foundation 0.2</div>
+          </div>
+        </div>
+        <div class="topbar-controls">
+          <div class="segmented" aria-label="Color mode">
+            <button type="button" data-mode-button="light" aria-pressed="true">Light</button>
+            <button type="button" data-mode-button="dark" aria-pressed="false">Dark</button>
+          </div>
+          <a class="button outline" href="#roles">View roles</a>
+        </div>
+      </nav>
+
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Approved theme foundation</p>
+          <h1>A deliberate color system for <span>reasoning.</span></h1>
+          <p class="lede">
+            Heritage Blue gives the app one shared semantic architecture across light and dark mode.
+            Switch modes to inspect the same app states—not isolated color swatches.
+          </p>
+        </div>
+        <aside class="hero-note">
+          <h2>Status: ready for implementation planning</h2>
+          <p>
+            The
+            <strong>direction, mode strategy, export surface, and graph-preset model</strong> are
+            approved. This remains a specification: production CSS has not been changed yet, and
+            exact values can still be tuned during implementation and visual review.
+          </p>
+        </aside>
+      </header>
+
+      <main>
+        <section class="section" id="directions">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">01 · Approved brand direction</p>
+              <h2 class="section-title">Heritage Blue is the visual foundation.</h2>
+            </div>
+            <p class="section-description">
+              AIG blue and ochre preserve institutional recognition. Calmer neutral surfaces,
+              accessible state colors, and an editor-specific graph palette turn them into a
+              complete product system.
+            </p>
+          </div>
+
+          <div class="proposal-intro">
+            <article class="panel proposal-copy">
+              <div class="proposal-index" id="proposal-index"></div>
+              <h3 class="proposal-name" id="proposal-name"></h3>
+              <p class="proposal-tagline" id="proposal-tagline"></p>
+              <div class="proposal-rationale">
+                <div class="rationale-block">
+                  <h4>Brand signal</h4>
+                  <p id="proposal-brand"></p>
+                </div>
+                <div class="rationale-block">
+                  <h4>Design intent</h4>
+                  <p id="proposal-fit"></p>
+                </div>
+              </div>
+            </article>
+            <aside class="panel palette-card" id="palette-card" aria-label="Core palette"></aside>
+          </div>
+
+          <article class="panel workspace" aria-label="Graph editor theme preview">
+            <div class="workspace-bar">
+              <div class="workspace-tab active">Abstract argumentation</div>
+              <div class="workspace-tab">Bipolar</div>
+              <div class="workspace-spacer"></div>
+              <button class="icon-button" type="button" aria-label="Settings">⚙</button>
+              <button class="icon-button" type="button" aria-label="Help">?</button>
+            </div>
+            <div class="workspace-main">
+              <aside class="toolrail" aria-label="Editor tools">
+                <button class="icon-button active" type="button" aria-label="Select tool">↖</button>
+                <button class="icon-button" type="button" aria-label="Add argument">●</button>
+                <button class="icon-button" type="button" aria-label="Add attack">→</button>
+                <button class="icon-button" type="button" aria-label="Delete">×</button>
+              </aside>
+              <div class="graph-stage">
+                <svg viewBox="0 0 850 430" role="img" aria-label="Argument graph preview">
+                  <defs>
+                    <marker
+                      id="arrow"
+                      markerWidth="8"
+                      markerHeight="8"
+                      refX="6"
+                      refY="3"
+                      orient="auto"
+                    >
+                      <path d="M0,0 L0,6 L7,3 z" fill="var(--graph-edge)" />
+                    </marker>
+                  </defs>
+                  <path
+                    class="graph-edge"
+                    d="M170 230 C250 100 335 100 405 190"
+                    marker-end="url(#arrow)"
+                  />
+                  <path
+                    class="graph-edge"
+                    d="M432 217 C500 280 570 285 638 220"
+                    marker-end="url(#arrow)"
+                  />
+                  <path
+                    class="graph-edge"
+                    d="M645 190 C590 95 505 100 440 180"
+                    marker-end="url(#arrow)"
+                  />
+                  <g class="graph-node accepted" transform="translate(145 250)">
+                    <circle r="43" />
+                    <text dy="5">a</text>
+                  </g>
+                  <g class="graph-node undecided" transform="translate(420 205)">
+                    <circle r="43" />
+                    <text dy="5">b</text>
+                  </g>
+                  <g class="graph-node rejected" transform="translate(665 205)">
+                    <circle r="43" />
+                    <text dy="5">c</text>
+                  </g>
+                </svg>
+                <aside class="floating-window">
+                  <div class="window-header">Preferred semantics</div>
+                  <div class="window-content">
+                    <div class="result-row">
+                      <span>Extension 1</span><span class="result-pill">{ a }</span>
+                    </div>
+                    <div class="result-row">
+                      <span>Extension 2</span><span class="result-pill">{ b, c }</span>
+                    </div>
+                    <div class="result-row"><span>Status</span><span>Complete</span></div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="section" id="system-preview">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">02 · System in use</p>
+              <h2 class="section-title">UI, graph, and document colors stay separate.</h2>
+            </div>
+            <p class="section-description">
+              The same semantic names work on mobile and desktop. Responsive layout changes where
+              components appear—not what their colors mean.
+            </p>
+          </div>
+
+          <div class="preview-grid">
+            <article class="panel component-panel">
+              <h3>Controls and interaction states</h3>
+              <p>Every state resolves to an owned token or an explicit mix recipe.</p>
+
+              <div class="showcase-block">
+                <div class="mini-label">Actions</div>
+                <div class="showcase-row">
+                  <button class="button primary" type="button">Primary action</button>
+                  <button class="button secondary" type="button">Brand accent</button>
+                  <button class="button outline" type="button">Secondary action</button>
+                  <button class="button danger" type="button">Delete</button>
+                  <button class="button" type="button" disabled>Disabled</button>
+                </div>
+              </div>
+
+              <div class="showcase-block">
+                <div class="mini-label">Forms and selection</div>
+                <div class="showcase-row" style="align-items: center">
+                  <input class="sample-input" value="Argument label" aria-label="Argument label" />
+                  <div class="toggle" role="img" aria-label="Enabled toggle"></div>
+                  <a href="#roles">Primary text link</a>
+                </div>
+              </div>
+
+              <div class="showcase-block">
+                <div class="mini-label">Feedback</div>
+                <div class="alert-grid">
+                  <div
+                    class="alert"
+                    style="--alert-color: var(--info); --alert-soft: var(--info-soft)"
+                  >
+                    Info · Tutorial hint
+                  </div>
+                  <div
+                    class="alert"
+                    style="--alert-color: var(--success); --alert-soft: var(--success-soft)"
+                  >
+                    Success · Export copied
+                  </div>
+                  <div
+                    class="alert"
+                    style="--alert-color: var(--warning); --alert-soft: var(--warning-soft)"
+                  >
+                    Warning · Request timed out
+                  </div>
+                  <div
+                    class="alert"
+                    style="--alert-color: var(--danger); --alert-soft: var(--danger-soft)"
+                  >
+                    Error · Invalid formula
+                  </div>
+                </div>
+              </div>
+
+              <div class="showcase-block">
+                <div class="mini-label">Numerical ranking · discrete and color-blind supported</div>
+                <div class="rank-scale" aria-label="Low to high ranking color scale">
+                  <span style="background: color-mix(in srgb, var(--rank-low) 25%, var(--paper))"
+                    >0.1</span
+                  >
+                  <span style="background: color-mix(in srgb, var(--rank-low) 14%, var(--rank-mid))"
+                    >0.3</span
+                  >
+                  <span style="background: color-mix(in srgb, var(--rank-mid) 34%, var(--paper))"
+                    >0.5</span
+                  >
+                  <span
+                    style="background: color-mix(in srgb, var(--rank-high) 14%, var(--rank-mid))"
+                    >0.7</span
+                  >
+                  <span style="background: color-mix(in srgb, var(--rank-high) 25%, var(--paper))"
+                    >0.9</span
+                  >
+                </div>
+              </div>
+            </article>
+
+            <aside class="panel graph-legend">
+              <h3>Graph semantics</h3>
+              <p>
+                Brand, editor interaction, and evaluation outcomes never reuse one color merely
+                because it looks similar.
+              </p>
+              <div class="legend-list">
+                <div class="legend-row">
+                  <i
+                    class="legend-dot"
+                    style="--dot-fill: var(--graph-node); --dot-stroke: var(--graph-node-stroke)"
+                  ></i>
+                  <span class="legend-name">Default node</span>
+                  <span class="legend-use">Neutral argument state; never implies acceptance.</span>
+                </div>
+                <div class="legend-row">
+                  <i
+                    class="legend-dot"
+                    style="
+                      --dot-fill: var(--graph-accepted-soft);
+                      --dot-stroke: var(--graph-accepted);
+                    "
+                  ></i>
+                  <span class="legend-name">Accepted</span>
+                  <span class="legend-use">Positive semantic outcome, paired with label/icon.</span>
+                </div>
+                <div class="legend-row">
+                  <i
+                    class="legend-dot"
+                    style="
+                      --dot-fill: var(--graph-rejected-soft);
+                      --dot-stroke: var(--graph-rejected);
+                    "
+                  ></i>
+                  <span class="legend-name">Rejected</span>
+                  <span class="legend-use">Negative semantic outcome, not generic UI error.</span>
+                </div>
+                <div class="legend-row">
+                  <i
+                    class="legend-dot"
+                    style="
+                      --dot-fill: var(--graph-undecided-soft);
+                      --dot-stroke: var(--graph-undecided);
+                    "
+                  ></i>
+                  <span class="legend-name">Undecided</span>
+                  <span class="legend-use">Incomplete or indeterminate semantic state.</span>
+                </div>
+                <div class="legend-row">
+                  <i
+                    class="legend-dot"
+                    style="--dot-fill: var(--graph-drag); --dot-stroke: var(--graph-drag)"
+                  ></i>
+                  <span class="legend-name">Editing</span>
+                  <span class="legend-use">Link creation, drag target, and graph focus.</span>
+                </div>
+                <div class="legend-row">
+                  <i
+                    class="legend-dot"
+                    style="--dot-fill: var(--graph-hyperlink); --dot-stroke: var(--graph-hyperlink)"
+                  ></i>
+                  <span class="legend-name">Hyperlink source</span>
+                  <span class="legend-use"
+                    >Temporary structural operation, distinct from rejection.</span
+                  >
+                </div>
+              </div>
+
+              <div class="paper-preview">
+                <h4>Export preview remains paper</h4>
+                <pre><span style="color: var(--primary)">\\begin</span>{argumentation}
+  <span style="color: var(--accent)">\\argument</span>{a}{Claim}
+  <span style="color: var(--danger)">\\attack</span>{a}{b}
+<span style="color: var(--primary)">\\end</span>{argumentation}</pre>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="section" id="decisions">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">03 · Approved decisions</p>
+              <h2 class="section-title">The implementation contract is settled.</h2>
+            </div>
+            <p class="section-description">
+              These decisions are intentionally separated from small palette tuning. They define
+              meaning, compatibility, and scope for the production theme.
+            </p>
+          </div>
+
+          <div class="decision-card">
+            <div class="decision-number">01</div>
+            <div>
+              <h3>Brand direction · Heritage Blue</h3>
+              <p>
+                <span class="recommendation">Approved.</span> Retain AIG blue and ochre as the
+                identity anchors while correcting contrast, surface hierarchy, and interaction
+                states.
+              </p>
+            </div>
+          </div>
+          <div class="decision-card">
+            <div class="decision-number">02</div>
+            <div>
+              <h3>Dark mode · First-class theme</h3>
+              <p>
+                <span class="recommendation">Approved.</span> Dark mode uses individually tuned
+                values, not mechanically inverted light colors. Graph, status, focus, and elevation
+                tokens are validated independently in both modes.
+              </p>
+            </div>
+          </div>
+          <div class="decision-card">
+            <div class="decision-number">03</div>
+            <div>
+              <h3>Export preview · Paper-white in both modes</h3>
+              <p>
+                <span class="recommendation">Approved.</span> White paper and dark ink are explicit
+                document-format tokens in both modes. CodeMirror chrome is themed, while the source
+                and SVG output surface remains print-oriented.
+              </p>
+            </div>
+          </div>
+          <div class="decision-card">
+            <div class="decision-number">04</div>
+            <div>
+              <h3>Graph presets · Theme-aware semantic variants</h3>
+              <p>
+                <span class="recommendation">Approved.</span> Replace fixed-color presets with
+                semantic variants that map through the active theme. Retain a dedicated
+                high-contrast option; redesign or retire “library” and “minimal” if they cannot
+                preserve meaning in both modes.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="roles">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">04 · Complete role registry</p>
+              <h2 class="section-title">Names describe purpose, never appearance.</h2>
+            </div>
+            <p class="section-description">
+              These roles become the app’s canonical contract. DaisyUI variables, graph options,
+              CodeMirror extensions, maintenance CSS, and first-paint CSS all consume this source.
+            </p>
+          </div>
+
+          <div class="role-toolbar">
+            <p id="role-summary"></p>
+            <p class="mobile-note">
+              Rotate or widen the viewport to see application and contrast columns.
+            </p>
+          </div>
+          <div class="role-groups" id="role-groups"></div>
+        </section>
+
+        <section class="section" id="ownership">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">05 · Ownership boundaries</p>
+              <h2 class="section-title">Every visible color gets an owner.</h2>
+            </div>
+            <p class="section-description">
+              Deliberate does not always mean recolored. External and platform colors can remain—but
+              only through an explicit policy and a narrow exception list.
+            </p>
+          </div>
+
+          <div class="ownership-grid">
+            <article class="ownership-card">
+              <h3>App-owned and tokenized</h3>
+              <p>Must resolve from the chosen theme or an explicit, documented state recipe.</p>
+              <ul>
+                <li>DaisyUI theme roles and all component states</li>
+                <li>Graph canvas, editing, evaluation, ranking, and scrollbars</li>
+                <li>CodeMirror chrome and syntax palette</li>
+                <li>Maintenance page, first paint, selection, focus, and shadows</li>
+              </ul>
+            </article>
+            <article class="ownership-card">
+              <h3>Format-owned and stable</h3>
+              <p>Fixed because the output represents a printable or interoperable document.</p>
+              <ul>
+                <li>Paper white and print ink in export previews</li>
+                <li>TikZ package colors after an explicit compatibility review</li>
+                <li>User-authored LaTeX/TikZ colors</li>
+                <li>Transparent SVG masks and click targets</li>
+              </ul>
+            </article>
+            <article class="ownership-card">
+              <h3>External or platform-owned</h3>
+              <p>Retained as explicit exceptions, with accessible fallbacks where possible.</p>
+              <ul>
+                <li>TweetyProject logo and approved institutional marks</li>
+                <li>Native select popups, autofill, and forced-colors mode</li>
+                <li>Browser/OS antialiasing and browser-tab presentation</li>
+                <li>User-agent colors only where custom styling reduces accessibility</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        Heritage Blue theme specification 0.2 · Built from the repository color inventory and
+        approved theme decisions. Contrast badges are calculated in the document for the listed
+        foreground/background pair; they do not replace full component, focus, forced-colors, or
+        visual-regression testing.
+      </footer>
+    </div>
+
+    <script>
+      const directions = {
+        heritage: {
+          index: 'Approved direction',
+          name: 'Heritage Blue',
+          short: 'Institutional, calm, recognizably AIG',
+          tagline:
+            'Retains AIG blue and ochre as recognizable anchors, then builds a quieter scholarly interface around them.',
+          brand:
+            'The strongest continuity with the existing favicon, CTAN package, graph history, and AIG association.',
+          fit: 'Best when AgonProject should feel authoritative, durable, and connected to its academic origin.',
+          light: {
+            page: '#F4F7FA',
+            surface: '#FFFFFF',
+            'surface-raised': '#FFFFFF',
+            'surface-muted': '#EAF0F5',
+            'surface-strong': '#DCE5ED',
+            text: '#162536',
+            'text-muted': '#526475',
+            'text-subtle': '#657786',
+            border: '#C5D2DE',
+            'border-strong': '#8EA3B5',
+            primary: '#004C97',
+            'primary-hover': '#003F7D',
+            'primary-active': '#003568',
+            'on-primary': '#FFFFFF',
+            secondary: '#D29551',
+            'on-secondary': '#24180B',
+            accent: '#9A5A19',
+            'on-accent': '#FFFFFF',
+            link: '#005EA8',
+            focus: '#B06E26',
+            info: '#0C6F9F',
+            'info-soft': '#E1F2F9',
+            'on-info': '#FFFFFF',
+            success: '#247A52',
+            'success-soft': '#E3F3EA',
+            'on-success': '#FFFFFF',
+            warning: '#8A5700',
+            'warning-soft': '#FFF1CF',
+            'on-warning': '#FFFFFF',
+            danger: '#B3263E',
+            'danger-soft': '#FBE7EB',
+            'on-danger': '#FFFFFF',
+            scrim: '#07131F',
+            selection: '#C6E4FA',
+            disabled: '#7D8B97',
+            'graph-canvas': '#FBFDFF',
+            'graph-grid': '#D5E0E8',
+            'graph-node': '#D9AD79',
+            'graph-node-stroke': '#85501C',
+            'graph-node-text': '#26190C',
+            'graph-edge': '#29475E',
+            'graph-drag': '#0076B8',
+            'graph-hyperlink': '#9E3F52',
+            'graph-accepted': '#22623F',
+            'graph-accepted-soft': '#BFE7CF',
+            'graph-rejected': '#98293C',
+            'graph-rejected-soft': '#F3C5CC',
+            'graph-undecided': '#3A5A78',
+            'graph-undecided-soft': '#CBDDEB',
+            'rank-low': '#B85435',
+            'rank-mid': '#B47A17',
+            'rank-high': '#2F7A50',
+            paper: '#FFFFFF',
+            'paper-ink': '#17212B',
+            'code-selection': '#C9DCF4',
+            'shadow-color': '16 35 51',
+          },
+          dark: {
+            page: '#0E171F',
+            surface: '#16222C',
+            'surface-raised': '#1B2A36',
+            'surface-muted': '#1F303D',
+            'surface-strong': '#293D4C',
+            text: '#EDF4F8',
+            'text-muted': '#B2C2CD',
+            'text-subtle': '#91A6B4',
+            border: '#3A5060',
+            'border-strong': '#607989',
+            primary: '#79B9EC',
+            'primary-hover': '#98CAF0',
+            'primary-active': '#B3D8F4',
+            'on-primary': '#08243A',
+            secondary: '#E1AC70',
+            'on-secondary': '#2A1908',
+            accent: '#E5B67F',
+            'on-accent': '#2A1908',
+            link: '#8CC8F4',
+            focus: '#E1AC70',
+            info: '#78C7E8',
+            'info-soft': '#173846',
+            'on-info': '#092B3A',
+            success: '#73CCA0',
+            'success-soft': '#173A2A',
+            'on-success': '#0C3424',
+            warning: '#F0C36B',
+            'warning-soft': '#403116',
+            'on-warning': '#3D2C08',
+            danger: '#F18B9B',
+            'danger-soft': '#451F28',
+            'on-danger': '#44131E',
+            scrim: '#02080D',
+            selection: '#214C6D',
+            disabled: '#71828E',
+            'graph-canvas': '#111C24',
+            'graph-grid': '#2D414F',
+            'graph-node': '#70471F',
+            'graph-node-stroke': '#E1AC70',
+            'graph-node-text': '#FFF5E8',
+            'graph-edge': '#BBD0DE',
+            'graph-drag': '#75C7F0',
+            'graph-hyperlink': '#F08FA0',
+            'graph-accepted': '#70D09E',
+            'graph-accepted-soft': '#1D4933',
+            'graph-rejected': '#F18A99',
+            'graph-rejected-soft': '#552532',
+            'graph-undecided': '#90BDE1',
+            'graph-undecided-soft': '#29465E',
+            'rank-low': '#ED9274',
+            'rank-mid': '#E1B354',
+            'rank-high': '#74C99B',
+            paper: '#FFFFFF',
+            'paper-ink': '#17212B',
+            'code-selection': '#C9DCF4',
+            'shadow-color': '0 0 0',
+          },
+        },
+        research: {
+          index: 'Direction 02',
+          name: 'Contemporary Research',
+          short: 'Crisp, digital, product-forward',
+          tagline:
+            'A cobalt-led system with warm coral punctuation. Cleaner and more digital, with less reliance on the institutional palette.',
+          brand:
+            'Keeps a blue lineage but moves toward a recognizable software-product identity rather than a faculty identity.',
+          fit: 'Best when the editor should feel like a modern specialist tool with energy and broad standalone appeal.',
+          light: {
+            page: '#F6F7FB',
+            surface: '#FFFFFF',
+            'surface-raised': '#FFFFFF',
+            'surface-muted': '#EEF0F7',
+            'surface-strong': '#E1E4EF',
+            text: '#181D2B',
+            'text-muted': '#596174',
+            'text-subtle': '#697083',
+            border: '#CDD1DF',
+            'border-strong': '#969EB2',
+            primary: '#3155C6',
+            'primary-hover': '#2745A5',
+            'primary-active': '#20398A',
+            'on-primary': '#FFFFFF',
+            secondary: '#B84A36',
+            'on-secondary': '#FFFFFF',
+            accent: '#A34734',
+            'on-accent': '#FFFFFF',
+            link: '#3155C6',
+            focus: '#C95A43',
+            info: '#176B9D',
+            'info-soft': '#E2F1FA',
+            'on-info': '#FFFFFF',
+            success: '#247455',
+            'success-soft': '#E2F2EA',
+            'on-success': '#FFFFFF',
+            warning: '#8A5808',
+            'warning-soft': '#FFF1D5',
+            'on-warning': '#FFFFFF',
+            danger: '#B52F49',
+            'danger-soft': '#FBE7EC',
+            'on-danger': '#FFFFFF',
+            scrim: '#0A0D18',
+            selection: '#D9E1FF',
+            disabled: '#828797',
+            'graph-canvas': '#FBFBFE',
+            'graph-grid': '#DCDDEA',
+            'graph-node': '#DDE4FF',
+            'graph-node-stroke': '#4964BD',
+            'graph-node-text': '#192A64',
+            'graph-edge': '#30384D',
+            'graph-drag': '#3155C6',
+            'graph-hyperlink': '#A44779',
+            'graph-accepted': '#216144',
+            'graph-accepted-soft': '#C7E8D8',
+            'graph-rejected': '#9B293D',
+            'graph-rejected-soft': '#F4C9D0',
+            'graph-undecided': '#544377',
+            'graph-undecided-soft': '#DED5F1',
+            'rank-low': '#BD563B',
+            'rank-mid': '#AA7A1B',
+            'rank-high': '#2C7757',
+            paper: '#FFFFFF',
+            'paper-ink': '#191C25',
+            'code-selection': '#D9E1FF',
+            'shadow-color': '25 31 49',
+          },
+          dark: {
+            page: '#10121A',
+            surface: '#191C27',
+            'surface-raised': '#202431',
+            'surface-muted': '#252938',
+            'surface-strong': '#303546',
+            text: '#F1F2F8',
+            'text-muted': '#BEC2D0',
+            'text-subtle': '#999FB1',
+            border: '#444A5D',
+            'border-strong': '#6D7489',
+            primary: '#9AB0FF',
+            'primary-hover': '#B2C2FF',
+            'primary-active': '#CAD4FF',
+            'on-primary': '#14245B',
+            secondary: '#F19A87',
+            'on-secondary': '#40190F',
+            accent: '#F2A28F',
+            'on-accent': '#40190F',
+            link: '#AFC0FF',
+            focus: '#F19A87',
+            info: '#7CC5EC',
+            'info-soft': '#193646',
+            'on-info': '#092B3A',
+            success: '#78CBA5',
+            'success-soft': '#18392D',
+            'on-success': '#0C3424',
+            warning: '#EBC06B',
+            'warning-soft': '#403116',
+            'on-warning': '#3D2C08',
+            danger: '#F38FA2',
+            'danger-soft': '#461F2A',
+            'on-danger': '#44131E',
+            scrim: '#03040A',
+            selection: '#36498A',
+            disabled: '#787E90',
+            'graph-canvas': '#141721',
+            'graph-grid': '#323747',
+            'graph-node': '#2E3F7C',
+            'graph-node-stroke': '#9EB2FF',
+            'graph-node-text': '#F5F7FF',
+            'graph-edge': '#CDD2E0',
+            'graph-drag': '#A7B9FF',
+            'graph-hyperlink': '#F19BC8',
+            'graph-accepted': '#79CBA7',
+            'graph-accepted-soft': '#1F4939',
+            'graph-rejected': '#F28FA0',
+            'graph-rejected-soft': '#552632',
+            'graph-undecided': '#C1ADEA',
+            'graph-undecided-soft': '#443961',
+            'rank-low': '#F0987C',
+            'rank-mid': '#DCB85F',
+            'rank-high': '#76C7A2',
+            paper: '#FFFFFF',
+            'paper-ink': '#191C25',
+            'code-selection': '#D9E1FF',
+            'shadow-color': '0 0 0',
+          },
+        },
+        verdant: {
+          index: 'Direction 03',
+          name: 'Verdant Logic',
+          short: 'Distinctive, humane, exploratory',
+          tagline:
+            'A deep teal system with saffron warmth. It deliberately steps away from familiar academic blue while remaining analytical and restrained.',
+          brand:
+            'The clearest break from the current identity; teal belongs to interaction while warm node tones keep graphs approachable.',
+          fit: 'Best when AgonProject should become a distinct public-facing product with a warmer, less institutional voice.',
+          light: {
+            page: '#F3F8F6',
+            surface: '#FFFFFF',
+            'surface-raised': '#FFFFFF',
+            'surface-muted': '#E8F1EE',
+            'surface-strong': '#D8E6E1',
+            text: '#152824',
+            'text-muted': '#536A64',
+            'text-subtle': '#647873',
+            border: '#C2D5CF',
+            'border-strong': '#8BA79F',
+            primary: '#086B60',
+            'primary-hover': '#07594F',
+            'primary-active': '#064A42',
+            'on-primary': '#FFFFFF',
+            secondary: '#D3A11E',
+            'on-secondary': '#2B2105',
+            accent: '#8A6710',
+            'on-accent': '#FFFFFF',
+            link: '#066E65',
+            focus: '#B1800A',
+            info: '#176C92',
+            'info-soft': '#E0F1F7',
+            'on-info': '#FFFFFF',
+            success: '#287553',
+            'success-soft': '#E1F2E9',
+            'on-success': '#FFFFFF',
+            warning: '#885800',
+            'warning-soft': '#FFF1CD',
+            'on-warning': '#FFFFFF',
+            danger: '#B2364A',
+            'danger-soft': '#FBE7EA',
+            'on-danger': '#FFFFFF',
+            scrim: '#061713',
+            selection: '#C5E8E0',
+            disabled: '#7A8E89',
+            'graph-canvas': '#FAFDFC',
+            'graph-grid': '#D1E1DC',
+            'graph-node': '#E6C66F',
+            'graph-node-stroke': '#80600B',
+            'graph-node-text': '#292006',
+            'graph-edge': '#29473F',
+            'graph-drag': '#087C70',
+            'graph-hyperlink': '#8B4978',
+            'graph-accepted': '#216243',
+            'graph-accepted-soft': '#BFE7D0',
+            'graph-rejected': '#972A3D',
+            'graph-rejected-soft': '#F2C6CD',
+            'graph-undecided': '#455676',
+            'graph-undecided-soft': '#D0D9ED',
+            'rank-low': '#B85339',
+            'rank-mid': '#9D7918',
+            'rank-high': '#277453',
+            paper: '#FFFFFF',
+            'paper-ink': '#17221F',
+            'code-selection': '#C5E8E0',
+            'shadow-color': '18 48 40',
+          },
+          dark: {
+            page: '#0D1815',
+            surface: '#152520',
+            'surface-raised': '#1B2D27',
+            'surface-muted': '#20342E',
+            'surface-strong': '#2A413A',
+            text: '#EDF7F3',
+            'text-muted': '#B4C9C2',
+            'text-subtle': '#93ADA5',
+            border: '#3C564E',
+            'border-strong': '#647F76',
+            primary: '#76CFBF',
+            'primary-hover': '#91DDCF',
+            'primary-active': '#ADE8DC',
+            'on-primary': '#07372F',
+            secondary: '#E5C25B',
+            'on-secondary': '#352902',
+            accent: '#E6C66A',
+            'on-accent': '#352902',
+            link: '#8EDBCF',
+            focus: '#E1BE55',
+            info: '#78C5E4',
+            'info-soft': '#173743',
+            'on-info': '#092B3A',
+            success: '#75C99F',
+            'success-soft': '#183A2B',
+            'on-success': '#0C3424',
+            warning: '#ECC26A',
+            'warning-soft': '#403115',
+            'on-warning': '#3D2C08',
+            danger: '#F08D9D',
+            'danger-soft': '#451F28',
+            'on-danger': '#44131E',
+            scrim: '#020907',
+            selection: '#24594F',
+            disabled: '#71877F',
+            'graph-canvas': '#101D19',
+            'graph-grid': '#2C443D',
+            'graph-node': '#5D4A15',
+            'graph-node-stroke': '#E2C35F',
+            'graph-node-text': '#FFF8D9',
+            'graph-edge': '#C1D8D1',
+            'graph-drag': '#79D4C4',
+            'graph-hyperlink': '#E8A4D2',
+            'graph-accepted': '#73CCA1',
+            'graph-accepted-soft': '#1D4934',
+            'graph-rejected': '#F08D9D',
+            'graph-rejected-soft': '#542630',
+            'graph-undecided': '#AABCE7',
+            'graph-undecided-soft': '#354363',
+            'rank-low': '#ED947B',
+            'rank-mid': '#D9BD60',
+            'rank-high': '#70C69D',
+            paper: '#FFFFFF',
+            'paper-ink': '#17221F',
+            'code-selection': '#C5E8E0',
+            'shadow-color': '0 0 0',
+          },
+        },
+      }
+
+      const roleGroups = [
+        {
+          name: 'Foundation and elevation',
+          description:
+            'The neutral hierarchy shared by routes, editors, windows, menus, and responsive layouts.',
+          roles: [
+            [
+              'page',
+              'Route background outside primary work areas.',
+              'body, landing page gutters, mobile route shell',
+            ],
+            [
+              'surface',
+              'Default content surface.',
+              'cards, menus, inputs, modal boxes, desktop and mobile panels',
+            ],
+            [
+              'surface-raised',
+              'Floating surface above normal content.',
+              'floating windows, popovers, rich tooltips',
+            ],
+            [
+              'surface-muted',
+              'Subordinate or grouped surface.',
+              'tabs, headers, secondary buttons, parameter groups',
+            ],
+            [
+              'surface-strong',
+              'Strong neutral interaction surface.',
+              'hover rows, pressed neutral buttons, skeletons',
+            ],
+            [
+              'text',
+              'Default high-emphasis foreground.',
+              'body copy, headings, icons through currentColor',
+            ],
+            [
+              'text-muted',
+              'Supporting foreground with AA contrast on surface.',
+              'descriptions, metadata, inactive navigation',
+            ],
+            [
+              'text-subtle',
+              'Lowest deliberate text emphasis.',
+              'timestamps, shortcut labels; large or nonessential text only',
+            ],
+            [
+              'border',
+              'Quiet structure separator.',
+              'cards, tables, tabs, window divisions, editor bars',
+            ],
+            [
+              'border-strong',
+              'Interactive or elevated boundary.',
+              'inputs, floating windows, selected neutral controls',
+            ],
+          ],
+        },
+        {
+          name: 'Brand and interaction',
+          description:
+            'Brand expression plus explicit rest, hover, active, focus, selection, and disabled states.',
+          roles: [
+            [
+              'primary',
+              'Principal action and selection color.',
+              'primary buttons, active tool, chosen option, strong brand mark',
+            ],
+            [
+              'primary-hover',
+              'Hover state for primary-filled controls.',
+              'hover-capable pointers only',
+            ],
+            [
+              'primary-active',
+              'Pressed state for primary-filled controls.',
+              'mouse press, touch press, active button state',
+            ],
+            ['on-primary', 'Foreground placed on primary.', 'primary button labels and icons'],
+            [
+              'secondary',
+              'Warm brand support color.',
+              'limited brand moments, graph default node family, optional secondary CTA',
+            ],
+            [
+              'on-secondary',
+              'Foreground placed on secondary.',
+              'secondary-filled button labels and compact badges',
+            ],
+            [
+              'accent',
+              'Small-area emphasis, never a generic status.',
+              'eyebrows, teaching emphasis, small identity details',
+            ],
+            ['on-accent', 'Foreground placed on accent.', 'accent badge and filled emphasis label'],
+            [
+              'link',
+              'Interactive inline text and reference color.',
+              'glossary terms, citations, help and external links',
+            ],
+            [
+              'focus',
+              'Keyboard focus indicator independent of fill.',
+              'focus rings on controls, graph objects, windows',
+            ],
+            [
+              'selection',
+              'Text and item selection background.',
+              '::selection, CodeMirror selection, selected list row tint',
+            ],
+            ['disabled', 'Unavailable foreground.', 'disabled controls paired with surface-strong'],
+            [
+              'scrim',
+              'Overlay behind modal content.',
+              'modal and tutorial backdrops at an explicit opacity',
+            ],
+          ],
+        },
+        {
+          name: 'Feedback semantics',
+          description:
+            'UI feedback is distinct from graph-model semantics, even when both use familiar hues.',
+          roles: [
+            [
+              'info',
+              'Informational foreground or strong status.',
+              'tutorial hints, informational progress, term underline',
+            ],
+            [
+              'on-info',
+              'Foreground placed on a solid informational surface.',
+              'solid info alerts, buttons, and badges',
+            ],
+            ['info-soft', 'Informational background.', 'soft alerts and contextual help blocks'],
+            [
+              'success',
+              'Successful operation foreground.',
+              'copy/save confirmation, completion status',
+            ],
+            [
+              'on-success',
+              'Foreground placed on a solid success surface.',
+              'solid success notifications and badges',
+            ],
+            [
+              'success-soft',
+              'Successful operation background.',
+              'soft notifications and result badges',
+            ],
+            [
+              'warning',
+              'Recoverable warning foreground.',
+              'timeouts, incomplete input, caution state',
+            ],
+            [
+              'on-warning',
+              'Foreground placed on a solid warning surface.',
+              'solid warning alerts and badges',
+            ],
+            ['warning-soft', 'Recoverable warning background.', 'soft warning alerts'],
+            [
+              'danger',
+              'Error or destructive action foreground/fill.',
+              'delete actions, invalid input, error notification',
+            ],
+            [
+              'on-danger',
+              'Foreground placed on a solid error or destructive surface.',
+              'delete button labels and solid error notifications',
+            ],
+            ['danger-soft', 'Error background.', 'soft errors and invalid formula context'],
+          ],
+        },
+        {
+          name: 'Graph editor',
+          description:
+            'A complete graph contract covering settled content, transient editing, and evaluation outcomes.',
+          roles: [
+            ['graph-canvas', 'Graph workspace surface.', 'SVG/canvas editor area in every module'],
+            ['graph-grid', 'Nonessential alignment grid.', 'graph background grid only'],
+            [
+              'graph-node',
+              'Default argument fill with no semantic outcome.',
+              'unselected graph nodes and label inputs',
+            ],
+            [
+              'graph-node-stroke',
+              'Default argument boundary.',
+              'node outline, badges, graph scrollbar thumb',
+            ],
+            [
+              'graph-node-text',
+              'Foreground on default node fill.',
+              'argument labels and node-edit text',
+            ],
+            [
+              'graph-edge',
+              'Settled relationship color.',
+              'attack/support edges, arrows, relationship labels',
+            ],
+            [
+              'graph-drag',
+              'Active construction interaction.',
+              'new link, drag handle, eligible drop target',
+            ],
+            [
+              'graph-hyperlink',
+              'Hyperlink-source operation.',
+              'temporary source node/path while linking sets',
+            ],
+            [
+              'graph-accepted',
+              'Accepted outcome boundary/label.',
+              'accepted nodes and semantic legend',
+            ],
+            ['graph-accepted-soft', 'Accepted outcome fill.', 'accepted node interior'],
+            ['graph-rejected', 'Rejected outcome boundary/label.', 'rejected or attacked nodes'],
+            ['graph-rejected-soft', 'Rejected outcome fill.', 'rejected node interior'],
+            [
+              'graph-undecided',
+              'Undecided outcome boundary/label.',
+              'ADF/incomplete undecided nodes',
+            ],
+            ['graph-undecided-soft', 'Undecided outcome fill.', 'undecided node interior'],
+          ],
+        },
+        {
+          name: 'Data, document, and effects',
+          description:
+            'Deliberate scales and fixed-format surfaces that should not inherit arbitrary UI defaults.',
+          roles: [
+            [
+              'rank-low',
+              'Low ranking endpoint.',
+              'numerical ranking scale with text/shape reinforcement',
+            ],
+            ['rank-mid', 'Middle ranking reference.', 'ranking interpolation midpoint'],
+            [
+              'rank-high',
+              'High ranking endpoint.',
+              'numerical ranking scale with text/shape reinforcement',
+            ],
+            [
+              'paper',
+              'Format-owned document background.',
+              'SVG and source export preview in both app modes',
+            ],
+            [
+              'paper-ink',
+              'Format-owned document foreground.',
+              'export source, rendered labels, preview gutters',
+            ],
+            [
+              'code-selection',
+              'Editor selection on paper.',
+              'CodeMirror selection and matching region',
+            ],
+            [
+              'shadow-color',
+              'RGB channel source for elevation recipes.',
+              'small, medium, and large shadows at documented opacity',
+            ],
+          ],
+        },
+      ]
+
+      const contrastPairs = {
+        text: 'surface',
+        'text-muted': 'surface',
+        'text-subtle': 'surface',
+        primary: 'surface',
+        'on-primary': 'primary',
+        'on-secondary': 'secondary',
+        'on-accent': 'accent',
+        link: 'surface',
+        info: 'info-soft',
+        'on-info': 'info',
+        success: 'success-soft',
+        'on-success': 'success',
+        warning: 'warning-soft',
+        'on-warning': 'warning',
+        danger: 'danger-soft',
+        'on-danger': 'danger',
+        'graph-node-text': 'graph-node',
+        'graph-accepted': 'graph-accepted-soft',
+        'graph-rejected': 'graph-rejected-soft',
+        'graph-undecided': 'graph-undecided-soft',
+        'paper-ink': 'paper',
+      }
+
+      let activeDirection = 'heritage'
+      let activeMode = 'light'
+
+      function hexToRgb(hex) {
+        const value = hex.replace('#', '')
+        if (value.length !== 6) return null
+        return [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16))
+      }
+
+      function luminance(hex) {
+        const rgb = hexToRgb(hex)
+        if (!rgb) return null
+        const channels = rgb.map((value) => {
+          const channel = value / 255
+          return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+        })
+        return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+      }
+
+      function contrastRatio(foreground, background) {
+        const a = luminance(foreground)
+        const b = luminance(background)
+        if (a === null || b === null) return null
+        return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+      }
+
+      function idealForeground(hex) {
+        return contrastRatio('#FFFFFF', hex) >= 4.5 ? '#FFFFFF' : '#101820'
+      }
+
+      function applyTheme() {
+        const values = directions[activeDirection][activeMode]
+        const root = document.documentElement
+        Object.entries(values).forEach(([name, value]) =>
+          root.style.setProperty(`--${name}`, value),
+        )
+        root.style.colorScheme = activeMode
+        root.dataset.mode = activeMode
+
+        document.querySelectorAll('[data-mode-button]').forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.modeButton === activeMode))
+        })
+        document.querySelectorAll('[data-direction-button]').forEach((button) => {
+          button.setAttribute(
+            'aria-pressed',
+            String(button.dataset.directionButton === activeDirection),
+          )
+        })
+
+        renderProposal()
+        renderRoles()
+      }
+
+      function renderDirectionButtons() {
+        const container = document.querySelector('#direction-list')
+        container.innerHTML = Object.entries(directions)
+          .map(([key, direction]) => {
+            const palette = direction.light
+            return `<button class="direction-button" type="button" data-direction-button="${key}" aria-pressed="${key === activeDirection}">
+              <span class="direction-button-name">${direction.name}</span>
+              <span class="direction-button-summary">${direction.short}</span>
+              <span class="direction-button-swatches" aria-hidden="true">
+                <i style="background:${palette.primary}"></i>
+                <i style="background:${palette.secondary}"></i>
+                <i style="background:${palette.text}"></i>
+              </span>
+            </button>`
+          })
+          .join('')
+
+        container.querySelectorAll('[data-direction-button]').forEach((button) => {
+          button.addEventListener('click', () => {
+            activeDirection = button.dataset.directionButton
+            applyTheme()
+          })
+        })
+      }
+
+      function renderProposal() {
+        const direction = directions[activeDirection]
+        const values = direction[activeMode]
+        document.querySelector('#proposal-index').textContent =
+          `${direction.index} · ${activeMode} mode`
+        document.querySelector('#proposal-name').textContent = direction.name
+        document.querySelector('#proposal-tagline').textContent = direction.tagline
+        document.querySelector('#proposal-brand').textContent = direction.brand
+        document.querySelector('#proposal-fit').textContent = direction.fit
+
+        const bands = [
+          ['Primary', values.primary],
+          ['Secondary', values.secondary],
+          ['Page', values.page],
+          ['Surface', values.surface],
+          ['Text', values.text],
+        ]
+        document.querySelector('#palette-card').innerHTML = bands
+          .map(
+            ([name, value]) =>
+              `<div class="palette-band" style="background:${value};--band-on:${idealForeground(value)}"><strong>${name}</strong><span>${value}</span></div>`,
+          )
+          .join('')
+      }
+
+      function renderRoles() {
+        const values = directions[activeDirection][activeMode]
+        const total = roleGroups.reduce((sum, group) => sum + group.roles.length, 0)
+        document.querySelector('#role-summary').textContent =
+          `${total} named roles shown for ${directions[activeDirection].name} · ${activeMode} mode.`
+
+        document.querySelector('#role-groups').innerHTML = roleGroups
+          .map((group) => {
+            const rows = group.roles
+              .map(([role, purpose, applied]) => {
+                const value = values[role]
+                const pairRole = contrastPairs[role]
+                let contrast = '—'
+                if (pairRole && values[pairRole]) {
+                  const ratio = contrastRatio(value, values[pairRole])
+                  const passes = ratio >= 4.5
+                  contrast = `<span class="contrast-badge ${passes ? '' : 'review'}">${ratio.toFixed(2)}:1 ${passes ? 'AA' : 'review'}</span><br><span class="token-value">on ${pairRole}</span>`
+                }
+                return `<tr>
+                  <td><div class="token-cell"><i class="token-swatch" style="--swatch:${role === 'shadow-color' ? `rgb(${value})` : value}"></i><div><strong>${role}</strong><br><span class="token-value">${value}</span></div></div></td>
+                  <td>${purpose}</td>
+                  <td>${applied}</td>
+                  <td>${contrast}</td>
+                </tr>`
+              })
+              .join('')
+            return `<article class="role-group">
+              <header class="role-group-header"><h3>${group.name}</h3><p>${group.description}</p></header>
+              <table class="role-table">
+                <thead><tr><th>Token and value</th><th>Semantic purpose</th><th>Applied to</th><th>Reference contrast</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </article>`
+          })
+          .join('')
+      }
+
+      document.querySelectorAll('[data-mode-button]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activeMode = button.dataset.modeButton
+          applyTheme()
+        })
+      })
+
+      applyTheme()
+    </script>
+  </body>
+</html>
