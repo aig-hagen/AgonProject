@@ -36,7 +36,6 @@ import type { HomeController } from '@/app/home/useHomeController'
 import { useHomeSurface } from '@/app/home/useHomeSurface'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
-import ShareModal from '@/modules/common/share/ShareModal.vue'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 const { modules, controller } = defineProps<{
@@ -60,8 +59,6 @@ const {
   handleEditorShortcut,
   loadFromFileInput,
   loadedDocuments,
-  shareUrl,
-  shareDocument,
   quickShareDocument,
   saveAsFile,
   exportAsFile,
@@ -361,7 +358,6 @@ function loadFile() {
             @undo="undo"
             @redo="redo"
             @save="saveAsFile(loadedDocument.id)"
-            @share="shareDocument(loadedDocument.id)"
             @export="exportAsFile(loadedDocument.id, $event)"
           />
         </template>
@@ -399,7 +395,6 @@ function loadFile() {
   </BottomSheet>
 
   <NotificationsDisplay :notifications="notifications" placement="center" />
-  <ShareModal :url="shareUrl" @close="shareUrl = null" />
   <input
     ref="file-input"
     type="file"

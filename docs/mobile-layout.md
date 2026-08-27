@@ -425,7 +425,7 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    — *BAF/iAF/ADF/PAF on-canvas selectors and tap-to-edit sheets are built. **Deferred:** the iAF
    node context menu (needs the Phase 1 gesture spike) and **SETAF** entirely (needs the gesture
    spike, a mockup, and Decision #5).*
-6. 🟡 **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
+6. ✅ **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
    Share-open, and Third-party.
    — *Standalone views done: **Glossary**, **Generate**, and **Third-party** each split into a
    thin `XView` that switches `XViewDesktop`/`XViewMobile` on `layoutMode`, with shared logic
@@ -438,9 +438,12 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    autostart on mobile). Spotlight targets map the desktop anchors (`evaluationButtons`,
    `exportButton`, `mainMenuBottom`) to the compact chrome buttons; module-specific anchors fall
    through when a ref exists, else degrade to a docked card with no ring. The picker already works:
-   `WindowTutorials` renders through `WindowShell` as a `BottomSheet` on compact. **Not done:**
-   Share-open verification (the view is already presentation-neutral; it just needs to be confirmed
-   landing on the editor surface on mobile).*
+   `WindowTutorials` renders through `WindowShell` as a `BottomSheet` on compact. **Share-open
+   verified:** `ShareView` imports the doc, sets `LAST_SELECTED_DOCUMENT_KEY`, and
+   `router.replace('/')`; `useSelectedDocumentId` resolves the imported doc and the mobile
+   `useHomeSurface` default reactively lands on the `editor` surface — no change needed. Also
+   removed the now-dead `ShareModal`/`@share`/`shareDocument` wiring from `HomeViewMobile` (mobile's
+   only outbound share is the Export sheet's copy-link `quickShareDocument`).*
 7. ⬜ **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
    performance/memory checks with many documents and evaluation configs, desktop regression,
    and documentation/help alignment.
@@ -578,4 +581,4 @@ largely in place; this is styling + layout.
   `WindowTutorials`/`WindowShell` sheet). Spotlight covers Evaluate/Export/Menu; wiring the
   module-specific on-canvas selector anchors (link-type, arg-mode) is a later refinement.
 - **Standalone views** — Generate, Glossary, and Third-party mobile shells are built and styled
-  to their artboards (Third-party has none); Share-open still needs mobile verification.
+  to their artboards (Third-party has none); Share-open verified (routes into the editor surface).
