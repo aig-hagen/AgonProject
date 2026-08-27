@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIG yellow node treatments</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --aig-blue: #004c97;
+        --aig-yellow: #d29551;
+        --page: #f4f5f7;
+        --surface: #ffffff;
+        --line: #dfe1e5;
+        --text: #1d1f23;
+        --muted: #6d7078;
+        --canvas: #fbfbfc;
+        --grid: #dbdde1;
+        --edge: #2d3035;
+        --node-text: #302418;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: var(--page);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      main {
+        width: min(1280px, 100%);
+        margin: 0 auto;
+        padding: 42px 28px 64px;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: #7a7d85;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 4vw, 44px);
+        font-weight: 680;
+        letter-spacing: -0.045em;
+      }
+
+      .intro {
+        max-width: 660px;
+        margin: 11px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        justify-content: flex-end;
+      }
+
+      .control {
+        display: flex;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--surface);
+      }
+
+      .control button {
+        min-height: 32px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .control button[aria-pressed='true'] {
+        background: #292c31;
+        color: #ffffff;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: var(--surface);
+      }
+
+      .stage {
+        position: relative;
+        display: grid;
+        min-height: 190px;
+        place-items: center;
+        overflow: hidden;
+        background-color: var(--canvas);
+        background-image: radial-gradient(var(--grid) 0.7px, transparent 0.7px);
+        background-size: 18px 18px;
+      }
+
+      .stage::before,
+      .stage::after {
+        position: absolute;
+        top: calc(50% - 1px);
+        width: calc(50% - 48px);
+        height: 2px;
+        background: var(--edge);
+        content: '';
+      }
+
+      .stage::before {
+        left: 0;
+      }
+
+      .stage::after {
+        right: 0;
+      }
+
+      .arrowhead {
+        position: absolute;
+        z-index: 1;
+        top: calc(50% - 5px);
+        right: calc(50% - 50px);
+        width: 10px;
+        height: 10px;
+        border-top: 2px solid var(--edge);
+        border-right: 2px solid var(--edge);
+        transform: rotate(45deg);
+      }
+
+      .node {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        width: 84px;
+        height: 84px;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: var(--aig-yellow);
+        color: var(--node-text);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 18px;
+        font-weight: 650;
+        text-align: center;
+      }
+
+      .node-label {
+        position: relative;
+        z-index: 2;
+        display: block;
+        max-width: 70px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .meta {
+        min-height: 106px;
+        padding: 14px 15px 15px;
+        border-top: 1px solid var(--line);
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .number {
+        color: #a0a3aa;
+        font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+        font-size: 9px;
+      }
+
+      .description {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .hint {
+        color: var(--aig-blue);
+        font-weight: 700;
+      }
+
+      /* Each class adds exactly one treatment to the shared AIG-yellow base. */
+      .tonal-border {
+        border: 2px solid #9d672f;
+      }
+
+      .inner-ring {
+        box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.38);
+      }
+
+      .double-rim {
+        border: 2px solid #96602b;
+        box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.34);
+      }
+
+      .directional-shadow {
+        box-shadow: 0 7px 10px rgb(80 47 17 / 0.26);
+      }
+
+      .ambient-glow {
+        box-shadow: 0 0 17px rgb(210 149 81 / 0.42);
+      }
+
+      .soft-gradient {
+        background: linear-gradient(150deg, #dfa45f, #c88943);
+      }
+
+      .radial-depth {
+        background: radial-gradient(circle at 40% 34%, #e4ad69 0%, #d29551 53%, #b97937 100%);
+      }
+
+      .matte-texture {
+        overflow: hidden;
+      }
+
+      .matte-texture::after {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+        content: '';
+        mix-blend-mode: soft-light;
+        opacity: 0.45;
+        pointer-events: none;
+      }
+
+      .label-shadow .node-label {
+        text-shadow: 0 1px 1px rgb(255 255 255 / 0.38);
+      }
+
+      .label-weight {
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+      }
+
+      .selection-ring {
+        box-shadow:
+          0 0 0 3px var(--canvas),
+          0 0 0 6px var(--aig-blue);
+      }
+
+      .hover-lift {
+        box-shadow: 0 3px 7px rgb(80 47 17 / 0.17);
+        cursor: pointer;
+        transition:
+          box-shadow 150ms ease,
+          transform 150ms ease;
+      }
+
+      .hover-lift:hover {
+        box-shadow: 0 8px 15px rgb(80 47 17 / 0.24);
+        transform: translateY(-3px) scale(1.025);
+      }
+
+      .press-feedback {
+        box-shadow: 0 4px 8px rgb(80 47 17 / 0.18);
+        cursor: pointer;
+        transition:
+          box-shadow 90ms ease,
+          transform 90ms ease;
+      }
+
+      .press-feedback:active {
+        box-shadow: 0 1px 3px rgb(80 47 17 / 0.2);
+        transform: scale(0.96);
+      }
+
+      .focus-pulse {
+        animation: focus-pulse 2.2s ease-out infinite;
+      }
+
+      @keyframes focus-pulse {
+        0%,
+        35% {
+          box-shadow: 0 0 0 0 rgb(0 76 151 / 0.34);
+        }
+        75%,
+        100% {
+          box-shadow: 0 0 0 9px rgb(0 76 151 / 0);
+        }
+      }
+
+      .status-badge {
+        box-shadow: 0 3px 7px rgb(80 47 17 / 0.17);
+      }
+
+      .badge {
+        position: absolute;
+        right: -5px;
+        bottom: -3px;
+        z-index: 3;
+        display: grid;
+        min-width: 24px;
+        height: 24px;
+        padding: 0 6px;
+        place-items: center;
+        border: 2px solid var(--canvas);
+        border-radius: 999px;
+        background: var(--aig-blue);
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 750;
+      }
+
+      body.canvas-dark {
+        --canvas: #222429;
+        --grid: #373a40;
+        --edge: #d6d8dc;
+      }
+
+      body.no-grid .stage {
+        background-image: none;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .focus-pulse {
+          animation: none;
+          box-shadow:
+            0 0 0 3px var(--canvas),
+            0 0 0 6px rgb(0 76 151 / 0.5);
+        }
+
+        .hover-lift,
+        .press-feedback {
+          transition: none;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .board {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 620px) {
+        main {
+          padding: 27px 16px 42px;
+        }
+
+        header {
+          align-items: start;
+          flex-direction: column;
+        }
+
+        .controls {
+          justify-content: flex-start;
+        }
+
+        .board {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">AgonProject · controlled comparison</p>
+          <h1>AIG yellow treatments</h1>
+          <p class="intro">
+            Every node uses the exact AIG yellow <strong>#D29551</strong>, the same circular
+            geometry, and the same label. Each card isolates one visual treatment.
+          </p>
+        </div>
+
+        <div class="controls" aria-label="Preview controls">
+          <div class="control" aria-label="Canvas theme">
+            <button type="button" data-canvas="light" aria-pressed="true">Light canvas</button>
+            <button type="button" data-canvas="dark" aria-pressed="false">Dark canvas</button>
+          </div>
+          <div class="control" aria-label="Label length">
+            <button type="button" data-label="short" aria-pressed="true">Short label</button>
+            <button type="button" data-label="long" aria-pressed="false">Name</button>
+          </div>
+          <div class="control" aria-label="Grid visibility">
+            <button type="button" data-grid="on" aria-pressed="true">Grid</button>
+            <button type="button" data-grid="off" aria-pressed="false">Plain</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="board">
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Base reference</h2>
+              <span class="number">00</span>
+            </div>
+            <p class="description">Untreated solid fill for comparison.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node tonal-border"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Tonal border</h2>
+              <span class="number">01</span>
+            </div>
+            <p class="description">A darker 2 px edge adds definition.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node inner-ring"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Inner highlight ring</h2>
+              <span class="number">02</span>
+            </div>
+            <p class="description">A translucent inset line lifts the perimeter.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node double-rim"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Double rim</h2>
+              <span class="number">03</span>
+            </div>
+            <p class="description">Dark outer edge plus a light inner edge.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node directional-shadow"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Directional shadow</h2>
+              <span class="number">04</span>
+            </div>
+            <p class="description">A small downward shadow creates elevation.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node ambient-glow"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Ambient glow</h2>
+              <span class="number">05</span>
+            </div>
+            <p class="description">A restrained color-matched halo.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node soft-gradient"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Soft depth gradient</h2>
+              <span class="number">06</span>
+            </div>
+            <p class="description">A shallow diagonal tonal shift.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node radial-depth"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Radial depth</h2>
+              <span class="number">07</span>
+            </div>
+            <p class="description">A brighter center fading toward the edge.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node matte-texture"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Matte texture</h2>
+              <span class="number">08</span>
+            </div>
+            <p class="description">Fine noise breaks up the uniform fill.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node label-shadow"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Label shadow</h2>
+              <span class="number">09</span>
+            </div>
+            <p class="description">A tiny highlight separates the dark text.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node label-weight"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Label weight</h2>
+              <span class="number">10</span>
+            </div>
+            <p class="description">Heavier, tighter typography gives more presence.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node selection-ring"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Selection ring</h2>
+              <span class="number">11</span>
+            </div>
+            <p class="description">AIG blue marks an active node without changing its fill.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node hover-lift"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Hover lift</h2>
+              <span class="number">12</span>
+            </div>
+            <p class="description">
+              <span class="hint">Hover the node:</span> it rises slightly with a stronger shadow.
+            </p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node press-feedback"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Press feedback</h2>
+              <span class="number">13</span>
+            </div>
+            <p class="description">
+              <span class="hint">Press and hold:</span> the node compresses briefly.
+            </p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node focus-pulse"><span class="node-label">A</span></div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Animated focus</h2>
+              <span class="number">14</span>
+            </div>
+            <p class="description">A slow AIG-blue pulse draws temporary attention.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="stage">
+            <span class="arrowhead"></span>
+            <div class="node status-badge">
+              <span class="node-label">A</span><span class="badge">3</span>
+            </div>
+          </div>
+          <div class="meta">
+            <div class="title-row">
+              <h2>Status badge</h2>
+              <span class="number">15</span>
+            </div>
+            <p class="description">A compact attached value using the secondary brand color.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      function activate(button, selector) {
+        document
+          .querySelectorAll(selector)
+          .forEach((item) => item.setAttribute('aria-pressed', 'false'))
+        button.setAttribute('aria-pressed', 'true')
+      }
+
+      document.querySelectorAll('[data-canvas]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activate(button, '[data-canvas]')
+          document.body.classList.toggle('canvas-dark', button.dataset.canvas === 'dark')
+        })
+      })
+
+      document.querySelectorAll('[data-label]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activate(button, '[data-label]')
+          const label = button.dataset.label === 'long' ? 'Argument' : 'A'
+          document.querySelectorAll('.node-label').forEach((item) => {
+            item.textContent = label
+          })
+        })
+      })
+
+      document.querySelectorAll('[data-grid]').forEach((button) => {
+        button.addEventListener('click', () => {
+          activate(button, '[data-grid]')
+          document.body.classList.toggle('no-grid', button.dataset.grid === 'off')
+        })
+      })
+    </script>
+  </body>
+</html>
