@@ -38,6 +38,10 @@ export default defineConfig({
     baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173',
     trace: 'retain-on-failure',
     headless: true,
+    /* Disable animations (the app honours prefers-reduced-motion, so BottomSheet
+       transitions become instant) — avoids clicking a sheet control mid open/close
+       animation, which flaked on slower WebKit runners. */
+    contextOptions: { reducedMotion: 'reduce' },
   },
 
   /* Configure projects for major browsers.
