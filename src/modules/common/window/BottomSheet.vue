@@ -59,6 +59,15 @@ function updateViewportHeight() {
   viewportHeight.value = window.innerHeight
 }
 
+onMounted(() => {
+  updateViewportHeight()
+  window.addEventListener('resize', updateViewportHeight)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewportHeight)
+})
+
 // Which snap point is settled, and — while dragging — the live height the finger drives.
 const activeIndex = ref(0)
 const liveHeight = ref<number | null>(null)
@@ -269,7 +278,7 @@ function onHandlePointerUp(event: PointerEvent) {
           </button>
         </header>
         <div class="sheet-body flex-1 overflow-y-auto overscroll-contain px-4">
-          <slot :expanded="snap === 'full'" />
+          <slot :expanded="expanded" />
         </div>
         <footer v-if="$slots.footer" class="shrink-0 border-t border-base-300 px-4 pt-3">
           <slot name="footer" />

@@ -97,7 +97,12 @@ watch(
 <template>
   <!-- Non-modal docked sheet: the graph stays visible and interactive above it, and
        tapping the canvas does not dismiss it. Starts at a low peek, drag up for full. -->
-  <BottomSheet v-model:open="open" title="Evaluate" :modal="false" peek-height="50dvh">
+  <BottomSheet
+    v-model:open="open"
+    title="Evaluate"
+    :modal="false"
+    :snap-points="[0.5, 0.9]"
+  >
     <div class="flex flex-col gap-3 pb-4">
       <div class="flex items-center gap-2 -mx-1 px-1 overflow-x-auto">
         <div class="flex-1 min-w-0 flex gap-2 py-1">

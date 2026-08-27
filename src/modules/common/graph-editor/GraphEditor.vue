@@ -1417,6 +1417,11 @@ function runFromMenu(action: () => void) {
   action()
 }
 
+function openDocumentSwitcher() {
+  evaluationOpen.value = false
+  emit('home')
+}
+
 // Command surface a shell drives instead of the editor's own chrome. The desktop
 // main menu and toolbar still call these same functions; nothing here changes their
 // behaviour, it only makes them reachable from outside.
@@ -1596,7 +1601,7 @@ defineExpose({
         <button
           class="flex items-center gap-2 h-10 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
           aria-label="Back to documents"
-          @click="emit('home')"
+          @click="openDocumentSwitcher"
         >
           <span
             class="grid place-items-center size-7 shrink-0 rounded-lg bg-primary/25 text-primary"
