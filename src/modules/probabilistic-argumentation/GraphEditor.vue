@@ -56,6 +56,11 @@ import { pafBasicsTutorial } from '@/modules/probabilistic-argumentation/tutoria
 import { pafEvaluationTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-evaluation'
 import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
 
+// This wrapper's root is a <div> (the graph editor and the probability sheet are
+// siblings), so shell-provided attrs like document-name / type-badge / @home would
+// otherwise fall through to that div instead of the inner GraphEditor.
+defineOptions({ inheritAttrs: false })
+
 const { state, historyState, documentId } = defineProps<{
   state: DocumentState<ProbabilisticArgumentation<PafArgumentData>>
   historyState: HistoryState
@@ -366,9 +371,7 @@ function openEditor(event: MouseEvent, label: ProbabilityLabel) {
   event.stopPropagation()
   if (layoutMode.value === 'compact') {
     probabilityFocusKey.value =
-      label.type === 'attack'
-        ? `atk-${label.sourceId}-${label.targetId}`
-        : `arg-${label.id}`
+      label.type === 'attack' ? `atk-${label.sourceId}-${label.targetId}` : `arg-${label.id}`
     isProbabilitiesOpen.value = true
     return
   }
@@ -402,6 +405,7 @@ function onPopupKeydown(event: KeyboardEvent) {
   <div class="h-full w-full relative">
     <GraphEditor
       v-if="editorState"
+      v-bind="$attrs"
       class="paf-graph"
       :document-id="documentId"
       @new="emit('new')"
