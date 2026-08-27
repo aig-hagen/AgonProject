@@ -1621,7 +1621,7 @@ defineExpose({
       >
         <!-- Switcher chip: back to home / document picker -->
         <button
-          class="flex items-center gap-2 h-10 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
+          class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
           aria-label="Back to documents"
           @click="openDocumentSwitcher"
         >
@@ -1655,7 +1655,7 @@ defineExpose({
         </span>
         <button
           ref="mobileMenuButton"
-          class="btn btn-square btn-ghost"
+          class="btn btn-square size-11 btn-ghost"
           aria-label="Menu"
           @click="isMenuOpen = true"
         >

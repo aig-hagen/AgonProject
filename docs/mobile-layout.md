@@ -460,9 +460,14 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    referenced UI removed long ago (old landing heading, `new argumentation` tab placeholder, single
    `Create` button) — now assert the current landing heading and create-via-module-card + input-value
    cross-page sync. Gated the Vue devtools dev-overlay off under `E2E=1` (it intercepted pointer
-   events on the centered Evaluate button); Playwright's dev server sets it. **Still to do:**
-   accessibility pass (BottomSheet focus trap/restore, 44×44px targets, reduced motion, 200% zoom,
-   no horizontal overflow), performance/memory with many docs + eval configs, per-module
+   events on the centered Evaluate button); Playwright's dev server sets it.
+   **Accessibility (started):** `e2e/a11y.mobile.spec.ts` locks the `BottomSheet` contract
+   (focus enters the sheet on open; Escape closes and restores focus to the trigger; dialogs expose
+   an accessible name) and gates **44×44px touch targets** across the editor chrome + sheet close,
+   catching three sub-44 controls now fixed (sheet/eval Close and Add → `size-11`, switcher chip
+   `h-10→h-11`, Menu button pinned to `size-11`), plus a no-horizontal-overflow check on the editor
+   and an open sheet. **Still to do:** deeper a11y (reduced motion, 200% text zoom, status
+   announcements), performance/memory with many docs + eval configs, per-module
    create/edit/evaluate/export mobile flows, and help/tutorial wording alignment. Real-device smoke
    matrix + touch-gesture coverage ride with the deferred gesture spike (see TODO).*
 

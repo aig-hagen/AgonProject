@@ -178,7 +178,7 @@ watch(
       <button
         v-if="!listOpen"
         type="button"
-        class="btn btn-square btn-sm btn-ghost shrink-0"
+        class="btn btn-square size-11 btn-ghost shrink-0"
         aria-label="Add evaluation"
         @click="onAddClick"
       >
@@ -186,7 +186,7 @@ watch(
       </button>
       <button
         type="button"
-        class="btn btn-square btn-sm btn-ghost shrink-0"
+        class="btn btn-square size-11 btn-ghost shrink-0"
         aria-label="Close"
         @click="close"
       >
