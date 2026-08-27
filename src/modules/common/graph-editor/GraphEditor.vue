@@ -48,7 +48,6 @@ import {
   PlayIcon,
   QuestionMarkCircleIcon,
   QueueListIcon,
-  ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
   VariableIcon,
@@ -1629,7 +1628,7 @@ defineExpose({
             title="Relayout"
             @click="isRelayoutOpen = true"
           >
-            <Squares2X2Icon class="size-6 opacity-70" />
+            <SparklesIcon class="size-6 opacity-70" />
           </button>
         </div>
 
@@ -1715,7 +1714,7 @@ defineExpose({
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('generate'))"
             >
-              <SparklesIcon class="size-5 text-primary/80" /> Generate random…
+              <Squares2X2Icon class="size-5 text-primary/80" /> Generate random…
             </button>
           </section>
           <section class="flex flex-col gap-1">
@@ -1726,12 +1725,6 @@ defineExpose({
               @click="runFromMenu(() => emit('redo'))"
             >
               <ArrowUturnRightIcon class="size-5 text-primary/80" /> Redo
-            </button>
-            <button
-              class="btn btn-ghost justify-start gap-3"
-              @click="runFromMenu(() => emit('share'))"
-            >
-              <ShareIcon class="size-5 text-primary/80" /> Share link…
             </button>
           </section>
           <section class="flex flex-col gap-1">

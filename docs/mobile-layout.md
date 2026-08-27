@@ -425,8 +425,15 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    — *BAF/iAF/ADF/PAF on-canvas selectors and tap-to-edit sheets are built. **Deferred:** the iAF
    node context menu (needs the Phase 1 gesture spike) and **SETAF** entirely (needs the gesture
    spike, a mockup, and Decision #5).*
-6. ⬜ **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
+6. 🟡 **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
    Share-open, and Third-party.
+   — *Standalone views done: **Glossary**, **Generate**, and **Third-party** each split into a
+   thin `XView` that switches `XViewDesktop`/`XViewMobile` on `layoutMode`, with shared logic
+   pulled into a composable (`useGlossary`, `useGenerate`) or helper module (`attributions.ts`);
+   mobile shells styled to their artboards (Third-party has no mockup — single-column disclosure
+   list). **Not done:** the mobile tutorial overlay + picker, and Share-open verification (the
+   view is already presentation-neutral; it just needs to be confirmed landing on the editor
+   surface on mobile).*
 7. ⬜ **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
    performance/memory checks with many documents and evaluation configs, desktop regression,
    and documentation/help alignment.
@@ -561,4 +568,5 @@ largely in place; this is styling + layout.
   and sheets: verify against artboards after the gesture spike lands.
 - **SETAF** (*collective attacks*) — still needs a mockup before implementation (Decision #5).
 - **Tutorials** (*Tutorial*) — mobile overlay + picker.
-- **Standalone views** — Generate, Glossary, Share-open, Third-party.
+- **Standalone views** — Generate, Glossary, and Third-party mobile shells are built and styled
+  to their artboards (Third-party has none); Share-open still needs mobile verification.
