@@ -21,6 +21,7 @@ import { computed, type Ref, ref, watch } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import EvaluationCard from '@/modules/common/evaluation/EvaluationCard.vue'
+import MobileEvaluationBody from '@/modules/common/evaluation/MobileEvaluationBody.vue'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 export interface EvaluationWindowQuery {
@@ -67,18 +68,11 @@ const size = computed(() => props.initialSize ?? { width: 400, height: 360 })
 </script>
 
 <template>
-  <EvaluationCard
-    v-if="hosted"
-    v-model:params-open="paramsOpen"
-    hosted
-    :title="title"
-    :query="query"
-    @evaluate="emit('evaluate')"
-  >
+  <MobileEvaluationBody v-if="hosted" :query="query" @evaluate="emit('evaluate')">
     <template #parameters><slot name="parameters" /></template>
     <template #parameters-footer><slot name="parameters-footer" /></template>
     <template #results><slot name="results" /></template>
-  </EvaluationCard>
+  </MobileEvaluationBody>
 
   <WindowShell
     v-else

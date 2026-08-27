@@ -19,8 +19,12 @@
 <script setup lang="ts">
 import { CheckIcon, ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { XMarkIcon } from '@heroicons/vue/24/solid'
-import { computed, ref, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 
+import {
+  EVALUATION_DETENT_KEY,
+  type EvaluationDetentLayout,
+} from '@/modules/common/evaluation/hostContext'
 import KindIcon from '@/modules/common/evaluation/KindIcon.vue'
 import type { EvaluationKind } from '@/modules/common/evaluation/types'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
@@ -51,6 +55,14 @@ const KIND_LABEL: Record<EvaluationKind, string> = {
   serialisation: 'Serialisation',
 }
 
+// Detent index (0/1/2) from the sheet → layout the mobile body reads to fold the
+// selector row / glossary away at the compact detent.
+const detentIndex = ref(0)
+const detentLayout = computed<EvaluationDetentLayout>(() =>
+  detentIndex.value <= 0 ? 'compact' : detentIndex.value === 1 ? 'standard' : 'full',
+)
+provide(EVALUATION_DETENT_KEY, detentLayout)
+
 // The active config, surfaced as the header pill (kind glyph + name + chevron).
 const activeChip = computed(() => chips.find((c) => c.id === activeId.value))
 
@@ -59,12 +71,20 @@ const activeChip = computed(() => chips.find((c) => c.id === activeId.value))
 const listOpen = ref(false)
 const addMenuOpen = ref(false)
 
+// A newly created eval needs its selectors, so lift a compact sheet to standard.
+function ensureStandardDetent() {
+  if (detentIndex.value < 1) detentIndex.value = 1
+}
+
 function onAddClick() {
   if (addKinds.length <= 1) {
     emit('add', addKinds[0] ?? 'extension')
     listOpen.value = false
+    ensureStandardDetent()
   } else {
-    addMenuOpen.value = !addMenuOpen.value
+    // Multi-kind: the picker lives in the dropped list, so open it to reveal the choices.
+    listOpen.value = true
+    addMenuOpen.value = true
   }
 }
 
@@ -72,6 +92,7 @@ function chooseKind(kind: EvaluationKind) {
   addMenuOpen.value = false
   listOpen.value = false
   emit('add', kind)
+  ensureStandardDetent()
 }
 
 function selectChip(id: string) {
@@ -110,7 +131,13 @@ watch(
 <template>
   <!-- Non-modal docked sheet: the graph stays visible and interactive above it, and
        tapping the canvas does not dismiss it. Three detents — compact / standard / full. -->
-  <BottomSheet v-model:open="open" title="Evaluate" :modal="false" :snap-points="[0.28, 0.48, 0.9]">
+  <BottomSheet
+    v-model:open="open"
+    v-model:detent-index="detentIndex"
+    title="Evaluate"
+    :modal="false"
+    :snap-points="[0.28, 0.48, 0.9]"
+  >
     <!-- Header-as-switcher: the active config IS the header; the chevron drops the
          full saved-config list. One control does what the pill strip + title did. -->
     <template #header="{ close }">
@@ -153,7 +180,7 @@ watch(
       </button>
     </template>
 
-    <div class="relative flex flex-col gap-3 pb-4">
+    <div class="relative flex flex-col gap-3 pb-4 min-h-full">
       <!-- Dropped saved-config list: switch (tap), per-row delete, add row. Overlays
            the dimmed body; tapping outside closes it. -->
       <button
@@ -224,7 +251,7 @@ watch(
       </div>
 
       <div
-        class="flex flex-col gap-3 transition-opacity"
+        class="flex-1 min-h-0 flex flex-col gap-3 transition-opacity"
         :class="listOpen && 'opacity-30 pointer-events-none'"
       >
         <div v-if="chips.length === 0" class="flex flex-col items-center gap-3 py-10 text-center">

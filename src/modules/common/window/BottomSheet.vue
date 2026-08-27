@@ -78,7 +78,8 @@ onBeforeUnmount(() => {
 })
 
 // Which snap point is settled, and — while dragging — the live height the finger drives.
-const activeIndex = ref(0)
+// Exposed as a model so a docked host can react to the detent (e.g. fold parameters away).
+const activeIndex = defineModel<number>('detentIndex', { default: 0 })
 const liveHeight = ref<number | null>(null)
 function detentPx(index: number): number {
   const points = snapPoints ?? []

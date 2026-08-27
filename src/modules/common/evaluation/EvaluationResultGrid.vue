@@ -17,9 +17,13 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, nextTick, useTemplateRef, watchEffect } from 'vue'
+import { computed, inject, nextTick, useTemplateRef, watchEffect } from 'vue'
 
+import { EVALUATION_STICKY_FOOTER_KEY } from '@/modules/common/evaluation/hostContext'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
+
+// Mobile host pins the status/copy line to the sheet bottom; desktop leaves it in flow.
+const stickyFooter = inject(EVALUATION_STICKY_FOOTER_KEY, false)
 
 const selected = defineModel<string | undefined>('selected')
 const props = withDefaults(
@@ -84,7 +88,14 @@ watchEffect(async () => {
       {{ item.label }}
     </button>
   </div>
-  <div v-if="statusLine || props.items.length > 0" class="flex items-center justify-between gap-2">
+  <div
+    v-if="statusLine || props.items.length > 0"
+    class="flex items-center justify-between gap-2"
+    :class="
+      stickyFooter &&
+      'sticky bottom-0 z-10 -mx-3 mt-auto border-t border-base-200 bg-base-100 px-3 py-1.5'
+    "
+  >
     <p v-if="statusLine" class="label">{{ statusLine }}</p>
     <div v-if="props.items.length > 0" class="join ml-auto">
       <ButtonCopy
