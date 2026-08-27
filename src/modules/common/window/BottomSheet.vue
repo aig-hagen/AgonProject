@@ -258,7 +258,10 @@ function onHandlePointerUp(event: PointerEvent) {
         :aria-label="$slots.header ? title : undefined"
         tabindex="-1"
         class="sheet-panel fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-base-100 shadow-lg/30 outline-none"
-        :class="{ 'sheet-panel--dragging': dragging }"
+        :class="{
+          'sheet-panel--dragging': dragging,
+          'border-t border-base-content/20': !modal,
+        }"
         :style="{
           transform: `translateY(${dragOffset}px)`,
           height: panelHeight,

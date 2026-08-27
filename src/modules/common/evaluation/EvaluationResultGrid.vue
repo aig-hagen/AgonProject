@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, inject, nextTick, useTemplateRef, watchEffect } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue'
 
 import { EVALUATION_STICKY_FOOTER_KEY } from '@/modules/common/evaluation/hostContext'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
@@ -59,22 +59,80 @@ function notifyCopied(format: 'plain' | 'tex') {
 const containerRef = useTemplateRef('container')
 const itemRefs = useTemplateRef('item-refs')
 
-const FALLBACK_WIDTH = 192
 const MIN_WIDTH_VAR = '--evaluation-item-min-width'
+const MEASURING_CLASS = 'evaluation-result-grid--measuring'
 
-watchEffect(async () => {
+let measurementVersion = 0
+
+async function measureItemWidths() {
+  const version = ++measurementVersion
   const container = containerRef.value
   if (container === null) return
-  if (props.items.length === 0) {
-    container.style.setProperty(MIN_WIDTH_VAR, `${FALLBACK_WIDTH}px`)
+  if (props.items.length === 0) return
+
+  // Compact evaluation instances stay mounted under v-show. An inactive instance
+  // has no layout box, so measuring it would cache 0px and collapse every grid
+  // column when that instance is selected later.
+  if (container.getBoundingClientRect().width <= 0) return
+
+  // Use a single max-content track while measuring. A fixed fallback track here
+  // would make the buttons report that track's width and lock the mobile grid to
+  // one column instead of their intrinsic content width.
+  container.classList.add(MEASURING_CLASS)
+  await nextTick()
+  if (version !== measurementVersion) return
+  if (containerRef.value !== container) {
+    container.classList.remove(MEASURING_CLASS)
     return
   }
-  container.style.removeProperty(MIN_WIDTH_VAR)
-  await nextTick()
   const elements = itemRefs.value as HTMLElement[] | null
-  if (elements === null || elements.length === 0) return
+  if (elements === null || elements.length === 0) {
+    container.classList.remove(MEASURING_CLASS)
+    return
+  }
   const maxWidth = Math.max(...elements.map((el) => el.getBoundingClientRect().width))
+  container.classList.remove(MEASURING_CLASS)
+  if (maxWidth <= 0) return
   container.style.setProperty(MIN_WIDTH_VAR, `${maxWidth}px`)
+}
+
+watch(
+  [containerRef, () => props.items.map((item) => item.label).join('\0')],
+  () => void measureItemWidths(),
+  { immediate: true, flush: 'post' },
+)
+
+// Visibility itself is not reactive: v-show only changes an ancestor's display.
+// Watching the container width catches hidden -> visible switches as well as sheet
+// and viewport resizes, then recomputes the intrinsic item width in real layout.
+let resizeObserver: ResizeObserver | undefined
+let lastObservedWidth = 0
+
+watch(
+  containerRef,
+  (container) => {
+    resizeObserver?.disconnect()
+    resizeObserver = undefined
+    lastObservedWidth = 0
+    if (container === null || typeof ResizeObserver === 'undefined') return
+
+    resizeObserver = new ResizeObserver(([entry]) => {
+      const width = entry?.contentRect.width ?? 0
+      if (width <= 0) {
+        lastObservedWidth = 0
+        return
+      }
+      if (Math.abs(width - lastObservedWidth) < 0.5) return
+      lastObservedWidth = width
+      void measureItemWidths()
+    })
+    resizeObserver.observe(container)
+  },
+  { immediate: true, flush: 'post' },
+)
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
 })
 </script>
 
@@ -132,5 +190,9 @@ watchEffect(async () => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(var(--evaluation-item-min-width), auto));
   justify-content: start;
+}
+
+.evaluation-result-grid--measuring {
+  grid-template-columns: max-content;
 }
 </style>
