@@ -34,6 +34,7 @@ import type { ExportFileData } from '@/modules/common/export'
 import { saveToFile } from '@/modules/common/export/saveFile'
 import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
+import { canNativeShare } from '@/modules/common/share/nativeShare'
 import { uploadShare } from '@/modules/common/share/useShare'
 import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
 import {
@@ -299,10 +300,23 @@ export function useHomeController<DocumentT extends Objectish>(
     const [state, module] = await loadDocumentState(db, modules, documentId)
     if (state === undefined || module === undefined) return
     const content = module.getSaveString(state.current.content, metadata?.name ?? '')
+    const name = metadata?.name?.trim() || 'Argumentation framework'
     isSharing.value = true
     try {
-      const result = await uploadShare(content)
-      copy(result.url)
+      const { url } = await uploadShare(content)
+      // On touch devices with the Web Share API, hand the link to the native share sheet
+      // (WhatsApp, email, …); otherwise — or if it fails — fall back to clipboard copy.
+      if (canNativeShare({ url })) {
+        try {
+          await navigator.share({ title: name, text: `${name} — AgonProject`, url })
+          return
+        } catch (error) {
+          // User dismissed the sheet: leave it there, don't also copy.
+          if (error instanceof DOMException && error.name === 'AbortError') return
+          // Any other failure falls through to the clipboard path below.
+        }
+      }
+      copy(url)
       shareCopied.value = true
       clearTimeout(shareCopiedTimer)
       shareCopiedTimer = setTimeout(() => {

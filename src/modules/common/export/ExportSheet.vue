@@ -33,6 +33,7 @@ import { computed, inject, ref, shallowRef } from 'vue'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import { useSettings } from '@/modules/common/settings/useSettings'
+import { supportsNativeShare } from '@/modules/common/share/nativeShare'
 import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
 
 import type { ExportConfig, ExportFileData, ExportStyleOptions } from '.'
@@ -46,6 +47,7 @@ const emit = defineEmits<{ export: [filedata: ExportFileData] }>()
 
 const { gridCellScale } = useSettings()
 const quickShare = inject(QUICK_SHARE_KEY, undefined)
+const canShareNatively = supportsNativeShare()
 
 type Screen = 'picker' | 'svg' | 'code'
 const screen = ref<Screen>('picker')
@@ -134,7 +136,9 @@ function download(config: ExportConfig<DocumentT>) {
         @click="quickShare()"
       >
         <ShareIcon class="size-5" />
-        <span class="flex-1 text-left font-semibold">Copy share link</span>
+        <span class="flex-1 text-left font-semibold">{{
+          canShareNatively ? 'Share link' : 'Copy share link'
+        }}</span>
       </button>
 
       <section v-if="codeConfig" class="flex flex-col gap-2">
@@ -150,7 +154,9 @@ function download(config: ExportConfig<DocumentT>) {
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">SVG image</b>
-            <span class="text-xs text-base-content/60 truncate">Rendered diagram — with style options</span>
+            <span class="text-xs text-base-content/60 truncate"
+              >Rendered diagram — with style options</span
+            >
           </span>
           <span class="badge badge-sm badge-ghost text-primary/80 shrink-0">Preview</span>
           <ChevronRightIcon class="size-4 shrink-0 opacity-30" />

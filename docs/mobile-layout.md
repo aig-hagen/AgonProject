@@ -527,7 +527,10 @@ Done so far:
   trailing add/delete pill (chrome only; see the rework note below for the body).
 - **Export sheet** — picker rebuilt as bordered card rows (icon tile + bold name + subtitle,
   trailing chevron or download glyph) with `IMAGE` / `CODE & DATA` sections. Added optional
-  `ExportConfig.description` for the subtitles.
+  `ExportConfig.description` for the subtitles. The one-tap share action now uses the **Web Share
+  API** on touch devices (`share/nativeShare.ts` → native sheet: WhatsApp, email, …), falling back
+  to clipboard copy elsewhere or on failure; the button reads "Share link" vs "Copy share link"
+  accordingly.
 - **Relayout sheet** — grouped **Directed** / **Other** sections with icon-badge tiles instead of
   a flat outline-button grid.
 - **Menu sheet** — icons tinted primary, section captions given `tracking-wide`, matching the
