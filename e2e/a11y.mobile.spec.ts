@@ -76,3 +76,16 @@ test('no horizontal overflow in the editor or an open sheet', async ({ page }) =
   await expect(page.getByRole('dialog', { name: 'Evaluate' })).toBeVisible()
   expect(await overflow(), 'evaluate sheet open').toBe(false)
 })
+
+test('reflows at the 320px minimum width without horizontal scroll (WCAG 1.4.10)', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 720 })
+  await openEditor(page)
+  const overflow = () =>
+    page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)
+  expect(await overflow(), 'editor at 320px').toBe(false)
+  await page.getByRole('button', { name: 'Menu' }).click()
+  await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible()
+  expect(await overflow(), 'menu sheet at 320px').toBe(false)
+})
