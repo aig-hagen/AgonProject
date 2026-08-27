@@ -82,6 +82,7 @@ import {
   type LinkConfigs,
   LinkType,
   type NodeId,
+  SHEET_REFIT_KEY,
 } from '@/modules/common/graph-editor/graphEditor'
 import {
   adjustNodeLabelFontSize,
@@ -1306,7 +1307,7 @@ onUnmounted(() => {
   renameCommitCleanup?.()
 })
 
-function fitToView() {
+function fitToView(extraBottomInset = 0) {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) return
   // Centering math divides by the container size; a 0×0 box (e.g. while hidden in a
@@ -1314,12 +1315,28 @@ function fitToView() {
   const container = containerRef.value
   if (!container || container.clientWidth === 0 || container.clientHeight === 0) return
   const margin = ARGUMENT_RADIUS_IN_PX * 2
+  // The compact top bar floats over the full-height canvas, so inset the fit by its
+  // occupied height (offsetHeight = the band it covers) to keep the graph clear of it.
+  const topInset =
+    layoutMode.value === 'compact' ? (mobileTopBarRef.value?.offsetHeight ?? 0) : 0
+  // A docked sheet covers the bottom band; the extra inset there fits the graph into
+  // the visible band above it instead of centring it under the sheet.
   graphComponent.centerView(
-    { top: margin, right: margin, bottom: margin, left: margin },
+    { top: margin + topInset, right: margin, bottom: margin + extraBottomInset, left: margin },
     undefined,
     1,
   )
 }
+
+// A docked bottom sheet asks the graph to re-fit above it. `coveredFraction` is the
+// sheet height as a fraction of the container; null re-fits using the full canvas.
+function refitAboveSheet(coveredFraction: number | null) {
+  const container = containerRef.value
+  if (!container) return
+  const inset = coveredFraction === null ? 0 : Math.round(container.clientHeight * coveredFraction)
+  fitToView(inset)
+}
+provide(SHEET_REFIT_KEY, refitAboveSheet)
 
 function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
@@ -1379,6 +1396,7 @@ watch([isMenuOpen, isRelayoutOpen], ([menu, relayout]) => {
 
 // Spotlight targets for the mobile tutorial overlay: the compact-chrome equivalents of the
 // desktop anchor elements. Module-specific anchors fall through to tutorialRefs when present.
+const mobileTopBarRef = useTemplateRef<HTMLElement>('mobileTopBar')
 const mobileMenuButtonRef = useTemplateRef<HTMLButtonElement>('mobileMenuButton')
 const mobileEvaluateButtonRef = useTemplateRef<HTMLButtonElement>('mobileEvaluateButton')
 const mobileExportButtonRef = useTemplateRef<HTMLButtonElement>('mobileExportButton')
@@ -1594,6 +1612,7 @@ defineExpose({
     <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
     <template v-if="layoutMode === 'compact'">
       <header
+        ref="mobileTopBar"
         class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 h-14 bg-base-200/95 backdrop-blur border-b border-base-300"
         style="padding-top: env(safe-area-inset-top)"
       >
@@ -1643,20 +1662,20 @@ defineExpose({
 
       <!-- Fixed 5-button command bar: two small actions flank the prominent Evaluate. -->
       <nav
-        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-3 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
+        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
         style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
       >
-        <div class="flex gap-2">
+        <div class="flex gap-2 shrink-0">
           <button
-            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Fit to view"
             title="Fit to view"
-            @click="fitToView"
+            @click="fitToView()"
           >
             <ArrowsPointingInIcon class="size-6 opacity-70" />
           </button>
           <button
-            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Relayout"
             title="Relayout"
             @click="isRelayoutOpen = true"
@@ -1667,17 +1686,17 @@ defineExpose({
 
         <button
           ref="mobileEvaluateButton"
-          class="btn btn-primary h-13 rounded-2xl px-6 gap-2 text-base font-semibold shadow-md shadow-primary/30"
+          class="btn btn-primary h-13 min-w-0 shrink rounded-2xl px-4 gap-2 text-base font-semibold shadow-md shadow-primary/30"
           @click="evaluationOpen = true"
         >
-          <PlayIcon class="size-6" />
-          Evaluate
+          <PlayIcon class="size-6 shrink-0" />
+          <span class="truncate">Evaluate</span>
         </button>
 
-        <div class="flex gap-2">
+        <div class="flex gap-2 shrink-0">
           <button
             ref="mobileExportButton"
-            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Export"
             title="Export"
             @click="isExportOpened = true"
@@ -1685,7 +1704,7 @@ defineExpose({
             <PhotoIcon class="size-6 opacity-70" />
           </button>
           <button
-            class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             :disabled="!historyState.canUndo"
             aria-label="Undo"
             title="Undo"

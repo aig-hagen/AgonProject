@@ -620,8 +620,9 @@ Mockups (canvas page *Eval sheet — snap detents (proposal)*):
 **AF visibility at compact/standard**
 
 - Re-fit the graph into the band **above** the sheet so it stays fully visible (currently centered,
-  so it is half-covered). Open question: does `fitToView` accept an inset rect / padded bounds?
-  Investigate before implementing; if not, add one.
+  so it is half-covered). Open question resolved: `centerView` already takes a
+  `{ top, right, bottom, left }` **margin** inset — no new API needed. `fitToView` grows the bottom
+  margin by the sheet's covered height so the graph fits into the band above it.
 
 **Task checklist**
 
@@ -662,11 +663,16 @@ Mockups (canvas page *Eval sheet — snap detents (proposal)*):
     - Top pane keeps the highlight; the bottom pane must **not** emit `highlight` (own params
       + result only), so only one eval touches the canvas.
     - Needs a place to hold the one-off instance state (host-local, not in the saved list).
-- [ ] AF re-fit above the sheet at compact/standard (resolve `fitToView` inset question first).
-      Open work:
-    - Investigate whether `fitToView` accepts an inset rect / padded bounds; if not, add one.
-    - When the sheet is open at compact/standard, re-fit the AF graph into the band **above**
-      the sheet (currently centred, so it is half-covered). Re-fit on detent change too.
+- [x] AF re-fit above the sheet at compact/standard (resolve `fitToView` inset question first). —
+      *`centerView` already accepts a `{ top, right, bottom, left }` margin inset, so no new API
+      was needed. `fitToView(extraBottomInset)` grows the bottom margin; the common `GraphEditor`
+      `provide`s a `SHEET_REFIT_KEY` callback that converts a sheet's covered fraction to px and
+      calls it. `EvaluationHost` injects that key and re-fits **only when the sheet reaches the
+      standard (half) detent** — the everyday view where the graph would otherwise sit under the
+      sheet. Compact leaves the graph alone (mostly visible), and closing / collapsing does **not**
+      re-fit, so the user's view is nudged only when expanding to half. (The jump is instant for
+      now; smoothing it is a graph-component `centerView` duration change tracked in the TODO.)
+      Only the docked eval sheet drives it (other sheets don't inject the key).*
 - [ ] Cover all result kinds; verify desktop floating-window evaluation is unregressed.
       Open work:
     - Confirm the sticky footer + detent folding behave for ranking / serialisation /

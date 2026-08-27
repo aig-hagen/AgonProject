@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { Component, Ref } from 'vue'
+import type { Component, InjectionKey, Ref } from 'vue'
 
 import type { ExportFileData } from '@/modules/common/export'
 import type { UUID } from '@/modules/common/ids'
@@ -84,6 +84,13 @@ export type EditorComponent<DocumentT> = Component<
     export: (filedata: ExportFileData) => void
   }
 >
+
+// Provided by the common GraphEditor so a docked bottom sheet (the compact evaluation
+// sheet) can ask the graph to re-fit into the band above it. `coveredFraction` is the
+// sheet height as a fraction of the viewport (0..1); null re-fits using the full canvas
+// (sheet closed or fully covering — no useful band to fit into).
+export const SHEET_REFIT_KEY: InjectionKey<(coveredFraction: number | null) => void> =
+  Symbol('sheet-refit')
 
 export type LinkType = (typeof LinkType)[keyof typeof LinkType]
 

@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { CheckIcon, ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { XMarkIcon } from '@heroicons/vue/24/solid'
-import { computed, provide, ref, watch } from 'vue'
+import { computed, inject, nextTick, provide, ref, watch } from 'vue'
 
 import {
   EVALUATION_DETENT_KEY,
@@ -27,6 +27,7 @@ import {
 } from '@/modules/common/evaluation/hostContext'
 import KindIcon from '@/modules/common/evaluation/KindIcon.vue'
 import type { EvaluationKind } from '@/modules/common/evaluation/types'
+import { SHEET_REFIT_KEY } from '@/modules/common/graph-editor/graphEditor'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 export interface EvaluationChip {
@@ -55,6 +56,9 @@ const KIND_LABEL: Record<EvaluationKind, string> = {
   serialisation: 'Serialisation',
 }
 
+// Snap detents as fractions of the viewport height (compact / standard / full).
+const SNAP_POINTS = [0.28, 0.48, 0.9]
+
 // Detent index (0/1/2) from the sheet → layout the mobile body reads to fold the
 // selector row / glossary away at the compact detent.
 const detentIndex = ref(0)
@@ -62,6 +66,16 @@ const detentLayout = computed<EvaluationDetentLayout>(() =>
   detentIndex.value <= 0 ? 'compact' : detentIndex.value === 1 ? 'standard' : 'full',
 )
 provide(EVALUATION_DETENT_KEY, detentLayout)
+
+// Fit the graph into the band above the sheet only when it reaches the standard (half)
+// detent — the everyday view where the graph would otherwise sit under the sheet. Compact
+// leaves the graph alone (it's mostly visible), and closing / collapsing does not re-fit,
+// so the user's view is only nudged when expanding to half.
+const refitAboveSheet = inject(SHEET_REFIT_KEY, null)
+watch([open, detentIndex], () => {
+  if (!refitAboveSheet || !open.value || detentLayout.value !== 'standard') return
+  nextTick(() => refitAboveSheet(SNAP_POINTS[1]!))
+})
 
 // The active config, surfaced as the header pill (kind glyph + name + chevron).
 const activeChip = computed(() => chips.find((c) => c.id === activeId.value))
@@ -136,7 +150,7 @@ watch(
     v-model:detent-index="detentIndex"
     title="Evaluate"
     :modal="false"
-    :snap-points="[0.28, 0.48, 0.9]"
+    :snap-points="SNAP_POINTS"
   >
     <!-- Header-as-switcher: the active config IS the header; the chevron drops the
          full saved-config list. One control does what the pill strip + title did. -->
