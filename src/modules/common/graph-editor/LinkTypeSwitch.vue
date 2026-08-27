@@ -60,9 +60,7 @@ function onOutsidePointerDown(event: PointerEvent) {
 }
 onMounted(() =>
   // Register a frame later so the opening gesture's own events can't reach it.
-  requestAnimationFrame(() =>
-    document.addEventListener('pointerdown', onOutsidePointerDown, true),
-  ),
+  requestAnimationFrame(() => document.addEventListener('pointerdown', onOutsidePointerDown, true)),
 )
 onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutsidePointerDown, true))
 </script>

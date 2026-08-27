@@ -243,7 +243,9 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
           >
             <PickerSelect
               v-model="args[param.key]"
-              :options="paramOptions(param).map((opt) => ({ value: opt.key, label: opt.displayName }))"
+              :options="
+                paramOptions(param).map((opt) => ({ value: opt.key, label: opt.displayName }))
+              "
             />
           </ParameterField>
         </div>

@@ -39,9 +39,7 @@ const props = withDefaults(
 
 const stickyFooter = inject(EVALUATION_STICKY_FOOTER_KEY, false)
 
-const showCopy = computed(
-  () => props.copyText !== undefined && props.copyTextTex !== undefined,
-)
+const showCopy = computed(() => props.copyText !== undefined && props.copyTextTex !== undefined)
 
 const { addSuccessNotification } = useNotifications()
 

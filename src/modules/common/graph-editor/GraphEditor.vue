@@ -1318,8 +1318,7 @@ function fitToView(extraBottomInset = 0) {
   const margin = ARGUMENT_RADIUS_IN_PX * 2
   // The compact top bar floats over the full-height canvas, so inset the fit by its
   // occupied height (offsetHeight = the band it covers) to keep the graph clear of it.
-  const topInset =
-    layoutMode.value === 'compact' ? (mobileTopBarRef.value?.offsetHeight ?? 0) : 0
+  const topInset = layoutMode.value === 'compact' ? (mobileTopBarRef.value?.offsetHeight ?? 0) : 0
   // A docked sheet covers the bottom band; the extra inset there fits the graph into
   // the visible band above it instead of centring it under the sheet.
   graphComponent.centerView(

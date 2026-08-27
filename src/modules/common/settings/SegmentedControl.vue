@@ -26,7 +26,11 @@ defineProps<{
 </script>
 
 <template>
-  <div class="inline-flex items-center rounded-lg bg-base-300/60 p-0.5" role="radiogroup" :aria-label="ariaLabel">
+  <div
+    class="inline-flex items-center rounded-lg bg-base-300/60 p-0.5"
+    role="radiogroup"
+    :aria-label="ariaLabel"
+  >
     <button
       v-for="opt in options"
       :key="opt.value"

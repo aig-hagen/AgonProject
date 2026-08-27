@@ -28,6 +28,9 @@ jobs:
       - name: License headers
         run: npx license-check-and-add check -f scripts/check-license-header.json
 
+      - name: Prettier
+        run: npx prettier --check --experimental-cli src/
+
       - name: oxlint
         run: npx oxlint .
 
