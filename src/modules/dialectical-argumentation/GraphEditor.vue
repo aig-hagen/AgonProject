@@ -278,8 +278,19 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
 const { layoutMode } = useLayoutMode()
 const evaluationHostOpen = ref(false)
 const activeExtensionId = ref<string | undefined>(undefined)
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
 const extensionChips = computed<EvaluationChip[]>(() =>
-  extensionInstances.value.map((i) => ({ id: i.id, label: i.semanticKey, kind: 'extension' })),
+  extensionInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension',
+  })),
 )
 
 provide(TOOLTIP_REGISTRY_KEY, dialecticalArgumentationGlossary)
@@ -345,6 +356,7 @@ const tutorialContextExtra = computed(() => ({
             :state-key="`${instance.id}:window`"
             :suppressed="instance.id !== activeId"
             @update:instance-state="updateExtensionInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
             @highlight="
               (h) => {
                 onHighlight(h)

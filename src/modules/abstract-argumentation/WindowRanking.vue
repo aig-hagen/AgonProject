@@ -69,6 +69,7 @@ const {
 const emit = defineEmits<{
   'update:instanceState': [state: RankingWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
+  title: [title: string]
   close: []
   focus: []
 }>()
@@ -101,6 +102,11 @@ watch(
   },
   { deep: true },
 )
+
+const windowTitle = computed(() => `${selectedSemantic.value.displayName} · Ranking`)
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 
 const query = useRankingEvaluationQuery(
   toRef(() => input),
@@ -196,7 +202,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
 
 <template>
   <BaseEvaluationWindow
-    :title="`${selectedSemantic.displayName} · Ranking`"
+    :title="windowTitle"
     :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"

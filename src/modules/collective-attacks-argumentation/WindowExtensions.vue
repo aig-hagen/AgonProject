@@ -63,6 +63,7 @@ const {
 const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
+  title: [title: string]
   close: []
   evaluate: []
 }>()
@@ -127,6 +128,9 @@ const windowTitle = computed(() => {
         : 'Skeptical'
   return `${selectedSemantic.value.displayName} · ${modeLabel}`
 })
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 </script>
 
 <template>

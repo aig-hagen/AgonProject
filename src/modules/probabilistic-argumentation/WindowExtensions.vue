@@ -62,6 +62,7 @@ const {
 const emit = defineEmits<{
   'update:instanceState': [state: PafWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
+  title: [title: string]
   evaluate: []
   close: []
 }>()
@@ -123,6 +124,9 @@ const windowTitle = computed(() => {
   const solverLabel = isApproximate.value ? ' · Approx.' : ''
   return `${selectedSemantic.value.displayName} · ${modeLabel}${solverLabel}`
 })
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 </script>
 
 <template>

@@ -249,21 +249,28 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
 const { layoutMode } = useLayoutMode()
 const evaluationHostOpen = ref(false)
 
-// One chip row over all three evaluation kinds; the glyph disambiguates them.
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
+// One chip row over all three evaluation kinds; the icon disambiguates the kind.
 const evaluationChips = computed<EvaluationChip[]>(() => [
   ...extensionInstances.value.map((i) => ({
     id: i.id,
-    label: i.semanticKey,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
     kind: 'extension' as const,
   })),
   ...rankingInstances.value.map((i) => ({
     id: i.id,
-    label: i.semanticKey,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
     kind: 'ranking' as const,
   })),
   ...serialisationInstances.value.map((i) => ({
     id: i.id,
-    label: i.selectionFunctionKey,
+    label: evaluationTitles.value[i.id] ?? i.selectionFunctionKey,
     kind: 'serialisation' as const,
   })),
 ])
@@ -422,6 +429,7 @@ const tutorialContextExtra = computed(() => ({
             :state-key="`${instance.id}:window`"
             :suppressed="instance.id !== activeId"
             @update:instance-state="updateExtensionInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
             @highlight="
               (h) => {
                 onHighlight(h)
@@ -441,6 +449,7 @@ const tutorialContextExtra = computed(() => ({
             :state-key="`${instance.id}:window`"
             :suppressed="instance.id !== activeId"
             @update:instance-state="updateRankingInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
             @set-weights="(w) => instance.id === activeId && onSetWeights(w)"
           />
           <!-- Wrapper element carries v-show: WindowSerialisation has a multi-root
@@ -458,6 +467,7 @@ const tutorialContextExtra = computed(() => ({
               :state-key="`${instance.id}:window`"
               :suppressed="instance.id !== activeId"
               @update:instance-state="updateSerialisationInstance($event)"
+              @title="setEvaluationTitle(instance.id, $event)"
               @highlight="onHighlight"
             />
           </div>

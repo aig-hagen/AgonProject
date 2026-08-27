@@ -65,6 +65,7 @@ const {
 const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
+  title: [title: string]
   close: []
   evaluate: []
 }>()
@@ -216,6 +217,9 @@ watch(emittedHighlight, (h) => emit('highlight', h))
 function onWindowFocus() {
   emit('highlight', emittedHighlight.value)
 }
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 </script>
 
 <template>

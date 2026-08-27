@@ -18,7 +18,16 @@
 -->
 <script setup lang="ts">
 import { XMarkIcon } from '@heroicons/vue/24/solid'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useId,
+  useTemplateRef,
+  watch,
+} from 'vue'
 
 import { useVisualViewport } from '@/modules/common/layout/useVisualViewport'
 
@@ -244,7 +253,8 @@ function onHandlePointerUp(event: PointerEvent) {
         ref="sheet"
         role="dialog"
         :aria-modal="modal"
-        :aria-labelledby="titleId"
+        :aria-labelledby="$slots.header ? undefined : titleId"
+        :aria-label="$slots.header ? title : undefined"
         tabindex="-1"
         class="sheet-panel fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-base-100 shadow-lg/30 outline-none"
         :class="{ 'sheet-panel--dragging': dragging }"
@@ -265,20 +275,29 @@ function onHandlePointerUp(event: PointerEvent) {
         >
           <span class="block h-1 w-9 rounded-full bg-base-content/25" aria-hidden="true"></span>
         </div>
+        <!-- A consumer may replace the whole header row (e.g. the evaluation
+             header-as-switcher pill); otherwise a plain title + close is shown. -->
         <header class="shrink-0 flex items-center gap-2 px-4 pb-2">
-          <h2 :id="titleId" class="flex-1 min-w-0 truncate text-base font-medium">{{ title }}</h2>
-          <slot name="header-actions" />
-          <button
-            type="button"
-            class="btn btn-square btn-sm btn-ghost shrink-0"
-            aria-label="Close"
-            @click="close"
-          >
-            <XMarkIcon class="size-5" />
-          </button>
+          <slot v-if="$slots.header" name="header" :close="close" />
+          <template v-else>
+            <h2 :id="titleId" class="flex-1 min-w-0 truncate text-base font-medium">{{ title }}</h2>
+            <slot name="header-actions" />
+            <button
+              type="button"
+              class="btn btn-square btn-sm btn-ghost shrink-0"
+              aria-label="Close"
+              @click="close"
+            >
+              <XMarkIcon class="size-5" />
+            </button>
+          </template>
         </header>
         <div class="sheet-body flex-1 overflow-y-auto overscroll-contain px-4">
-          <slot :expanded="expanded" />
+          <slot
+            :expanded="expanded"
+            :detent-index="activeIndex"
+            :detent-count="snapPoints?.length ?? 1"
+          />
         </div>
         <footer v-if="$slots.footer" class="shrink-0 border-t border-base-300 px-4 pt-3">
           <slot name="footer" />

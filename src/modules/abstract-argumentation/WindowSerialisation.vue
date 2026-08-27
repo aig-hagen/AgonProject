@@ -17,11 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  AdjustmentsHorizontalIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-} from '@heroicons/vue/24/outline'
+import { AdjustmentsHorizontalIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline'
 import { createReusableTemplate } from '@vueuse/core'
 import { computed, onMounted, provide, ref, shallowRef, toRef, watch } from 'vue'
 
@@ -72,6 +68,7 @@ const [DefineBody, ReuseBody] = createReusableTemplate()
 const emit = defineEmits<{
   'update:instanceState': [state: SerialisationWindowInstanceState]
   highlight: [highlight?: Highlight]
+  title: [title: string]
   close: []
   focus: []
 }>()
@@ -115,6 +112,9 @@ const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'interactive' ? 'Interactive' : 'Sequences'
   return `${sel} · ${term} · ${modeLabel}`
 })
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 
 // ──────────────────────────────────────────────────────────────
 // SEQUENCES MODE

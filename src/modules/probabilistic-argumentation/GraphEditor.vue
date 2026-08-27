@@ -330,8 +330,19 @@ function updateEvaluationInstance(updated: PafWindowInstanceState) {
 const { layoutMode } = useLayoutMode()
 const evaluationHostOpen = ref(false)
 const activeExtensionId = ref<string | undefined>(undefined)
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
 const extensionChips = computed<EvaluationChip[]>(() =>
-  evaluationInstances.value.map((i) => ({ id: i.id, label: i.semanticKey, kind: 'extension' })),
+  evaluationInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension',
+  })),
 )
 
 // The node weights come from the active config only; clear them when the sheet closes.
@@ -457,6 +468,7 @@ function onPopupKeydown(event: KeyboardEvent) {
               :state-key="`${instance.id}:window`"
               :suppressed="instance.id !== activeId"
               @update:instance-state="updateEvaluationInstance($event)"
+              @title="setEvaluationTitle(instance.id, $event)"
               @set-weights="(w) => instance.id === activeId && onSetWeights(w)"
               @evaluate="evaluationCount++"
             />
