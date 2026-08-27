@@ -35,13 +35,12 @@ import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
+import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
 import type { Input } from '@/modules/common/evaluation/types'
-import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import { escapeTexText } from '@/modules/common/export/texEscape'
 import GroupedSelect from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
-import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -180,7 +179,14 @@ const copyTextTex = computed(() => {
   return undefined
 })
 
-const { addSuccessNotification } = useNotifications()
+const statusLine = computed(() => {
+  if (data.value === undefined) return undefined
+  const hint =
+    data.value.rankingType === 'lattice'
+      ? 'Node labels show the ranking level'
+      : 'Node labels show ranking scores'
+  return `${data.value.evaluationDurationInMs}ms · ${hint}`
+})
 
 function computeWeights() {
   const d = data.value
@@ -284,33 +290,12 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
             </div>
           </div>
         </template>
-        <div class="flex items-center justify-between gap-2">
-          <p class="label min-w-0 truncate">
-            {{ data.evaluationDurationInMs }}ms ·
-            {{
-              data.rankingType === 'lattice'
-                ? 'Node labels show the ranking level'
-                : 'Node labels show ranking scores'
-            }}
-          </p>
-          <div v-if="copyText !== undefined" class="join ml-auto shrink-0">
-            <ButtonCopy
-              class="btn join-item btn-square btn-xs btn-ghost"
-              :text="copyText"
-              icon-only
-              title="Copy as plain text"
-              @copied="addSuccessNotification('Copied ranking to clipboard')"
-            />
-            <ButtonCopy
-              class="btn join-item btn-square btn-xs btn-ghost"
-              :text="copyTextTex"
-              icon-only
-              tex
-              title="Copy as TeX"
-              @copied="addSuccessNotification('Copied ranking to clipboard (LaTeX)')"
-            />
-          </div>
-        </div>
+        <EvaluationStatusFooter
+          :status-line="statusLine"
+          :copy-text="copyText"
+          :copy-text-tex="copyTextTex"
+          result-noun="ranking"
+        />
       </template>
     </template>
   </BaseEvaluationWindow>

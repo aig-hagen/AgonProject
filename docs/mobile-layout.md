@@ -657,12 +657,8 @@ Mockups (canvas page *Eval sheet — snap detents (proposal)*):
       card (title + reference badge, theme tokens) on mobile; `MobileEvaluationBody` lifts it
       out of the selector row so it reads as its own card per the mockup.
 - [ ] Full detent two-pane compare (switchable top owns highlight, one-off view-only bottom).
-      Open work:
-    - At `detent === 'full'`, `MobileEvaluationBody` (or the host) renders a second, one-off
-      eval slot below a `Compare with` divider (`view only` + `✕` clear).
-    - Top pane keeps the highlight; the bottom pane must **not** emit `highlight` (own params
-      + result only), so only one eval touches the canvas.
-    - Needs a place to hold the one-off instance state (host-local, not in the saved list).
+      *Deferred to future feature work — see `docs/ideas/TODO.md` → "Mobile eval sheet:
+      full-detent two-pane compare".*
 - [x] AF re-fit above the sheet at compact/standard (resolve `fitToView` inset question first). —
       *`centerView` already accepts a `{ top, right, bottom, left }` margin inset, so no new API
       was needed. `fitToView(extraBottomInset)` grows the bottom margin; the common `GraphEditor`
@@ -673,12 +669,20 @@ Mockups (canvas page *Eval sheet — snap detents (proposal)*):
       re-fit, so the user's view is nudged only when expanding to half. (The jump is instant for
       now; smoothing it is a graph-component `centerView` duration change tracked in the TODO.)
       Only the docked eval sheet drives it (other sheets don't inject the key).*
-- [ ] Cover all result kinds; verify desktop floating-window evaluation is unregressed.
-      Open work:
-    - Confirm the sticky footer + detent folding behave for ranking / serialisation /
-      ADF-interpretation / PAF-probability results, not just extension chips.
-    - Regression-check every module's desktop floating window (still `EvaluationCard` +
-      `WindowShell`) — the mobile split must not have changed them.
+- [x] Cover all result kinds; verify desktop floating-window evaluation is unregressed. —
+      *Extracted a shared `EvaluationStatusFooter.vue` (status line + optional plain/TeX copy
+      buttons) that reads `EVALUATION_STICKY_FOOTER_KEY` and pins itself to the sheet bottom on
+      mobile, in flow on desktop. `EvaluationResultGrid` now delegates its footer to it (covers
+      extensions for AF/BAF/iAF/SETAF and ADF interpretations, which reuse the grid); **ranking**
+      and **PAF probability** footers were switched to it too, so they pin at compact/standard
+      like the grid. Detent folding is unaffected — it lives in `MobileEvaluationBody` (folds the
+      `#parameters` / `#parameters-footer` slots), independent of result kind.
+      **Serialisation stays non-sticky by design:** its hosted body is bespoke
+      (`createReusableTemplate`, its own params-collapse, and a multi-section interactive mode with
+      a trailing Reset), so it doesn't route through `MobileEvaluationBody` and a single pinned
+      footer doesn't fit it — left in flow. **Desktop unregressed:** the sticky key defaults to
+      `false`, so `EvaluationCard` + `WindowShell` render the same footer markup as before;
+      `EvaluationResultGrid.test.ts` still passes.*
 
 ### Remaining surfaces needing a mockup-parity pass
 

@@ -54,6 +54,7 @@ const {
 const emit = defineEmits<{ close: [] }>()
 
 const sheet = useTemplateRef<HTMLElement>('sheet')
+const sheetBody = useTemplateRef<HTMLElement>('sheetBody')
 const titleId = useId()
 
 const { keyboardInset } = useVisualViewport()
@@ -112,6 +113,14 @@ const panelHeight = computed(() => {
 const expanded = computed(() =>
   isDetent.value ? activeIndex.value === (snapPoints?.length ?? 1) - 1 : fullHeight,
 )
+
+// Expanding to the top detent reveals the extra height above the body's current scroll,
+// so snap back to the top — otherwise the just-revealed selectors stay scrolled out of view.
+watch(activeIndex, (index) => {
+  if (isDetent.value && index === (snapPoints?.length ?? 1) - 1) {
+    nextTick(() => sheetBody.value?.scrollTo({ top: 0, behavior: 'smooth' }))
+  }
+})
 
 // Downward drag offset in px (below the lowest detent) while dragging; 0 when settled.
 const dragOffset = ref(0)
@@ -296,7 +305,7 @@ function onHandlePointerUp(event: PointerEvent) {
             </button>
           </template>
         </header>
-        <div class="sheet-body flex-1 overflow-y-auto overscroll-contain px-4">
+        <div ref="sheetBody" class="sheet-body flex-1 overflow-y-auto overscroll-contain px-4">
           <slot
             :expanded="expanded"
             :detent-index="activeIndex"

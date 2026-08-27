@@ -194,7 +194,7 @@ watch(
       </button>
     </template>
 
-    <div class="relative flex flex-col gap-3 pb-4 min-h-full">
+    <div class="relative flex flex-col gap-3 min-h-full">
       <!-- Dropped saved-config list: switch (tap), per-row delete, add row. Overlays
            the dimmed body; tapping outside closes it. -->
       <button

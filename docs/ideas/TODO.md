@@ -3,6 +3,7 @@
 ### General
 
 - **[Enhancement]** double the request limit to the TweetyProject backend
+- The mode/type selector in the eval window does use a slightly different style than the semantics selector
 
 ### Mobile
 
@@ -27,7 +28,6 @@
 #### ADF editing and evaluation
 
 - **[Design]** ADF condition editor needs a rework: no argument name editing here; better design
-- **[Bug]** in the eval sheet, the bottom row text does not actually stick to the bottom properly. when the result grid is not filled enough it moved up a bit. the same happens when scrolling a larger results grid to the end, where the bar moves up a bit
 - **[Enhancement]** compact eval sheet should resize to fit content: fit up to three rows of results, if more enable scroll, if less contract to fit content
 
 #### Sharing and export
@@ -64,6 +64,16 @@ zoom.transform(target, d3.zoomIdentity.scale(k).translate(-x, -y))
 Then have `fitToView` / the mobile eval re-fit pass ~250–300ms. Needs a graph-component
 change + new rc tarball (it's the `@aig-hagen` package). Keep the sheet-close re-fit
 instant/short so it doesn't feel sluggish.
+
+### Mobile eval sheet: full-detent two-pane compare
+At the `full` (~90dvh) detent, the mobile evaluation sheet should show a **second, one-off,
+view-only** eval below a `Compare with` divider (`view only` + `✕` clear), so two evaluations
+can be read side by side. Rules:
+- Top pane = the switchable saved eval; **owns** the canvas highlight.
+- Bottom pane = a one-off eval slot (own params + result), must **not** emit `highlight` — only
+  one eval touches the canvas.
+- Needs host-local state to hold the one-off instance (not in the saved chip list).
+See the checklist in `docs/mobile-layout.md` (Evaluate UI rework).
 
 ### use tags to filter AF types
 Tags are now defined and associated with each module (see `src/modules/common/tags.ts` and each module's `moduleConfig.ts`). In the future, those can be used to filter AF types; can also implement a search bar on the main page.

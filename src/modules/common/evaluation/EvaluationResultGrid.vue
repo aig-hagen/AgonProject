@@ -17,14 +17,9 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue'
 
-import { EVALUATION_STICKY_FOOTER_KEY } from '@/modules/common/evaluation/hostContext'
-import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
-import { useNotifications } from '@/modules/common/notifications/useNotifications'
-
-// Mobile host pins the status/copy line to the sheet bottom; desktop leaves it in flow.
-const stickyFooter = inject(EVALUATION_STICKY_FOOTER_KEY, false)
+import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
 
 const selected = defineModel<string | undefined>('selected')
 const props = withDefaults(
@@ -46,15 +41,12 @@ const statusLine = computed(() => {
   return parts.join(' · ')
 })
 
-const copyText = computed(() => props.items.map((item) => item.label).join(', '))
-const copyTextTex = computed(() => props.items.map((item) => item.texLabel).join(', '))
-
-const { addSuccessNotification } = useNotifications()
-
-function notifyCopied(format: 'plain' | 'tex') {
-  const suffix = format === 'tex' ? ' (LaTeX)' : ''
-  addSuccessNotification(`Copied ${props.resultNoun} to clipboard${suffix}`)
-}
+const copyText = computed(() =>
+  props.items.length > 0 ? props.items.map((item) => item.label).join(', ') : undefined,
+)
+const copyTextTex = computed(() =>
+  props.items.length > 0 ? props.items.map((item) => item.texLabel).join(', ') : undefined,
+)
 
 const containerRef = useTemplateRef('container')
 const itemRefs = useTemplateRef('item-refs')
@@ -156,33 +148,12 @@ onBeforeUnmount(() => {
       {{ item.label }}
     </button>
   </div>
-  <div
-    v-if="statusLine || props.items.length > 0"
-    class="flex items-center justify-between gap-2"
-    :class="
-      stickyFooter &&
-      'sticky bottom-0 z-10 -mx-3 mt-auto border-t border-base-200 bg-base-100 px-3 py-1.5'
-    "
-  >
-    <p v-if="statusLine" class="label min-w-0 truncate">{{ statusLine }}</p>
-    <div v-if="props.items.length > 0" class="join ml-auto shrink-0">
-      <ButtonCopy
-        class="btn join-item btn-square btn-xs btn-ghost"
-        :text="copyText"
-        icon-only
-        title="Copy as plain text"
-        @copied="notifyCopied('plain')"
-      />
-      <ButtonCopy
-        class="btn join-item btn-square btn-xs btn-ghost"
-        :text="copyTextTex"
-        icon-only
-        tex
-        title="Copy as TeX"
-        @copied="notifyCopied('tex')"
-      />
-    </div>
-  </div>
+  <EvaluationStatusFooter
+    :status-line="statusLine || undefined"
+    :copy-text="copyText"
+    :copy-text-tex="copyTextTex"
+    :result-noun="props.resultNoun"
+  />
 </template>
 
 <style scoped>

@@ -89,7 +89,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex-1 min-h-0 px-3 pb-3 pt-1 flex flex-col gap-2.5 text-xs">
+  <!-- No bottom padding: the sticky results footer must reach the sheet's bottom edge
+       (padding below it would leave the bar floating up when results are short or fully
+       scrolled). Spacing above the footer comes from the flex gap. -->
+  <div class="flex-1 min-h-0 px-3 pt-1 flex flex-col gap-2.5 text-xs">
     <!-- Selector row + glossary: folded away at the compact detent (the header pill
          already names the active config); shown at standard / full. The glossary
          renders its own themed card (TermDefinitionBlock), so it sits outside the

@@ -23,6 +23,7 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
+import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
@@ -182,7 +183,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
             {{ entry.name }}: {{ entry.probability.toFixed(3) }}
           </span>
         </div>
-        <p class="label">{{ data.evaluationDurationInMs }}ms</p>
+        <EvaluationStatusFooter :status-line="`${data.evaluationDurationInMs}ms`" />
       </template>
     </template>
   </BaseEvaluationWindow>
