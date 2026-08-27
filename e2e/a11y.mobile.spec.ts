@@ -37,6 +37,13 @@ test('sheet dialogs expose an accessible name', async ({ page }) => {
   await expect(page.getByRole('dialog', { name: 'Relayout' })).toBeVisible()
 })
 
+test('notifications render inside a live region', async ({ page }) => {
+  await openEditor(page)
+  // The toast container is a polite live region so screen readers announce toasts.
+  const live = page.locator('[role="status"][aria-live="polite"]')
+  await expect(live).toHaveCount(1)
+})
+
 test('editor chrome touch targets meet the minimum size', async ({ page }) => {
   await openEditor(page)
   const labels = ['Back to documents', 'Menu', 'Fit to view', 'Relayout', 'Export', 'Evaluate']

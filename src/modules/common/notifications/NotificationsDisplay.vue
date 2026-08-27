@@ -35,12 +35,16 @@ const { notifications, placement = 'end' } = defineProps<{
        canvas stays reachable underneath, and only a dismiss button re-enables them. -->
   <div
     v-if="placement === 'center'"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
     class="toast toast-top toast-center pointer-events-none w-full max-w-96 px-3"
     style="top: calc(env(safe-area-inset-top, 0px) + 4rem)"
   >
     <div
       v-for="notification of notifications"
       :key="notification.key"
+      :role="notification.type === NotificationType.ERROR ? 'alert' : undefined"
       class="pointer-events-auto flex items-center gap-2.5 rounded-full bg-neutral px-4 py-2.5 text-neutral-content shadow-lg"
     >
       <CheckIcon
@@ -66,10 +70,17 @@ const { notifications, placement = 'end' } = defineProps<{
   </div>
 
   <!-- Desktop: full alert cards. -->
-  <div v-else class="toast toast-top toast-end">
+  <div
+    v-else
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+    class="toast toast-top toast-end"
+  >
     <div
       v-for="notification of notifications"
       :key="notification.key"
+      :role="notification.type === NotificationType.ERROR ? 'alert' : undefined"
       class="alert max-w-92"
       :class="{
         'alert-success': notification.type === NotificationType.SUCCESS,

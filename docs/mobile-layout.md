@@ -470,8 +470,11 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    a per-module `nodeTapAction` phrase threaded module → `GraphEditor` → `WindowHelp` →
    `HelpGestures` (ADF = "Open its acceptance condition", PAF = "Open its probability", others
    default "Rename it"), instead of always claiming rename; `e2e/help.mobile.spec.ts` gates it.
-   **Still to do:** deeper a11y (reduced motion, 200% text zoom, status
-   announcements), performance/memory with many docs + eval configs, and tutorial-step wording. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
+   **Status announcements:** `NotificationsDisplay` toasts (both shells) now sit
+   in a polite `role="status"` live region with error items marked `role="alert"`, so screen
+   readers announce them; `e2e/a11y.mobile.spec.ts` asserts the live region exists.
+   **Still to do:** remaining a11y (reduced motion, 200% text zoom), performance/memory with
+   many docs + eval configs, and tutorial-step wording. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
    Export flow for AF/BAF/iAF/ADF/PAF (SETAF omitted, deferred); evaluation *results* are
    backend-dependent (TweetyProject), so the flows assert each module's Evaluate/Export sheets open,
    not computed results. **Resize across the breakpoint:** `e2e/resize.spec.ts` (desktop projects)
