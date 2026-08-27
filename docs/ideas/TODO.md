@@ -39,9 +39,9 @@
 
 #### Settings and visual design
 
-- **[Bug]** settings toggles dont show the selected option visually; the default
+- ~~**[Bug]** settings toggles dont show the selected option visually; the default~~ — fixed: replaced `input.btn`/`:checked` join groups with an explicit `SegmentedControl` that shows selection clearly
 - **[Design]** look of the bottom bar doesnt feel that nice, maybe redesign the buttons; not important now
-- **[Design]** mobile settings menu does actually need a pass to make it fit the mobile theme better
+- ~~**[Design]** mobile settings menu does actually need a pass to make it fit the mobile theme better~~ — done: settings now opens as a `BottomSheet` on mobile with grouped-card sections, shared with the desktop modal
 - **[Design]** could update the creation-mode-switchers in the bottom left. visual style doesnt really fit well
 
 #### Tutorials, glossary, and help
@@ -49,6 +49,9 @@
 - **[Bug]** Glossary AF-type Pills show wrong names; just use AF, BAF, etc; same for desktop
 - **[Enhancement]** Several tutorials need updating; in particular also for mobile; update highlighting of next action on mobile
 - **[Design]** tutorial start buttons look bad
+
+#### Other
+- Can we somehow enforce fullscreen on mobile? does that make sense?
 
 ## Features
 - track last edited time per document; show on mobile

@@ -110,6 +110,7 @@ import { Layout, layoutDatas } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState, type GridVisibility } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
+import SettingsContent from '@/modules/common/settings/SettingsContent.vue'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
 import {
@@ -1387,6 +1388,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
 const { layoutMode } = useLayoutMode()
 const isMenuOpen = ref(false)
 const isRelayoutOpen = ref(false)
+const isSettingsOpen = ref(false)
 
 // The evaluation sheet is non-modal (canvas stays live), so a modal sheet opened over it
 // would otherwise leave it stranded behind the backdrop — dismiss it first.
@@ -1447,7 +1449,9 @@ function openExport() {
   isExportOpened.value = true
 }
 function openSettings() {
-  settingsDialog.value?.open()
+  // Mobile gets a native bottom sheet; desktop keeps the centered modal.
+  if (layoutMode.value === 'compact') isSettingsOpen.value = true
+  else settingsDialog.value?.open()
 }
 function openHelp() {
   isHelpOpened.value = true
@@ -1829,6 +1833,12 @@ defineExpose({
               </button>
             </div>
           </section>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet v-model:open="isSettingsOpen" title="Settings">
+        <div class="pb-4">
+          <SettingsContent />
         </div>
       </BottomSheet>
     </template>

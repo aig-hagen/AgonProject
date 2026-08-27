@@ -16,35 +16,32 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<script setup lang="ts">
-import { XMarkIcon } from '@heroicons/vue/24/outline'
-import { useTemplateRef } from 'vue'
+<script setup lang="ts" generic="T extends string">
+const model = defineModel<T>({ required: true })
 
-import SettingsContent from '@/modules/common/settings/SettingsContent.vue'
-
-const dialog = useTemplateRef('dialog')
-
-function open() {
-  dialog.value?.showModal()
-}
-
-defineExpose({ open })
+defineProps<{
+  options: { value: T; label: string }[]
+  ariaLabel?: string
+}>()
 </script>
 
 <template>
-  <dialog class="modal" ref="dialog">
-    <div class="modal-box max-w-sm">
-      <form method="dialog">
-        <button class="btn btn-sm btn-square btn-ghost absolute right-2 top-2">
-          <XMarkIcon class="size-4" />
-        </button>
-      </form>
-      <h3 class="text-lg font-bold mb-5">Settings</h3>
-
-      <SettingsContent />
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button>Close</button>
-    </form>
-  </dialog>
+  <div class="inline-flex items-center rounded-lg bg-base-300/60 p-0.5" role="radiogroup" :aria-label="ariaLabel">
+    <button
+      v-for="opt in options"
+      :key="opt.value"
+      type="button"
+      role="radio"
+      :aria-checked="model === opt.value"
+      class="rounded-md px-3 py-1 text-sm transition-colors"
+      :class="
+        model === opt.value
+          ? 'bg-base-100 font-medium text-base-content shadow-sm'
+          : 'text-base-content/55'
+      "
+      @click="model = opt.value"
+    >
+      {{ opt.label }}
+    </button>
+  </div>
 </template>
