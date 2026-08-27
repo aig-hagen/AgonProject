@@ -19,7 +19,6 @@
 <script setup lang="ts" generic="DocumentT extends Objectish">
 import {
   ArrowDownTrayIcon,
-  ChevronLeftIcon,
   DocumentTextIcon,
   EllipsisHorizontalIcon,
   PencilSquareIcon,
@@ -31,7 +30,7 @@ import type { Objectish } from 'immer'
 import { computed, provide, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
+import BlankDocumentCanvasMobile from '@/app/home/BlankDocumentCanvasMobile.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { HomeController } from '@/app/home/useHomeController'
 import { useHomeSurface } from '@/app/home/useHomeSurface'
@@ -171,39 +170,54 @@ function loadFile() {
   <!-- Dynamic viewport height so the bottom command bar tracks iOS/Android browser chrome
        showing/hiding, instead of sitting behind it as 100vh would. -->
   <div class="flex flex-col h-dvh w-screen m-0 bg-base-100 overflow-hidden">
-    <!-- Header for the Documents/New surfaces; the editor surface uses GraphEditor's own top bar. -->
+    <!-- Persistent brand hero (Documents/New surfaces); the editor surface uses
+         GraphEditor's own top bar. Name + tagline stay visible while switching tabs. -->
     <header
       v-if="surface !== 'editor'"
-      class="flex-none flex items-center justify-between gap-2 pl-4 pr-2 h-14 border-b border-base-300"
-      style="padding-top: env(safe-area-inset-top)"
+      class="flex-none relative flex flex-col items-center text-center px-6 pb-3"
+      style="padding-top: calc(env(safe-area-inset-top) + 1rem)"
     >
       <button
-        v-if="surface === 'new'"
-        class="flex items-center gap-1 -ml-2 pr-2 h-10 rounded-lg font-bold text-lg"
-        aria-label="Back to documents"
-        @click="goTo('documents')"
-      >
-        <ChevronLeftIcon class="size-6" /> New document
-      </button>
-      <span v-else class="text-xl font-bold tracking-tight">AgonProject</span>
-      <button
         v-if="selectedDocumentId !== undefined"
-        class="btn btn-square btn-ghost"
+        class="btn btn-square btn-ghost btn-sm absolute right-2"
+        style="top: calc(env(safe-area-inset-top) + 0.5rem)"
         aria-label="Back to editor"
         @click="goTo('editor')"
       >
-        <XMarkIcon class="size-6 opacity-70" />
+        <XMarkIcon class="size-5 opacity-70" />
       </button>
+      <span class="grid place-items-center size-13 rounded-2xl bg-base-200 text-primary mb-2.5">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          class="size-7"
+        >
+          <circle cx="7" cy="7" r="3" />
+          <circle cx="17" cy="17" r="3" />
+          <path d="M9.5 9.5 14.5 14.5" />
+        </svg>
+      </span>
+      <h1 class="text-2xl font-bold tracking-tight">AgonProject</h1>
+      <p class="text-sm text-base-content/60 mt-1 max-w-64 leading-snug">
+        The platform to explore different approaches to formal argumentation
+      </p>
     </header>
 
-    <!-- Documents | New segmented control (Documents surface; New has its own back header). -->
-    <div v-if="surface === 'documents'" class="flex-none px-4 pt-3 pb-1">
+    <!-- Documents | New segmented control (both non-editor surfaces). -->
+    <div v-if="surface !== 'editor'" class="flex-none px-4 pt-1 pb-1">
       <div class="grid grid-cols-2 p-1 rounded-xl bg-base-200">
-        <button class="h-9 rounded-lg text-sm font-semibold bg-base-100 shadow-sm">
+        <button
+          class="h-9 rounded-lg text-sm font-semibold transition-colors"
+          :class="surface === 'documents' ? 'bg-base-100 shadow-sm' : 'opacity-60'"
+          @click="goTo('documents')"
+        >
           Documents
         </button>
         <button
-          class="h-9 rounded-lg text-sm font-semibold opacity-60 transition-colors"
+          class="h-9 rounded-lg text-sm font-semibold transition-colors"
+          :class="surface === 'new' ? 'bg-base-100 shadow-sm' : 'opacity-60'"
           @click="goTo('new')"
         >
           New
@@ -317,7 +331,7 @@ function loadFile() {
 
       <!-- New surface -->
       <div v-show="surface === 'new'" class="absolute inset-0 overflow-y-auto">
-        <BlankDocumentCanvas :module-cards="modules" @open="createFromNew" />
+        <BlankDocumentCanvasMobile :module-cards="modules" @open="createFromNew" />
       </div>
 
       <!-- Editor surface: mounted on first visit, then kept mounted across surface switches -->

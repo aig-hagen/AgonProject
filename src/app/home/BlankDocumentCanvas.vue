@@ -19,21 +19,11 @@
 <script setup lang="ts" generic="DocumentT">
 import { RouterLink } from 'vue-router'
 
-import type { Publication } from '@/app/home/moduleConfig'
+import type { ModuleCard } from '@/app/home/moduleCard'
 import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
 import PublicationsTooltip from '@/modules/common/tooltip/PublicationsTooltip.vue'
 
-export interface ModuleCard<DocumentT> {
-  newNamePrefix: string
-  displayNameSingular: string
-  description?: string
-  examples: Example<DocumentT>[]
-  initialCotent: DocumentT
-  generateHref?: string
-  underConstruction?: boolean
-  publications?: Publication[]
-}
 const { moduleCards, sourceDocumentId } = defineProps<{
   moduleCards: ModuleCard<DocumentT>[]
   sourceDocumentId?: number
