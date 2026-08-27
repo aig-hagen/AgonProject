@@ -27,12 +27,12 @@ const { controller } = defineProps<{ controller: GenerateController }>()
 const {
   MAX_EDGES_FOR_EDITOR,
   frameworkTypeId,
-  pageTitle,
   algorithms,
   loadError,
   selectedAlgorithmId,
   selectedAlgorithm,
   selectedFrameworkType,
+  shortName,
   paramValues,
   seedEnabled,
   seedValue,
@@ -73,7 +73,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
       >
         <ChevronLeftIcon class="size-6 opacity-70" />
       </button>
-      <span class="flex-1 text-lg font-bold py-2.5">Generate {{ pageTitle }}</span>
+      <span class="flex-1 text-lg font-bold py-2.5">Generate random {{ shortName }}</span>
     </header>
 
     <!-- Scrollable form -->

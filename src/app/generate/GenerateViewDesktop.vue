@@ -27,7 +27,7 @@ const { controller } = defineProps<{ controller: GenerateController }>()
 const {
   MAX_EDGES_FOR_EDITOR,
   frameworkTypeId,
-  pageTitle,
+  shortName,
   algorithms,
   loadError,
   selectedAlgorithmId,
@@ -63,7 +63,7 @@ const {
         </RouterLink>
       </div>
 
-      <h1 class="text-2xl font-bold mb-1">Generate {{ pageTitle }}</h1>
+      <h1 class="text-2xl font-bold mb-1">Generate random {{ shortName }}</h1>
       <p v-if="selectedFrameworkType" class="text-base-content/60 mb-6 text-sm">
         {{ selectedFrameworkType.description }}
       </p>

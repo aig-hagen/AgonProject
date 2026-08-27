@@ -139,6 +139,9 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
     () => (activeModule.value?.displayNameSingular ?? 'Argumentation') + ' Framework',
   )
 
+  // Short module name (e.g. "AF") for compact titles.
+  const shortName = computed(() => activeModule.value?.newNamePrefix ?? 'AF')
+
   // --- Algorithm list & framework type params ---
   const algorithms = ref<AlgorithmInfo[]>([])
   const frameworkTypes = ref<FrameworkTypeInfo[]>([])
@@ -447,6 +450,7 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
     MAX_EDGES_FOR_EDITOR,
     frameworkTypeId,
     pageTitle,
+    shortName,
     algorithms,
     loadError,
     selectedAlgorithmId,

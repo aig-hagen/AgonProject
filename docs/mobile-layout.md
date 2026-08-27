@@ -431,9 +431,16 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    thin `XView` that switches `XViewDesktop`/`XViewMobile` on `layoutMode`, with shared logic
    pulled into a composable (`useGlossary`, `useGenerate`) or helper module (`attributions.ts`);
    mobile shells styled to their artboards (Third-party has no mockup — single-column disclosure
-   list). **Not done:** the mobile tutorial overlay + picker, and Share-open verification (the
-   view is already presentation-neutral; it just needs to be confirmed landing on the editor
-   surface on mobile).*
+   list). **Tutorials done:** `TutorialOverlayMobile.vue` renders the docked card (progress, title,
+   body, Back, skip, and Next / "Waiting for you…") with a spotlight ring over the anchored
+   control; the desktop `TutorialOverlay` is now gated to `layoutMode==='regular'` and the mobile
+   overlay to `'compact'` (fixing the desktop float leaking onto the mobile editor, and re-enabling
+   autostart on mobile). Spotlight targets map the desktop anchors (`evaluationButtons`,
+   `exportButton`, `mainMenuBottom`) to the compact chrome buttons; module-specific anchors fall
+   through when a ref exists, else degrade to a docked card with no ring. The picker already works:
+   `WindowTutorials` renders through `WindowShell` as a `BottomSheet` on compact. **Not done:**
+   Share-open verification (the view is already presentation-neutral; it just needs to be confirmed
+   landing on the editor surface on mobile).*
 7. ⬜ **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
    performance/memory checks with many documents and evaluation configs, desktop regression,
    and documentation/help alignment.
@@ -567,6 +574,8 @@ largely in place; this is styling + layout.
 - **Per-type editors** — *BafLink*, *IafEditor*, *AdfNode*, *PafProbabilities* on-canvas selectors
   and sheets: verify against artboards after the gesture spike lands.
 - **SETAF** (*collective attacks*) — still needs a mockup before implementation (Decision #5).
-- **Tutorials** (*Tutorial*) — mobile overlay + picker.
+- **Tutorials** (*Tutorial*) — mobile overlay + picker built (`TutorialOverlayMobile`; picker via
+  `WindowTutorials`/`WindowShell` sheet). Spotlight covers Evaluate/Export/Menu; wiring the
+  module-specific on-canvas selector anchors (link-type, arg-mode) is a later refinement.
 - **Standalone views** — Generate, Glossary, and Third-party mobile shells are built and styled
   to their artboards (Third-party has none); Share-open still needs mobile verification.

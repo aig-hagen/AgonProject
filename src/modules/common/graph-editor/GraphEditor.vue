@@ -118,6 +118,7 @@ import {
 } from '@/modules/common/shortcuts'
 import { useTheme } from '@/modules/common/theme/useTheme'
 import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
+import TutorialOverlayMobile from '@/modules/common/tutorial/TutorialOverlayMobile.vue'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 import WindowTutorials from '@/modules/common/tutorial/WindowTutorials.vue'
@@ -146,6 +147,7 @@ const {
   tutorials,
   defaultTutorialId,
   tutorialContextExtra,
+  tutorialRefs,
   documentId,
   documentName,
   typeBadge,
@@ -1368,6 +1370,18 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
 const { layoutMode } = useLayoutMode()
 const isMenuOpen = ref(false)
 const isRelayoutOpen = ref(false)
+
+// Spotlight targets for the mobile tutorial overlay: the compact-chrome equivalents of the
+// desktop anchor elements. Module-specific anchors fall through to tutorialRefs when present.
+const mobileMenuButtonRef = useTemplateRef<HTMLButtonElement>('mobileMenuButton')
+const mobileEvaluateButtonRef = useTemplateRef<HTMLButtonElement>('mobileEvaluateButton')
+const mobileExportButtonRef = useTemplateRef<HTMLButtonElement>('mobileExportButton')
+const mobileTutorialRefs = computed<Record<string, HTMLElement | null>>(() => ({
+  evaluationButtons: mobileEvaluateButtonRef.value,
+  exportButton: mobileExportButtonRef.value,
+  mainMenuBottom: mobileMenuButtonRef.value,
+  ...tutorialRefs,
+}))
 // Split the layouts into the two mockup groups: directed (edge-following) vs. the
 // force/geometric engines. The first four entries are the directed ones.
 const relayoutGroups = [
@@ -1569,7 +1583,7 @@ defineExpose({
     <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
     <template v-if="layoutMode === 'compact'">
       <header
-        class="absolute top-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2.5 h-14 bg-base-200/95 backdrop-blur border-b border-base-300"
+        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 h-14 bg-base-200/95 backdrop-blur border-b border-base-300"
         style="padding-top: env(safe-area-inset-top)"
       >
         <!-- Switcher chip: back to home / document picker -->
@@ -1603,7 +1617,15 @@ defineExpose({
           </span>
           <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
         </button>
-        <button class="btn btn-square btn-ghost" aria-label="Menu" @click="isMenuOpen = true">
+        <span class="text-base font-bold text-base-content/80 text-center truncate">
+          AgonProject
+        </span>
+        <button
+          ref="mobileMenuButton"
+          class="btn btn-square btn-ghost"
+          aria-label="Menu"
+          @click="isMenuOpen = true"
+        >
           <Bars3Icon class="size-6 opacity-70" />
         </button>
       </header>
@@ -1633,6 +1655,7 @@ defineExpose({
         </div>
 
         <button
+          ref="mobileEvaluateButton"
           class="btn btn-primary h-13 rounded-2xl px-6 gap-2 text-base font-semibold shadow-md shadow-primary/30"
           @click="evaluationOpen = true"
         >
@@ -1642,6 +1665,7 @@ defineExpose({
 
         <div class="flex gap-2">
           <button
+            ref="mobileExportButton"
             class="btn btn-square size-12 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Export"
             title="Export"
@@ -1798,7 +1822,7 @@ defineExpose({
       "
     ></slot>
     <TutorialOverlay
-      v-if="tutorials && showHints"
+      v-if="tutorials && showHints && layoutMode === 'regular'"
       :tutorials="tutorials"
       :default-tutorial-id="defaultTutorialId"
       :is-touch-device="isTouchDevice"
@@ -1809,6 +1833,14 @@ defineExpose({
         linkSwitchButton: linkSwitchButtonRef,
         ...tutorialRefs,
       }"
+      :context="tutorialContext"
+    />
+    <TutorialOverlayMobile
+      v-if="tutorials && showHints && layoutMode === 'compact'"
+      :tutorials="tutorials"
+      :default-tutorial-id="defaultTutorialId"
+      :is-touch-device="isTouchDevice"
+      :refs="mobileTutorialRefs"
       :context="tutorialContext"
     />
     <WindowTutorials
