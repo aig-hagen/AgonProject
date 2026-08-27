@@ -476,7 +476,11 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    **Reflow:** `e2e/a11y.mobile.spec.ts` also verifies the editor and a sheet reflow at the
    320px minimum width with no horizontal scroll (WCAG 1.4.10); reduced motion is already handled
    in `BottomSheet`'s `prefers-reduced-motion` block.
-   **Still to do:** performance/memory with many docs + eval configs, and tutorial-step wording. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
+   **Many-documents smoke:** `e2e/stress.mobile.spec.ts` creates a batch of documents, checks the
+   Documents list holds them all, reopens one into a working editor, and asserts **no uncaught
+   console errors** (a proxy for duplicated watchers / leaks); the doc-row overflow action was
+   bumped to a 44px target while there. **Still to do:** many-*eval-configs* memory profiling and
+   tutorial-step wording. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
    Export flow for AF/BAF/iAF/ADF/PAF (SETAF omitted, deferred); evaluation *results* are
    backend-dependent (TweetyProject), so the flows assert each module's Evaluate/Export sheets open,
    not computed results. **Resize across the breakpoint:** `e2e/resize.spec.ts` (desktop projects)

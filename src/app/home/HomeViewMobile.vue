@@ -307,7 +307,7 @@ function loadFile() {
                 class="size-2 shrink-0 rounded-full bg-success"
               />
               <button
-                class="btn btn-square btn-ghost btn-sm"
+                class="btn btn-square btn-ghost size-11"
                 :aria-label="`Actions for ${document.name || 'Untitled'}`"
                 @click="menuDocId = document.id"
               >
