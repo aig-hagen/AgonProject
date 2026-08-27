@@ -17,6 +17,16 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="DocumentT extends Objectish">
+import {
+  ArrowDownTrayIcon,
+  ChevronLeftIcon,
+  DocumentTextIcon,
+  EllipsisHorizontalIcon,
+  PencilSquareIcon,
+  PlusIcon,
+  TrashIcon,
+  XMarkIcon,
+} from '@heroicons/vue/24/outline'
 import type { Objectish } from 'immer'
 import { computed, provide, ref, useTemplateRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -28,6 +38,7 @@ import { useHomeSurface } from '@/app/home/useHomeSurface'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
 import ShareModal from '@/modules/common/share/ShareModal.vue'
+import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 const { modules, controller } = defineProps<{
   modules: ModuleConfig<DocumentT>[]
@@ -97,6 +108,16 @@ const renameText = ref('')
 const confirmDeleteId = ref<number | null>(null)
 const confirmDeleteAll = ref(false)
 
+// Per-row overflow menu (rename / save / delete) rendered as a bottom sheet.
+const menuDocId = ref<number | null>(null)
+const menuDoc = computed(() => documents.value.find((d) => d.id === menuDocId.value) ?? null)
+const menuOpen = computed({
+  get: () => menuDocId.value !== null,
+  set: (value: boolean) => {
+    if (!value) menuDocId.value = null
+  },
+})
+
 function startRename(document: { id: number; name: string }) {
   confirmDeleteId.value = null
   renamingId.value = document.id
@@ -113,6 +134,20 @@ function commitRename() {
 function confirmDelete(id: number) {
   deleteDocument(id)
   confirmDeleteId.value = null
+}
+
+// Overflow-sheet actions: close the sheet, then run the row action.
+function menuRename(document: { id: number; name: string }) {
+  menuDocId.value = null
+  startRename(document)
+}
+function menuSave(id: number) {
+  menuDocId.value = null
+  saveAsFile(id)
+}
+function menuDelete(id: number) {
+  menuDocId.value = null
+  confirmDeleteId.value = id
 }
 
 function deleteAll() {
@@ -139,45 +174,63 @@ function loadFile() {
     <!-- Header for the Documents/New surfaces; the editor surface uses GraphEditor's own top bar. -->
     <header
       v-if="surface !== 'editor'"
-      class="flex-none flex items-center gap-2 px-3 h-12 border-b border-base-300"
+      class="flex-none flex items-center justify-between gap-2 pl-4 pr-2 h-14 border-b border-base-300"
+      style="padding-top: env(safe-area-inset-top)"
     >
-      <button v-if="selectedDocumentId !== undefined" class="btn btn-sm" @click="goTo('editor')">
-        ← Editor
+      <button
+        v-if="surface === 'new'"
+        class="flex items-center gap-1 -ml-2 pr-2 h-10 rounded-lg font-bold text-lg"
+        aria-label="Back to documents"
+        @click="goTo('documents')"
+      >
+        <ChevronLeftIcon class="size-6" /> New document
       </button>
-      <h1 class="text-lg font-semibold">{{ surface === 'new' ? 'New document' : 'Documents' }}</h1>
+      <span v-else class="text-xl font-bold tracking-tight">AgonProject</span>
+      <button
+        v-if="selectedDocumentId !== undefined"
+        class="btn btn-square btn-ghost"
+        aria-label="Back to editor"
+        @click="goTo('editor')"
+      >
+        <XMarkIcon class="size-6 opacity-70" />
+      </button>
     </header>
+
+    <!-- Documents | New segmented control (Documents surface; New has its own back header). -->
+    <div v-if="surface === 'documents'" class="flex-none px-4 pt-3 pb-1">
+      <div class="grid grid-cols-2 p-1 rounded-xl bg-base-200">
+        <button class="h-9 rounded-lg text-sm font-semibold bg-base-100 shadow-sm">
+          Documents
+        </button>
+        <button
+          class="h-9 rounded-lg text-sm font-semibold opacity-60 transition-colors"
+          @click="goTo('new')"
+        >
+          New
+        </button>
+      </div>
+    </div>
 
     <main class="flex-1 relative overflow-hidden">
       <!-- Documents surface -->
-      <div v-show="surface === 'documents'" class="absolute inset-0 overflow-y-auto p-3">
-        <div class="flex gap-2 mb-3">
-          <button class="btn btn-primary flex-1" @click="goTo('new')">+ New document</button>
-          <button
-            v-if="documents.length > 0"
-            class="btn btn-ghost text-error"
-            @click="confirmDeleteAll = true"
-          >
-            Delete all
-          </button>
-        </div>
-
+      <div v-show="surface === 'documents'" class="absolute inset-0 overflow-y-auto px-3 pb-3 pt-1">
         <div
           v-if="confirmDeleteAll"
-          class="flex items-center gap-2 rounded-lg border border-error px-3 py-2 mb-3"
+          class="flex items-center gap-2 rounded-xl border border-error px-3 py-2 my-2"
         >
           <span class="flex-1 text-sm">Delete all documents?</span>
           <button class="btn btn-ghost btn-sm" @click="confirmDeleteAll = false">Cancel</button>
           <button class="btn btn-error btn-sm" @click="deleteAll">Delete all</button>
         </div>
 
-        <p v-if="documents.length === 0" class="text-center opacity-60 py-8">No documents yet.</p>
+        <p v-if="documents.length === 0" class="text-center opacity-60 py-10">No documents yet.</p>
 
-        <ul class="flex flex-col gap-2">
+        <ul class="flex flex-col">
           <li v-for="document of documents" :key="document.id">
             <!-- Rename mode -->
             <div
               v-if="renamingId === document.id"
-              class="flex items-center gap-2 rounded-lg border border-primary px-3 py-2"
+              class="flex items-center gap-2 rounded-xl border border-primary px-3 py-2 my-1"
             >
               <input
                 v-model="renameText"
@@ -192,7 +245,7 @@ function loadFile() {
             <!-- Delete confirm -->
             <div
               v-else-if="confirmDeleteId === document.id"
-              class="flex items-center gap-2 rounded-lg border border-error px-3 py-2"
+              class="flex items-center gap-2 rounded-xl border border-error px-3 py-2 my-1"
             >
               <span class="flex-1 truncate text-sm"
                 >Delete “{{ document.name || 'Untitled' }}”?</span
@@ -206,23 +259,60 @@ function loadFile() {
             <!-- Default row -->
             <div
               v-else
-              class="flex items-center gap-1 rounded-lg border border-base-300 px-3 py-2"
-              :class="{ 'border-primary': document.id === selectedDocumentId }"
+              class="flex items-center gap-3 rounded-xl px-2.5 py-2.5"
+              :class="
+                document.id === selectedDocumentId
+                  ? 'bg-primary/10 border border-primary/30'
+                  : 'border border-transparent'
+              "
             >
-              <button class="flex-1 text-left truncate" @click="openDocument(document.id)">
-                {{ document.name || 'Untitled' }}
-              </button>
-              <button class="btn btn-ghost btn-xs" @click="startRename(document)">Rename</button>
-              <button class="btn btn-ghost btn-xs" @click="saveAsFile(document.id)">Save</button>
               <button
-                class="btn btn-ghost btn-xs text-error"
-                @click="confirmDeleteId = document.id"
+                class="flex flex-1 items-center gap-3 min-w-0 text-left"
+                @click="openDocument(document.id)"
               >
-                Delete
+                <span
+                  class="grid place-items-center size-11 shrink-0 rounded-xl"
+                  :class="
+                    document.id === selectedDocumentId
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-200 text-primary'
+                  "
+                >
+                  <DocumentTextIcon class="size-6" />
+                </span>
+                <span class="flex flex-col min-w-0 leading-tight">
+                  <span class="truncate text-[0.95rem] font-semibold">{{
+                    document.name || 'Untitled'
+                  }}</span>
+                  <span
+                    v-if="document.id === selectedDocumentId"
+                    class="text-xs text-base-content/60"
+                    >Open now</span
+                  >
+                </span>
+              </button>
+              <span
+                v-if="document.id === selectedDocumentId"
+                class="size-2 shrink-0 rounded-full bg-success"
+              />
+              <button
+                class="btn btn-square btn-ghost btn-sm"
+                :aria-label="`Actions for ${document.name || 'Untitled'}`"
+                @click="menuDocId = document.id"
+              >
+                <EllipsisHorizontalIcon class="size-5 opacity-60" />
               </button>
             </div>
           </li>
         </ul>
+
+        <button
+          v-if="documents.length > 0"
+          class="btn btn-ghost btn-sm text-error/80 mt-4 mx-auto flex"
+          @click="confirmDeleteAll = true"
+        >
+          Delete all documents
+        </button>
       </div>
 
       <!-- New surface -->
@@ -263,7 +353,37 @@ function loadFile() {
         </template>
       </div>
     </main>
+
+    <!-- Sticky primary action on the Documents surface. -->
+    <footer
+      v-if="surface === 'documents'"
+      class="flex-none px-4 pt-2.5 border-t border-base-200"
+      style="padding-bottom: max(env(safe-area-inset-bottom), 0.75rem)"
+    >
+      <button class="btn btn-primary w-full h-13 rounded-2xl gap-2 text-base" @click="goTo('new')">
+        <PlusIcon class="size-5" /> New document
+      </button>
+    </footer>
   </div>
+
+  <!-- Per-document overflow actions. -->
+  <BottomSheet v-model:open="menuOpen" :title="menuDoc?.name || 'Untitled'">
+    <div v-if="menuDoc" class="flex flex-col gap-1 pb-4">
+      <button
+        class="btn btn-ghost justify-start gap-3"
+        @click="menuRename({ id: menuDoc.id, name: menuDoc.name })"
+      >
+        <PencilSquareIcon class="size-5 text-primary/80" /> Rename
+      </button>
+      <button class="btn btn-ghost justify-start gap-3" @click="menuSave(menuDoc.id)">
+        <ArrowDownTrayIcon class="size-5 text-primary/80" /> Save to device
+      </button>
+      <button class="btn btn-ghost justify-start gap-3 text-error" @click="menuDelete(menuDoc.id)">
+        <TrashIcon class="size-5" /> Delete
+      </button>
+    </div>
+  </BottomSheet>
+
   <NotificationsDisplay :notifications="notifications" placement="center" />
   <ShareModal :url="shareUrl" @close="shareUrl = null" />
   <input

@@ -1369,7 +1369,24 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
 const { layoutMode } = useLayoutMode()
 const isMenuOpen = ref(false)
 const isRelayoutOpen = ref(false)
-const relayoutOptions = GRAPH_EDITOR_LAYOUTS.map((layout) => ({ layout, ...layoutDatas[layout] }))
+// Split the layouts into the two mockup groups: directed (edge-following) vs. the
+// force/geometric engines. The first four entries are the directed ones.
+const relayoutGroups = [
+  {
+    label: 'Directed',
+    options: GRAPH_EDITOR_LAYOUTS.slice(0, 4).map((layout) => ({
+      layout,
+      ...layoutDatas[layout],
+    })),
+  },
+  {
+    label: 'Other',
+    options: GRAPH_EDITOR_LAYOUTS.slice(4).map((layout) => ({
+      layout,
+      ...layoutDatas[layout],
+    })),
+  },
+]
 
 function relayoutTo(layout: Layout) {
   doLayout(layout)
@@ -1562,8 +1579,16 @@ defineExpose({
           aria-label="Back to documents"
           @click="emit('home')"
         >
-          <span class="grid place-items-center size-7 shrink-0 rounded-lg bg-primary/25 text-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-[1.1rem]">
+          <span
+            class="grid place-items-center size-7 shrink-0 rounded-lg bg-primary/25 text-primary"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="size-[1.1rem]"
+            >
               <circle cx="7" cy="7" r="3" />
               <circle cx="17" cy="17" r="3" />
               <path d="M9.5 9.5 14.5 14.5" />
@@ -1579,11 +1604,7 @@ defineExpose({
           </span>
           <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
         </button>
-        <button
-          class="btn btn-square btn-ghost"
-          aria-label="Menu"
-          @click="isMenuOpen = true"
-        >
+        <button class="btn btn-square btn-ghost" aria-label="Menu" @click="isMenuOpen = true">
           <Bars3Icon class="size-6 opacity-70" />
         </button>
       </header>
@@ -1671,85 +1692,96 @@ defineExpose({
       <BottomSheet v-model:open="isMenuOpen" title="Menu">
         <div class="flex flex-col gap-4 pb-4">
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase opacity-60 px-1">Document</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Document</h3>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('new'))"
             >
-              <DocumentPlusIcon class="size-5 opacity-70" /> New document
+              <DocumentPlusIcon class="size-5 text-primary/80" /> New document
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('load'))"
             >
-              <ArrowUpTrayIcon class="size-5 opacity-70" /> Open file…
+              <ArrowUpTrayIcon class="size-5 text-primary/80" /> Open file…
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('save'))"
             >
-              <ArrowDownTrayIcon class="size-5 opacity-70" /> Save to device
+              <ArrowDownTrayIcon class="size-5 text-primary/80" /> Save to device
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('generate'))"
             >
-              <SparklesIcon class="size-5 opacity-70" /> Generate random…
+              <SparklesIcon class="size-5 text-primary/80" /> Generate random…
             </button>
           </section>
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase opacity-60 px-1">Edit</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Edit</h3>
             <button
               class="btn btn-ghost justify-start gap-3"
               :disabled="!historyState.canRedo"
               @click="runFromMenu(() => emit('redo'))"
             >
-              <ArrowUturnRightIcon class="size-5 opacity-70" /> Redo
+              <ArrowUturnRightIcon class="size-5 text-primary/80" /> Redo
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('share'))"
             >
-              <ShareIcon class="size-5 opacity-70" /> Share link…
+              <ShareIcon class="size-5 text-primary/80" /> Share link…
             </button>
           </section>
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase opacity-60 px-1">App</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">App</h3>
             <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openSettings)">
-              <Cog6ToothIcon class="size-5 opacity-70" /> Settings
+              <Cog6ToothIcon class="size-5 text-primary/80" /> Settings
             </button>
             <button
               v-if="tutorials"
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(openTutorials)"
             >
-              <AcademicCapIcon class="size-5 opacity-70" /> Tutorials
+              <AcademicCapIcon class="size-5 text-primary/80" /> Tutorials
             </button>
             <RouterLink
               to="/glossary"
               class="btn btn-ghost justify-start gap-3"
               @click="isMenuOpen = false"
             >
-              <BookOpenIcon class="size-5 opacity-70" /> Glossary
+              <BookOpenIcon class="size-5 text-primary/80" /> Glossary
             </RouterLink>
             <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openHelp)">
-              <QuestionMarkCircleIcon class="size-5 opacity-70" /> Help
+              <QuestionMarkCircleIcon class="size-5 text-primary/80" /> Help
             </button>
           </section>
         </div>
       </BottomSheet>
 
       <BottomSheet v-model:open="isRelayoutOpen" title="Relayout">
-        <div class="grid grid-cols-2 gap-2 pb-4">
-          <button
-            v-for="option in relayoutOptions"
-            :key="option.layout"
-            class="btn btn-outline justify-start gap-3 h-auto py-3"
-            @click="relayoutTo(option.layout)"
-          >
-            <component :is="option.icon" class="size-5 opacity-70" />
-            {{ option.name }}
-          </button>
+        <div class="flex flex-col gap-5 pb-4">
+          <section v-for="group in relayoutGroups" :key="group.label" class="flex flex-col gap-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+              {{ group.label }}
+            </h3>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button
+                v-for="option in group.options"
+                :key="option.layout"
+                class="flex items-center gap-3 h-14 px-3.5 rounded-xl border border-base-300 bg-base-100 text-sm font-medium text-left"
+                @click="relayoutTo(option.layout)"
+              >
+                <span
+                  class="grid place-items-center size-8 shrink-0 rounded-lg bg-base-200 text-primary"
+                >
+                  <component :is="option.icon" class="size-5" />
+                </span>
+                {{ option.name }}
+              </button>
+            </div>
+          </section>
         </div>
       </BottomSheet>
     </template>

@@ -17,7 +17,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+import {
+  AdjustmentsHorizontalIcon,
+  ArrowLongRightIcon,
+  ArrowsPointingInIcon,
+  ArrowsPointingOutIcon,
+  Bars3Icon,
+  CursorArrowRaysIcon,
+  PencilSquareIcon,
+  PlusCircleIcon,
+  TrashIcon,
+} from '@heroicons/vue/24/outline'
+import { type Component, computed } from 'vue'
 
 const {
   linkNames,
@@ -33,68 +44,83 @@ const {
 const linkNamesSlash = computed(() => linkNames.join('/'))
 const hasTypes = computed(() => linkNames.length > 1)
 
-const gestureClass =
-  'inline-flex items-center rounded-md bg-base-200 px-2 py-0.5 text-xs font-medium justify-self-start'
+interface GestureRow {
+  icon: Component
+  title: string
+  desc: string
+  danger?: boolean
+}
+
+const rows = computed<GestureRow[]>(() => {
+  const list: GestureRow[] = [
+    { icon: PlusCircleIcon, title: 'Double-tap the canvas', desc: 'Add a new argument' },
+    {
+      icon: nodeTapAction === 'Rename' ? PencilSquareIcon : CursorArrowRaysIcon,
+      title: 'Tap an argument',
+      desc: `${nodeTapAction} it`,
+    },
+    { icon: TrashIcon, title: 'Hold an argument', desc: 'Delete it', danger: true },
+    {
+      icon: ArrowLongRightIcon,
+      title: 'Hold + drag to another argument',
+      desc: allowHyperLinkCreation
+        ? `Tap arguments to select sources, then drag from a selected one to create a collective ${linkNames[0] ?? 'attack'}`
+        : `Create a ${linkNamesSlash.value} between them`,
+    },
+    { icon: ArrowsPointingOutIcon, title: 'Drag / pinch', desc: 'Pan and zoom the canvas' },
+    {
+      icon: ArrowsPointingInIcon,
+      title: 'Fit-view button',
+      desc: 'Recenter everything — moving arguments by hand is not needed; use Relayout',
+    },
+  ]
+
+  if (hasTypes.value) {
+    list.push({
+      icon: AdjustmentsHorizontalIcon,
+      title: 'Bottom-left selector',
+      desc: `Pick which ${linkNamesSlash.value} you create next`,
+    })
+    list.push({
+      icon: CursorArrowRaysIcon,
+      title: `Tap a ${linkNamesSlash.value}`,
+      desc: 'Change its type or delete it',
+    })
+  } else {
+    list.push({
+      icon: CursorArrowRaysIcon,
+      title: `Tap a ${linkNamesSlash.value}`,
+      desc: 'Delete it',
+    })
+  }
+
+  list.push({
+    icon: Bars3Icon,
+    title: 'Menu',
+    desc: 'Redo, share, settings, tutorials, glossary and file actions',
+  })
+
+  return list
+})
 </script>
 
 <template>
-  <dl class="flex flex-col">
-    <p class="font-semibold pt-2 pb-1 opacity-60 text-xs uppercase tracking-wide">
-      Arguments &amp; Attacks
-    </p>
-    <div class="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2 items-baseline">
-      <dt :class="gestureClass">Double-tap</dt>
-      <dd>Add an argument on the canvas</dd>
-
-      <dt :class="gestureClass">Tap</dt>
-      <dd>{{ nodeTapAction }} an argument</dd>
-
-      <dt :class="gestureClass">Hold</dt>
-      <dd>Delete an argument</dd>
-
-      <dt :class="gestureClass">Hold + drag</dt>
-      <dd>
-        <template v-if="allowHyperLinkCreation">
-          Tap arguments to select sources, then hold a selected source and drag to the target to
-          create a collective attack
-        </template>
-        <template v-else>
-          Drag from one argument to another to create a {{ linkNamesSlash }}
-        </template>
-      </dd>
-
-      <template v-if="hasTypes">
-        <dt :class="gestureClass">Selector</dt>
-        <dd>The bottom-left selector sets which {{ linkNamesSlash }} you create next</dd>
-
-        <dt :class="gestureClass">Tap {{ linkNamesSlash }}</dt>
-        <dd>Change its type or delete it</dd>
-      </template>
-      <template v-else>
-        <dt :class="gestureClass">Tap {{ linkNamesSlash }}</dt>
-        <dd>Delete it</dd>
-      </template>
-    </div>
-
-    <p class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">Navigation</p>
-    <div class="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2 items-baseline">
-      <dt :class="gestureClass">Drag</dt>
-      <dd>Pan the canvas</dd>
-
-      <dt :class="gestureClass">Pinch</dt>
-      <dd>Zoom in and out</dd>
-
-      <dt :class="gestureClass">Fit</dt>
-      <dd>Recenter the view (bottom bar) — moving arguments by hand is not needed; use Relayout</dd>
-    </div>
-
-    <p class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">General</p>
-    <div class="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2 items-baseline">
-      <dt :class="gestureClass">Undo</dt>
-      <dd>Top bar; Redo and Share are in the menu</dd>
-
-      <dt :class="gestureClass">Menu</dt>
-      <dd>Settings, tutorials, glossary and file actions</dd>
-    </div>
-  </dl>
+  <ul class="flex flex-col">
+    <li
+      v-for="(row, index) in rows"
+      :key="index"
+      class="flex items-center gap-3.5 py-3 border-b border-base-200 last:border-b-0"
+    >
+      <span
+        class="grid place-items-center size-10 shrink-0 rounded-xl bg-base-200"
+        :class="row.danger ? 'text-error' : 'text-primary/80'"
+      >
+        <component :is="row.icon" class="size-[1.4rem]" />
+      </span>
+      <span class="min-w-0">
+        <span class="block text-sm font-semibold">{{ row.title }}</span>
+        <span class="block text-xs text-base-content/60 mt-0.5">{{ row.desc }}</span>
+      </span>
+    </li>
+  </ul>
 </template>

@@ -36,22 +36,25 @@ const { layoutMode } = useLayoutMode()
 <template>
   <WindowShell
     v-model:open="open"
-    title="Help"
+    :title="layoutMode === 'compact' ? 'How to edit' : 'Help'"
     :initial-position="{ x: 256, y: 256 }"
     :intitalSize="{ width: 576, height: 448 }"
   >
     <div class="p-4">
-      <HelpLinks />
-      <HelpGestures
-        v-if="layoutMode === 'compact'"
-        :link-names="props.linkNames"
-        :allow-hyper-link-creation="props.allowHyperLinkCreation"
-      />
-      <HelpControls
-        v-else
-        :link-names="props.linkNames"
-        :allow-hyper-link-creation="props.allowHyperLinkCreation"
-      />
+      <template v-if="layoutMode === 'compact'">
+        <HelpGestures
+          :link-names="props.linkNames"
+          :allow-hyper-link-creation="props.allowHyperLinkCreation"
+        />
+        <HelpLinks />
+      </template>
+      <template v-else>
+        <HelpLinks />
+        <HelpControls
+          :link-names="props.linkNames"
+          :allow-hyper-link-creation="props.allowHyperLinkCreation"
+        />
+      </template>
     </div>
   </WindowShell>
 </template>
