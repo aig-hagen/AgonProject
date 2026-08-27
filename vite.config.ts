@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
@@ -60,7 +61,8 @@ export default defineConfig({
       ],
     }),
     gzipFixPlugin(),
-    vueDevTools(),
+    // The devtools overlay intercepts pointer events; disable it under e2e.
+    ...(process.env.E2E ? [] : [vueDevTools()]),
   ],
   resolve: {
     alias: {

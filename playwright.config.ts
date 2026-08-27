@@ -39,40 +39,48 @@ export default defineConfig({
     headless: true,
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects for major browsers.
+   * Desktop projects run the regular-shell specs and skip the mobile ones; the mobile
+   * projects run only `*.mobile.spec.ts` (compact-shell acceptance). Shell selection is
+   * viewport-driven (see useLayoutMode), so the device viewports pick the compact shell. */
   projects: [
     {
       name: 'chromium',
+      testIgnore: /.*\.mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
     {
       name: 'firefox',
+      testIgnore: /.*\.mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Firefox'],
       },
     },
     {
       name: 'webkit',
+      testIgnore: /.*\.mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Safari'],
       },
     },
 
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: {
-    //     ...devices['Pixel 5'],
-    //   },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: {
-    //     ...devices['iPhone 12'],
-    //   },
-    // },
+    /* Test against mobile viewports (compact shell). */
+    {
+      name: 'Mobile Chrome',
+      testMatch: /.*\.mobile\.spec\.ts/,
+      use: {
+        ...devices['Pixel 5'],
+      },
+    },
+    {
+      name: 'Mobile Safari',
+      testMatch: /.*\.mobile\.spec\.ts/,
+      use: {
+        ...devices['iPhone 12'],
+      },
+    },
 
     /* Test against branded browsers. */
     // {
@@ -99,7 +107,7 @@ export default defineConfig({
      * Use the preview server on CI for more realistic testing.
      * Playwright will re-use the local server if there is already a dev-server running.
      */
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
+    command: process.env.CI ? 'npm run preview' : 'E2E=1 npm run dev',
     port: process.env.CI ? 4173 : 5173,
     reuseExistingServer: !process.env.CI,
   },

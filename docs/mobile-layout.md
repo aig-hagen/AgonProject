@@ -409,8 +409,9 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    pan/pinch, hold, hold-drag linking with node movement disabled, link tapping, and SETAF source
    selection. Agree the gesture thresholds before continuing.
    — *Foundation (layout mode, BottomSheet, viewport utils) is built. The **real-device gesture
-   spike** — tap/hold node gestures and agreed thresholds — is **not done**; it blocks the iAF node
-   context menu and SETAF (see deferrals below).*
+   spike** — tap/hold node gestures and agreed thresholds — is **deferred to** `docs/ideas/TODO.md`
+   → Mobile → "Deferred from mobile implementation phases" so Phase 7 can proceed. It still blocks
+   the iAF node context menu and SETAF (both deferred with it).*
 2. ✅ **Home + plain-AF editor shell.** *Home* / *NewDoc* with full rename/save/delete parity; the
    mobile editor with switcher chip, top bar, bottom command bar, Fit-to-view, relayout, undo/redo,
    menu, and toast notifications. Plain AF must be fully editable and survive switching surfaces,
@@ -422,9 +423,10 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    serialisation sequence + interactive modes in the shared evaluation host.
 5. 🟡 **Per-type interactions.** BAF, iAF, ADF, PAF, and SETAF selectors/context actions/sheets;
    add the SETAF mockup before implementing it.
-   — *BAF/iAF/ADF/PAF on-canvas selectors and tap-to-edit sheets are built. **Deferred:** the iAF
-   node context menu (needs the Phase 1 gesture spike) and **SETAF** entirely (needs the gesture
-   spike, a mockup, and Decision #5).*
+   — *BAF/iAF/ADF/PAF on-canvas selectors and tap-to-edit sheets are built. **Deferred to**
+   `docs/ideas/TODO.md` → Mobile → "Deferred from mobile implementation phases": the iAF node
+   context menu (needs the Phase 1 gesture spike) and **SETAF** entirely (needs the gesture spike,
+   a mockup, and Decision #5). The remaining per-type work does not block Phase 7.*
 6. ✅ **Tutorials and standalone views.** Mobile tutorial overlay + picker, Generate, Glossary,
    Share-open, and Third-party.
    — *Standalone views done: **Glossary**, **Generate**, and **Third-party** each split into a
@@ -444,9 +446,25 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    `useHomeSurface` default reactively lands on the `editor` surface — no change needed. Also
    removed the now-dead `ShareModal`/`@share`/`shareDocument` wiring from `HomeViewMobile` (mobile's
    only outbound share is the Export sheet's copy-link `quickShareDocument`).*
-7. ⬜ **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
+7. 🟡 **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
    performance/memory checks with many documents and evaluation configs, desktop regression,
    and documentation/help alignment.
+   — *Started with e2e coverage. The **Mobile Chrome** (Pixel 5) + **Mobile Safari** (iPhone 12)
+   Playwright projects are enabled; desktop projects `testIgnore` `*.mobile.spec.ts` and the mobile
+   projects `testMatch` only those, so each shell is exercised at its own viewport. New
+   `e2e/home.mobile.spec.ts` (compact-shell selection, create-from-New → editor surface, switcher →
+   Documents → browser-Back history) and `e2e/editor.mobile.spec.ts` (bottom command bar actions;
+   Menu / Relayout / Export / Evaluate sheets open as labelled dialogs and close) — all green on
+   Chromium + Mobile Chrome; WebKit/Mobile Safari need system deps not present on the dev box (still
+   enabled for CI). Refreshed the stale **desktop regression gate**: `app.spec.ts` and `tabs.spec.ts`
+   referenced UI removed long ago (old landing heading, `new argumentation` tab placeholder, single
+   `Create` button) — now assert the current landing heading and create-via-module-card + input-value
+   cross-page sync. Gated the Vue devtools dev-overlay off under `E2E=1` (it intercepted pointer
+   events on the centered Evaluate button); Playwright's dev server sets it. **Still to do:**
+   accessibility pass (BottomSheet focus trap/restore, 44×44px targets, reduced motion, 200% zoom,
+   no horizontal overflow), performance/memory with many docs + eval configs, per-module
+   create/edit/evaluate/export mobile flows, and help/tutorial wording alignment. Real-device smoke
+   matrix + touch-gesture coverage ride with the deferred gesture spike (see TODO).*
 
 Do not ship a partially replaced mobile shell between phases. Keep it behind a feature flag (or
 merge only after the routes needed for a coherent mobile release are complete); otherwise phases

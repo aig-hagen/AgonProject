@@ -7,6 +7,23 @@
 
 ### Mobile
 
+#### Deferred from mobile implementation phases
+
+These were carved out of the mobile phases (see `docs/mobile-layout.md`) so Phase 7 can
+proceed; they all hinge on the same unfinished real-device gesture work.
+
+- **[Spike — Phase 1]** Real-device gesture spike. On real iOS + Android, verify tap/hold
+  node gestures with node-moving disabled: tap, hold-to-delete vs hold-drag-to-link
+  disambiguation, pointer cancellation, scroll prevention, and agreed movement/time
+  thresholds. Blocks the two items below.
+- **[Feature — Phase 5]** iAF node context menu (rename / certainty / delete on tap). Needs
+  the gesture spike's thresholds first.
+- **[Feature — Phase 5]** SETAF (collective attacks) editing entirely: tap-to-toggle source
+  selection distinct from eval highlights, hold-drag from selected sources to create a
+  collective attack, Clear-selection / Rename / Delete actions, and tapping a collective
+  attack to inspect its sources. Needs the gesture spike, a *collective attacks* mockup, and
+  Decision #5 (tap-to-select vs a dedicated creation mode).
+
 #### Home and document management
 
 - **[Bug]** home view: some AF module description texts are truncated; references are missing entirely
