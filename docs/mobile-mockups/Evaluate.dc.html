@@ -13,6 +13,8 @@
     .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
     .chip { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid #e4e4e7; background: #ffffff; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; flex: none; }
     .chip.on { border-color: #5a87a8; background: #eef3f7; color: #2b4d66; }
+    .iconbtn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 999px; border: 1px solid #e4e4e7; background: #ffffff; cursor: pointer; flex: none; }
+    .copybtn { display: flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #e4e4e7; background: #ffffff; font-size: 12px; color: #4a4a52; cursor: pointer; }
   </style>
 </helmet>
 <div style="width: 390px; height: 844px; background: #ffffff; color: #1b1b1f; position: relative; overflow: hidden;">
@@ -39,21 +41,28 @@
       <div style="width: 40px; height: 5px; border-radius: 999px; background: #d4d4d8;"></div>
     </div>
 
-    <!-- Saved-evaluation switcher: scrollable chips, each icon = its kind -->
-    <div style="display: flex; gap: 8px; padding: 6px 14px 12px; overflow-x: auto;">
+    <!-- Saved-evaluation switcher: scrollable chips (icon = kind), then delete + add -->
+    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 14px 12px; overflow-x: auto;">
       <div class="chip on">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="1.9"><path d="M9 4H7a2 2 0 0 0-2 2c0 3-1 4-2 4v0c1 0 2 1 2 4a2 2 0 0 0 2 2h2M15 4h2a2 2 0 0 1 2 2c0 3 1 4 2 4v0c-1 0-2 1-2 4a2 2 0 0 1-2 2h-2"/></svg>
+        <!-- extension kind: { •• } set glyph -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c-2 0-2.2 1.4-2.2 3.2 0 1.6-.6 2.8-1.8 3.3v3c1.2.5 1.8 1.7 1.8 3.3 0 1.8.2 3.2 2.2 3.2"/><path d="M15 4c2 0 2.2 1.4 2.2 3.2 0 1.6.6 2.8 1.8 3.3v3c-1.2.5-1.8 1.7-1.8 3.3 0 1.8-.2 3.2-2.2 3.2"/><circle cx="10.6" cy="12" r="1" fill="#3e6a8a" stroke="none"/><circle cx="13.4" cy="12" r="1" fill="#3e6a8a" stroke="none"/></svg>
         Grounded
       </div>
       <div class="chip">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9"><path d="M9 4H7a2 2 0 0 0-2 2c0 3-1 4-2 4v0c1 0 2 1 2 4a2 2 0 0 0 2 2h2M15 4h2a2 2 0 0 1 2 2c0 3 1 4 2 4v0c-1 0-2 1-2 4a2 2 0 0 1-2 2h-2"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c-2 0-2.2 1.4-2.2 3.2 0 1.6-.6 2.8-1.8 3.3v3c1.2.5 1.8 1.7 1.8 3.3 0 1.8.2 3.2 2.2 3.2"/><path d="M15 4c2 0 2.2 1.4 2.2 3.2 0 1.6.6 2.8 1.8 3.3v3c-1.2.5-1.8 1.7-1.8 3.3 0 1.8-.2 3.2-2.2 3.2"/><circle cx="10.6" cy="12" r="1" fill="#6b6b74" stroke="none"/><circle cx="13.4" cy="12" r="1" fill="#6b6b74" stroke="none"/></svg>
         Preferred
       </div>
       <div class="chip">
+        <!-- ranking kind -->
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9"><path d="M11 5h10M11 12h10M11 19h10M3 7l2-2 2 2M5 5v14"/></svg>
         Categorizer
       </div>
-      <div class="chip" style="width: 38px; padding: 0; justify-content: center;">
+      <!-- delete active config -->
+      <div class="iconbtn" title="Delete this evaluation">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c0563f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg>
+      </div>
+      <!-- add config (picks the kind only) -->
+      <div class="iconbtn" title="Add evaluation">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a4a52" stroke-width="1.9"><path d="M12 5v14M5 12h14"/></svg>
       </div>
     </div>
@@ -63,7 +72,10 @@
       <label style="flex: 2; display: flex; flex-direction: column; gap: 5px;">
         <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #7a7a83; font-weight: 500;">
           Semantics
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5a87a8" stroke-width="1.9" style="cursor: pointer;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          <!-- ⓘ toggles the definition below; shown here in its ACTIVE (open) state -->
+          <span style="display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: #e6eef4; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+          </span>
         </span>
         <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 12px; border: 1px solid #e4e4e7; border-radius: 10px; background: #f7f7f8; font-size: 14px;">Grounded<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9aa2" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></div>
       </label>
@@ -73,8 +85,8 @@
       </label>
     </div>
 
-    <!-- glossary definition, revealed by the ⓘ next to Semantics (collapsed by default) -->
-    <div style="margin: 0 16px 14px; border: 1px solid #e2ebf1; background: #f4f8fb; border-radius: 12px; padding: 11px 13px;">
+    <!-- glossary definition — collapsed by default, revealed by the ⓘ above (shown open here) -->
+    <div style="margin: 0 16px 12px; border: 1px solid #e2ebf1; background: #f4f8fb; border-radius: 12px; padding: 11px 13px;">
       <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
         <span style="font-size: 13px; font-weight: 600; color: #2b4d66;">Grounded extension</span>
         <span style="flex: 1;"></span>
@@ -85,16 +97,22 @@
       <p style="margin: 0; font-size: 12.5px; line-height: 1.5; color: #55555e;">The unique minimal complete extension: it accepts only arguments it can defend, and commits to as little as possible. Always exists.</p>
     </div>
 
+    <!-- results -->
     <div style="flex: 1; overflow-y: auto; padding: 0 16px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px;">
-        <span style="font-size: 12px; color: #7a7a83;">1 extension · tap to show on canvas</span>
-        <span style="font-size: 11px; color: #a0a0a8;">18&nbsp;ms</span>
-      </div>
       <button style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 14px; margin-bottom: 8px; border: 2px solid #3f9d5a; border-radius: 12px; background: #f0faf3; cursor: pointer; text-align: left;">
         <span style="width: 8px; height: 8px; border-radius: 999px; background: #3f9d5a;"></span>
         <span class="mono" style="flex: 1; font-size: 15px;">{ a, c }</span>
         <span style="font-size: 12px; color: #3f9d5a; font-weight: 600;">shown</span>
       </button>
+    </div>
+
+    <!-- footer line: desktop approach — duration · hint on the left, copy buttons on the right -->
+    <div style="flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px 16px; border-top: 1px solid #f0f0f2;">
+      <span style="font-size: 12px; color: #a0a0a8;">18&nbsp;ms · tap a result to show it</span>
+      <div style="display: flex; gap: 6px;">
+        <button class="copybtn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>results</button>
+        <button class="copybtn" style="width: 34px; padding: 0; justify-content: center;"><span class="mono" style="font-size: 11px;">TeX</span></button>
+      </div>
     </div>
   </div>
 

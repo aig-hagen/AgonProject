@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .iconbtn { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e4e4e7; background: #ffffff; cursor: pointer; flex: none; }
+    .row { display: flex; align-items: center; gap: 11px; height: 48px; padding: 0 12px; border-radius: 11px; cursor: pointer; }
+    .row .name { flex: 1; font-size: 15px; }
+    .trash { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #ffffff; color: #1b1b1f; position: relative; overflow: hidden;">
+
+  <!-- AF above the sheet -->
+  <div style="position: absolute; inset: 0; background: #ffffff;">
+    <svg width="390" height="360" viewBox="0 0 390 360" style="position: absolute; top: 40px; left: 0;">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#5a87a8"/></marker></defs>
+      <g stroke="#5a87a8" stroke-width="2.4" marker-end="url(#ah)" fill="none"><path d="M150 95 L118 178"/><path d="M138 220 L232 220"/><path d="M258 182 L214 98"/></g>
+      <g class="mono" font-size="17" text-anchor="middle">
+        <g><circle cx="180" cy="70" r="26" fill="#bfe3c9" stroke="#3f9d5a" stroke-width="3"/><text x="180" y="76">a</text></g>
+        <g><circle cx="110" cy="210" r="26" fill="#99b7d5" stroke="#5a87a8" stroke-width="1.6" opacity="0.5"/><text x="110" y="216" opacity="0.5">b</text></g>
+        <g><circle cx="262" cy="220" r="26" fill="#bfe3c9" stroke="#3f9d5a" stroke-width="3"/><text x="262" y="226">c</text></g>
+      </g>
+    </svg>
+  </div>
+  <div style="position: absolute; inset: 0; background: #0000000d;"></div>
+
+  <!-- sheet, standard detent, with the switcher DROPPED open over the body -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 434px; background: #ffffff; border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -6px 24px #00000022; display: flex; flex-direction: column;">
+    <div style="display: flex; justify-content: center; padding: 8px 0 4px;">
+      <div style="width: 40px; height: 5px; border-radius: 999px; background: #d4d4d8;"></div>
+    </div>
+
+    <!-- header pill, chevron now UP (open) -->
+    <div style="display: flex; align-items: center; gap: 10px; padding: 2px 14px 10px;">
+      <button style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; height: 42px; padding: 0 12px; border-radius: 12px; border: 1px solid #5a87a8; background: #eef3f7; cursor: pointer;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c-2 0-2.2 1.4-2.2 3.2 0 1.6-.6 2.8-1.8 3.3v3c1.2.5 1.8 1.7 1.8 3.3 0 1.8.2 3.2 2.2 3.2"/><path d="M15 4c2 0 2.2 1.4 2.2 3.2 0 1.6.6 2.8 1.8 3.3v3c-1.2.5-1.8 1.7-1.8 3.3 0 1.8-.2 3.2-2.2 3.2"/><circle cx="10.6" cy="12" r="1" fill="#3e6a8a" stroke="none"/><circle cx="13.4" cy="12" r="1" fill="#3e6a8a" stroke="none"/></svg>
+        <span style="flex: 1; text-align: left; font-size: 15px; font-weight: 600; color: #2b4d66;">Grounded</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5a87a8" stroke-width="2.2"><path d="M6 15l6-6 6 6"/></svg>
+      </button>
+      <button class="iconbtn" title="Close"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+
+    <!-- dropped list: every saved config (icon = kind), active checked, per-row delete, add row -->
+    <div style="margin: 0 12px; border: 1px solid #e6e6ea; border-radius: 14px; background: #ffffff; box-shadow: 0 8px 20px #0000000f; overflow: hidden;">
+      <div class="row" style="background: #eef3f7;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c-2 0-2.2 1.4-2.2 3.2 0 1.6-.6 2.8-1.8 3.3v3c1.2.5 1.8 1.7 1.8 3.3 0 1.8.2 3.2 2.2 3.2"/><path d="M15 4c2 0 2.2 1.4 2.2 3.2 0 1.6.6 2.8 1.8 3.3v3c-1.2.5-1.8 1.7-1.8 3.3 0 1.8-.2 3.2-2.2 3.2"/><circle cx="10.6" cy="12" r="1" fill="#3e6a8a" stroke="none"/><circle cx="13.4" cy="12" r="1" fill="#3e6a8a" stroke="none"/></svg>
+        <span class="name" style="color: #2b4d66; font-weight: 600;">Grounded</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3f9d5a" stroke-width="2.4"><path d="M5 12l5 5 9-11"/></svg>
+        <span class="trash"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c0563f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg></span>
+      </div>
+      <div style="height: 1px; background: #f0f0f2; margin: 0 12px;"></div>
+      <div class="row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4c-2 0-2.2 1.4-2.2 3.2 0 1.6-.6 2.8-1.8 3.3v3c1.2.5 1.8 1.7 1.8 3.3 0 1.8.2 3.2 2.2 3.2"/><path d="M15 4c2 0 2.2 1.4 2.2 3.2 0 1.6.6 2.8 1.8 3.3v3c-1.2.5-1.8 1.7-1.8 3.3 0 1.8-.2 3.2-2.2 3.2"/><circle cx="10.6" cy="12" r="1" fill="#6b6b74" stroke="none"/><circle cx="13.4" cy="12" r="1" fill="#6b6b74" stroke="none"/></svg>
+        <span class="name">Preferred</span>
+        <span class="trash"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c0563f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg></span>
+      </div>
+      <div style="height: 1px; background: #f0f0f2; margin: 0 12px;"></div>
+      <div class="row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b6b74" stroke-width="1.9"><path d="M11 5h10M11 12h10M11 19h10M3 7l2-2 2 2M5 5v14"/></svg>
+        <span class="name">Categorizer</span>
+        <span class="trash"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c0563f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg></span>
+      </div>
+      <div style="height: 1px; background: #f0f0f2; margin: 0 12px;"></div>
+      <!-- add row: picks the KIND only -->
+      <div class="row" style="color: #3e6a8a;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3e6a8a" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="name" style="font-weight: 500;">Add evaluation…</span>
+      </div>
+    </div>
+
+    <!-- underlying body is dimmed while the list is open -->
+    <div style="flex: 1; padding: 14px 16px; opacity: 0.35;">
+      <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+        <div style="flex: 2; height: 44px; border: 1px solid #e4e4e7; border-radius: 10px; background: #f7f7f8;"></div>
+        <div style="flex: 1; height: 44px; border: 1px solid #e4e4e7; border-radius: 10px; background: #f7f7f8;"></div>
+      </div>
+      <div style="height: 50px; border: 2px solid #3f9d5a; border-radius: 12px; background: #f0faf3;"></div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

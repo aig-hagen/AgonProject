@@ -552,25 +552,121 @@ Done so far:
   the Tutorial-progress **Reset** the mockup omits. Kept as the `WindowSettings` `<dialog>` per the
   implementation note above rather than reworked into a full-screen page.
 
-### Evaluate UI: mobile-native rework (future)
+### Evaluate UI: mobile-native rework — implementation plan
 
 The Evaluate sheet still reuses the desktop evaluation body (`EvaluationCard` + the module
 `#parameters`/`#results` slots, shared with the floating windows). The chip switcher is
-mockup-styled, but the *interior* was left alone to avoid desktop regressions. A proper rework,
-purpose-built for mobile rather than adapted from the desktop card, should:
+mockup-styled, but the *interior* was left alone to avoid desktop regressions. This plan replaces
+the horizontal chip strip with a **header-as-switcher** and gives the sheet **three snap detents**.
 
-- Replace the collapsed "semantics·mode summary" header with the mockup's always-visible
-  parameter row — a wide **Semantics** control + a narrow **Mode** control as tap-to-open pickers
-  (not desktop `<select>`s), sized for touch (~44px rows).
-- Add the **glossary reveal**: an ⓘ next to Semantics that expands an inline definition card for
-  the selected semantics, with a reference link out (this is a *new feature*, wired to the existing
-  glossary data — see [`glossary.ts`](../src/modules/*/glossary.ts)).
-- Restyle the **results** to the mockup: a `N extensions · tap to show on canvas` + timing header,
-  and result rows as large tappable cards with a state dot and a `shown` marker for the active one.
-- Do this without regressing the desktop floating-window evaluation. Either branch the shared body
-  on `layoutMode`, or split a dedicated compact evaluation body so the two can diverge cleanly.
+Mockups (canvas page *Eval sheet — snap detents (proposal)*):
+[`EvaluateHeaderCompact`](mobile-mockups/EvaluateHeaderCompact.dc.html),
+[`EvaluateHeaderStandard`](mobile-mockups/EvaluateHeaderStandard.dc.html),
+[`EvaluateHeaderSwitcher`](mobile-mockups/EvaluateHeaderSwitcher.dc.html),
+[`EvaluateHeaderFull`](mobile-mockups/EvaluateHeaderFull.dc.html).
+
+**Locked decisions**
+
+- The horizontal pill strip is **removed**. The active config collapses into a **header pill**
+  (kind glyph + config name + chevron); tapping it drops the full saved-config list (switch,
+  per-row delete, `Add evaluation…`). One control does what the pill strip + title did before.
+- Trailing the header pill: an **add** icon button and a **close** icon button.
+- Three snap detents:
+
+  | Detent | Height | Shows |
+  | --- | --- | --- |
+  | **Compact** | ~28dvh | header pill + **results** + copy footer. **No selector row** — the pill already names the active config, so the pickers are folded away. |
+  | **Standard** | ~48dvh | header pill + selector row (Semantics/Mode pickers) + ⓘ glossary reveal + results + copy footer. Everyday view. |
+  | **Full** | ~90dvh | two panes (below). AF mostly covered — accepted. |
+
+- **Copy buttons stay at every detent** (compact included) — the desktop footer line
+  (`{duration}ms · hint` + `results`/`TeX` copy buttons), never dropped.
+- **Full detent = two evaluations**. Top pane is the switchable saved eval and **owns the canvas
+  highlight**; a `Compare with` divider separates a bottom **one-off, view-only** eval (own params
+  + result, does not touch the canvas, `✕` clears it). Only one eval highlights, so no clash.
+
+**Detent primitive — `BottomSheet.vue`**
+
+- Add a `snapPoints?: number[]` prop (fractions of viewport); only the docked eval sheet uses it,
+  content-sized and `fullHeight` sheets are unaffected.
+- Track `viewportHeight` (resize listener), `activeIndex`, `liveHeight`; `detentPx(i)`,
+  `nearestDetent(h)`, `panelHeight` computed. Drag follows the finger between min/max detent;
+  below the lowest detent it slides via `dragOffset` and dismisses past `CLOSE_THRESHOLD`.
+- Release snaps to the nearest detent; opening resets to the initial (standard) detent.
+- Expose `expanded` to the default slot (`:expanded="expanded"`, replacing the old `snap === 'full'`).
+- **NOTE:** a partial version of this edit is already in the working tree and does **not compile**
+  (template still references the removed `snap`, height transition missing, `EvaluationHost.vue`
+  still passes the removed `peek-height` prop). Finish it as the first step, or revert then redo.
+
+**Sheet interior**
+
+- Split a dedicated **compact evaluation body** (or branch the shared body on `layoutMode`) so the
+  mobile rework can diverge from the desktop `EvaluationCard` without regressing floating windows.
+- Selector row: wide **Semantics** + narrow **Mode** as tap-to-open pickers (not desktop
+  `<select>`s), ~44px touch rows. Hidden at compact.
+- **Glossary reveal**: ⓘ next to Semantics expands an inline definition card for the selected
+  semantics with a reference link (new feature, wired to existing `glossary.ts`). Standard/full only.
+- Results as large tappable cards: state dot + `shown` marker on the active one; header/footer line
+  `{duration}ms · {hint}` + copy buttons.
 - Cover ranking / serialisation / ADF-interpretation / PAF-probability result kinds, not just
   extensions.
+
+**Full-detent two-pane compare**
+
+- Top pane = the switchable saved eval (header pill + params + result), owns the highlight.
+- `Compare with` divider (`view only` + `✕` clear).
+- Bottom pane = a one-off single eval slot: own params + result, no saved list, no highlight.
+
+**AF visibility at compact/standard**
+
+- Re-fit the graph into the band **above** the sheet so it stays fully visible (currently centered,
+  so it is half-covered). Open question: does `fitToView` accept an inset rect / padded bounds?
+  Investigate before implementing; if not, add one.
+
+**Task checklist**
+
+- [x] Finish (or revert+redo) the `BottomSheet` snap-detent primitive; wire `EvaluationHost.vue`
+      to `:snap-points` instead of `peek-height`. — *primitive committed; host now uses three
+      detents `[0.28, 0.48, 0.9]`.*
+- [x] Header-as-switcher chrome (pill + dropped saved-config list + add/close). — *`BottomSheet`
+      gained a `#header` slot; `EvaluationHost` renders the active-config pill (kind glyph + name +
+      chevron) that drops the saved-config list (switch / per-row delete / `Add evaluation…`), with
+      add + close trailing. The old horizontal chip strip is removed.*
+- [x] Compact detent layout (results-only, no selector row, keep copy footer). — *new
+      mobile-only `MobileEvaluationBody` replaces `EvaluationCard` in the hosted
+      (`BaseEvaluationWindow`) branch — desktop floating windows keep `EvaluationCard`.
+      `BottomSheet` exposes `v-model:detent-index`; `EvaluationHost` derives a
+      `compact | standard | full` layout and `provide`s it (no per-module prop threading),
+      which the body injects to fold the selector row / glossary away at compact.*
+- [x] Standard detent layout (selector row + glossary reveal + results + copy footer). —
+      *selector row (existing `#parameters` slot) + glossary (`#parameters-footer`) shown at
+      standard/full, hidden at compact; results + copy footer at every detent.*
+- [ ] Tap-to-open Semantics/Mode pickers; glossary ⓘ reveal. — *selectors are still the
+      desktop `<select>`s and glossary is shown inline (not yet behind a ⓘ toggle); the
+      detent gating is in place, the picker restyle + reveal toggle remain.* Open work:
+    - Replace the `#parameters` `<select>`s with tap-to-open pickers (~44px touch rows):
+      a wide **Semantics** + a narrow **Mode**. Lives in the module windows' `#parameters`
+      slot, so it needs a shared mobile picker component the modules opt into.
+    - Move the glossary (`#parameters-footer` / `TermDefinitionBlock`) behind a ⓘ toggle
+      next to Semantics — inline reveal card + reference link, wired to `glossary.ts`.
+- [ ] Full detent two-pane compare (switchable top owns highlight, one-off view-only bottom).
+      Open work:
+    - At `detent === 'full'`, `MobileEvaluationBody` (or the host) renders a second, one-off
+      eval slot below a `Compare with` divider (`view only` + `✕` clear).
+    - Top pane keeps the highlight; the bottom pane must **not** emit `highlight` (own params
+      + result only), so only one eval touches the canvas.
+    - Needs a place to hold the one-off instance state (host-local, not in the saved list).
+- [ ] AF re-fit above the sheet at compact/standard (resolve `fitToView` inset question first).
+      Open work:
+    - Investigate whether `fitToView` accepts an inset rect / padded bounds; if not, add one.
+    - When the sheet is open at compact/standard, re-fit the AF graph into the band **above**
+      the sheet (currently centred, so it is half-covered). Re-fit on detent change too.
+- [ ] Cover all result kinds; verify desktop floating-window evaluation is unregressed.
+      Open work:
+    - Confirm the sticky footer + detent folding behave for ranking / serialisation /
+      ADF-interpretation / PAF-probability results, not just extension chips.
+    - Regression-check every module's desktop floating window (still `EvaluationCard` +
+      `WindowShell`) — the mobile split must not have changed them.
 
 ### Remaining surfaces needing a mockup-parity pass
 
