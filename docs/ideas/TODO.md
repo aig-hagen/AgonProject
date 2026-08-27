@@ -7,10 +7,11 @@
 
 ### Mobile
 
-#### Deferred from mobile implementation phases
+#### Open items from the mobile-layout plan (plan now closed)
 
-These were carved out of the mobile phases (see `docs/mobile-layout.md`) so Phase 7 can
-proceed; they all hinge on the same unfinished real-device gesture work.
+The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
+
+*Blocked on the real-device gesture work (all hinge on the same spike):*
 
 - **[Spike — Phase 1]** Real-device gesture spike. On real iOS + Android, verify tap/hold
   node gestures with node-moving disabled: tap, hold-to-delete vs hold-drag-to-link
@@ -23,6 +24,19 @@ proceed; they all hinge on the same unfinished real-device gesture work.
   collective attack, Clear-selection / Rename / Delete actions, and tapping a collective
   attack to inspect its sources. Needs the gesture spike, a *collective attacks* mockup, and
   Decision #5 (tap-to-select vs a dedicated creation mode).
+
+*Phase 7 (hardening) follow-ups:*
+
+- **[Content]** Tutorial-step wording pass for mobile: audit each tutorial's steps against the
+  settled mobile gestures / primary-action table and update copy (e.g. "double-tap to add",
+  per-module tap actions). Scope unclear — needs a decision on which tutorials change.
+- **[Perf]** Memory/perf profiling with **many evaluation configs** open (real device/profiler;
+  emulated e2e can't prove it). Many-*documents* is already covered by `e2e/stress.mobile.spec.ts`.
+- **[CI]** First-run validation of the new `Test` workflow: open a PR so it actually executes on
+  Ubuntu — this is the first real **WebKit / Mobile Safari** coverage (they can't run on the Arch
+  dev box) and the first time the workflow itself runs.
+- **[Test]** e2e asserts evaluation *sheets open*, not backend-computed **results** (TweetyProject
+  servers aren't up in e2e). Add result-level coverage if/when a backend is available in CI.
 
 #### Home and document management
 

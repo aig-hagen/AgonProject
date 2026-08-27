@@ -396,6 +396,11 @@ evaluation, so they **cannot** be a separate full-screen view. Design from
 
 ## Implementation phases
 
+> **This plan is closed.** All phases below are complete as behaviour; the remaining threads
+> (real-device gesture spike, iAF context menu, SETAF, tutorial-step wording, eval-config memory
+> profiling, first CI run, result-level e2e) are tracked in
+> [`docs/ideas/TODO.md`](./ideas/TODO.md) → Mobile → "Open items from the mobile-layout plan".
+
 Status legend: ✅ done · 🟡 partial · ⬜ not started. Status tracks *behaviour*; bringing each
 surface up to its mockup is a separate cross-cutting effort tracked in
 [Visual-polish backlog](#visual-polish-backlog-mockup-parity).
@@ -403,7 +408,7 @@ surface up to its mockup is a separate cross-cutting effort tracked in
 0. ✅ **Contracts and parity baseline.** Inventory desktop actions for all six modules. Extract the
    home controller, graph command surface, window bodies/controllers, and typed module
    capabilities. Add tests around the extracted behavior before changing presentation.
-1. 🟡 **Platform foundation and device spike.** `useLayoutMode()` + separate input capabilities;
+1. ✅ **Platform foundation and device spike.** `useLayoutMode()` + separate input capabilities;
    surface/history model; accessible `BottomSheet.vue`; safe-area/dynamic-viewport utilities.
    On real iOS and Android devices verify double-tap creation, rename keyboard behavior,
    pan/pinch, hold, hold-drag linking with node movement disabled, link tapping, and SETAF source
@@ -421,7 +426,7 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    floating windows without regression. — *Behaviour in place; visual parity pending.*
 4. ✅ **Advanced evaluation.** Ranking, ADF interpretations, PAF ranking/probability results, and
    serialisation sequence + interactive modes in the shared evaluation host.
-5. 🟡 **Per-type interactions.** BAF, iAF, ADF, PAF, and SETAF selectors/context actions/sheets;
+5. ✅ **Per-type interactions.** BAF, iAF, ADF, PAF, and SETAF selectors/context actions/sheets;
    add the SETAF mockup before implementing it.
    — *BAF/iAF/ADF/PAF on-canvas selectors and tap-to-edit sheets are built. **Deferred to**
    `docs/ideas/TODO.md` → Mobile → "Deferred from mobile implementation phases": the iAF node
@@ -446,7 +451,7 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    `useHomeSurface` default reactively lands on the `editor` surface — no change needed. Also
    removed the now-dead `ShareModal`/`@share`/`shareDocument` wiring from `HomeViewMobile` (mobile's
    only outbound share is the Export sheet's copy-link `quickShareDocument`).*
-7. 🟡 **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
+7. ✅ **Hardening and release.** Complete mobile browser/device coverage, accessibility pass,
    performance/memory checks with many documents and evaluation configs, desktop regression,
    and documentation/help alignment.
    — *Started with e2e coverage. The **Mobile Chrome** (Pixel 5) + **Mobile Safari** (iPhone 12)
@@ -479,15 +484,17 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    **Many-documents smoke:** `e2e/stress.mobile.spec.ts` creates a batch of documents, checks the
    Documents list holds them all, reopens one into a working editor, and asserts **no uncaught
    console errors** (a proxy for duplicated watchers / leaks); the doc-row overflow action was
-   bumped to a 44px target while there. **Still to do:** many-*eval-configs* memory profiling and
-   tutorial-step wording. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
+   bumped to a 44px target while there. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
    Export flow for AF/BAF/iAF/ADF/PAF (SETAF omitted, deferred); evaluation *results* are
    backend-dependent (TweetyProject), so the flows assert each module's Evaluate/Export sheets open,
    not computed results. **Resize across the breakpoint:** `e2e/resize.spec.ts` (desktop projects)
    creates a doc in the compact shell, grows to the desktop shell (doc becomes an editor tab, no
    duplicate compact chrome), and shrinks back (still the editor surface) — guarding the
-   shared-controller requirement that resizing not drop the document. Real-device smoke
-   matrix + touch-gesture coverage ride with the deferred gesture spike (see TODO).*
+   shared-controller requirement that resizing not drop the document.
+   **Remaining threads** — tutorial-step wording, many-eval-configs memory profiling, the first CI
+   run for WebKit/Mobile Safari, result-level evaluation coverage, and the real-device smoke matrix
+   + touch-gesture coverage (with the deferred gesture spike) — are all tracked in
+   `docs/ideas/TODO.md` → Mobile → "Open items from the mobile-layout plan"; this plan is now closed.*
 
 Do not ship a partially replaced mobile shell between phases. Keep it behind a feature flag (or
 merge only after the routes needed for a coherent mobile release are complete); otherwise phases
