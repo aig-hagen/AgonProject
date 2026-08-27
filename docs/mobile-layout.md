@@ -471,7 +471,10 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    alignment. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
    Export flow for AF/BAF/iAF/ADF/PAF (SETAF omitted, deferred); evaluation *results* are
    backend-dependent (TweetyProject), so the flows assert each module's Evaluate/Export sheets open,
-   not computed results. Real-device smoke
+   not computed results. **Resize across the breakpoint:** `e2e/resize.spec.ts` (desktop projects)
+   creates a doc in the compact shell, grows to the desktop shell (doc becomes an editor tab, no
+   duplicate compact chrome), and shrinks back (still the editor surface) — guarding the
+   shared-controller requirement that resizing not drop the document. Real-device smoke
    matrix + touch-gesture coverage ride with the deferred gesture spike (see TODO).*
 
 Do not ship a partially replaced mobile shell between phases. Keep it behind a feature flag (or
