@@ -431,6 +431,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
       :link-configs="linkConfig"
+      node-tap-action="Open its probability"
       :state="editorState"
       :node-weights="nodeWeights"
       :node-annotations="argumentAnnotations"

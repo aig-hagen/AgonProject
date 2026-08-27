@@ -321,6 +321,7 @@ const tutorialContextExtra = computed(() => ({
     :link-configs="linkConfig"
     :allow-link-creation="false"
     :allow-link-deletion="false"
+    node-tap-action="Open its acceptance condition"
     :state="editorState"
     :node-annotations="conditionAnnotations"
     :history-state="historyState"

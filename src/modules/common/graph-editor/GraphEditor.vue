@@ -153,6 +153,7 @@ const {
   documentId,
   documentName,
   typeBadge,
+  nodeTapAction,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
@@ -173,6 +174,9 @@ const {
   documentName?: string
   /** Compact chrome only: short module badge (e.g. `AF`) shown in the switcher chip. */
   typeBadge?: string
+  /** Full node-tap description for the Help sheet (see the primary-action table).
+      Defaults to `Rename it`. */
+  nodeTapAction?: string
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -1891,6 +1895,7 @@ defineExpose({
     <WindowHelp
       :link-names="linkNames"
       :allow-hyper-link-creation="allowHyperLinkCreation"
+      :node-tap-action="nodeTapAction"
       v-model:open="isHelpOpened"
     />
     <WindowSettings ref="settings-dialog" />

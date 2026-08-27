@@ -33,11 +33,12 @@ import { type Component, computed } from 'vue'
 const {
   linkNames,
   allowHyperLinkCreation = false,
-  nodeTapAction = 'Rename',
+  nodeTapAction = 'Rename it',
 } = defineProps<{
   linkNames: string[]
   allowHyperLinkCreation?: boolean
-  /** Primary node-tap action for this module (see the primary-action table). */
+  /** Full primary node-tap description for this module (see the primary-action
+      table), e.g. `Rename it` or `Open its acceptance condition`. */
   nodeTapAction?: string
 }>()
 
@@ -55,9 +56,9 @@ const rows = computed<GestureRow[]>(() => {
   const list: GestureRow[] = [
     { icon: PlusCircleIcon, title: 'Double-tap the canvas', desc: 'Add a new argument' },
     {
-      icon: nodeTapAction === 'Rename' ? PencilSquareIcon : CursorArrowRaysIcon,
+      icon: /rename/i.test(nodeTapAction) ? PencilSquareIcon : CursorArrowRaysIcon,
       title: 'Tap an argument',
-      desc: `${nodeTapAction} it`,
+      desc: nodeTapAction,
     },
     { icon: TrashIcon, title: 'Hold an argument', desc: 'Delete it', danger: true },
     {

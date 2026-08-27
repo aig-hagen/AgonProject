@@ -466,9 +466,12 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    an accessible name) and gates **44×44px touch targets** across the editor chrome + sheet close,
    catching three sub-44 controls now fixed (sheet/eval Close and Add → `size-11`, switcher chip
    `h-10→h-11`, Menu button pinned to `size-11`), plus a no-horizontal-overflow check on the editor
-   and an open sheet. **Still to do:** deeper a11y (reduced motion, 200% text zoom, status
-   announcements), performance/memory with many docs + eval configs, and help/tutorial wording
-   alignment. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
+   and an open sheet. **Help wording aligned:** the Help ("How to edit") sheet's tap row is now generated from
+   a per-module `nodeTapAction` phrase threaded module → `GraphEditor` → `WindowHelp` →
+   `HelpGestures` (ADF = "Open its acceptance condition", PAF = "Open its probability", others
+   default "Rename it"), instead of always claiming rename; `e2e/help.mobile.spec.ts` gates it.
+   **Still to do:** deeper a11y (reduced motion, 200% text zoom, status
+   announcements), performance/memory with many docs + eval configs, and tutorial-step wording. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
    Export flow for AF/BAF/iAF/ADF/PAF (SETAF omitted, deferred); evaluation *results* are
    backend-dependent (TweetyProject), so the flows assert each module's Evaluate/Export sheets open,
    not computed results. **Resize across the breakpoint:** `e2e/resize.spec.ts` (desktop projects)

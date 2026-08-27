@@ -26,6 +26,7 @@ import WindowShell from '@/modules/common/window/WindowShell.vue'
 const props = defineProps<{
   linkNames: string[]
   allowHyperLinkCreation?: boolean
+  nodeTapAction?: string
 }>()
 
 const open = defineModel('open', { required: true })
@@ -45,6 +46,7 @@ const { layoutMode } = useLayoutMode()
         <HelpGestures
           :link-names="props.linkNames"
           :allow-hyper-link-creation="props.allowHyperLinkCreation"
+          :node-tap-action="props.nodeTapAction"
         />
         <HelpLinks />
       </template>
