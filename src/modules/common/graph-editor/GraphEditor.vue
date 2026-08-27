@@ -1371,6 +1371,12 @@ const { layoutMode } = useLayoutMode()
 const isMenuOpen = ref(false)
 const isRelayoutOpen = ref(false)
 
+// The evaluation sheet is non-modal (canvas stays live), so a modal sheet opened over it
+// would otherwise leave it stranded behind the backdrop — dismiss it first.
+watch([isMenuOpen, isRelayoutOpen], ([menu, relayout]) => {
+  if (menu || relayout) evaluationOpen.value = false
+})
+
 // Spotlight targets for the mobile tutorial overlay: the compact-chrome equivalents of the
 // desktop anchor elements. Module-specific anchors fall through to tutorialRefs when present.
 const mobileMenuButtonRef = useTemplateRef<HTMLButtonElement>('mobileMenuButton')

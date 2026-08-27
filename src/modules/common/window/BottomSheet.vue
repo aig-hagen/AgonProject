@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { XMarkIcon } from '@heroicons/vue/24/solid'
-import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 
 import { useVisualViewport } from '@/modules/common/layout/useVisualViewport'
 
@@ -28,7 +28,7 @@ const {
   title,
   fullHeight = false,
   modal = true,
-  peekHeight,
+  snapPoints,
 } = defineProps<{
   title: string
   /** Start expanded to the full snap point instead of sizing to content. */
@@ -36,9 +36,10 @@ const {
   /** Modal (default): a backdrop blocks and dismisses. Non-modal: no backdrop, so
       the content behind the sheet stays visible and interactive. */
   modal?: boolean
-  /** When set, the sheet gets a low "peek" snap at this CSS height (e.g. '48dvh')
-      as its default, draggable up to full — for a docked, non-modal sheet. */
-  peekHeight?: string
+  /** Ascending fractions of the viewport height (e.g. [0.45, 0.9]) the sheet snaps
+      between when the handle is dragged; a drag below the lowest one dismisses it.
+      Without it the sheet sizes to its content — for a docked, non-modal sheet. */
+  snapPoints?: number[]
 }>()
 
 const emit = defineEmits<{ close: [] }>()
@@ -48,32 +49,67 @@ const titleId = useId()
 
 const { keyboardInset } = useVisualViewport()
 
-// Snap points: content-driven, the low peek height, or full.
-type Snap = 'content' | 'peek' | 'full'
-function initialSnap(): Snap {
-  if (fullHeight) return 'full'
-  if (peekHeight !== undefined) return 'peek'
-  return 'content'
+// Detent mode: when snapPoints are given the sheet has fixed heights it snaps
+// between; otherwise it sizes to its content (or to full when fullHeight is set).
+const isDetent = computed(() => snapPoints !== undefined && snapPoints.length > 0)
+
+// Viewport height in px, for resolving snap-point fractions to concrete heights.
+const viewportHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 0)
+function updateViewportHeight() {
+  viewportHeight.value = window.innerHeight
 }
-const snap = ref<Snap>(initialSnap())
-const panelHeight = computed(() =>
-  snap.value === 'full'
-    ? 'var(--sheet-max-height)'
-    : snap.value === 'peek'
-      ? peekHeight
-      : undefined,
+
+// Which snap point is settled, and — while dragging — the live height the finger drives.
+const activeIndex = ref(0)
+const liveHeight = ref<number | null>(null)
+function detentPx(index: number): number {
+  const points = snapPoints ?? []
+  const clamped = Math.min(Math.max(index, 0), points.length - 1)
+  return (points[clamped] ?? 0) * viewportHeight.value
+}
+function nearestDetent(height: number): number {
+  const points = snapPoints ?? []
+  let best = 0
+  let bestDistance = Infinity
+  for (let i = 0; i < points.length; i++) {
+    const distance = Math.abs(detentPx(i) - height)
+    if (distance < bestDistance) {
+      bestDistance = distance
+      best = i
+    }
+  }
+  return best
+}
+
+const panelHeight = computed(() => {
+  if (isDetent.value) {
+    const height =
+      dragging.value && liveHeight.value !== null ? liveHeight.value : detentPx(activeIndex.value)
+    return `${Math.round(height)}px`
+  }
+  return fullHeight ? 'var(--sheet-max-height)' : undefined
+})
+
+const expanded = computed(() =>
+  isDetent.value ? activeIndex.value === (snapPoints?.length ?? 1) - 1 : fullHeight,
 )
-// Downward drag offset in px while a drag is in progress; 0 when settled.
+
+// Downward drag offset in px (below the lowest detent) while dragging; 0 when settled.
 const dragOffset = ref(0)
 const dragging = ref(false)
 
 // Beyond this downward drag on release, the sheet is dismissed.
 const CLOSE_THRESHOLD = 120
-// Dragging the handle up past this expands to the full snap point.
-const EXPAND_THRESHOLD = 60
+
+function resetToInitial() {
+  activeIndex.value = isDetent.value && fullHeight ? (snapPoints?.length ?? 1) - 1 : 0
+  liveHeight.value = null
+  dragOffset.value = 0
+}
 
 let restoreFocus: HTMLElement | null = null
 let dragStartY = 0
+let dragStartHeight = 0
 let pointerId: number | null = null
 
 const bottomInset = computed(() => `max(env(safe-area-inset-bottom), ${keyboardInset.value}px)`)
@@ -85,8 +121,7 @@ function close() {
 watch(open, async (isOpen, wasOpen) => {
   if (isOpen && !wasOpen) {
     restoreFocus = document.activeElement as HTMLElement | null
-    snap.value = initialSnap()
-    dragOffset.value = 0
+    resetToInitial()
     // A non-modal sheet must not steal focus from the content behind it.
     if (modal) {
       await nextTick()
@@ -143,27 +178,43 @@ function onHandlePointerDown(event: PointerEvent) {
   dragging.value = true
   dragStartY = event.clientY
   pointerId = event.pointerId
+  dragStartHeight = detentPx(activeIndex.value)
+  liveHeight.value = dragStartHeight
+  dragOffset.value = 0
   ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
 }
 
 function onHandlePointerMove(event: PointerEvent) {
   if (!dragging.value || event.pointerId !== pointerId) return
   const delta = event.clientY - dragStartY
-  dragOffset.value = Math.max(0, delta)
-  if (delta < -EXPAND_THRESHOLD) snap.value = 'full'
+  if (!isDetent.value) {
+    dragOffset.value = Math.max(0, delta)
+    return
+  }
+  // Height follows the finger between the lowest and highest detent; dragging below
+  // the lowest instead slides the whole sheet down (via dragOffset) toward dismissal.
+  const minHeight = detentPx(0)
+  const maxHeight = detentPx((snapPoints?.length ?? 1) - 1)
+  const target = dragStartHeight - delta
+  if (target >= minHeight) {
+    liveHeight.value = Math.min(target, maxHeight)
+    dragOffset.value = 0
+  } else {
+    liveHeight.value = minHeight
+    dragOffset.value = minHeight - target
+  }
 }
 
 function onHandlePointerUp(event: PointerEvent) {
   if (!dragging.value || event.pointerId !== pointerId) return
   dragging.value = false
   pointerId = null
-  // From full, a downward drag settles to the peek snap (never straight to closed)
-  // when the sheet has one; otherwise a far enough drag dismisses it.
-  if (snap.value === 'full' && peekHeight !== undefined) {
-    if (dragOffset.value > EXPAND_THRESHOLD) snap.value = 'peek'
-  } else if (dragOffset.value > CLOSE_THRESHOLD) {
+  if (dragOffset.value > CLOSE_THRESHOLD) {
     close()
+  } else if (isDetent.value && liveHeight.value !== null) {
+    activeIndex.value = nearestDetent(liveHeight.value)
   }
+  liveHeight.value = null
   dragOffset.value = 0
 }
 </script>
