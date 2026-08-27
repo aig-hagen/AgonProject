@@ -60,7 +60,9 @@
 % ---------------------------------------------------------------------------
 \definetitlestyle{editorialtitle}{
     width=\paperwidth, roundedcorners=0, linewidth=0pt, innersep=0pt,
-    titletotopverticalspace=0mm, titletoblockverticalspace=26mm
+    titletotopverticalspace=0mm,
+    % Vertical gap between the masthead and the first content row.
+    titletoblockverticalspace=6mm
 }{
     \begin{scope}
         \draw[draw=aigblue, fill=aigblue]
@@ -72,29 +74,34 @@
 }
 
 \makeatletter
+% Title font hooks (override in main.tex via \renewcommand).
+\newcommand{\agonTitleFont}{\sffamily\bfseries\scshape}
+\newcommand{\agonSubtitleFont}{\itshape}
 \settitle{%
     \hspace*{40mm}%
-    \begin{minipage}[c]{0.58\linewidth}
+    \begin{minipage}[c]{0.56\linewidth}
         \vspace{2.2em}
-        {\sffamily\bfseries\color{white}\fontsize{24}{28}\selectfont
+        {\sffamily\bfseries\color{aigyellow}\fontsize{24}{28}\selectfont
             \textls[150]{ARTIFICIAL INTELLIGENCE GROUP \textbullet\ UNIVERSITY OF HAGEN}\par}
-        \vspace{0.55em}
-        {\sffamily\bfseries\scshape\color{aigyellow}\fontsize{150}{150}\selectfont \@title\par}
+        \vspace{-0.50em}
+        {{\agonTitleFont\color{white}\fontsize{150}{150}\selectfont \@title\par}}
         \vspace{0.7em}
-        {\color{bluetint}\itshape\fontsize{40}{46}\selectfont \@subtitle\par}
+        {{\color{bluetint}\agonSubtitleFont\fontsize{40}{46}\selectfont \@subtitle\par}}
         \vspace{2.2em}
     \end{minipage}%
     \hfill
-    \begin{minipage}[c]{0.30\linewidth}
+    \begin{minipage}[c]{0.32\linewidth}
+        \raggedleft%
         % Powered-by lockup, flush right so its edge mirrors the title's left margin.
-        \makebox[\linewidth][r]{%
-            \raisebox{-0.42\height}{\includegraphics[height=2.2cm]{figures/tweety-logo.png}}\hspace{16pt}%
-            \begin{tabular}[c]{@{}l@{}}
-                {\sffamily\bfseries\color{aigyellow}\fontsize{20}{22}\selectfont\textls[150]{POWERED BY}}\\[3pt]
-                {\sffamily\bfseries\color{white}\fontsize{38}{42}\selectfont TweetyProject}\\[3pt]
-                {\color{bluetint}\fontsize{21}{25}\selectfont reasoning libraries \& solvers}
-            \end{tabular}%
-        }%
+    \makebox[\linewidth][r]{%
+        \raisebox{-0.42\height}{\includegraphics[height=3cm]{figures/tweety-logo.png}}\hspace{18pt}%
+        \begin{tabular}[c]{@{}l@{}}
+            {\sffamily\bfseries\color{white}\fontsize{25}{28}\selectfont\textls[150]{POWERED BY}}\\[3pt]
+            {\sffamily\bfseries\color{aigyellow}\fontsize{48}{52}\selectfont TweetyProject}\\[3pt]
+            {\color{bluetint}\fontsize{26}{30}\selectfont reasoning libraries \& solvers}
+        \end{tabular}%
+    }%
+        
     \end{minipage}%
     \hspace*{40mm}
 }
@@ -142,6 +149,9 @@
 \newcommand{\dsp}{\sffamily}
 \newcommand{\heading}[1]{{\sffamily\bfseries\color{ink}#1}}
 
+% Highlight for scannable stats (counts, quantities) — bold ochre.
+\newcommand{\stat}[1]{{\sffamily\bfseries\color{ochre}#1}}
+
 % Framed screenshot: thin border + soft drop shadow.
 \newcommand{\screenshot}[2][\linewidth]{%
     \tikz\node[inner sep=0pt, draw=rulegrey, line width=1.5pt,
@@ -162,7 +172,7 @@
     {\sffamily\bfseries\color{aigblue}\fontsize{33}{37}\selectfont #1\par}
     \vspace{0.5em}%
     \tikz\node[inner sep=0pt, draw=rulegrey, line width=1.5pt, fill=cream,
-        minimum width=\linewidth, minimum height=0.36\linewidth,
+        minimum width=0.9\linewidth, minimum height=0.458\linewidth,
         blur shadow={shadow blur steps=12, shadow xshift=0pt,
             shadow yshift=-7pt, shadow blur radius=12pt, shadow opacity=32}]
         {\sffamily\bfseries\color{muted}\fontsize{28}{32}\selectfont
@@ -189,8 +199,8 @@
 % One row of the supported-semantics list: group label + description, ruled.
 \newcommand{\semrow}[2]{%
     \par\vspace{0.12em}{\color{rulegrey}\rule{\linewidth}{1pt}}\par\vspace{0.12em}%
-    \noindent\begin{minipage}[t]{0.34\linewidth}%
+    \noindent\begin{minipage}[t]{0.29\linewidth}%
         {\sffamily\bfseries\color{ink}\fontsize{25}{30}\selectfont #1}%
-    \end{minipage}\hfill\begin{minipage}[t]{0.63\linewidth}%
+    \end{minipage}\hfill\begin{minipage}[t]{0.7\linewidth}%
         {\color{inksoft}\fontsize{25}{30}\selectfont #2}%
     \end{minipage}\par}
