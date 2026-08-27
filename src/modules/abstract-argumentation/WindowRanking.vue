@@ -38,8 +38,10 @@ import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWind
 import type { Input } from '@/modules/common/evaluation/types'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import { escapeTexText } from '@/modules/common/export/texEscape'
+import GroupedSelect from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
-import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
+import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -178,6 +180,8 @@ const copyTextTex = computed(() => {
   return undefined
 })
 
+const { addSuccessNotification } = useNotifications()
+
 function computeWeights() {
   const d = data.value
   return d === undefined
@@ -216,42 +220,41 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
   >
     <template #parameters>
       <ParameterField label="Semantics" min-width="10rem">
-        <select v-model="selectedSemantic" class="select select-sm w-full bg-base-200">
-          <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
-            {{ s.displayName }}
-          </option>
-        </select>
+        <GroupedSelect
+          v-model="selectedSemantic"
+          :groups="[{ key: 'ranking', displayName: '', options: KNOWN_RANKING_SEMANTICS }]"
+          full-width
+        />
       </ParameterField>
-      <template v-for="param in selectedSemantic.parameters ?? []" :key="param.key">
-        <div class="flex flex-col gap-0.5">
-          <HoverTooltip class="label text-xs w-fit"
-            >{{ param.label }}
-            <template #content>
-              <span class="text-xs">{{ param.description }}</span>
-            </template>
-          </HoverTooltip>
-          <input
-            v-if="param.type === 'number'"
-            type="number"
-            class="input input-xs w-20"
-            :min="param.min"
-            :max="param.max"
-            :step="param.step ?? 'any'"
-            v-model.number="args[param.key]"
-          />
-          <input
-            v-else-if="param.type === 'boolean'"
-            type="checkbox"
-            class="toggle toggle-xs"
-            v-model="args[param.key]"
-          />
-          <select v-else class="select select-xs w-fit bg-base-200" v-model="args[param.key]">
-            <option v-for="o in param.options" :key="o.value" :value="o.value">
-              {{ o.label }}
-            </option>
-          </select>
-        </div>
-      </template>
+      <ParameterField
+        v-for="param in selectedSemantic.parameters ?? []"
+        :key="param.key"
+        :label="param.label"
+        :title="param.description"
+        max-width="10rem"
+      >
+        <input
+          v-if="param.type === 'number'"
+          type="number"
+          class="input input-sm w-full bg-base-200"
+          :min="param.min"
+          :max="param.max"
+          :step="param.step ?? 'any'"
+          v-model.number="args[param.key]"
+        />
+        <input
+          v-else-if="param.type === 'boolean'"
+          type="checkbox"
+          class="toggle toggle-sm"
+          v-model="args[param.key]"
+        />
+        <PickerSelect
+          v-else
+          :model-value="args[param.key] as string"
+          :options="param.options ?? []"
+          @update:model-value="args[param.key] = $event"
+        />
+      </ParameterField>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />
@@ -282,7 +285,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
           </div>
         </template>
         <div class="flex items-center justify-between gap-2">
-          <p class="label">
+          <p class="label min-w-0 truncate">
             {{ data.evaluationDurationInMs }}ms ·
             {{
               data.rankingType === 'lattice'
@@ -290,19 +293,21 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
                 : 'Node labels show ranking scores'
             }}
           </p>
-          <div v-if="copyText !== undefined" class="join ml-auto">
+          <div v-if="copyText !== undefined" class="join ml-auto shrink-0">
             <ButtonCopy
-              class="btn join-item btn-xs btn-ghost gap-1"
+              class="btn join-item btn-square btn-xs btn-ghost"
               :text="copyText"
+              icon-only
               title="Copy as plain text"
-            >
-              ranking
-            </ButtonCopy>
+              @copied="addSuccessNotification('Copied ranking to clipboard')"
+            />
             <ButtonCopy
               class="btn join-item btn-square btn-xs btn-ghost"
               :text="copyTextTex"
               icon-only
+              tex
               title="Copy as TeX"
+              @copied="addSuccessNotification('Copied ranking to clipboard (LaTeX)')"
             />
           </div>
         </div>

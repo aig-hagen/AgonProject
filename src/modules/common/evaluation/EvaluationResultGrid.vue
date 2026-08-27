@@ -21,6 +21,7 @@ import { computed, inject, nextTick, useTemplateRef, watchEffect } from 'vue'
 
 import { EVALUATION_STICKY_FOOTER_KEY } from '@/modules/common/evaluation/hostContext'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
+import { useNotifications } from '@/modules/common/notifications/useNotifications'
 
 // Mobile host pins the status/copy line to the sheet bottom; desktop leaves it in flow.
 const stickyFooter = inject(EVALUATION_STICKY_FOOTER_KEY, false)
@@ -32,8 +33,10 @@ const props = withDefaults(
     emptyMessage?: string
     selectionHint?: string
     evaluationDurationInMs?: number
+    /** Plural noun for the copy notification, e.g. "extensions". */
+    resultNoun?: string
   }>(),
-  { emptyMessage: 'No results.' },
+  { emptyMessage: 'No results.', resultNoun: 'results' },
 )
 
 const statusLine = computed(() => {
@@ -45,6 +48,13 @@ const statusLine = computed(() => {
 
 const copyText = computed(() => props.items.map((item) => item.label).join(', '))
 const copyTextTex = computed(() => props.items.map((item) => item.texLabel).join(', '))
+
+const { addSuccessNotification } = useNotifications()
+
+function notifyCopied(format: 'plain' | 'tex') {
+  const suffix = format === 'tex' ? ' (LaTeX)' : ''
+  addSuccessNotification(`Copied ${props.resultNoun} to clipboard${suffix}`)
+}
 
 const containerRef = useTemplateRef('container')
 const itemRefs = useTemplateRef('item-refs')
@@ -96,20 +106,22 @@ watchEffect(async () => {
       'sticky bottom-0 z-10 -mx-3 mt-auto border-t border-base-200 bg-base-100 px-3 py-1.5'
     "
   >
-    <p v-if="statusLine" class="label">{{ statusLine }}</p>
-    <div v-if="props.items.length > 0" class="join ml-auto">
+    <p v-if="statusLine" class="label min-w-0 truncate">{{ statusLine }}</p>
+    <div v-if="props.items.length > 0" class="join ml-auto shrink-0">
       <ButtonCopy
-        class="btn join-item btn-xs btn-ghost gap-1"
+        class="btn join-item btn-square btn-xs btn-ghost"
         :text="copyText"
+        icon-only
         title="Copy as plain text"
-      >
-        results
-      </ButtonCopy>
+        @copied="notifyCopied('plain')"
+      />
       <ButtonCopy
         class="btn join-item btn-square btn-xs btn-ghost"
         :text="copyTextTex"
         icon-only
+        tex
         title="Copy as TeX"
+        @copied="notifyCopied('tex')"
       />
     </div>
   </div>

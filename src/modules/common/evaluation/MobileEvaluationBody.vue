@@ -91,14 +91,13 @@ onUnmounted(() => {
 <template>
   <div class="flex-1 min-h-0 px-3 pb-3 pt-1 flex flex-col gap-2.5 text-xs">
     <!-- Selector row + glossary: folded away at the compact detent (the header pill
-         already names the active config); shown at standard / full. -->
-    <div
-      v-show="showParams"
-      class="rounded-field bg-base-200/60 border border-base-300 p-2.5 flex flex-col gap-2"
-    >
-      <div class="flex flex-wrap gap-3">
-        <slot name="parameters" />
-      </div>
+         already names the active config); shown at standard / full. The glossary
+         renders its own themed card (TermDefinitionBlock), so it sits outside the
+         bare selector row. -->
+    <div v-show="showParams" class="flex flex-wrap gap-3">
+      <slot name="parameters" />
+    </div>
+    <div v-show="showParams">
       <slot name="parameters-footer" />
     </div>
 

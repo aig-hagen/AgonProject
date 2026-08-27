@@ -321,7 +321,7 @@ function download(config: ExportConfig<DocumentT>) {
         <code class="flex-1 min-w-0 truncate rounded bg-base-200 px-2 py-1.5 text-[0.7rem]">{{
           packageLine
         }}</code>
-        <ButtonCopy class="btn btn-xs btn-ghost btn-square" :text="packageLine" icon-only />
+        <ButtonCopy class="btn btn-xs btn-ghost btn-square" :text="packageLine" icon-only tex />
       </div>
 
       <pre

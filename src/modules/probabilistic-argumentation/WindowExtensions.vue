@@ -26,6 +26,7 @@ import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWind
 import type { Input } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -147,10 +148,13 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
         <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
-        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
-          <option value="credulous">Credulous</option>
-          <option value="skeptical">Skeptical</option>
-        </select>
+        <PickerSelect
+          v-model="selectedMode"
+          :options="[
+            { value: 'credulous', label: 'Credulous' },
+            { value: 'skeptical', label: 'Skeptical' },
+          ]"
+        />
       </ParameterField>
       <ParameterField label="Inference" min-width="100%" max-width="100%">
         <div class="flex items-center gap-1.5 text-sm h-8">

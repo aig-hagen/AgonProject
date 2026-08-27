@@ -641,14 +641,20 @@ Mockups (canvas page *Eval sheet — snap detents (proposal)*):
 - [x] Standard detent layout (selector row + glossary reveal + results + copy footer). —
       *selector row (existing `#parameters` slot) + glossary (`#parameters-footer`) shown at
       standard/full, hidden at compact; results + copy footer at every detent.*
-- [ ] Tap-to-open Semantics/Mode pickers; glossary ⓘ reveal. — *selectors are still the
-      desktop `<select>`s and glossary is shown inline (not yet behind a ⓘ toggle); the
-      detent gating is in place, the picker restyle + reveal toggle remain.* Open work:
-    - Replace the `#parameters` `<select>`s with tap-to-open pickers (~44px touch rows):
-      a wide **Semantics** + a narrow **Mode**. Lives in the module windows' `#parameters`
-      slot, so it needs a shared mobile picker component the modules opt into.
-    - Move the glossary (`#parameters-footer` / `TermDefinitionBlock`) behind a ⓘ toggle
-      next to Semantics — inline reveal card + reference link, wired to `glossary.ts`.
+- [x] Tap-to-open Semantics/Mode pickers; glossary restyle. — *done. The compact shell
+      renders `.seg`-style tap-to-open pickers (~44px touch rows) for every `#parameters`
+      control; desktop keeps its native `<select>`s / `select-sm` GroupedSelect untouched.*
+    - `GroupedSelect` (the Semantics picker) is now compact-aware: on `isCompact` its
+      trigger becomes a 44px themed field with a chevron and its option rows grow to
+      touch size. Desktop path is unchanged (gated on `useLayoutMode().isCompact`).
+    - New shared `PickerSelect.vue` replaces the flat `<select>`s (Mode / Support / Type /
+      meta-reasoner params): desktop = the *same* native `<select>` (no regression),
+      compact = the shared `.seg` list (reuses `GroupedSelect` with one unnamed group).
+      Wired into AF/BAF/PAF/iAF/ADF/SETAF windows; Ranking's Semantics moved to `GroupedSelect`.
+    - **Glossary decision changed:** the ⓘ reveal toggle was dropped — the definition stays
+      **always visible**. `TermDefinitionBlock` is compact-aware and now renders a themed
+      card (title + reference badge, theme tokens) on mobile; `MobileEvaluationBody` lifts it
+      out of the selector row so it reads as its own card per the mockup.
 - [ ] Full detent two-pane compare (switchable top owns highlight, one-off view-only bottom).
       Open work:
     - At `detent === 'full'`, `MobileEvaluationBody` (or the host) renders a second, one-off

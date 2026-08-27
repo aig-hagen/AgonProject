@@ -28,6 +28,7 @@ import type { Input } from '@/modules/common/evaluation/types'
 import { escapeTexText } from '@/modules/common/export/texEscape'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -240,11 +241,14 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
         <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
-        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
-          <option value="enumerate">Enumerate</option>
-          <option value="credulous">Credulous</option>
-          <option value="skeptical">Skeptical</option>
-        </select>
+        <PickerSelect
+          v-model="selectedMode"
+          :options="[
+            { value: 'enumerate', label: 'Enumerate' },
+            { value: 'credulous', label: 'Credulous' },
+            { value: 'skeptical', label: 'Skeptical' },
+          ]"
+        />
       </ParameterField>
     </template>
     <template #parameters-footer>
@@ -254,6 +258,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
       <template v-if="formattedData !== undefined">
         <EvaluationResultGrid
           v-model:selected="selectedKey"
+          result-noun="interpretations"
           :items="resultItems"
           :empty-message="emptyMessage"
           :selection-hint="selectionHint"

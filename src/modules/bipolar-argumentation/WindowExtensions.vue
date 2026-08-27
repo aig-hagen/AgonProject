@@ -36,6 +36,7 @@ import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -161,21 +162,27 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
   >
     <template #parameters>
       <ParameterField label="Support" max-width="10rem">
-        <select v-model="selectedSupportType" class="select select-sm w-full bg-base-200">
-          <option value="coalition">Coalition</option>
-          <option value="ded">Deductive</option>
-          <option value="nec">Necessary</option>
-        </select>
+        <PickerSelect
+          v-model="selectedSupportType"
+          :options="[
+            { value: 'coalition', label: 'Coalition' },
+            { value: 'ded', label: 'Deductive' },
+            { value: 'nec', label: 'Necessary' },
+          ]"
+        />
       </ParameterField>
       <ParameterField label="Semantics" min-width="10rem">
         <GroupedSelect v-model="selectedSemantics" :groups="semanticsSelectGroups" full-width />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
-        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
-          <option value="enumerate">Enumerate</option>
-          <option value="credulous">Credulous</option>
-          <option value="skeptical">Skeptical</option>
-        </select>
+        <PickerSelect
+          v-model="selectedMode"
+          :options="[
+            { value: 'enumerate', label: 'Enumerate' },
+            { value: 'credulous', label: 'Credulous' },
+            { value: 'skeptical', label: 'Skeptical' },
+          ]"
+        />
       </ParameterField>
     </template>
     <template #parameters-footer>
@@ -186,6 +193,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
       <template v-if="dataExtensionsFormatedAndSorted !== undefined">
         <EvaluationResultGrid
           v-model:selected="selectedExtension"
+          result-noun="extensions"
           :items="resultItems"
           :empty-message="emptyMessage"
           :selection-hint="selectionHint"
