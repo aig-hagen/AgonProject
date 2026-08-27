@@ -511,6 +511,26 @@ Done so far:
 - **Export sheet** — picker rebuilt as bordered card rows (icon tile + bold name + subtitle,
   trailing chevron or download glyph) with `IMAGE` / `CODE & DATA` sections. Added optional
   `ExportConfig.description` for the subtitles.
+- **Relayout sheet** — grouped **Directed** / **Other** sections with icon-badge tiles instead of
+  a flat outline-button grid.
+- **Menu sheet** — icons tinted primary, section captions given `tracking-wide`, matching the
+  *Menu* artboard.
+- **Help sheet** — rewrote `HelpGestures` from the `<dt>`-chip grid into the mockup's icon-badge
+  rows (colored badge + bold title + subtitle, delete row in red); compact title is *How to edit*,
+  gestures lead, resource links tuck below. Desktop `HelpControls` unchanged.
+- **Toasts / notifications** — `NotificationsDisplay` branches on placement: mobile (`center`)
+  renders the docked top-center dark **pill** (green check / red warning glyph), offset below the
+  editor top bar; desktop keeps its alert cards.
+- **Home** (*Home*) — Documents surface rebuilt: brand hero (name + tagline) persistent across
+  Documents/New, a `Documents | New` segmented control, document rows with a doc-glyph badge +
+  overflow bottom-sheet (rename / save / delete), sticky *New document* CTA. Per-doc type badges
+  and "edited …" timestamps stay dropped (no metadata for them yet).
+- **New / formalism picker** (*NewDoc*) — split `BlankDocumentCanvas` into desktop and mobile
+  variants (shared `ModuleCard` type in `moduleCard.ts`); the mobile variant is a compact accordion
+  of formalism cards (badge + name + description → examples chips + Create / Generate).
+- **Settings** (*Settings*) — content already at (indeed beyond) mockup parity — every control plus
+  the Tutorial-progress **Reset** the mockup omits. Kept as the `WindowSettings` `<dialog>` per the
+  implementation note above rather than reworked into a full-screen page.
 
 ### Evaluate UI: mobile-native rework (future)
 
@@ -534,17 +554,11 @@ purpose-built for mobile rather than adapted from the desktop card, should:
 
 ### Remaining surfaces needing a mockup-parity pass
 
-Each should be reconciled against its artboard the way the top/bottom bars, Evaluate chips, and
-Export picker were. Behaviour is largely in place; this is styling + layout.
+Each should be reconciled against its artboard the way the surfaces above were. Behaviour is
+largely in place; this is styling + layout.
 
-- **Menu** (*Menu*) — section grouping, row styling, iconography vs. the mockup.
-- **Settings** (*Settings*) — control styling and grouping.
-- **Relayout** (*Relayout*) — option cards / preview.
-- **Help** (*Help*) — gesture cheat-sheet layout.
-- **Home** (*Home* / *NewDoc*) — document list rows, type chips, new-document flow.
 - **Per-type editors** — *BafLink*, *IafEditor*, *AdfNode*, *PafProbabilities* on-canvas selectors
   and sheets: verify against artboards after the gesture spike lands.
 - **SETAF** (*collective attacks*) — still needs a mockup before implementation (Decision #5).
 - **Tutorials** (*Tutorial*) — mobile overlay + picker.
 - **Standalone views** — Generate, Glossary, Share-open, Third-party.
-- **Toasts / notifications** — the docked top-center pill shown across mockups.
