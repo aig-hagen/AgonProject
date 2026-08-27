@@ -88,9 +88,7 @@ export const SaveSchema = z
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(
-  argumentation: ProbabilisticArgumentation<PafArgumentData>,
-): string {
+export function saveAsString(argumentation: ProbabilisticArgumentation<PafArgumentData>): string {
   const argumentsSave = Object.create(null)
   for (const [id, data] of argumentation.arguments()) {
     argumentsSave[id] = {

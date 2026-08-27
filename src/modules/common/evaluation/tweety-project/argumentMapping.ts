@@ -18,9 +18,10 @@
  */
 import { IdMapping } from '@/modules/common/ids'
 
-export function buildArgumentIdMapping<K>(
-  argumentsIterable: Iterable<[K, unknown]>,
-): { numberOfArguments: number; idMapping: IdMapping<K, number> } {
+export function buildArgumentIdMapping<K>(argumentsIterable: Iterable<[K, unknown]>): {
+  numberOfArguments: number
+  idMapping: IdMapping<K, number>
+} {
   let numberOfArguments = 0
   const idMapping = new IdMapping<K, number>()
   for (const [argumentId] of argumentsIterable) {

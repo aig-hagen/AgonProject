@@ -31,10 +31,25 @@ import {
   type PositionSnapshot,
 } from '@aig-hagen/graph-component/lib'
 import {
+  AcademicCapIcon,
+  ArrowDownTrayIcon,
   ArrowLongRightIcon,
+  ArrowsPointingInIcon,
+  ArrowUpTrayIcon,
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+  Bars3Icon,
   BarsArrowUpIcon,
+  BookOpenIcon,
+  ChevronDownIcon,
+  Cog6ToothIcon,
+  DocumentPlusIcon,
   PhotoIcon,
+  PlayIcon,
+  QuestionMarkCircleIcon,
   QueueListIcon,
+  SparklesIcon,
+  Squares2X2Icon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
@@ -59,12 +74,15 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
+  GRAPH_EDITOR_LAYOUTS,
+  type GraphEditorCommands,
   type GraphEditorState,
   type Highlight,
   type HistoryState,
   type LinkConfigs,
   LinkType,
   type NodeId,
+  SHEET_REFIT_KEY,
 } from '@/modules/common/graph-editor/graphEditor'
 import {
   adjustNodeLabelFontSize,
@@ -87,18 +105,26 @@ import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
 import WindowHelp from '@/modules/common/help/WindowHelp.vue'
 import { IdGenerator, IdMapping } from '@/modules/common/ids'
-import { Layout } from '@/modules/common/main-menu/layouting'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
+import { Layout, layoutDatas } from '@/modules/common/main-menu/layouting'
 import MainMenu from '@/modules/common/main-menu/MainMenu.vue'
 import { EntryState, type GridVisibility } from '@/modules/common/main-menu/types'
 import { getNextName } from '@/modules/common/nextName'
+import SettingsContent from '@/modules/common/settings/SettingsContent.vue'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowSettings from '@/modules/common/settings/WindowSettings.vue'
-import { isShortcut, TOGGLE_GRID_SHORTCUT, TOGGLE_PHYSICS_SHORTCUT } from '@/modules/common/shortcuts'
+import {
+  isShortcut,
+  TOGGLE_GRID_SHORTCUT,
+  TOGGLE_PHYSICS_SHORTCUT,
+} from '@/modules/common/shortcuts'
 import { useTheme } from '@/modules/common/theme/useTheme'
 import TutorialOverlay from '@/modules/common/tutorial/TutorialOverlay.vue'
+import TutorialOverlayMobile from '@/modules/common/tutorial/TutorialOverlayMobile.vue'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 import WindowTutorials from '@/modules/common/tutorial/WindowTutorials.vue'
+import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 // The `GraphComponent` is implemented in away,
 // that each instance needs an ID
@@ -109,7 +135,26 @@ const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
 
-const { state, linkConfigs, historyState, nodeWeights, nodeOutlines, nodeAnnotations, graphStyle, allowLinkCreation = true, allowLinkDeletion = true, allowHyperLinkCreation = false, tutorials, defaultTutorialId, tutorialContextExtra, documentId } = defineProps<{
+const {
+  state,
+  linkConfigs,
+  historyState,
+  nodeWeights,
+  nodeOutlines,
+  nodeAnnotations,
+  graphStyle,
+  allowLinkCreation = true,
+  allowLinkDeletion = true,
+  allowHyperLinkCreation = false,
+  tutorials,
+  defaultTutorialId,
+  tutorialContextExtra,
+  tutorialRefs,
+  documentId,
+  documentName,
+  typeBadge,
+  nodeTapAction,
+} = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
@@ -125,6 +170,13 @@ const { state, linkConfigs, historyState, nodeWeights, nodeOutlines, nodeAnnotat
   tutorialContextExtra?: Partial<TutorialContext>
   tutorialRefs?: Record<string, HTMLElement | null>
   documentId: number
+  /** Compact chrome only: the open document's name, shown in the switcher chip. */
+  documentName?: string
+  /** Compact chrome only: short module badge (e.g. `AF`) shown in the switcher chip. */
+  typeBadge?: string
+  /** Full node-tap description for the Help sheet (see the primary-action table).
+      Defaults to `Rename it`. */
+  nodeTapAction?: string
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -133,14 +185,25 @@ if (db === undefined) {
 }
 
 const { isDark } = useTheme()
-const { graphStyle: graphStyleSetting, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints } = useSettings()
+const {
+  graphStyle: graphStyleSetting,
+  defaultShowGrid,
+  defaultGridType,
+  gridCellScale,
+  snapMode,
+  showHints,
+} = useSettings()
 const effectiveStyle = computed<GraphStyle>(() => {
   if (graphStyle !== undefined) return graphStyle
   switch (graphStyleSetting.value) {
-    case 'high-contrast': return GRAPH_STYLE_HIGH_CONTRAST
-    case 'minimal': return GRAPH_STYLE_MINIMAL
-    case 'library': return GRAPH_STYLE_LIBRARY
-    default: return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
+    case 'high-contrast':
+      return GRAPH_STYLE_HIGH_CONTRAST
+    case 'minimal':
+      return GRAPH_STYLE_MINIMAL
+    case 'library':
+      return GRAPH_STYLE_LIBRARY
+    default:
+      return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
   }
 })
 
@@ -219,6 +282,10 @@ watch(
 watch(isDark, () => {
   setGraph(state, false)
 })
+
+// Opened by the compact Evaluate button; owned by the module so its evaluation host
+// (rendered in the module's editor slot) and this button share one open state.
+const evaluationOpen = defineModel<boolean>('evaluationOpen', { default: false })
 
 const emit = defineEmits<{
   load: []
@@ -300,6 +367,7 @@ const emit = defineEmits<{
   redo: []
   save: []
   share: []
+  home: []
   'open-extension-window': []
   'open-ranking-window': []
   'open-serialisation-window': []
@@ -330,13 +398,25 @@ function applyGridVisibility(visibility: GridVisibility) {
   graphComponentRef.value?.setShowGrid(effective === 'on')
   graphComponentRef.value?.setAutoShowGrid(effective === 'auto')
 }
-watch(defaultShowGrid, (v) => { showGrid.value = v })
-watch(defaultGridType, (type) => { graphComponentRef.value?.setGridType(type) })
-watch(graphStyleSetting, () => { setGraph(state, false) })
-watch(physicsMode, () => { tutorialPhysicsToggleCount.value++ })
-watch(showGrid, () => { tutorialGridToggleCount.value++ })
+watch(defaultShowGrid, (v) => {
+  showGrid.value = v
+})
+watch(defaultGridType, (type) => {
+  graphComponentRef.value?.setGridType(type)
+})
+watch(graphStyleSetting, () => {
+  setGraph(state, false)
+})
+watch(physicsMode, () => {
+  tutorialPhysicsToggleCount.value++
+})
+watch(showGrid, () => {
+  tutorialGridToggleCount.value++
+})
 watch(showGrid, applyGridVisibility)
-watch(gridCellScale, (scale) => { graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * scale) })
+watch(gridCellScale, (scale) => {
+  graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * scale)
+})
 watch(snapMode, (enabled) => {
   graphComponentRef.value?.setSnapToGrid(enabled)
   applyGridVisibility(showGrid.value)
@@ -417,15 +497,16 @@ function onNodeDeleted(
   triggerSettle()
 }
 
-function onHyperLinkCreated(
-  link: { id: string; label?: string },
-  cause: EVENT_CAUSE,
-) {
+function onHyperLinkCreated(link: { id: string; label?: string }, cause: EVENT_CAUSE) {
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
   const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
   const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
   const publicTargetId = idMapping.getOrFail(internalTargetId)
-  emit('hyperLinkCreated', { sourceIds: publicSourceIds, targetId: publicTargetId, type: selectedLinkType.value })
+  emit('hyperLinkCreated', {
+    sourceIds: publicSourceIds,
+    targetId: publicTargetId,
+    type: selectedLinkType.value,
+  })
   triggerSettle()
   void nextTick(() => {
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
@@ -434,23 +515,18 @@ function onHyperLinkCreated(
   })
 }
 
-function onHyperLinkDeleted(
-  link: { id: string; label?: string },
-  cause: EVENT_CAUSE,
-) {
+function onHyperLinkDeleted(link: { id: string; label?: string }, cause: EVENT_CAUSE) {
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
   const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
-  if (!internalSourceIds.every((id) => idMapping.has(id)) || !idMapping.has(internalTargetId)) return
+  if (!internalSourceIds.every((id) => idMapping.has(id)) || !idMapping.has(internalTargetId))
+    return
   const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
   const publicTargetId = idMapping.getOrFail(internalTargetId)
   emit('hyperLinkDeleted', { sourceIds: publicSourceIds, targetId: publicTargetId })
   triggerSettle()
 }
 
-function openLinkTypeSwitch(
-  link: { id: string; label?: string },
-  event: PointerEvent,
-) {
+function openLinkTypeSwitch(link: { id: string; label?: string }, event: PointerEvent) {
   if (event.button !== 0) return
   arrowSwitcherTarget.value = {
     linkId: link.id,
@@ -583,10 +659,15 @@ function setupZoomAndDragObservers() {
     if (transform) {
       const m = /translate\(([^,]+),([^)]+)\)\s*scale\(([^)]+)\)/.exec(transform)
       if (m) {
-        const tx = parseFloat(m[1]!); const ty = parseFloat(m[2]!); const k = parseFloat(m[3]!)
+        const tx = parseFloat(m[1]!)
+        const ty = parseFloat(m[2]!)
+        const k = parseFloat(m[3]!)
         if (Math.abs(k - prevTransformScale) > 0.001) tutorialZoomCount.value++
-        else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5) tutorialPanCount.value++
-        prevTransformScale = k; prevTransformTx = tx; prevTransformTy = ty
+        else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5)
+          tutorialPanCount.value++
+        prevTransformScale = k
+        prevTransformTx = tx
+        prevTransformTy = ty
         void saveViewport({ k, x: tx, y: ty })
       }
     }
@@ -624,7 +705,11 @@ function setupZoomAndDragObservers() {
       liveNodePositions.value = updated
     }
   })
-  dragObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'], subtree: true })
+  dragObserver.observe(zoomGroup, {
+    attributes: true,
+    attributeFilter: ['transform'],
+    subtree: true,
+  })
 }
 
 onMounted(() => {
@@ -679,7 +764,10 @@ onMounted(() => {
   if (graphHost && svgCanvas) {
     let lastTap: { time: number; x: number; y: number } | null = null
     const handleDoubleTap = (event: TouchEvent) => {
-      if (event.touches.length !== 1) { lastTap = null; return }
+      if (event.touches.length !== 1) {
+        lastTap = null
+        return
+      }
       const touch = event.changedTouches[0]!
       const now = Date.now()
       if (
@@ -688,35 +776,40 @@ onMounted(() => {
         Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
       ) {
         // Query fresh — setGraph recreates the SVG element so a captured reference goes stale.
-        const currentSvgCanvas = containerRef.value?.querySelector('.graph-controller__graph-canvas')
-        currentSvgCanvas?.dispatchEvent(new MouseEvent('dblclick', {
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          bubbles: true,
-          cancelable: true,
-        }))
+        const currentSvgCanvas = containerRef.value?.querySelector(
+          '.graph-controller__graph-canvas',
+        )
+        currentSvgCanvas?.dispatchEvent(
+          new MouseEvent('dblclick', {
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            bubbles: true,
+            cancelable: true,
+          }),
+        )
         lastTap = null
       } else {
         lastTap = { time: now, x: touch.clientX, y: touch.clientY }
       }
     }
     graphHost.addEventListener('touchstart', handleDoubleTap, { capture: true })
-    doubleTapCleanup = () => graphHost.removeEventListener('touchstart', handleDoubleTap, { capture: true })
+    doubleTapCleanup = () =>
+      graphHost.removeEventListener('touchstart', handleDoubleTap, { capture: true })
 
     const handleMiddleClick = (event: MouseEvent) => {
       if (event.button !== 1) return
-      if ((event.target as Element)?.closest('.graph-controller__node-container, .graph-controller__link')) return
+      if (
+        (event.target as Element)?.closest(
+          '.graph-controller__node-container, .graph-controller__link',
+        )
+      )
+        return
       event.preventDefault()
       if (state.nodes.length === 0) return
       if (graphComponentRef.value === null) return
 
-      const margin = ARGUMENT_RADIUS_IN_PX * 2
       tutorialCenterCount.value++
-      graphComponentRef.value.centerView(
-        { top: margin, right: margin, bottom: margin, left: margin },
-        undefined,
-        1,
-      )
+      fitToView()
     }
     // Attach to graphHost (not svgCanvas) — setGraph recreates the SVG element so a
     // listener on svgCanvas would be on a detached element after the first redraw.
@@ -724,7 +817,9 @@ onMounted(() => {
     middleClickCleanup = () => graphHost.removeEventListener('auxclick', handleMiddleClick)
   }
 
-  const ctrlSnapGraphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+  const ctrlSnapGraphHost = containerRef.value?.querySelector<HTMLElement>(
+    '.graph-controller__graph-host',
+  )
   if (ctrlSnapGraphHost) {
     const nodeIdPrefix = `${graphComponentId}-node-`
     let draggingNodeId: number | null = null
@@ -768,7 +863,12 @@ onMounted(() => {
       }
       if (!isVisible.value) return
       const target = event.target as Element
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.getAttribute('contenteditable') === 'true') return
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.getAttribute('contenteditable') === 'true'
+      )
+        return
       if (isShortcut(TOGGLE_GRID_SHORTCUT, event)) {
         event.preventDefault()
         toggleGrid()
@@ -799,14 +899,22 @@ onMounted(() => {
   // The graph-component library only commits a node/link label edit on Enter; clicking
   // away discards it. We force a commit by simulating the same Enter keyup the library
   // listens for before the click can blur the input out from under it.
-  const renameCommitGraphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
+  const renameCommitGraphHost = containerRef.value?.querySelector<HTMLElement>(
+    '.graph-controller__graph-host',
+  )
   if (renameCommitGraphHost) {
     const handleRenameCommitPointerDown = (event: PointerEvent) => {
       const activeElement = document.activeElement
       if (!(activeElement instanceof HTMLInputElement)) return
-      if (activeElement.id !== 'node-label-input-field' && activeElement.id !== 'link-label-input-field') return
+      if (
+        activeElement.id !== 'node-label-input-field' &&
+        activeElement.id !== 'link-label-input-field'
+      )
+        return
       if (activeElement.contains(event.target as Node)) return
-      activeElement.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }))
+      activeElement.dispatchEvent(
+        new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }),
+      )
     }
     renameCommitGraphHost.addEventListener('pointerdown', handleRenameCommitPointerDown, true)
 
@@ -848,12 +956,16 @@ function toArrowType(linkType: LinkType): ArrowType {
 function applyHyperLinkSourceColor(hyperLinkId: string, color: string): void {
   const el = graphComponentRef.value?.$el as Element | undefined
   if (!el) return
-  const targetPath = el.querySelector(`#${CSS.escape(`${graphComponentId}-hyperlink-${hyperLinkId}`)}`)
+  const targetPath = el.querySelector(
+    `#${CSS.escape(`${graphComponentId}-hyperlink-${hyperLinkId}`)}`,
+  )
   const container = targetPath?.closest('.graph-controller__hyperlink-container')
   if (!container) return
-  container.querySelectorAll<SVGPathElement>('.graph-controller__hyperlink-source-path').forEach((path) => {
-    path.style.stroke = color
-  })
+  container
+    .querySelectorAll<SVGPathElement>('.graph-controller__hyperlink-source-path')
+    .forEach((path) => {
+      path.style.stroke = color
+    })
 }
 
 function applyLinkDash(linkId: string, dashArray?: string): void {
@@ -875,16 +987,25 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   const preservedPositions = new Map<number, { x: number; y: number }>()
   if (physicsMode.value !== 'off') {
     for (const internalId of idMapping.inputIds()) {
-      preservedPositions.set(idMapping.getOrFail(internalId), graphComponent.getNodePosition(internalId))
+      preservedPositions.set(
+        idMapping.getOrFail(internalId),
+        graphComponent.getNodePosition(internalId),
+      )
     }
   }
   // Capture the D3 zoom state before setGraph destroys and recreates the SVG canvas.
   // setGraph resets D3 zoom to identity; restoring it keeps the graph visually stable.
   // Only for in-place redraws (center=false) — initial renders should use the library defaults.
-  const savedZoom = center ? null : (() => {
-    const z = (containerRef.value?.querySelector('.graph-controller__graph-canvas') as (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null)?.__zoom
-    return z != null ? { k: z.k, x: z.x, y: z.y } : null
-  })()
+  const savedZoom = center
+    ? null
+    : (() => {
+        const z = (
+          containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+            | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
+            | null
+        )?.__zoom
+        return z != null ? { k: z.k, x: z.x, y: z.y } : null
+      })()
   idGenerator = new IdGenerator()
   idMapping = new IdMapping()
   liveNodePositions.value = new Map()
@@ -943,7 +1064,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
       const internalTargetId = idMapping.getOrFailReverse(link.targetId)
       applyLinkDash(`${internalSourceId}-${internalTargetId}`, linkConfigs[link.type]?.dashArray)
     }
-    for (const hyperLink of (state.hyperLinks ?? [])) {
+    for (const hyperLink of state.hyperLinks ?? []) {
       const internalSourceIds = hyperLink.sourceIds
         .map((id) => idMapping.getOrFailReverse(id))
         .sort((a, b) => a - b)
@@ -954,13 +1075,20 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     }
     for (const importedNode of importedNodes) {
       const node = state.nodes.find((n) => n.id === importedNode.idImported)
-      if (node?.label) adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, importedNode.id, node.label)
+      if (node?.label)
+        adjustNodeLabelFontSize(
+          graphComponentRef.value?.$el as Element | undefined,
+          graphComponentId,
+          importedNode.id,
+          node.label,
+        )
     }
     // setGraph recreates the SVG canvas and resets D3 zoom to identity. Restore the
     // captured zoom so node visual positions don't jump after an in-place redraw.
     if (savedZoom !== null) {
       const newSvgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-        (SVGElement & { __zoom?: { k: number; x: number; y: number } }) | null
+        | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
+        | null
       const newG = newSvgEl?.querySelector(':scope > g') as SVGGElement | null
       if (newSvgEl && newG && newSvgEl.__zoom != null) {
         const newZoom = Object.create(Object.getPrototypeOf(newSvgEl.__zoom))
@@ -968,7 +1096,10 @@ function setGraph(state: GraphEditorState, center: boolean): void {
         newZoom.x = savedZoom.x
         newZoom.y = savedZoom.y
         newSvgEl.__zoom = newZoom
-        newG.setAttribute('transform', `translate(${savedZoom.x},${savedZoom.y}) scale(${savedZoom.k})`)
+        newG.setAttribute(
+          'transform',
+          `translate(${savedZoom.x},${savedZoom.y}) scale(${savedZoom.k})`,
+        )
       }
     }
     // setGraph rebuilds the graph DOM, potentially replacing the zoom group element that
@@ -985,17 +1116,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   })
 
   if (center) {
-    const margin = ARGUMENT_RADIUS_IN_PX * 2
-    graphComponent.centerView(
-      {
-        top: margin,
-        right: margin,
-        bottom: margin,
-        left: margin,
-      },
-      undefined,
-      1,
-    )
+    fitToView()
   }
 }
 
@@ -1027,7 +1148,14 @@ function onLabelEdited(
   }
   const publicId = idMapping.getOrFail(privateId)
   emit('nodeLabelEdited', { id: publicId, label: label })
-  nextTick(() => adjustNodeLabelFontSize(graphComponentRef.value?.$el as Element | undefined, graphComponentId, privateId, label))
+  nextTick(() =>
+    adjustNodeLabelFontSize(
+      graphComponentRef.value?.$el as Element | undefined,
+      graphComponentId,
+      privateId,
+      label,
+    ),
+  )
 }
 
 const arrowSwitcherTarget = shallowRef<
@@ -1060,7 +1188,10 @@ function applyNodeWeights(weights: Map<NodeId, number> | undefined) {
   previousBadgeInternalIds = activeInternalIds
 }
 
-watch(() => nodeWeights, (weights) => applyNodeWeights(weights))
+watch(
+  () => nodeWeights,
+  (weights) => applyNodeWeights(weights),
+)
 
 let previousNodeOutlines = new Map<NodeId, NodeOutline>()
 
@@ -1086,7 +1217,10 @@ function applyNodeOutlineUpdates(outlines: Map<NodeId, NodeOutline> | undefined)
   previousNodeOutlines = next
 }
 
-watch(() => nodeOutlines, (outlines) => applyNodeOutlineUpdates(outlines))
+watch(
+  () => nodeOutlines,
+  (outlines) => applyNodeOutlineUpdates(outlines),
+)
 
 let previousAnnotationContent = new Map<NodeId, string>()
 
@@ -1117,9 +1251,15 @@ function applyAnnotationContentUpdates(
   previousAnnotationContent = nextContent
 }
 
-watch(() => nodeAnnotations, (annotations) => applyAnnotationContentUpdates(annotations))
+watch(
+  () => nodeAnnotations,
+  (annotations) => applyAnnotationContentUpdates(annotations),
+)
 
-function onAnnotationClicked(annotation: { anchorId: number; content: string }, event: PointerEvent) {
+function onAnnotationClicked(
+  annotation: { anchorId: number; content: string },
+  event: PointerEvent,
+) {
   if (!idMapping.has(annotation.anchorId)) return
   const publicId = idMapping.getOrFail(annotation.anchorId)
   emit('annotationClicked', { id: publicId, content: annotation.content }, event)
@@ -1149,7 +1289,9 @@ const liveNodePositions = shallowRef<Map<NodeId, { x: number; y: number }>>(new 
 // the dragObserver continues to populate liveNodePositions normally.
 watch(
   () => state.stateId,
-  () => { liveNodePositions.value = new Map() },
+  () => {
+    liveNodePositions.value = new Map()
+  },
 )
 
 const overlayNodes = computed(() => {
@@ -1169,6 +1311,36 @@ onUnmounted(() => {
   ctrlSnapCleanup?.()
   renameCommitCleanup?.()
 })
+
+function fitToView(extraBottomInset = 0) {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) return
+  // Centering math divides by the container size; a 0×0 box (e.g. while hidden in a
+  // display:none surface) yields NaN transforms, so skip until the container is laid out.
+  const container = containerRef.value
+  if (!container || container.clientWidth === 0 || container.clientHeight === 0) return
+  const margin = ARGUMENT_RADIUS_IN_PX * 2
+  // The compact top bar floats over the full-height canvas, so inset the fit by its
+  // occupied height (offsetHeight = the band it covers) to keep the graph clear of it.
+  const topInset = layoutMode.value === 'compact' ? (mobileTopBarRef.value?.offsetHeight ?? 0) : 0
+  // A docked sheet covers the bottom band; the extra inset there fits the graph into
+  // the visible band above it instead of centring it under the sheet.
+  graphComponent.centerView(
+    { top: margin + topInset, right: margin, bottom: margin + extraBottomInset, left: margin },
+    undefined,
+    1,
+  )
+}
+
+// A docked bottom sheet asks the graph to re-fit above it. `coveredFraction` is the
+// sheet height as a fraction of the container; null re-fits using the full canvas.
+function refitAboveSheet(coveredFraction: number | null) {
+  const container = containerRef.value
+  if (!container) return
+  const inset = coveredFraction === null ? 0 : Math.round(container.clientHeight * coveredFraction)
+  fitToView(inset)
+}
+provide(SHEET_REFIT_KEY, refitAboveSheet)
 
 function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
@@ -1202,12 +1374,7 @@ function doLayout(layout: Layout) {
   if (wasPhysicsOn) {
     triggerSettle()
   } else {
-    const margin = ARGUMENT_RADIUS_IN_PX * 2
-    graphComponentRef.value.centerView(
-      { top: margin, right: margin, bottom: margin, left: margin },
-      undefined,
-      1,
-    )
+    fitToView()
   }
 }
 
@@ -1217,6 +1384,99 @@ const exportButtonRef = useTemplateRef('exportButton')
 const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
 
 const isTouchDevice = useMediaQuery('(pointer: coarse)')
+
+// --- Compact (mobile) chrome ---
+// In the compact layout the desktop left-edge cluster and main menu are hidden and
+// replaced by a top bar + bottom command bar rendered below, plus Menu/Relayout sheets.
+const { layoutMode } = useLayoutMode()
+const isMenuOpen = ref(false)
+const isRelayoutOpen = ref(false)
+const isSettingsOpen = ref(false)
+
+// The evaluation sheet is non-modal (canvas stays live), so a modal sheet opened over it
+// would otherwise leave it stranded behind the backdrop — dismiss it first.
+watch([isMenuOpen, isRelayoutOpen], ([menu, relayout]) => {
+  if (menu || relayout) evaluationOpen.value = false
+})
+
+// Spotlight targets for the mobile tutorial overlay: the compact-chrome equivalents of the
+// desktop anchor elements. Module-specific anchors fall through to tutorialRefs when present.
+const mobileTopBarRef = useTemplateRef<HTMLElement>('mobileTopBar')
+const mobileMenuButtonRef = useTemplateRef<HTMLButtonElement>('mobileMenuButton')
+const mobileEvaluateButtonRef = useTemplateRef<HTMLButtonElement>('mobileEvaluateButton')
+const mobileExportButtonRef = useTemplateRef<HTMLButtonElement>('mobileExportButton')
+const mobileTutorialRefs = computed<Record<string, HTMLElement | null>>(() => ({
+  evaluationButtons: mobileEvaluateButtonRef.value,
+  exportButton: mobileExportButtonRef.value,
+  mainMenuBottom: mobileMenuButtonRef.value,
+  ...tutorialRefs,
+}))
+// Split the layouts into the two mockup groups: directed (edge-following) vs. the
+// force/geometric engines. The first four entries are the directed ones.
+const relayoutGroups = [
+  {
+    label: 'Directed',
+    options: GRAPH_EDITOR_LAYOUTS.slice(0, 4).map((layout) => ({
+      layout,
+      ...layoutDatas[layout],
+    })),
+  },
+  {
+    label: 'Other',
+    options: GRAPH_EDITOR_LAYOUTS.slice(4).map((layout) => ({
+      layout,
+      ...layoutDatas[layout],
+    })),
+  },
+]
+
+function relayoutTo(layout: Layout) {
+  doLayout(layout)
+  isRelayoutOpen.value = false
+}
+
+function runFromMenu(action: () => void) {
+  isMenuOpen.value = false
+  action()
+}
+
+function openDocumentSwitcher() {
+  evaluationOpen.value = false
+  emit('home')
+}
+
+// Command surface a shell drives instead of the editor's own chrome. The desktop
+// main menu and toolbar still call these same functions; nothing here changes their
+// behaviour, it only makes them reachable from outside.
+function openExport() {
+  isExportOpened.value = true
+}
+function openSettings() {
+  // Mobile gets a native bottom sheet; desktop keeps the centered modal.
+  if (layoutMode.value === 'compact') isSettingsOpen.value = true
+  else settingsDialog.value?.open()
+}
+function openHelp() {
+  isHelpOpened.value = true
+}
+function openTutorials() {
+  isTutorialWindowOpen.value = true
+}
+
+defineExpose({
+  fitToView,
+  applyLayout: doLayout,
+  toggleGrid,
+  toggleNodePhysics,
+  openExport,
+  openSettings,
+  openHelp,
+  openTutorials,
+  gridVisibility: showGrid,
+  physicsMode,
+  hasRanking: hasRankingSlot,
+  hasSerialisation: hasSerialisationSlot,
+} satisfies GraphEditorCommands)
 </script>
 <template>
   <div
@@ -1255,7 +1515,7 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
     </svg>
     <div
       class="pointer-events-none w-full opacity-50 absolute inset-0 flex items-center"
-      v-if="state.nodes.length === 0 && showHints"
+      v-if="layoutMode === 'regular' && state.nodes.length === 0 && showHints"
     >
       <div class="m-auto w-fit">
         <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
@@ -1268,39 +1528,33 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       @update:arrow-type="updateLinkType(arrowSwitcherTarget.linkId, $event)"
       @close="arrowSwitcherTarget = undefined"
     />
-    <div class="absolute top-4 bottom-4 left-4 flex flex-col justify-between">
+    <div
+      v-if="layoutMode === 'regular'"
+      class="absolute top-4 bottom-4 left-4 flex flex-col justify-between"
+    >
       <div class="flex flex-1 flex-col justify-between">
         <div class="w-fit">
           <MainMenu
             @new="emit('new')"
-          @load="emit('load')"
-          @generate="emit('generate')"
-          :show-save="EntryState.ENABLE"
-          :layouts-to-show="[
-            Layout.TopToBottom,
-            Layout.BottomToTop,
-            Layout.LeftToRight,
-            Layout.RightToLeft,
-            Layout.ForceDirected,
-            Layout.Neato,
-            Layout.Circular,
-            Layout.Radial,
-          ]"
-          @save="emit('save')"
-          :show-evaluate="EntryState.ENABLE"
-          @evaluate="emit('open-extension-window')"
-          :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
-          @export="isExportOpened = !isExportOpened"
-          :show-share="EntryState.ENABLE"
-          @share="emit('share')"
-          @layout="doLayout($event)"
-          :show-undo="historyState.canUndo ? EntryState.ENABLE : EntryState.DISABLE"
-          @undo="emit('undo')"
-          :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
-          @redo="emit('redo')"
-          @help="isHelpOpened = !isHelpOpened"
-          @settings="settingsDialog?.open()"
-          @tutorial="isTutorialWindowOpen = !isTutorialWindowOpen"
+            @load="emit('load')"
+            @generate="emit('generate')"
+            :show-save="EntryState.ENABLE"
+            :layouts-to-show="GRAPH_EDITOR_LAYOUTS"
+            @save="emit('save')"
+            :show-evaluate="EntryState.ENABLE"
+            @evaluate="emit('open-extension-window')"
+            :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
+            @export="isExportOpened = !isExportOpened"
+            :show-share="EntryState.ENABLE"
+            @share="emit('share')"
+            @layout="doLayout($event)"
+            :show-undo="historyState.canUndo ? EntryState.ENABLE : EntryState.DISABLE"
+            @undo="emit('undo')"
+            :show-redo="historyState.canRedo ? EntryState.ENABLE : EntryState.DISABLE"
+            @redo="emit('redo')"
+            @help="isHelpOpened = !isHelpOpened"
+            @settings="settingsDialog?.open()"
+            @tutorial="isTutorialWindowOpen = !isTutorialWindowOpen"
           />
           <div ref="mainMenuBottom" class="h-0"></div>
         </div>
@@ -1317,7 +1571,10 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
               @click="selectedLinkType = linkKey"
             >
               <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5 opacity-70" />
-              <ArrowLongRightIcon v-else-if="linkKey === LinkType.SINGLE" class="size-5 opacity-70" />
+              <ArrowLongRightIcon
+                v-else-if="linkKey === LinkType.SINGLE"
+                class="size-5 opacity-70"
+              />
               <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />
             </button>
           </div>
@@ -1358,18 +1615,257 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       </div>
       <div class="flex flex-1 items-end pointer-events-none"></div>
     </div>
+
+    <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
+    <template v-if="layoutMode === 'compact'">
+      <header
+        ref="mobileTopBar"
+        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 h-14 bg-base-200/95 backdrop-blur border-b border-base-300"
+        style="padding-top: env(safe-area-inset-top)"
+      >
+        <!-- Switcher chip: back to home / document picker -->
+        <button
+          class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
+          aria-label="Back to documents"
+          @click="openDocumentSwitcher"
+        >
+          <span
+            class="grid place-items-center size-7 shrink-0 rounded-lg bg-primary/25 text-primary"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="size-[1.1rem]"
+            >
+              <circle cx="7" cy="7" r="3" />
+              <circle cx="17" cy="17" r="3" />
+              <path d="M9.5 9.5 14.5 14.5" />
+            </svg>
+          </span>
+          <span class="flex flex-col items-start min-w-0 leading-tight">
+            <span class="text-sm font-semibold truncate max-w-38">{{
+              documentName || 'Untitled'
+            }}</span>
+            <span v-if="typeBadge" class="text-[0.7rem] text-base-content/60 truncate max-w-38">{{
+              typeBadge
+            }}</span>
+          </span>
+          <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
+        </button>
+        <span class="text-base font-bold text-base-content/80 text-center truncate">
+          AgonProject
+        </span>
+        <button
+          ref="mobileMenuButton"
+          class="btn btn-square size-11 btn-ghost"
+          aria-label="Menu"
+          @click="isMenuOpen = true"
+        >
+          <Bars3Icon class="size-6 opacity-70" />
+        </button>
+      </header>
+
+      <!-- Fixed 5-button command bar: two small actions flank the prominent Evaluate. -->
+      <nav
+        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
+        style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
+      >
+        <div class="flex gap-2 shrink-0">
+          <button
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            aria-label="Fit to view"
+            title="Fit to view"
+            @click="fitToView()"
+          >
+            <ArrowsPointingInIcon class="size-6 opacity-70" />
+          </button>
+          <button
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            aria-label="Relayout"
+            title="Relayout"
+            @click="isRelayoutOpen = true"
+          >
+            <SparklesIcon class="size-6 opacity-70" />
+          </button>
+        </div>
+
+        <button
+          ref="mobileEvaluateButton"
+          class="btn btn-primary h-13 min-w-0 shrink rounded-2xl px-4 gap-2 text-base font-semibold shadow-md shadow-primary/30"
+          @click="evaluationOpen = true"
+        >
+          <PlayIcon class="size-6 shrink-0" />
+          <span class="truncate">Evaluate</span>
+        </button>
+
+        <div class="flex gap-2 shrink-0">
+          <button
+            ref="mobileExportButton"
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            aria-label="Export"
+            title="Export"
+            @click="isExportOpened = true"
+          >
+            <PhotoIcon class="size-6 opacity-70" />
+          </button>
+          <button
+            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            :disabled="!historyState.canUndo"
+            aria-label="Undo"
+            title="Undo"
+            @click="emit('undo')"
+          >
+            <ArrowUturnLeftIcon class="size-6 opacity-70" />
+          </button>
+        </div>
+      </nav>
+
+      <!-- On-canvas creation-mode selectors, bottom-left, clear of the command bar.
+           The generic link-type toggle is driven by linkConfigs; modules stack their
+           own selectors (e.g. iAF argument certainty) above it via #canvasSelector. -->
+      <div
+        v-if="enableLinkSwitching || !!slots.canvasSelector"
+        class="absolute left-3 z-10 flex flex-col items-start gap-2"
+        style="bottom: calc(env(safe-area-inset-bottom, 0px) + 4.75rem)"
+      >
+        <slot name="canvasSelector" />
+        <div v-if="enableLinkSwitching" class="join shadow-md">
+          <button
+            v-for="(linkConfig, linkKey) in linkConfigs"
+            :key="linkKey"
+            class="join-item btn btn-sm btn-square"
+            :class="selectedLinkType === linkKey ? 'btn-primary' : 'btn-neutral'"
+            :aria-label="linkConfig!.displayName"
+            :aria-pressed="selectedLinkType === linkKey"
+            :title="linkConfig!.displayName"
+            @click="selectedLinkType = linkKey"
+          >
+            <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5" />
+            <ArrowLongRightIcon v-else-if="linkKey === LinkType.SINGLE" class="size-5" />
+            <ArrowDoubleLongRightIcon v-else class="size-5" />
+          </button>
+        </div>
+      </div>
+
+      <BottomSheet v-model:open="isMenuOpen" title="Menu">
+        <div class="flex flex-col gap-4 pb-4">
+          <section class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Document</h3>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('new'))"
+            >
+              <DocumentPlusIcon class="size-5 text-primary/80" /> New document
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('load'))"
+            >
+              <ArrowUpTrayIcon class="size-5 text-primary/80" /> Open file…
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('save'))"
+            >
+              <ArrowDownTrayIcon class="size-5 text-primary/80" /> Save to device
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(() => emit('generate'))"
+            >
+              <Squares2X2Icon class="size-5 text-primary/80" /> Generate random…
+            </button>
+          </section>
+          <section class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Edit</h3>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              :disabled="!historyState.canRedo"
+              @click="runFromMenu(() => emit('redo'))"
+            >
+              <ArrowUturnRightIcon class="size-5 text-primary/80" /> Redo
+            </button>
+          </section>
+          <section class="flex flex-col gap-1">
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">App</h3>
+            <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openSettings)">
+              <Cog6ToothIcon class="size-5 text-primary/80" /> Settings
+            </button>
+            <button
+              v-if="tutorials"
+              class="btn btn-ghost justify-start gap-3"
+              @click="runFromMenu(openTutorials)"
+            >
+              <AcademicCapIcon class="size-5 text-primary/80" /> Tutorials
+            </button>
+            <RouterLink
+              to="/glossary"
+              class="btn btn-ghost justify-start gap-3"
+              @click="isMenuOpen = false"
+            >
+              <BookOpenIcon class="size-5 text-primary/80" /> Glossary
+            </RouterLink>
+            <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openHelp)">
+              <QuestionMarkCircleIcon class="size-5 text-primary/80" /> Help
+            </button>
+          </section>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet v-model:open="isRelayoutOpen" title="Relayout">
+        <div class="flex flex-col gap-5 pb-4">
+          <section v-for="group in relayoutGroups" :key="group.label" class="flex flex-col gap-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+              {{ group.label }}
+            </h3>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button
+                v-for="option in group.options"
+                :key="option.layout"
+                class="flex items-center gap-3 h-14 px-3.5 rounded-xl border border-base-300 bg-base-100 text-sm font-medium text-left"
+                @click="relayoutTo(option.layout)"
+              >
+                <span
+                  class="grid place-items-center size-8 shrink-0 rounded-lg bg-base-200 text-primary"
+                >
+                  <component :is="option.icon" class="size-5" />
+                </span>
+                {{ option.name }}
+              </button>
+            </div>
+          </section>
+        </div>
+      </BottomSheet>
+
+      <BottomSheet v-model:open="isSettingsOpen" title="Settings">
+        <div class="pb-4">
+          <SettingsContent />
+        </div>
+      </BottomSheet>
+    </template>
+
     <slot
       name="evaluationExtensions"
-      :on-highlight="(h: Highlight | undefined) => { extensionHighlightRef = h }"
+      :on-highlight="
+        (h: Highlight | undefined) => {
+          extensionHighlightRef = h
+        }
+      "
     ></slot>
     <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
     <slot name="evaluationRanking"></slot>
     <slot
       name="evaluationSerialisation"
-      :on-highlight="(h: Highlight | undefined) => { serialisationHighlightRef = h }"
+      :on-highlight="
+        (h: Highlight | undefined) => {
+          serialisationHighlightRef = h
+        }
+      "
     ></slot>
     <TutorialOverlay
-      v-if="tutorials && showHints"
+      v-if="tutorials && showHints && layoutMode === 'regular'"
       :tutorials="tutorials"
       :default-tutorial-id="defaultTutorialId"
       :is-touch-device="isTouchDevice"
@@ -1382,13 +1878,26 @@ const isTouchDevice = useMediaQuery('(pointer: coarse)')
       }"
       :context="tutorialContext"
     />
+    <TutorialOverlayMobile
+      v-if="tutorials && showHints && layoutMode === 'compact'"
+      :tutorials="tutorials"
+      :default-tutorial-id="defaultTutorialId"
+      :is-touch-device="isTouchDevice"
+      :refs="mobileTutorialRefs"
+      :context="tutorialContext"
+    />
     <WindowTutorials
       v-if="tutorials"
       :tutorials="tutorials"
       :context="tutorialContext"
       v-model:open="isTutorialWindowOpen"
     />
-    <WindowHelp :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" v-model:open="isHelpOpened" />
+    <WindowHelp
+      :link-names="linkNames"
+      :allow-hyper-link-creation="allowHyperLinkCreation"
+      :node-tap-action="nodeTapAction"
+      v-model:open="isHelpOpened"
+    />
     <WindowSettings ref="settings-dialog" />
   </div>
 </template>

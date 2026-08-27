@@ -23,7 +23,10 @@ import {
 } from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import { IdMapping } from '@/modules/common/ids'
-import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import type {
+  IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 
 function* emptyIterator(): IterableIterator<[number, number]> {}
 
@@ -41,8 +44,8 @@ const exportLatexIncompleteArgumentation: ExportConfig<IncompleteArgumentation<I
       emptyIterator(),
       styleOptions,
       {
-        argumentOptions: (id) => document.getArgument(id).uncertain ? 'incomplete' : '',
-        attackOptions: (s, t) => document.hasUncertainAttack(s, t) ? 'incomplete' : '',
+        argumentOptions: (id) => (document.getArgument(id).uncertain ? 'incomplete' : ''),
+        attackOptions: (s, t) => (document.hasUncertainAttack(s, t) ? 'incomplete' : ''),
       },
     )
   },
@@ -82,9 +85,7 @@ const exportICCMA: ExportConfig<IncompleteArgumentation<IafArgumentData>> = {
 
 const exportTGFIncompleteArgumentation: ExportConfig<IncompleteArgumentation<IafArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
-  references: [
-    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
-  ],
+  references: [{ label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' }],
   extension: 'tgf',
   export(document) {
     let numberOfArguments = 0

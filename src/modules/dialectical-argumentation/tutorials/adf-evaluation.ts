@@ -79,7 +79,7 @@ export const adfEvaluationTutorial: Tutorial = {
     {
       id: 'done',
       title: 'Great work!',
-      body: 'You\'ve completed the ADF Evaluation Tutorial. Explore more features like export and sharing from the menu.',
+      body: "You've completed the ADF Evaluation Tutorial. Explore more features like export and sharing from the menu.",
       advanceOn: 'button',
     },
   ],

@@ -26,13 +26,18 @@ import TexIcon from '@/modules/common/export/TexIcon.vue'
 const {
   text,
   iconOnly = false,
+  tex = false,
   title,
 } = defineProps<{
   text: string | undefined
-  /** Renders just the icon (e.g. as a "Copy as TeX" button next to the full copy button). */
+  /** Renders just the icon, no "Copy" label. */
   iconOnly?: boolean
+  /** Use the TeX glyph instead of the clipboard icon (for LaTeX copy actions). */
+  tex?: boolean
   title?: string
 }>()
+
+const emit = defineEmits<{ copied: [] }>()
 
 const showCopied = ref(false)
 let timeoutId: ReturnType<typeof setTimeout>
@@ -46,6 +51,7 @@ async function copyToClipboard() {
   if (success === false) {
     return
   }
+  emit('copied')
   showCopied.value = true
   if (timeoutId !== undefined) {
     clearTimeout(timeoutId)
@@ -61,7 +67,7 @@ async function copyToClipboard() {
       <template v-if="!iconOnly">Copied</template>
     </template>
     <template v-else>
-      <TexIcon v-if="iconOnly" class="size-4"></TexIcon>
+      <TexIcon v-if="tex" class="size-4"></TexIcon>
       <ClipboardDocumentIcon v-else class="size-4"></ClipboardDocumentIcon>
       <template v-if="!iconOnly">Copy <slot></slot></template>
     </template>

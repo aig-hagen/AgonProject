@@ -67,9 +67,7 @@ const exportICCMA: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
 
 const exportTGFBipolarArgumentation: ExportConfig<BipoloarArgumentation<ArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
-  references: [
-    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
-  ],
+  references: [{ label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' }],
   extension: 'tgf',
   export(document) {
     let numberOfArguments = 0

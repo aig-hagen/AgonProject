@@ -22,7 +22,10 @@ import {
 } from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
-import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import type {
+  AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 
 // Precedence levels matching formula.ts
 const PREC_OR = 1
@@ -33,33 +36,40 @@ function nodePrec(node: FormulaNode): number {
   switch (node.type) {
     case 'tautology':
     case 'contradiction':
-    case 'atom': return 4
-    case 'negation': return PREC_NOT
-    case 'conjunction': return PREC_AND
-    case 'disjunction': return PREC_OR
+    case 'atom':
+      return 4
+    case 'negation':
+      return PREC_NOT
+    case 'conjunction':
+      return PREC_AND
+    case 'disjunction':
+      return PREC_OR
   }
 }
 
-function formulaToLatexInner(node: FormulaNode, parentPrec: number, argNames: Map<number, string>): string {
+function formulaToLatexInner(
+  node: FormulaNode,
+  parentPrec: number,
+  argNames: Map<number, string>,
+): string {
   const raw = formulaToLatexRaw(node, argNames)
   return nodePrec(node) < parentPrec ? `(${raw})` : raw
 }
 
 function formulaToLatexRaw(node: FormulaNode, argNames: Map<number, string>): string {
   switch (node.type) {
-    case 'tautology': return '\\top'
-    case 'contradiction': return '\\bot'
-    case 'atom': return argNames.get(node.argumentId) ?? '?'
+    case 'tautology':
+      return '\\top'
+    case 'contradiction':
+      return '\\bot'
+    case 'atom':
+      return argNames.get(node.argumentId) ?? '?'
     case 'negation':
       return `\\neg ${formulaToLatexInner(node.child, PREC_NOT, argNames)}`
     case 'conjunction':
-      return node.children
-        .map((c) => formulaToLatexInner(c, PREC_AND, argNames))
-        .join(' \\wedge ')
+      return node.children.map((c) => formulaToLatexInner(c, PREC_AND, argNames)).join(' \\wedge ')
     case 'disjunction':
-      return node.children
-        .map((c) => formulaToLatexInner(c, PREC_OR + 1, argNames))
-        .join(' \\vee ')
+      return node.children.map((c) => formulaToLatexInner(c, PREC_OR + 1, argNames)).join(' \\vee ')
   }
 }
 

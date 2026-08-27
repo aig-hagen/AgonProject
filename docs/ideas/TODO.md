@@ -1,8 +1,113 @@
 ## Bugs and Issues
 
+### General
 
+- **[Enhancement]** double the request limit to the TweetyProject backend
+- The mode/type selector in the eval window does use a slightly different style than the semantics selector
+
+### Mobile
+
+#### Open items from the mobile-layout plan (plan now closed)
+
+The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
+
+*Blocked on the real-device gesture work (all hinge on the same spike):*
+
+- **[Spike — Phase 1]** Real-device gesture spike. On real iOS + Android, verify tap/hold
+  node gestures with node-moving disabled: tap, hold-to-delete vs hold-drag-to-link
+  disambiguation, pointer cancellation, scroll prevention, and agreed movement/time
+  thresholds. Blocks the two items below.
+- **[Feature — Phase 5]** iAF node context menu (rename / certainty / delete on tap). Needs
+  the gesture spike's thresholds first.
+- **[Feature — Phase 5]** SETAF (collective attacks) editing entirely: tap-to-toggle source
+  selection distinct from eval highlights, hold-drag from selected sources to create a
+  collective attack, Clear-selection / Rename / Delete actions, and tapping a collective
+  attack to inspect its sources. Needs the gesture spike, a *collective attacks* mockup, and
+  Decision #5 (tap-to-select vs a dedicated creation mode).
+
+*Phase 7 (hardening) follow-ups:*
+
+- **[Content]** Tutorial-step wording pass for mobile: audit each tutorial's steps against the
+  settled mobile gestures / primary-action table and update copy (e.g. "double-tap to add",
+  per-module tap actions). Scope unclear — needs a decision on which tutorials change.
+- **[Perf]** Memory/perf profiling with **many evaluation configs** open (real device/profiler;
+  emulated e2e can't prove it). Many-*documents* is already covered by `e2e/stress.mobile.spec.ts`.
+- **[CI]** First-run validation of the new `Test` workflow: open a PR so it actually executes on
+  Ubuntu — this is the first real **WebKit / Mobile Safari** coverage (they can't run on the Arch
+  dev box) and the first time the workflow itself runs.
+- **[Test]** e2e asserts evaluation *sheets open*, not backend-computed **results** (TweetyProject
+  servers aren't up in e2e). Add result-level coverage if/when a backend is available in CI.
+
+#### Home and document management
+
+- **[Bug]** home view: some AF module description texts are truncated; references are missing entirely
+- **[Enhancement]** no confirmation when deleting a document
+- **[Decision needed]** "Document" should be renamed to something more fitting
+- **[Design]** Switch document icons to AF type icon; like the ones in the home view
+
+#### Graph editor and interaction
+
+- **[Bug]** The relayout sheet should disappear on selecting an option. This works in the browser mobile preview, but not on the actual phone (for AF, for ADF it works)
+- **[Bug]** SVG doesnt render on mobile device; is this a general mobile problem?
+- **[Enhancement]** Extension highlighting: could use some way to deactivate highlighting (other than clicking the extension again)
+- **[Bug]** dont open keyboard on argument creation on mobile
+- **[Design]** rethink the mobile command-action scheme from scratch; large rework of the command contract, needs changes to the graph-component
+- **[Enhancement]** add undo action to menu, next to redo
+- **[Decision needed]** what happens with the hover tooltips on mobile? currently the highlighting shows, but they are not clickable. How can we handle this?
+- **[Decision needed]** add some kind of toggle for physics mode: something that activated physics for a brief moment to let arguments adjust position. or something that enables pyhsics while pressed
+
+#### ADF editing and evaluation
+
+- **[Design]** ADF condition editor needs a rework: no argument name editing here; better design
+- **[Enhancement]** compact eval sheet should resize to fit content: fit up to three rows of results, if more enable scroll, if less contract to fit content
+
+#### Sharing and export
+
+- **[Decision needed]** The Web Share action includes "AF - AgonProject". Why? just plain link probably
+- **[Design]** Export sheet: Code&Data -> Text
+- **[Design]** switch exprt logo to a share icon
+- **[Enhancement]** export sheet should close when clicking the share link button
+
+#### Settings and visual design
+
+- ~~**[Bug]** settings toggles dont show the selected option visually; the default~~ — fixed: replaced `input.btn`/`:checked` join groups with an explicit `SegmentedControl` that shows selection clearly
+- **[Design]** look of the bottom bar doesnt feel that nice, maybe redesign the buttons; not important now
+- ~~**[Design]** mobile settings menu does actually need a pass to make it fit the mobile theme better~~ — done: settings now opens as a `BottomSheet` on mobile with grouped-card sections, shared with the desktop modal
+- **[Design]** could update the creation-mode-switchers in the bottom left. visual style doesnt really fit well
+
+#### Tutorials, glossary, and help
+
+- **[Bug]** Glossary AF-type Pills show wrong names; just use AF, BAF, etc; same for desktop
+- **[Enhancement]** Several tutorials need updating; in particular also for mobile; update highlighting of next action on mobile
+- **[Design]** tutorial start buttons look bad
+
+#### Other
+- Can we somehow enforce fullscreen on mobile? does that make sense?
 
 ## Features
+- track last edited time per document; show on mobile
+
+### Smooth graph recenter (animate `centerView`)
+`centerView` (graph-component) currently jumps: internally it does the instant d3-zoom
+`zoom.transform(selection, t)`. d3-zoom animates natively, so add an optional `duration`
+param and pass a transitioning selection when set:
+```js
+const target = duration ? selection.transition().duration(duration) : selection
+zoom.transform(target, d3.zoomIdentity.scale(k).translate(-x, -y))
+```
+Then have `fitToView` / the mobile eval re-fit pass ~250–300ms. Needs a graph-component
+change + new rc tarball (it's the `@aig-hagen` package). Keep the sheet-close re-fit
+instant/short so it doesn't feel sluggish.
+
+### Mobile eval sheet: full-detent two-pane compare
+At the `full` (~90dvh) detent, the mobile evaluation sheet should show a **second, one-off,
+view-only** eval below a `Compare with` divider (`view only` + `✕` clear), so two evaluations
+can be read side by side. Rules:
+- Top pane = the switchable saved eval; **owns** the canvas highlight.
+- Bottom pane = a one-off eval slot (own params + result), must **not** emit `highlight` — only
+  one eval touches the canvas.
+- Needs host-local state to hold the one-off instance (not in the saved chip list).
+See the checklist in `docs/mobile-layout.md` (Evaluate UI rework).
 
 ### use tags to filter AF types
 Tags are now defined and associated with each module (see `src/modules/common/tags.ts` and each module's `moduleConfig.ts`). In the future, those can be used to filter AF types; can also implement a search bar on the main page.

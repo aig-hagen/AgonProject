@@ -73,7 +73,6 @@ async function doRequestClose() {
 const inputSizerRef = useTemplateRef('input-sizer')
 const closeModal = useTemplateRef('closeModal')
 const deleteButtonRef = useTemplateRef('deleteButton')
-
 </script>
 <template>
   <div

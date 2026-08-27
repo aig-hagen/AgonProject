@@ -23,9 +23,11 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
+import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -47,17 +49,22 @@ const {
   instanceOffset = 0,
   documentId,
   stateKey,
+  suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
   instanceState: PafWindowInstanceState
   instanceOffset?: number
   documentId?: DocumentId
   stateKey?: string
+  suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:instanceState': [state: PafWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
+  title: [title: string]
   evaluate: []
   close: []
 }>()
@@ -106,23 +113,28 @@ const query = usePafEvaluationQuery(
 
 const { data } = query
 
-watch(data, (d) => {
-  emit(
-    'setWeights',
-    d === undefined ? [] : d.entries.map((e) => ({ id: e.id, weight: e.probability })),
-  )
-})
+// Suppressed instances (all but the active one in the compact host) own no node weights.
+const emittedWeights = computed(() =>
+  suppressed || data.value === undefined
+    ? []
+    : data.value.entries.map((e) => ({ id: e.id, weight: e.probability })),
+)
+watch(emittedWeights, (w) => emit('setWeights', w))
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
   const solverLabel = isApproximate.value ? ' · Approx.' : ''
   return `${selectedSemantic.value.displayName} · ${modeLabel}${solverLabel}`
 })
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 </script>
 
 <template>
   <BaseEvaluationWindow
     :title="windowTitle"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 400, height: 420 }"
@@ -137,10 +149,13 @@ const windowTitle = computed(() => {
         <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
-        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
-          <option value="credulous">Credulous</option>
-          <option value="skeptical">Skeptical</option>
-        </select>
+        <PickerSelect
+          v-model="selectedMode"
+          :options="[
+            { value: 'credulous', label: 'Credulous' },
+            { value: 'skeptical', label: 'Skeptical' },
+          ]"
+        />
       </ParameterField>
       <ParameterField label="Inference" min-width="100%" max-width="100%">
         <div class="flex items-center gap-1.5 text-sm h-8">
@@ -168,7 +183,7 @@ const windowTitle = computed(() => {
             {{ entry.name }}: {{ entry.probability.toFixed(3) }}
           </span>
         </div>
-        <p class="label">{{ data.evaluationDurationInMs }}ms</p>
+        <EvaluationStatusFooter :status-line="`${data.evaluationDurationInMs}ms`" />
       </template>
     </template>
   </BaseEvaluationWindow>

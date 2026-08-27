@@ -18,7 +18,11 @@
  */
 import z from 'zod'
 
-import { EvaluationTimeoutError, RateLimitError, ServiceUnavailableError } from '@/modules/common/evaluation/tweety-project/errors'
+import {
+  EvaluationTimeoutError,
+  RateLimitError,
+  ServiceUnavailableError,
+} from '@/modules/common/evaluation/tweety-project/errors'
 
 const sourceTree = import.meta.env.VITE_APP_SOURCE_TREE
 

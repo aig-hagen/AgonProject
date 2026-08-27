@@ -18,7 +18,7 @@
  */
 import * as z from 'zod'
 
-import { SetAF,type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import { SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
   ArgumentIdSaveSchema,
   ExampleSaveExtension,

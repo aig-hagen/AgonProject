@@ -23,7 +23,13 @@ import type { BipoloarArgumentation } from '@/modules/bipolar-argumentation/mode
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import {
+  fetchTyped,
+  TWEETY_TIMEOUT_IN_MS,
+  TWEETY_TIMEOUT_UNIT_MS,
+  TweetyResponseSchema,
+  USER_ID,
+} from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Semantics } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -38,12 +44,12 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     key: 'classical',
     displayName: 'Classical Semantics',
     semantics: [
-      { key: 'CF',  displayName: 'Conflict-Free' },
+      { key: 'CF', displayName: 'Conflict-Free' },
       { key: 'ADM', displayName: 'Admissible' },
-      { key: 'CO',  displayName: 'Complete' },
-      { key: 'GR',  displayName: 'Grounded' },
-      { key: 'PR',  displayName: 'Preferred' },
-      { key: 'ST',  displayName: 'Stable' },
+      { key: 'CO', displayName: 'Complete' },
+      { key: 'GR', displayName: 'Grounded' },
+      { key: 'PR', displayName: 'Preferred' },
+      { key: 'ST', displayName: 'Stable' },
     ],
   },
   {
@@ -52,23 +58,23 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
     semantics: [
       { key: 'SAD', displayName: 'Strongly Admissible' },
       { key: 'SST', displayName: 'Semi-Stable' },
-      { key: 'ID',  displayName: 'Ideal' },
-      { key: 'EA',  displayName: 'Eager' },
-      { key: 'IS',  displayName: 'Initial' },
-      { key: 'UC',  displayName: 'Unchallenged' },
+      { key: 'ID', displayName: 'Ideal' },
+      { key: 'EA', displayName: 'Eager' },
+      { key: 'IS', displayName: 'Initial' },
+      { key: 'UC', displayName: 'Unchallenged' },
     ],
   },
   {
     key: 'non-admissible',
     displayName: 'Non-admissible Semantics',
     semantics: [
-      { key: 'NA',   displayName: 'Naive' },
-      { key: 'STG',  displayName: 'Stage' },
+      { key: 'NA', displayName: 'Naive' },
+      { key: 'STG', displayName: 'Stage' },
       { key: 'STG2', displayName: 'Stage2' },
-      { key: 'CF2',  displayName: 'CF2' },
+      { key: 'CF2', displayName: 'CF2' },
       { key: 'SCF2', displayName: 'SCF2' },
-      { key: 'UD',   displayName: 'Undisputed' },
-      { key: 'SUD',  displayName: 'Strongly Undisputed' },
+      { key: 'UD', displayName: 'Undisputed' },
+      { key: 'SUD', displayName: 'Strongly Undisputed' },
     ],
   },
   {
@@ -235,13 +241,14 @@ export function useExtensionEvaluationQuery(
 
   const isModelsResult = (
     data: EvaluationQueryResult,
-  ): data is { evaluationDurationInMs: number; extensions: number[][] } =>
-    'extensions' in data
+  ): data is { evaluationDurationInMs: number; extensions: number[][] } => 'extensions' in data
 
   const queryKey = computed(() => {
     const mode = unref(modeRef)
-    if (mode === 'credulous') return ['bipolar_get_credulous', semanticsRef, supportTypeRef, modeRef, argumentData] as const
-    if (mode === 'skeptical') return ['bipolar_get_skeptical', semanticsRef, supportTypeRef, modeRef, argumentData] as const
+    if (mode === 'credulous')
+      return ['bipolar_get_credulous', semanticsRef, supportTypeRef, modeRef, argumentData] as const
+    if (mode === 'skeptical')
+      return ['bipolar_get_skeptical', semanticsRef, supportTypeRef, modeRef, argumentData] as const
     return ['bipolar_get_models', semanticsRef, supportTypeRef, modeRef, argumentData] as const
   })
 
@@ -256,8 +263,10 @@ export function useExtensionEvaluationQuery(
         { attacks: number[][]; supports: number[][]; numberOfArguments: number },
       ]
       const mode = unref(modeRef)
-      if (mode === 'credulous') return fetchCredulous(numberOfArguments, attacks, supports, semantics, supportType)
-      if (mode === 'skeptical') return fetchSkeptical(numberOfArguments, attacks, supports, semantics, supportType)
+      if (mode === 'credulous')
+        return fetchCredulous(numberOfArguments, attacks, supports, semantics, supportType)
+      if (mode === 'skeptical')
+        return fetchSkeptical(numberOfArguments, attacks, supports, semantics, supportType)
       return fetchModels(numberOfArguments, attacks, supports, semantics, supportType)
     },
     enabled,

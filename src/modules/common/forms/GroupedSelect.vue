@@ -18,7 +18,10 @@
 -->
 <script setup lang="ts" generic="T extends { key: string; displayName: string }">
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
+import { ChevronDownIcon } from '@heroicons/vue/24/outline'
 import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
+
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
 export interface GroupedSelectGroup<T> {
   key: string
@@ -26,7 +29,12 @@ export interface GroupedSelectGroup<T> {
   options: T[]
 }
 
-const { modelValue, groups, label, fullWidth = false } = defineProps<{
+const {
+  modelValue,
+  groups,
+  label,
+  fullWidth = false,
+} = defineProps<{
   modelValue: T
   groups: GroupedSelectGroup<T>[]
   label?: string
@@ -36,6 +44,8 @@ const { modelValue, groups, label, fullWidth = false } = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: T]
 }>()
+
+const { isCompact } = useLayoutMode()
 
 const instanceId = useId()
 const isOpen = ref(false)
@@ -190,9 +200,10 @@ watch(isOpen, (open) => {
   <div ref="wrapper" :class="fullWidth ? 'block w-full' : 'inline-block'">
     <label
       ref="trigger"
-      class="select select-sm gap-1 bg-base-200"
       :class="[
-        fullWidth ? 'w-full justify-between' : 'w-fit',
+        isCompact
+          ? 'flex items-center gap-2 h-11 px-3 rounded-box border border-base-300 bg-base-200 text-sm w-full justify-between'
+          : ['select select-sm gap-1 bg-base-200', fullWidth ? 'w-full justify-between' : 'w-fit'],
         { 'outline-2 outline-primary/50': isOpen },
       ]"
       tabindex="0"
@@ -205,6 +216,7 @@ watch(isOpen, (open) => {
     >
       <span v-if="label" class="label">{{ label }}</span>
       <span class="truncate">{{ modelValue.displayName }}</span>
+      <ChevronDownIcon v-if="isCompact" class="size-4 shrink-0 text-base-content/50" />
     </label>
     <Teleport to="body">
       <div
@@ -220,7 +232,7 @@ watch(isOpen, (open) => {
       >
         <template v-for="(group, groupIndex) in groups" :key="group.key">
           <div
-            v-if="group.options.length"
+            v-if="group.options.length && group.displayName"
             class="px-3 pt-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-wider text-primary/70"
             :class="{ 'mt-1 border-t border-base-200': groupIndex > 0 }"
           >
@@ -232,11 +244,14 @@ watch(isOpen, (open) => {
             :key="option.key"
             role="option"
             :aria-selected="option.key === modelValue.key"
-            class="px-3 py-1 text-sm cursor-pointer"
-            :class="{
-              'bg-primary text-primary-content': option.key === activeKey,
-              'font-semibold': option.key === modelValue.key && option.key !== activeKey,
-            }"
+            class="text-sm cursor-pointer"
+            :class="[
+              isCompact ? 'px-4 py-2.5' : 'px-3 py-1',
+              {
+                'bg-primary text-primary-content': option.key === activeKey,
+                'font-semibold': option.key === modelValue.key && option.key !== activeKey,
+              },
+            ]"
             @click="select(option)"
             @mousemove="activeKey = option.key"
           >

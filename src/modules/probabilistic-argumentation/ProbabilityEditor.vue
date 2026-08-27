@@ -17,21 +17,23 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import type { Input } from '@/modules/common/evaluation/types'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 import type {
   PafArgumentData,
   ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
 
 const open = defineModel<boolean>('open', { required: true })
-const { input, documentId, stateKey } = defineProps<{
+const { input, documentId, stateKey, focusKey } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
   documentId?: DocumentId
   stateKey?: string
+  /** `arg-<id>` or `atk-<src>-<tgt>`: scroll that row into view and flash it. */
+  focusKey?: string
 }>()
 
 const emit = defineEmits<{
@@ -74,10 +76,31 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
     emit('changeAttackProbability', sourceId, targetId, value)
   }
 }
+
+// Row-jump: when the editor opens (or the target changes) from a node/attack tap,
+// scroll the matching row into view and briefly flash it.
+const bodyRef = useTemplateRef<HTMLDivElement>('body')
+const flashKey = ref<string | undefined>(undefined)
+
+watch(
+  [open, () => focusKey],
+  ([isOpen, key]) => {
+    if (!isOpen || key === undefined) return
+    void nextTick(() => {
+      const row = bodyRef.value?.querySelector(`[data-row-key="${CSS.escape(key)}"]`)
+      row?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      flashKey.value = key
+      setTimeout(() => {
+        if (flashKey.value === key) flashKey.value = undefined
+      }, 1200)
+    })
+  },
+  { flush: 'post' },
+)
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Probabilities"
     :initial-position="{ x: 128, y: 64 }"
@@ -85,11 +108,17 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
     :document-id="documentId"
     :state-key="stateKey"
   >
-    <div class="p-2 flex flex-col gap-2 overflow-y-auto h-full">
+    <div ref="body" class="p-2 flex flex-col gap-2 overflow-y-auto h-full">
       <fieldset class="fieldset" v-if="argumentList.length > 0">
         <legend class="fieldset-legend">Arguments</legend>
         <div class="flex flex-col gap-0.5">
-          <div v-for="arg in argumentList" :key="arg.id" class="flex items-center gap-2">
+          <div
+            v-for="arg in argumentList"
+            :key="arg.id"
+            :data-row-key="`arg-${arg.id}`"
+            class="flex items-center gap-2 rounded-field px-1 transition-colors"
+            :class="{ 'bg-primary/15': flashKey === `arg-${arg.id}` }"
+          >
             <span class="w-8 text-right font-mono text-xs shrink-0">{{ arg.name }}</span>
             <input
               type="range"
@@ -119,7 +148,9 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
           <div
             v-for="atk in attackList"
             :key="`${atk.sourceId}-${atk.targetId}`"
-            class="flex items-center gap-2"
+            :data-row-key="`atk-${atk.sourceId}-${atk.targetId}`"
+            class="flex items-center gap-2 rounded-field px-1 transition-colors"
+            :class="{ 'bg-primary/15': flashKey === `atk-${atk.sourceId}-${atk.targetId}` }"
           >
             <span class="w-16 text-right font-mono text-xs shrink-0"
               >{{ atk.sourceName }} → {{ atk.targetName }}</span
@@ -150,5 +181,5 @@ function onAttackProbabilityInput(sourceId: number, targetId: number, event: Eve
         Add arguments to the graph to set their probabilities.
       </p>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

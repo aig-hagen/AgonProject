@@ -1,0 +1,77 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+
+jobs:
+  checks:
+    name: Lint & type-check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+          fetch-depth: 1
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install-clean
+
+      # Check-only (no --fix), so lint drift fails CI instead of being silently fixed.
+      - name: License headers
+        run: npx license-check-and-add check -f scripts/check-license-header.json
+
+      - name: Prettier
+        run: npx prettier --check --experimental-cli src/
+
+      - name: oxlint
+        run: npx oxlint .
+
+      - name: eslint
+        run: npx eslint . --max-warnings=0
+
+      - name: Type-check
+        run: npm run type-check
+
+  e2e:
+    name: Playwright e2e
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+          fetch-depth: 1
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install-clean
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # CI is set automatically by GitHub Actions, so playwright.config serves the
+      # production build via `npm run preview`; build it first.
+      - name: Build
+        run: npm run build
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

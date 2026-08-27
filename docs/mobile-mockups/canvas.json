@@ -1,0 +1,65 @@
+{
+  "pages": [
+    { "id": "page-core", "name": "Core flow" },
+    { "id": "page-types", "name": "Per-type editing" },
+    { "id": "page-more", "name": "Menus, tutorials & views" },
+    { "id": "page-eval", "name": "Eval sheet — snap detents (proposal)" }
+  ],
+  "artboards": [
+    { "file": "Home.dc.html", "page": "page-core", "x": 0, "y": 0, "w": 390, "h": 844, "title": "View 1 — Home / switcher" },
+    { "file": "NewDoc.dc.html", "page": "page-core", "x": 490, "y": 0, "w": 390, "h": 844, "title": "View 1 — New (type picker)" },
+    { "file": "Main.dc.html", "page": "page-core", "x": 0, "y": 1040, "w": 390, "h": 844, "title": "View 2 — Editor (Direction A)" },
+    { "file": "Evaluate.dc.html", "page": "page-core", "x": 490, "y": 1040, "w": 390, "h": 844, "title": "View 3 — Evaluate (extension)" },
+    { "file": "EvaluateRanking.dc.html", "page": "page-core", "x": 0, "y": 2080, "w": 390, "h": 844, "title": "View 3 — Evaluate (ranking)" },
+    { "file": "Export.dc.html", "page": "page-core", "x": 490, "y": 2080, "w": 390, "h": 844, "title": "View 4 — Export (formats)" },
+    { "file": "ExportSvg.dc.html", "page": "page-core", "x": 0, "y": 3120, "w": 390, "h": 844, "title": "View 4 — Export (SVG preview)" },
+    { "file": "EvaluateSerialisation.dc.html", "page": "page-core", "x": 0, "y": 4160, "w": 390, "h": 844, "title": "View 3 — Evaluate (serialisation · sequences)" },
+    { "file": "EvaluateSerialisationInteractive.dc.html", "page": "page-core", "x": 490, "y": 4160, "w": 390, "h": 844, "title": "View 3 — Evaluate (serialisation · interactive)" },
+
+    { "file": "BafLink.dc.html", "page": "page-types", "x": 0, "y": 0, "w": 390, "h": 844, "title": "BAF — attack / support links" },
+    { "file": "IafEditor.dc.html", "page": "page-types", "x": 490, "y": 0, "w": 390, "h": 844, "title": "iAF — uncertain args / attacks" },
+    { "file": "AdfNode.dc.html", "page": "page-types", "x": 0, "y": 1040, "w": 390, "h": 844, "title": "ADF — acceptance condition" },
+    { "file": "PafProbabilities.dc.html", "page": "page-types", "x": 490, "y": 1040, "w": 390, "h": 844, "title": "PAF — probabilities" },
+
+    { "file": "Tutorial.dc.html", "page": "page-more", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Tutorial overlay (action step)" },
+    { "file": "Generate.dc.html", "page": "page-more", "x": 490, "y": 0, "w": 390, "h": 844, "title": "View — Generate" },
+    { "file": "Glossary.dc.html", "page": "page-more", "x": 0, "y": 1040, "w": 390, "h": 844, "title": "View — Glossary" },
+    { "file": "Menu.dc.html", "page": "page-more", "x": 490, "y": 1040, "w": 390, "h": 844, "title": "Main menu (sheet)" },
+    { "file": "Settings.dc.html", "page": "page-more", "x": 0, "y": 2080, "w": 390, "h": 844, "title": "Settings" },
+    { "file": "Relayout.dc.html", "page": "page-more", "x": 490, "y": 2080, "w": 390, "h": 844, "title": "Relayout picker (sheet)" },
+    { "file": "Help.dc.html", "page": "page-more", "x": 0, "y": 3120, "w": 390, "h": 844, "title": "Help / gestures (sheet)" },
+
+    { "file": "EvaluateHeaderCompact.dc.html", "page": "page-eval", "x": 0, "y": 0, "w": 390, "h": 844, "title": "Detent 1 — compact (~31dvh)" },
+    { "file": "EvaluateHeaderStandard.dc.html", "page": "page-eval", "x": 490, "y": 0, "w": 390, "h": 844, "title": "Detent 2 — standard (~48dvh)" },
+    { "file": "EvaluateHeaderSwitcher.dc.html", "page": "page-eval", "x": 980, "y": 0, "w": 390, "h": 844, "title": "Switcher dropped open" },
+    { "file": "EvaluateHeaderFull.dc.html", "page": "page-eval", "x": 1470, "y": 0, "w": 390, "h": 844, "title": "Detent 3 — full (two evaluations)" }
+  ],
+  "annotations": [
+    { "id": "note-home", "page": "page-core", "x": 0, "y": -170, "w": 390, "text": "VIEW 1 — Home / switcher (opened by the switcher chip in the editor top bar)\nAbsorbs the desktop landing page + tab bar. 'Documents' switches saved frameworks (open one marked). The switcher chip is the route back here, so it doubles as the home button." },
+    { "id": "note-new", "page": "page-core", "x": 490, "y": -170, "w": 390, "text": "VIEW 1 — 'New' tab = the type picker (desktop landing cards)\nChoose the framework type for a new document; each type expands to examples + Create new + Generate. Real module names & descriptions." },
+    { "id": "note-editor", "page": "page-core", "x": 0, "y": 890, "w": 390, "text": "VIEW 2 — Editor, Direction A (chosen)\nBottom command bar (final): Fit-to-view · Relayout | Evaluate | Export. UNDO moved to the top bar; REDO lives in the menu. Fit-to-view replaces desktop middle-click (no touch equivalent). Notifications show as a top-center toast (bottom is busy). Switcher chip = home; menu (top-right) = the long tail. Node gestures: double-tap canvas = add, tap = rename, hold = delete, hold+drag = attack." },
+    { "id": "note-eval", "page": "page-core", "x": 490, "y": 890, "w": 390, "text": "VIEW 3 — Evaluate, one sheet for all kinds\nChip row = saved-config switcher (icon = kind): tap to switch. TRAILING the row: a red trash (delete the active config) then + (add a config — picks KIND only). Extension kind uses a { •• } set glyph. The ⓘ by Semantics TOGGLES a glossary definition + reference-paper link (collapsed by default; shown open here, ⓘ active). Footer follows the desktop line: duration · hint on the left, Copy results / TeX on the right (no fabricated 'N extensions' count). Kind names are module-specific (ADF: interpretations)." },
+    { "id": "note-rank", "page": "page-core", "x": 0, "y": 1930, "w": 390, "text": "VIEW 3 — Ranking folded in\nSame chips + trailing delete/add, Categorizer active. Only the output differs: score chips + number badges on nodes; lattice semantics show an order a ≻ c ≻ b. Same desktop footer: duration · hint + Copy ranking / TeX." },
+    { "id": "note-exp", "page": "page-core", "x": 490, "y": 1930, "w": 390, "text": "VIEW 4 — Export, format picker\nImage formats open a preview (SVG now, PNG later); code/data formats download directly. Share-link kept as a separate one-tap action up top. Format list is per-module." },
+    { "id": "note-svg", "page": "page-core", "x": 0, "y": 2970, "w": 390, "text": "VIEW 4 — SVG preview, the one place config lives\nStyle options only affect the rendered image. Downloadable TikZ code is identical regardless; config just changes the \\usepackage[...] line + the SVG." },
+    { "id": "note-ser", "page": "page-core", "x": 0, "y": 4010, "w": 390, "text": "VIEW 3 — Serialisation, the third kind (two modes)\nParams: Selection + Termination functions + a Mode picker. SEQUENCES mode (left) enumerates full serialisation sequences (∅ → {a} → {c}); footer shows duration · N sequences (no copy, matching desktop). INTERACTIVE mode (right) is a stepper: pick the next initial set, see the built sequence + terminal check, with the partial extension highlighted green on the canvas; a Reset replaces the copy action." },
+
+    { "id": "note-baf", "page": "page-types", "x": 0, "y": -190, "w": 390, "text": "BAF — attack vs support links\n(1) Creation-mode selector pinned BOTTOM-LEFT of the canvas [Attack | Support] sets what a new edge will be. (2) Tapping an existing edge opens a type popover to switch attack↔support or delete. Support drawn as a double line." },
+    { "id": "note-iaf", "page": "page-types", "x": 490, "y": -190, "w": 390, "text": "iAF — uncertain arguments & attacks\nTwo stacked mode selectors BOTTOM-LEFT: Argument [solid ● | dashed ◌] and Attack [solid → | dashed ⇢] set the certainty of what you create next. Tapping an uncertain node offers Make definite / Delete (an edge uses the same popover as BAF)." },
+    { "id": "note-adf", "page": "page-types", "x": 0, "y": 850, "w": 390, "text": "ADF — acceptance condition editor\nTapping a node opens this sheet. Mobile keyboards lack ¬ ∧ ∨ ⊤ ⊥, so it carries an operator keypad + argument-atom chips that insert into the formula, with a live preview. Replaces the desktop floating condition bar." },
+    { "id": "note-paf", "page": "page-types", "x": 490, "y": 850, "w": 390, "text": "PAF — probabilities\nThe desktop Probabilities window is a flat list, so it becomes a sheet: a slider + value per argument and attack. Entry point: in PAF the bottom bar carries an extra Probabilities button (right of Export); tapping a node jumps to its row." },
+
+    { "id": "note-tut", "page": "page-more", "x": 0, "y": -210, "w": 390, "text": "TUTORIALS — overlay, never a separate screen\nDocked card below the top bar; canvas + controls stay live underneath. Steps are button-advance (Next) or ACTION-advance — here it waits for a real tap, showing 'Waiting for you…' and spotlighting the target (Evaluate ringed, arrow pointing). Tutorials autostart, so no separate picker needed for now." },
+    { "id": "note-gen", "page": "page-more", "x": 490, "y": -210, "w": 390, "text": "VIEW — Generate\nParameter form: algorithm select, sliders + numeric inputs, optional fixed seed, sticky Generate. Result shows stats + preview + Open in editor. Reached from the type picker's Generate and the menu." },
+    { "id": "note-gloss", "page": "page-more", "x": 0, "y": 850, "w": 390, "text": "VIEW — Glossary\nSearchable, grouped list; each entry is title + definition + its reference-paper link (same reference data the eval ⓘ card surfaces). Opened from the menu." },
+    { "id": "note-menu", "page": "page-more", "x": 490, "y": 850, "w": 390, "text": "MAIN MENU — the long tail (top-right hamburger)\nEverything not on the bottom bar: document ops (New, Open file, Save, Generate), Redo + Share link, and app screens (Settings, Tutorials, Glossary, Help). A bottom sheet so it's thumb-reachable." },
+    { "id": "note-set", "page": "page-more", "x": 0, "y": 1930, "w": 390, "text": "SETTINGS — from the menu\nEvery real setting: dark mode, graph style, physics default, show grid (off/on-drag/on), grid type, grid cell size, snap to grid, show tutorial hints. Physics & grid toggles live here (no bottom-bar buttons), matching your call." },
+    { "id": "note-relay", "page": "page-more", "x": 490, "y": 1930, "w": 390, "text": "RELAYOUT — sheet, two columns\nThe bottom-bar Relayout button opens this: Directed (Top→Bottom, Bottom→Top, Left→Right, Right→Left) and Other (Force-directed, Neato, Circular, Radial). All 8 desktop layouts, tap to apply." },
+    { "id": "note-help", "page": "page-more", "x": 0, "y": 2970, "w": 390, "text": "HELP — gestures sheet (from the menu)\nRewritten for touch: double-tap = add, tap = rename, hold = delete, hold+drag = attack, drag/pinch = pan/zoom, fit-view = recenter, plus the bottom-left selector for BAF/iAF. Replaces the desktop mouse/keyboard controls overview." },
+
+    { "id": "note-eval-proposal", "page": "page-eval", "x": 0, "y": -230, "w": 810, "text": "EVAL SHEET — snap detents + header-as-switcher (PROPOSAL, compare against the pill-row version on Core flow)\nThe pill strip is GONE. The active config collapses INTO the sheet header as a pill; its ▾ drops the full saved-config list (switch / delete-per-row / add). This frees vertical space so the same layout works at every detent.\nThree snap fixpoints: (1) COMPACT — header + semantics·mode + results only (no def, no copy); leaves the most AF visible. (2) STANDARD — the everyday view: adds the ⓘ glossary reveal + the desktop copy footer. (3) FULL — see the note to the right.\nAF VISIBILITY: at compact/standard the graph is re-fit into the band ABOVE the sheet so it isn't half-covered (it's centered today). At full the AF is mostly covered — accepted." },
+    { "id": "note-eval-switcher", "page": "page-eval", "x": 980, "y": -230, "w": 390, "text": "SWITCHER — the ▾ on the header pill\nReplaces the horizontal pill strip: a dropped list of every saved config (icon = kind), the active one checked, a per-row trash to delete, and an 'Add evaluation…' row that picks the KIND only. Tapping a row switches + collapses." },
+    { "id": "note-eval-full", "page": "page-eval", "x": 1470, "y": -230, "w": 390, "text": "FULL — two evaluations at once\nTOP pane = the switchable saved list (header-as-switcher); it OWNS the canvas highlight, so no clash. BOTTOM pane = a one-off single eval the user drops in to compare (its own kind/semantics, view-only, no highlight); the ✕ clears it. Covering the AF here is fine." }
+  ],
+  "launch": { "view": "canvas", "page": "page-core" }
+}

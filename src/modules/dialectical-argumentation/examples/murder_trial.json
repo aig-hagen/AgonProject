@@ -6,7 +6,8 @@
   "arguments": {
     "0": {
       "name": "Guilty",
-      "x": 200, "y": 0,
+      "x": 200,
+      "y": 0,
       "condition": {
         "type": "negation",
         "child": { "type": "atom", "argumentId": 1 }
@@ -14,7 +15,8 @@
     },
     "1": {
       "name": "Innocent",
-      "x": 400, "y": 200,
+      "x": 400,
+      "y": 200,
       "condition": {
         "type": "disjunction",
         "children": [
@@ -31,12 +33,14 @@
     },
     "2": {
       "name": "Motive",
-      "x": 0, "y": 200,
+      "x": 0,
+      "y": 200,
       "condition": { "type": "tautology" }
     },
     "3": {
       "name": "Alibi",
-      "x": 300, "y": 400,
+      "x": 300,
+      "y": 400,
       "condition": {
         "type": "negation",
         "child": { "type": "atom", "argumentId": 4 }
@@ -44,7 +48,8 @@
     },
     "4": {
       "name": "Evidence",
-      "x": 100, "y": 400,
+      "x": 100,
+      "y": 400,
       "condition": {
         "type": "negation",
         "child": { "type": "atom", "argumentId": 3 }

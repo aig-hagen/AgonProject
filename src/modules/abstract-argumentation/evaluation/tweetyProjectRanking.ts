@@ -152,8 +152,7 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
       {
         key: 'useMultiset',
         label: 'Use multiset',
-        description:
-          'Propagate a value for every path between two arguments instead of just one.',
+        description: 'Propagate a value for every path between two arguments instead of just one.',
         type: 'boolean',
         default: true,
       },
@@ -292,7 +291,11 @@ async function fetchRanking(
   attacks: number[][],
   semantics: string,
   args: RankingArgs,
-): Promise<{ evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }>; rankingType: RankingType }> {
+): Promise<{
+  evaluationDurationInMs: number
+  scores: Array<{ argumentId: number; score: number }>
+  rankingType: RankingType
+}> {
   const body: GetRankingRequestBody = {
     email: USER_ID,
     cmd: 'get_model',
@@ -338,7 +341,11 @@ export function useRankingEvaluationQuery(
     () => ['rankings_get_model', semanticsRef, argsRef, argumentData] as const,
   )
 
-  type RawResult = { evaluationDurationInMs: number; scores: Array<{ argumentId: number; score: number }>; rankingType: RankingType }
+  type RawResult = {
+    evaluationDurationInMs: number
+    scores: Array<{ argumentId: number; score: number }>
+    rankingType: RankingType
+  }
   const queryResult = useQuery<RawResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
@@ -360,13 +367,12 @@ export function useRankingEvaluationQuery(
     const input = unref(inputRef)
     const argumentIdAndData = [...input.content.arguments()]
 
-    const ranking: Ranking = raw.scores
-      .map(({ argumentId: serverArgumentId, score }) => {
-        const idAndData = argumentIdAndData[serverArgumentId - 1]
-        if (idAndData === undefined) throw new Error('Server returned invalid argument.')
-        const [id, { name }] = idAndData
-        return { id, name, score }
-      })
+    const ranking: Ranking = raw.scores.map(({ argumentId: serverArgumentId, score }) => {
+      const idAndData = argumentIdAndData[serverArgumentId - 1]
+      if (idAndData === undefined) throw new Error('Server returned invalid argument.')
+      const [id, { name }] = idAndData
+      return { id, name, score }
+    })
 
     return {
       stateId: input.stateId,

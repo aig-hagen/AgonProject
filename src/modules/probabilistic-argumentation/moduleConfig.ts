@@ -52,9 +52,7 @@ export const probabilisticArgumentationModule: ModuleConfig<
   is(model: unknown) {
     return model instanceof ProbabilisticArgumentation
   },
-  deserialize(
-    modelSerialized: unknown,
-  ): ProbabilisticArgumentation<PafArgumentData> | undefined {
+  deserialize(modelSerialized: unknown): ProbabilisticArgumentation<PafArgumentData> | undefined {
     if (typeof modelSerialized !== 'object' || modelSerialized === null) return undefined
     // @ts-expect-error TS7053: ignore because we deserialize
     if (modelSerialized[TYPE_KEY] !== PAF_V1_TYPE) return undefined
@@ -76,6 +74,7 @@ export const probabilisticArgumentationModule: ModuleConfig<
   examples: datasets,
   initialCotent: initialProbabilisticArgumentation,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },
@@ -86,7 +85,8 @@ export const probabilisticArgumentationModule: ModuleConfig<
     return saveAsString(document)
   },
   generateHref: '/generate?type=probabilistic',
-  description: 'Arguments and attacks can be assigned a probability value between 0 and 1 to quantify uncertainty.',
+  description:
+    'Arguments and attacks can be assigned a probability value between 0 and 1 to quantify uncertainty.',
   publications: [LON11, H12, HPPRT21],
   tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY, TAG_WEIGHTS],
 }

@@ -36,6 +36,8 @@ export interface ExportReference {
 
 export interface ExportConfig<DocumentT> {
   name: string
+  /** Short one-line subtitle shown under the name in the compact export picker. */
+  description?: string
   export(document: DocumentT, styleOptions?: ExportStyleOptions): ExportResult
   codemirrorOptions?: {
     extensions: Extension[]

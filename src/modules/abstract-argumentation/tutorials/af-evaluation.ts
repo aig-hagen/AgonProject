@@ -21,7 +21,8 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const afEvaluationTutorial: Tutorial = {
   id: 'af-evaluation',
   name: 'Evaluation AF Tutorial',
-  description: 'Learn how to compute and interpret extension semantics for argumentation frameworks.',
+  description:
+    'Learn how to compute and interpret extension semantics for argumentation frameworks.',
   steps: [
     {
       id: 'intro',
@@ -65,7 +66,7 @@ export const afEvaluationTutorial: Tutorial = {
     {
       id: 'done',
       title: 'Great work!',
-      body: 'You\'ve completed the Evaluation Tutorial. Explore more features like export and sharing from the menu.',
+      body: "You've completed the Evaluation Tutorial. Explore more features like export and sharing from the menu.",
       advanceOn: 'button',
     },
   ],

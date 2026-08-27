@@ -164,7 +164,9 @@ export function loadExampleFromJsonWithSchema<
   }
 }
 
-export function makeCanLoadFromObject(apiVersion: string): (dataObject: Record<string, unknown>) => boolean {
+export function makeCanLoadFromObject(
+  apiVersion: string,
+): (dataObject: Record<string, unknown>) => boolean {
   return (dataObject) => dataObject['apiVersion'] === apiVersion
 }
 

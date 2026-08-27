@@ -21,7 +21,8 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const setafEvaluationTutorial: Tutorial = {
   id: 'setaf-evaluation',
   name: 'Evaluation SetAF Tutorial',
-  description: 'Learn how to compute extension-based semantics for argumentation frameworks with collective attacks.',
+  description:
+    'Learn how to compute extension-based semantics for argumentation frameworks with collective attacks.',
   steps: [
     {
       id: 'intro',
@@ -68,7 +69,7 @@ export const setafEvaluationTutorial: Tutorial = {
     {
       id: 'done',
       title: 'Great work!',
-      body: 'You\'ve completed the SetAF Evaluation Tutorial. Try comparing results with different semantics, or open multiple evaluation windows side by side to compare modes.',
+      body: "You've completed the SetAF Evaluation Tutorial. Try comparing results with different semantics, or open multiple evaluation windows side by side to compare modes.",
       advanceOn: 'button',
     },
   ],

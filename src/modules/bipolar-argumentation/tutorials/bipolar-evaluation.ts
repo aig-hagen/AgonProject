@@ -21,7 +21,8 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const bipolarEvaluationTutorial: Tutorial = {
   id: 'bipolar-evaluation',
   name: 'Evaluation BAF Tutorial',
-  description: 'Learn about different support interpretations and how to compute extension-based semantics for BAFs.',
+  description:
+    'Learn about different support interpretations and how to compute extension-based semantics for BAFs.',
   steps: [
     {
       id: 'intro',
@@ -83,7 +84,7 @@ export const bipolarEvaluationTutorial: Tutorial = {
     {
       id: 'done',
       title: 'Great work!',
-      body: 'You\'ve completed the Evaluation Tutorial. Explore more features like export and sharing from the menu.',
+      body: "You've completed the Evaluation Tutorial. Explore more features like export and sharing from the menu.",
       advanceOn: 'button',
     },
   ],

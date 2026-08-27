@@ -23,7 +23,10 @@ import {
 } from '@/modules/common/argumentation/export'
 import type { ExportConfig, ExportStyleOptions } from '@/modules/common/export'
 import { IdMapping } from '@/modules/common/ids'
-import type { PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import type {
+  PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 
 function* emptyIterator(): IterableIterator<[number, number]> {}
 
@@ -88,9 +91,7 @@ const exportICCMA: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> = {
 
 const exportTGFPaf: ExportConfig<ProbabilisticArgumentation<PafArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
-  references: [
-    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
-  ],
+  references: [{ label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' }],
   extension: 'tgf',
   export(document) {
     let numberOfArguments = 0

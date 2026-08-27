@@ -29,7 +29,10 @@ import {
 import type { DeserializationResult } from '@/modules/common/save/load'
 import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
 import { FormulaNodeSchema } from '@/modules/dialectical-argumentation/condition/formulaSchema'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import {
+  type AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 
 const API_VERSION = 'dialectical-argumentation-framework/v1' as const
 

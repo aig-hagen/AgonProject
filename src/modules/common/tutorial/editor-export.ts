@@ -32,10 +32,11 @@ export const editorExportTutorial: Tutorial = {
     {
       id: 'align',
       title: 'Align arguments first',
-      body: (isTouchDevice) => isTouchDevice
-        ? 'For clean LaTeX output, arguments should be aligned on a grid. Enable <strong>Snap to grid</strong> in Settings, then reposition your arguments so they sit on clean grid coordinates.'
-        : 'For clean LaTeX output, arguments should be aligned on a grid. Hold <kbd class="kbd kbd-sm">Ctrl</kbd> and drag any argument to snap it to the nearest grid position. Do this for each argument to get a tidy layout before exporting.',
-      advanceOn: (isTouchDevice) => isTouchDevice ? 'button' : 'action',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? 'For clean LaTeX output, arguments should be aligned on a grid. Enable <strong>Snap to grid</strong> in Settings, then reposition your arguments so they sit on clean grid coordinates.'
+          : 'For clean LaTeX output, arguments should be aligned on a grid. Hold <kbd class="kbd kbd-sm">Ctrl</kbd> and drag any argument to snap it to the nearest grid position. Do this for each argument to get a tidy layout before exporting.',
+      advanceOn: (isTouchDevice) => (isTouchDevice ? 'button' : 'action'),
       advanceCondition: (ctx, baseline) => ctx.ctrlSnapCount > baseline.ctrlSnapCount,
     },
     {

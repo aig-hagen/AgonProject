@@ -40,7 +40,9 @@ export function useHighlight({
 }) {
   const extensionHighlightRef = ref<Highlight | undefined>(undefined)
   const serialisationHighlightRef = ref<Highlight | undefined>(undefined)
-  const highlightToShow = computed(() => extensionHighlightRef.value ?? serialisationHighlightRef.value)
+  const highlightToShow = computed(
+    () => extensionHighlightRef.value ?? serialisationHighlightRef.value,
+  )
 
   watchEffect(() => {
     const graphComponent = graphComponentRef.value

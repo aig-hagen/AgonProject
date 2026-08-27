@@ -35,11 +35,12 @@ import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
+import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
 import type { Input } from '@/modules/common/evaluation/types'
-import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import { escapeTexText } from '@/modules/common/export/texEscape'
+import GroupedSelect from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
-import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -55,6 +56,7 @@ const {
   documentId,
   stateKey,
   suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: RankingWindowInstanceState
@@ -62,11 +64,13 @@ const {
   documentId?: DocumentId
   stateKey?: string
   suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:instanceState': [state: RankingWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
+  title: [title: string]
   close: []
   focus: []
 }>()
@@ -78,7 +82,9 @@ function resolveSemanticFromKey(key: string): RankingSemantic {
 const selectedSemantic = shallowRef<RankingSemantic>(
   resolveSemanticFromKey(instanceState.semanticKey),
 )
-const args = ref<RankingArgs>(instanceState.args ?? defaultRankingArgsFor(instanceState.semanticKey))
+const args = ref<RankingArgs>(
+  instanceState.args ?? defaultRankingArgsFor(instanceState.semanticKey),
+)
 
 watch(selectedSemantic, (semantic, previous) => {
   if (previous !== undefined && semantic.key !== previous.key) {
@@ -97,6 +103,11 @@ watch(
   },
   { deep: true },
 )
+
+const windowTitle = computed(() => `${selectedSemantic.value.displayName} · Ranking`)
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 
 const query = useRankingEvaluationQuery(
   toRef(() => input),
@@ -168,6 +179,15 @@ const copyTextTex = computed(() => {
   return undefined
 })
 
+const statusLine = computed(() => {
+  if (data.value === undefined) return undefined
+  const hint =
+    data.value.rankingType === 'lattice'
+      ? 'Node labels show the ranking level'
+      : 'Node labels show ranking scores'
+  return `${data.value.evaluationDurationInMs}ms · ${hint}`
+})
+
 function computeWeights() {
   const d = data.value
   return d === undefined
@@ -178,11 +198,13 @@ function computeWeights() {
       }))
 }
 
-watch(data, () => emit('setWeights', computeWeights()), { immediate: true })
+// Suppressed instances (all but the active one in the compact host, and unfocused
+// windows on desktop) own no node weights, so switching config swaps the badges.
+const emittedWeights = computed(() => (suppressed ? [] : computeWeights()))
+watch(emittedWeights, (w) => emit('setWeights', w), { immediate: true })
 
 function onWindowFocus() {
   emit('focus')
-  emit('setWeights', computeWeights())
 }
 
 const isActive = computed(() => !suppressed && data.value !== undefined)
@@ -190,7 +212,8 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
 
 <template>
   <BaseEvaluationWindow
-    :title="`${selectedSemantic.displayName} · Ranking`"
+    :title="windowTitle"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 480, height: 400 }"
@@ -203,41 +226,41 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
   >
     <template #parameters>
       <ParameterField label="Semantics" min-width="10rem">
-        <select v-model="selectedSemantic" class="select select-sm w-full bg-base-200">
-          <option v-for="s in KNOWN_RANKING_SEMANTICS" :key="s.key" :value="s">
-            {{ s.displayName }}
-          </option>
-        </select>
+        <GroupedSelect
+          v-model="selectedSemantic"
+          :groups="[{ key: 'ranking', displayName: '', options: KNOWN_RANKING_SEMANTICS }]"
+          full-width
+        />
       </ParameterField>
-      <template v-for="param in selectedSemantic.parameters ?? []" :key="param.key">
-        <div class="flex flex-col gap-0.5">
-          <HoverTooltip class="label text-xs w-fit">{{ param.label }}
-            <template #content>
-              <span class="text-xs">{{ param.description }}</span>
-            </template>
-          </HoverTooltip>
-          <input
-            v-if="param.type === 'number'"
-            type="number"
-            class="input input-xs w-20"
-            :min="param.min"
-            :max="param.max"
-            :step="param.step ?? 'any'"
-            v-model.number="args[param.key]"
-          />
-          <input
-            v-else-if="param.type === 'boolean'"
-            type="checkbox"
-            class="toggle toggle-xs"
-            v-model="args[param.key]"
-          />
-          <select v-else class="select select-xs w-fit bg-base-200" v-model="args[param.key]">
-            <option v-for="o in param.options" :key="o.value" :value="o.value">
-              {{ o.label }}
-            </option>
-          </select>
-        </div>
-      </template>
+      <ParameterField
+        v-for="param in selectedSemantic.parameters ?? []"
+        :key="param.key"
+        :label="param.label"
+        :title="param.description"
+        max-width="10rem"
+      >
+        <input
+          v-if="param.type === 'number'"
+          type="number"
+          class="input input-sm w-full bg-base-200"
+          :min="param.min"
+          :max="param.max"
+          :step="param.step ?? 'any'"
+          v-model.number="args[param.key]"
+        />
+        <input
+          v-else-if="param.type === 'boolean'"
+          type="checkbox"
+          class="toggle toggle-sm"
+          v-model="args[param.key]"
+        />
+        <PickerSelect
+          v-else
+          :model-value="args[param.key] as string"
+          :options="param.options ?? []"
+          @update:model-value="args[param.key] = $event"
+        />
+      </ParameterField>
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock :id="selectedSemantic.key" />
@@ -267,31 +290,12 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
             </div>
           </div>
         </template>
-        <div class="flex items-center justify-between gap-2">
-          <p class="label">
-            {{ data.evaluationDurationInMs }}ms ·
-            {{
-              data.rankingType === 'lattice'
-                ? 'Node labels show the ranking level'
-                : 'Node labels show ranking scores'
-            }}
-          </p>
-          <div v-if="copyText !== undefined" class="join ml-auto">
-            <ButtonCopy
-              class="btn join-item btn-xs btn-ghost gap-1"
-              :text="copyText"
-              title="Copy as plain text"
-            >
-              ranking
-            </ButtonCopy>
-            <ButtonCopy
-              class="btn join-item btn-square btn-xs btn-ghost"
-              :text="copyTextTex"
-              icon-only
-              title="Copy as TeX"
-            />
-          </div>
-        </div>
+        <EvaluationStatusFooter
+          :status-line="statusLine"
+          :copy-text="copyText"
+          :copy-text-tex="copyTextTex"
+          result-noun="ranking"
+        />
       </template>
     </template>
   </BaseEvaluationWindow>

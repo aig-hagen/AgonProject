@@ -42,9 +42,7 @@ export function latexExportCommonConfig(): {
         }),
       ],
     },
-    references: [
-      { label: 'CTAN Package', url: 'https://ctan.org/pkg/argumentation' },
-    ],
+    references: [{ label: 'CTAN Package', url: 'https://ctan.org/pkg/argumentation' }],
     extension: 'tex',
   }
 }
@@ -156,7 +154,12 @@ export function exportLatexArgumentationCommon(
 
   let text = '\\begin{af}\r\n'
   text += absolutePlacement(nodeMap, styleOptions?.snapToGrid ?? false, hooks?.argumentOptions)
-  text += emitLinks(processLinks(attacks, supports), getLatexId, hooks?.attackOptions, hooks?.attackSuffix)
+  text += emitLinks(
+    processLinks(attacks, supports),
+    getLatexId,
+    hooks?.attackOptions,
+    hooks?.attackSuffix,
+  )
   if (hooks?.setAttacks) {
     for (const { attackers, target } of hooks.setAttacks) {
       if (attackers.length === 1) {

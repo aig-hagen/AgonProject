@@ -17,12 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <template>
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-    data-slot="icon"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" data-slot="icon">
     <text
       x="12"
       y="9"
@@ -33,6 +28,8 @@
       font-family="ui-monospace, monospace"
       fill="currentColor"
       stroke="none"
-    >⪯</text>
+    >
+      ⪯
+    </text>
   </svg>
 </template>

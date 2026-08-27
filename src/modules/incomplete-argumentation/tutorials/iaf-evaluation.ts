@@ -21,7 +21,8 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const iafEvaluationTutorial: Tutorial = {
   id: 'iaf-evaluation',
   name: 'Evaluation iAF Tutorial',
-  description: 'Learn about necessary and possible acceptance and how to evaluate incomplete AFs under extension-based semantics.',
+  description:
+    'Learn about necessary and possible acceptance and how to evaluate incomplete AFs under extension-based semantics.',
   steps: [
     {
       id: 'intro',
@@ -82,7 +83,7 @@ export const iafEvaluationTutorial: Tutorial = {
     {
       id: 'done',
       title: 'Great work!',
-      body: 'You\'ve completed the iAF Evaluation Tutorial. Try switching between <em>Possible</em> and <em>Necessary</em> acceptance to see how uncertainty in your framework affects the results.',
+      body: "You've completed the iAF Evaluation Tutorial. Try switching between <em>Possible</em> and <em>Necessary</em> acceptance to see how uncertainty in your framework affects the results.",
       advanceOn: 'button',
     },
   ],

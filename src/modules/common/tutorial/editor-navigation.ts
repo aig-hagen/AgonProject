@@ -52,7 +52,7 @@ export const editorNavigationTutorial: Tutorial = {
         isTouchDevice
           ? 'Use the <strong>layout button</strong> in the menu to refit the framework into view.'
           : '<strong>Middle-click</strong> anywhere on the canvas to re-center the view and fit the entire framework into the viewport.',
-      advanceOn: isTouchDevice => isTouchDevice ? 'button' : 'action',
+      advanceOn: (isTouchDevice) => (isTouchDevice ? 'button' : 'action'),
       advanceCondition: (ctx, baseline) => ctx.centerCount > baseline.centerCount,
     },
     {
@@ -65,4 +65,8 @@ export const editorNavigationTutorial: Tutorial = {
 }
 
 /** Common tutorials available in all modules. Spread into each module's tutorial list. */
-export const commonTutorials: Tutorial[] = [editorNavigationTutorial, editorAdvancedTutorial, editorExportTutorial]
+export const commonTutorials: Tutorial[] = [
+  editorNavigationTutorial,
+  editorAdvancedTutorial,
+  editorExportTutorial,
+]

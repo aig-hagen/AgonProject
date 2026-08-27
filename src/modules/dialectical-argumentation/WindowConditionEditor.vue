@@ -20,13 +20,16 @@
 import { computed } from 'vue'
 
 import type { NodeId } from '@/modules/common/graph-editor/graphEditor'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 import {
   type FormulaNode,
   formulaToString,
 } from '@/modules/dialectical-argumentation/condition/formula'
 import FormulaEditor from '@/modules/dialectical-argumentation/condition/FormulaEditor.vue'
-import type { AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import type {
+  AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 
 const props = defineProps<{
   argumentId: NodeId
@@ -57,13 +60,11 @@ const availableArguments = computed(() => {
   return result
 })
 
-const formulaPreview = computed(() =>
-  formulaToString(argument.value.condition, argNameMap.value),
-)
+const formulaPreview = computed(() => formulaToString(argument.value.condition, argNameMap.value))
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     :title="`Condition for ${argument.name}`"
     :initial-position="{ x: 128, y: 64 }"
@@ -80,5 +81,5 @@ const formulaPreview = computed(() =>
         <p class="font-mono text-sm">{{ formulaPreview }}</p>
       </div>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

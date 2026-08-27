@@ -87,6 +87,7 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
   examples: datasets,
   initialCotent: initialAbstractArgumentation,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension', 'ranking', 'serialisation'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },
@@ -97,7 +98,8 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
     return saveAsString(document, name)
   },
   generateHref: '/generate?type=abstract',
-  description: 'The foundational model for the formal representation of argumentation via arguments and directed attacks.',
+  description:
+    'The foundational model for the formal representation of argumentation via arguments and directed attacks.',
   publications: [D95, BCG18],
   tags: [TAG_ABSTRACT, TAG_ATTACK],
 }

@@ -21,7 +21,9 @@ import type { InjectionKey } from 'vue'
 
 // Module-scope symbols so all HoverTooltip instances share the same injection key.
 const ANCESTOR_KEEP_OPEN_FNS: InjectionKey<Array<() => void>> = Symbol('hoverTooltipKeepOpen')
-const ANCESTOR_SCHEDULE_CLOSE_FNS: InjectionKey<Array<() => void>> = Symbol('hoverTooltipScheduleClose')
+const ANCESTOR_SCHEDULE_CLOSE_FNS: InjectionKey<Array<() => void>> = Symbol(
+  'hoverTooltipScheduleClose',
+)
 const NESTING_DEPTH: InjectionKey<number> = Symbol('hoverTooltipDepth')
 </script>
 
@@ -81,7 +83,13 @@ provide(NESTING_DEPTH, depth + 1)
 </script>
 
 <template>
-  <span ref="trigger" v-bind="$attrs" class="cursor-help border-b border-dotted border-info" @mouseenter="onEnter" @mouseleave="scheduleClose">
+  <span
+    ref="trigger"
+    v-bind="$attrs"
+    class="cursor-help border-b border-dotted border-info"
+    @mouseenter="onEnter"
+    @mouseleave="scheduleClose"
+  >
     <slot />
   </span>
   <Teleport to="body">

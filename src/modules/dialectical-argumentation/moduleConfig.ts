@@ -30,7 +30,10 @@ import {
 import { BESWW13, BESWW18, BW10 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/dialectical-argumentation/examples'
 import GraphEditor from '@/modules/dialectical-argumentation/GraphEditor.vue'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import {
+  type AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 import {
   canLoadFromObject,
   loadFromString,
@@ -41,18 +44,43 @@ const DIALECTICAL_ARGUMENTATION_V1_TYPE = 'dialectical-argumentation-v1'
 const TYPE_KEY = 'type'
 
 const initialDialecticalArgumentation = new DialecticalArgumentation<AdfArgumentData>()
-initialDialecticalArgumentation.addArgument(0, { name: 'a', x: 0, y: 0, condition: { type: 'tautology' } })
-initialDialecticalArgumentation.addArgument(1, { name: 'b', x: 0, y: 200, condition: { type: 'contradiction' } })
+initialDialecticalArgumentation.addArgument(0, {
+  name: 'a',
+  x: 0,
+  y: 0,
+  condition: { type: 'tautology' },
+})
+initialDialecticalArgumentation.addArgument(1, {
+  name: 'b',
+  x: 0,
+  y: 200,
+  condition: { type: 'contradiction' },
+})
 initialDialecticalArgumentation.addArgument(2, {
   name: 'c',
   x: 150,
   y: 100,
-  condition: { type: 'disjunction', children: [{ type: 'atom', argumentId: 0 }, { type: 'negation', child: { type: 'atom', argumentId: 1 } }] },
+  condition: {
+    type: 'disjunction',
+    children: [
+      { type: 'atom', argumentId: 0 },
+      { type: 'negation', child: { type: 'atom', argumentId: 1 } },
+    ],
+  },
 })
 // Derive links from conditions
-initialDialecticalArgumentation.setCondition(0, initialDialecticalArgumentation.getArgument(0).condition)
-initialDialecticalArgumentation.setCondition(1, initialDialecticalArgumentation.getArgument(1).condition)
-initialDialecticalArgumentation.setCondition(2, initialDialecticalArgumentation.getArgument(2).condition)
+initialDialecticalArgumentation.setCondition(
+  0,
+  initialDialecticalArgumentation.getArgument(0).condition,
+)
+initialDialecticalArgumentation.setCondition(
+  1,
+  initialDialecticalArgumentation.getArgument(1).condition,
+)
+initialDialecticalArgumentation.setCondition(
+  2,
+  initialDialecticalArgumentation.getArgument(2).condition,
+)
 
 export const dialecticalArgumentationModule: ModuleConfig<
   DialecticalArgumentation<AdfArgumentData>
@@ -62,9 +90,7 @@ export const dialecticalArgumentationModule: ModuleConfig<
   is(model: unknown) {
     return model instanceof DialecticalArgumentation
   },
-  deserialize(
-    modelSerialized: unknown,
-  ): DialecticalArgumentation<AdfArgumentData> | undefined {
+  deserialize(modelSerialized: unknown): DialecticalArgumentation<AdfArgumentData> | undefined {
     if (typeof modelSerialized !== 'object' || modelSerialized === null) {
       return undefined
     }
@@ -91,6 +117,7 @@ export const dialecticalArgumentationModule: ModuleConfig<
   examples: datasets,
   initialCotent: initialDialecticalArgumentation,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },

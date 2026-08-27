@@ -19,7 +19,11 @@
 <script setup lang="ts" generic="DocumentT">
 import { EditorState, type Extension } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { ArrowTopRightOnSquareIcon, ClipboardDocumentCheckIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/outline'
+import {
+  ArrowTopRightOnSquareIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentIcon,
+} from '@heroicons/vue/24/outline'
 import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
@@ -27,8 +31,10 @@ import { computed, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
+import ExportSheet from '@/modules/common/export/ExportSheet.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useSettings } from '@/modules/common/settings/useSettings'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 import type { ExportConfig, ExportFileData } from '.'
 
@@ -46,6 +52,7 @@ const soureViewRef = useTemplateRef('soureView')
 const editorView = shallowRef<EditorView | undefined>(undefined)
 
 const { gridCellScale } = useSettings()
+const { layoutMode } = useLayoutMode()
 
 const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exportConfigs[0])
 const selectedArgumentStyle = shallowRef<string>('standard')
@@ -62,9 +69,13 @@ const isBipolarDocument = computed(() => {
 const usePackageLine = computed(() => {
   if (selectedExportConfig.value?.name !== 'LaTeX (argumentation)') return undefined
   const opts = [
-    ...(selectedArgumentStyle.value !== 'standard' ? [`argumentstyle=${selectedArgumentStyle.value}`] : []),
+    ...(selectedArgumentStyle.value !== 'standard'
+      ? [`argumentstyle=${selectedArgumentStyle.value}`]
+      : []),
     `namestyle=${selectedNameStyle.value}`,
-    ...(selectedAttackStyle.value !== 'standard' ? [`attackstyle=${selectedAttackStyle.value}`] : []),
+    ...(selectedAttackStyle.value !== 'standard'
+      ? [`attackstyle=${selectedAttackStyle.value}`]
+      : []),
   ]
   if (isBipolarDocument.value) opts.push(`supportstyle=${selectedSupportStyle.value}`)
   return `\\usepackage[${opts.join(',')}]{argumentation}`
@@ -82,6 +93,10 @@ function copyPackageLine() {
 
 const exportResult = computed(() => {
   if (!open.value) {
+    return undefined
+  }
+  // The compact layout renders ExportSheet, which owns its own export computation.
+  if (layoutMode.value === 'compact') {
     return undefined
   }
   if (selectedExportConfig.value === undefined) {
@@ -180,13 +195,19 @@ watchEffect(() => {
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Export"
     :initial-position="{ x: 64, y: 128 }"
     :intitalSize="{ width: 700, height: 480 }"
   >
-    <div class="p-4">
+    <ExportSheet
+      v-if="layoutMode === 'compact'"
+      :input="input"
+      :export-configs="exportConfigs"
+      @export="emit('export', $event)"
+    />
+    <div v-else class="p-4">
       <fieldset class="fieldset">
         <div class="flex gap-2 flex-wrap">
           <label class="select select-sm w-66">
@@ -258,7 +279,14 @@ watchEffect(() => {
             <div class="mt-4 flex flex-wrap gap-4 items-center">
               <label class="label gap-2">
                 <span>Node Distance</span>
-                <input type="range" class="range range-sm w-28" min="0.5" max="4" step="0.25" v-model.number="selectedNodeDistance" />
+                <input
+                  type="range"
+                  class="range range-sm w-28"
+                  min="0.5"
+                  max="4"
+                  step="0.25"
+                  v-model.number="selectedNodeDistance"
+                />
                 <span class="text-sm w-6 text-right opacity-60">{{ selectedNodeDistance }}</span>
               </label>
             </div>
@@ -292,10 +320,7 @@ watchEffect(() => {
               >
                 text
               </ButtonSave>
-              <ButtonCopy
-                class="btn btn-sm btn-soft w-28 justify-start"
-                :text="exportResult?.text"
-              >
+              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="exportResult?.text">
                 text
               </ButtonCopy>
             </div>
@@ -312,10 +337,7 @@ watchEffect(() => {
               >
                 SVG
               </ButtonSave>
-              <ButtonCopy
-                class="btn btn-sm btn-soft w-28 justify-start"
-                :text="svgText"
-              >
+              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="svgText">
                 SVG
               </ButtonCopy>
             </div>
@@ -329,7 +351,7 @@ watchEffect(() => {
         </div>
       </div>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>
 <style scoped>
 :deep(.cm-editor) {

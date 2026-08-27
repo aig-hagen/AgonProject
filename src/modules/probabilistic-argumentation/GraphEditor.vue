@@ -25,6 +25,7 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
+import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import WindowExport from '@/modules/common/export/WindowExport.vue'
@@ -36,6 +37,7 @@ import {
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
@@ -53,6 +55,11 @@ import ProbabilityEditor from '@/modules/probabilistic-argumentation/Probability
 import { pafBasicsTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-basics'
 import { pafEvaluationTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-evaluation'
 import WindowExtensions from '@/modules/probabilistic-argumentation/WindowExtensions.vue'
+
+// This wrapper's root is a <div> (the graph editor and the probability sheet are
+// siblings), so shell-provided attrs like document-name / type-badge / @home would
+// otherwise fall through to that div instead of the inner GraphEditor.
+defineOptions({ inheritAttrs: false })
 
 const { state, historyState, documentId } = defineProps<{
   state: DocumentState<ProbabilisticArgumentation<PafArgumentData>>
@@ -85,6 +92,11 @@ const evaluationInput = computed<Input<ProbabilisticArgumentation<PafArgumentDat
 const renderedState = shallowRef(state)
 const editorState = shallowRef(transformToEditorState(state, true))
 const isProbabilitiesOpen = ref(false)
+// Compact: which row the Probabilities sheet should jump to after a node/attack tap.
+const probabilityFocusKey = ref<string | undefined>(undefined)
+watch(isProbabilitiesOpen, (isOpen) => {
+  if (!isOpen) probabilityFocusKey.value = undefined
+})
 
 watch(
   () => state,
@@ -255,6 +267,13 @@ const argumentAnnotations = computed(() => {
 
 function onAnnotationClicked(data: { id: NodeId; content: string }, event: PointerEvent) {
   event.stopPropagation()
+  // Compact: jump to the argument's row in the Probabilities sheet instead of the
+  // desktop inline slider popup, which has no thumb-reachable place to sit.
+  if (layoutMode.value === 'compact') {
+    probabilityFocusKey.value = `arg-${data.id}`
+    isProbabilitiesOpen.value = true
+    return
+  }
   editingLabel.value = {
     key: `arg-${data.id}`,
     x: 0,
@@ -306,6 +325,31 @@ function updateEvaluationInstance(updated: PafWindowInstanceState) {
   )
 }
 
+// --- Compact evaluation host (mobile) ---
+
+const { layoutMode } = useLayoutMode()
+const evaluationHostOpen = ref(false)
+const activeExtensionId = ref<string | undefined>(undefined)
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
+const extensionChips = computed<EvaluationChip[]>(() =>
+  evaluationInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension',
+  })),
+)
+
+// The node weights come from the active config only; clear them when the sheet closes.
+watch(evaluationHostOpen, (isOpen) => {
+  if (!isOpen && layoutMode.value === 'compact') nodeWeights.value = new Map()
+})
+
 provide(TOOLTIP_REGISTRY_KEY, {
   ...abstractArgumentationGlossary,
   ...probabilisticArgumentationGlossary,
@@ -336,6 +380,12 @@ const editingValue = ref(0)
 
 function openEditor(event: MouseEvent, label: ProbabilityLabel) {
   event.stopPropagation()
+  if (layoutMode.value === 'compact') {
+    probabilityFocusKey.value =
+      label.type === 'attack' ? `atk-${label.sourceId}-${label.targetId}` : `arg-${label.id}`
+    isProbabilitiesOpen.value = true
+    return
+  }
   editingLabel.value = { ...label, screenX: event.clientX, screenY: event.clientY }
   editingValue.value = label.value
 }
@@ -366,6 +416,7 @@ function onPopupKeydown(event: KeyboardEvent) {
   <div class="h-full w-full relative">
     <GraphEditor
       v-if="editorState"
+      v-bind="$attrs"
       class="paf-graph"
       :document-id="documentId"
       @new="emit('new')"
@@ -380,6 +431,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
       :link-configs="linkConfig"
+      node-tap-action="Open its probability"
       :state="editorState"
       :node-weights="nodeWeights"
       :node-annotations="argumentAnnotations"
@@ -392,11 +444,42 @@ function onPopupKeydown(event: KeyboardEvent) {
       @redo="emit('redo')"
       @save="emit('save')"
       @share="emit('share')"
+      v-model:evaluation-open="evaluationHostOpen"
       @open-extension-window="addEvaluationInstance()"
     >
       <template #evaluationExtensions>
+        <!-- Compact: one host sheet with a chip switcher over all saved configs. -->
+        <EvaluationHost
+          v-if="layoutMode === 'compact'"
+          v-model:open="evaluationHostOpen"
+          v-model:active-id="activeExtensionId"
+          :chips="extensionChips"
+          @add="addEvaluationInstance()"
+          @remove="removeEvaluationInstance($event)"
+        >
+          <template #default="{ activeId }">
+            <WindowExtensions
+              v-for="instance in evaluationInstances"
+              v-show="instance.id === activeId"
+              :key="instance.id"
+              hosted
+              :input="evaluationInput"
+              :instance-state="instance"
+              :document-id="documentId"
+              :state-key="`${instance.id}:window`"
+              :suppressed="instance.id !== activeId"
+              @update:instance-state="updateEvaluationInstance($event)"
+              @title="setEvaluationTitle(instance.id, $event)"
+              @set-weights="(w) => instance.id === activeId && onSetWeights(w)"
+              @evaluate="evaluationCount++"
+            />
+          </template>
+        </EvaluationHost>
+
+        <!-- Regular: one floating window per saved config. -->
         <WindowExtensions
           v-for="(instance, index) in evaluationInstances"
+          v-else
           :key="instance.id"
           :input="evaluationInput"
           :instance-state="instance"
@@ -457,6 +540,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       :input="evaluationInput"
       :document-id="documentId"
       state-key="probabilities:window"
+      :focus-key="probabilityFocusKey"
       @change-argument-probability="onChangeArgumentProbability"
       @change-attack-probability="onChangeAttackProbability"
     />

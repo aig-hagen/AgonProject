@@ -20,7 +20,10 @@ import type { Example } from '@/modules/common/examples'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import murderTrialJson from '@/modules/incomplete-argumentation/examples/murder_trial.json'
-import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import {
+  type IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 import { loadExampleFromJson } from '@/modules/incomplete-argumentation/save/saveFormat'
 
 const exampleJsons: unknown[] = [murderTrialJson]

@@ -21,7 +21,8 @@ import type { Tutorial } from '@/modules/common/tutorial/types'
 export const pafEvaluationTutorial: Tutorial = {
   id: 'paf-evaluation',
   name: 'Evaluation PAF Tutorial',
-  description: 'Learn how to compute acceptance probabilities under various semantics using the constellation approach.',
+  description:
+    'Learn how to compute acceptance probabilities under various semantics using the constellation approach.',
   steps: [
     {
       id: 'intro',
@@ -76,7 +77,7 @@ export const pafEvaluationTutorial: Tutorial = {
     {
       id: 'done',
       title: 'Great work!',
-      body: 'You\'ve completed the PAF Evaluation Tutorial. You can open multiple evaluation windows side by side to compare different semantics or modes simultaneously.',
+      body: "You've completed the PAF Evaluation Tutorial. You can open multiple evaluation windows side by side to compare different semantics or modes simultaneously.",
       advanceOn: 'button',
     },
   ],

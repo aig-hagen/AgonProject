@@ -20,7 +20,10 @@
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import type { NodeId } from '@/modules/common/graph-editor/graphEditor'
-import { type FormulaNode, formulaToString } from '@/modules/dialectical-argumentation/condition/formula'
+import {
+  type FormulaNode,
+  formulaToString,
+} from '@/modules/dialectical-argumentation/condition/formula'
 import { parseFormula } from '@/modules/dialectical-argumentation/condition/formulaParser'
 import type {
   AdfArgumentData,
@@ -60,7 +63,9 @@ const availableArguments = computed(() => {
   return result
 })
 
-const inputText = ref(formulaToString(props.adf.getArgument(props.argumentId).condition, argNameMap.value))
+const inputText = ref(
+  formulaToString(props.adf.getArgument(props.argumentId).condition, argNameMap.value),
+)
 
 onMounted(() => inputRef.value?.focus())
 const isInvalid = ref(false)
@@ -140,46 +145,60 @@ function insertAtCursor(text: string, cursorOffset?: number) {
           title="Negation (¬)"
           @mousedown.prevent
           @click="insertAtCursor('¬')"
-        >¬</button>
+        >
+          ¬
+        </button>
         <button
           class="btn btn-xs btn-ghost font-mono"
           type="button"
           title="Conjunction (∧)"
           @mousedown.prevent
           @click="insertAtCursor(' ∧ ')"
-        >∧</button>
+        >
+          ∧
+        </button>
         <button
           class="btn btn-xs btn-ghost font-mono"
           type="button"
           title="Disjunction (∨)"
           @mousedown.prevent
           @click="insertAtCursor(' ∨ ')"
-        >∨</button>
+        >
+          ∨
+        </button>
         <button
           class="btn btn-xs btn-ghost font-mono"
           type="button"
           title="Tautology (⊤)"
           @mousedown.prevent
           @click="insertAtCursor('⊤')"
-        >⊤</button>
+        >
+          ⊤
+        </button>
         <button
           class="btn btn-xs btn-ghost font-mono"
           type="button"
           title="Contradiction (⊥)"
           @mousedown.prevent
           @click="insertAtCursor('⊥')"
-        >⊥</button>
+        >
+          ⊥
+        </button>
         <button
           class="btn btn-xs btn-ghost font-mono"
           type="button"
           title="Parentheses"
           @mousedown.prevent
           @click="insertAtCursor('()', 1)"
-        >( )</button>
+        >
+          ( )
+        </button>
 
         <!-- Atom button: expands on hover to show all arguments -->
         <div class="dropdown dropdown-hover dropdown-top">
-          <button tabindex="0" class="btn btn-xs btn-ghost" type="button" @mousedown.prevent>Arg ▾</button>
+          <button tabindex="0" class="btn btn-xs btn-ghost" type="button" @mousedown.prevent>
+            Arg ▾
+          </button>
           <ul
             class="dropdown-content bg-base-200 shadow-lg rounded-box p-1 flex flex-col items-start gap-1 mb-1 max-h-40 overflow-y-auto z-50"
           >
@@ -189,9 +208,14 @@ function insertAtCursor(text: string, cursorOffset?: number) {
                 type="button"
                 @mousedown.prevent
                 @click="insertAtCursor(arg.name)"
-              >{{ arg.name }}</button>
+              >
+                {{ arg.name }}
+              </button>
             </li>
-            <li v-if="availableArguments.length === 0" class="text-xs text-base-content/50 px-2 py-1">
+            <li
+              v-if="availableArguments.length === 0"
+              class="text-xs text-base-content/50 px-2 py-1"
+            >
               No arguments
             </li>
           </ul>
@@ -216,7 +240,8 @@ function insertAtCursor(text: string, cursorOffset?: number) {
           v-if="isInvalid"
           class="tooltip tooltip-left absolute right-2 top-1/2 -translate-y-1/2 text-error text-sm font-bold select-none cursor-default"
           data-tip="Acceptance condition is syntactically incorrect and will not be saved"
-        >!</span>
+          >!</span
+        >
       </div>
     </div>
   </div>
