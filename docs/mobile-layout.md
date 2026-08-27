@@ -467,8 +467,11 @@ surface up to its mockup is a separate cross-cutting effort tracked in
    catching three sub-44 controls now fixed (sheet/eval Close and Add → `size-11`, switcher chip
    `h-10→h-11`, Menu button pinned to `size-11`), plus a no-horizontal-overflow check on the editor
    and an open sheet. **Still to do:** deeper a11y (reduced motion, 200% text zoom, status
-   announcements), performance/memory with many docs + eval configs, per-module
-   create/edit/evaluate/export mobile flows, and help/tutorial wording alignment. Real-device smoke
+   announcements), performance/memory with many docs + eval configs, and help/tutorial wording
+   alignment. **Per-module flows:** `e2e/modules.mobile.spec.ts` runs an example → Evaluate →
+   Export flow for AF/BAF/iAF/ADF/PAF (SETAF omitted, deferred); evaluation *results* are
+   backend-dependent (TweetyProject), so the flows assert each module's Evaluate/Export sheets open,
+   not computed results. Real-device smoke
    matrix + touch-gesture coverage ride with the deferred gesture spike (see TODO).*
 
 Do not ship a partially replaced mobile shell between phases. Keep it behind a feature flag (or
