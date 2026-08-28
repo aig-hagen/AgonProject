@@ -625,26 +625,11 @@ interface StoredViewport {
   y: number
 }
 
-function getZoomElements(): {
-  svgEl: (SVGElement & { __zoom?: StoredViewport }) | null
-  group: SVGGElement | null
-} {
-  const svgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-    | (SVGElement & { __zoom?: StoredViewport })
-    | null
-  const group = (svgEl?.querySelector(':scope > g') ?? null) as SVGGElement | null
-  return { svgEl, group }
-}
-
 function applyViewport(viewport: StoredViewport) {
-  const { svgEl, group } = getZoomElements()
-  if (!svgEl || !group || svgEl.__zoom == null) return
-  const newZoom = Object.create(Object.getPrototypeOf(svgEl.__zoom))
-  newZoom.k = viewport.k
-  newZoom.x = viewport.x
-  newZoom.y = viewport.y
-  svgEl.__zoom = newZoom
-  group.setAttribute('transform', `translate(${viewport.x},${viewport.y}) scale(${viewport.k})`)
+  // Route through the library so its cached transform (used by pointer-to-graph math,
+  // e.g. the edge-creation preview) stays in sync — setting the group transform by hand
+  // leaves that cache stale and misplaces the preview.
+  graphComponentRef.value?.setViewport(viewport.k, viewport.x, viewport.y)
 }
 
 const saveViewport = useDebounceFn((viewport: StoredViewport) => {
@@ -1098,23 +1083,11 @@ function setGraph(state: GraphEditorState, center: boolean): void {
         )
     }
     // setGraph recreates the SVG canvas and resets D3 zoom to identity. Restore the
-    // captured zoom so node visual positions don't jump after an in-place redraw.
+    // captured zoom so node visual positions don't jump after an in-place redraw. Route
+    // through setViewport so the library's cached transform (used by pointer-to-graph math,
+    // e.g. the edge-creation preview) stays in sync.
     if (savedZoom !== null) {
-      const newSvgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-        | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
-        | null
-      const newG = newSvgEl?.querySelector(':scope > g') as SVGGElement | null
-      if (newSvgEl && newG && newSvgEl.__zoom != null) {
-        const newZoom = Object.create(Object.getPrototypeOf(newSvgEl.__zoom))
-        newZoom.k = savedZoom.k
-        newZoom.x = savedZoom.x
-        newZoom.y = savedZoom.y
-        newSvgEl.__zoom = newZoom
-        newG.setAttribute(
-          'transform',
-          `translate(${savedZoom.x},${savedZoom.y}) scale(${savedZoom.k})`,
-        )
-      }
+      graphComponent.setViewport(savedZoom.k, savedZoom.x, savedZoom.y)
     }
     // setGraph rebuilds the graph DOM, potentially replacing the zoom group element that
     // zoomObserver and dragObserver are watching. Reconnect them to the current element

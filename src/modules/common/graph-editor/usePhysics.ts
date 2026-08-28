@@ -40,6 +40,7 @@ interface PhysicsCapable {
     b: undefined,
     maxScale: number,
   ): void
+  setViewport(k: number, x: number, y: number): void
 }
 
 export function usePhysics({
@@ -102,22 +103,17 @@ export function usePhysics({
       const pos = gc.getNodePosition(internalId)
       gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
     }
-    // Compensate the zoom/pan so nodes remain at the same visual positions.
-    const svgEl = containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-      | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
-      | null
-    const g = svgEl?.firstElementChild
-    const currentZoom = svgEl?.__zoom
-    if (svgEl && g && currentZoom != null) {
+    // Compensate the zoom/pan so nodes remain at the same visual positions. Route through
+    // setViewport so the library's cached transform (used by pointer-to-graph math) stays
+    // in sync — hand-setting the group transform leaves it stale.
+    const currentZoom = (
+      containerRef.value?.querySelector('.graph-controller__graph-canvas') as
+        | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
+        | null
+    )?.__zoom
+    if (currentZoom != null) {
       const k = currentZoom.k
-      const newTx = currentZoom.x - dx * k
-      const newTy = currentZoom.y - dy * k
-      const newZoom = Object.create(Object.getPrototypeOf(currentZoom))
-      newZoom.k = k
-      newZoom.x = newTx
-      newZoom.y = newTy
-      svgEl.__zoom = newZoom
-      g.setAttribute('transform', `translate(${newTx},${newTy}) scale(${k})`)
+      gc.setViewport(k, currentZoom.x - dx * k, currentZoom.y - dy * k)
     }
   }
 
