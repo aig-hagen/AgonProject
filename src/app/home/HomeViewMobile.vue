@@ -51,7 +51,10 @@ const {
   selectedDocumentId,
   selectDocument,
   documentModule,
+  documentState,
+  documentLoading,
   updateDocument,
+  overrideWithContent,
   createDocumentWithContent,
   undo,
   redo,
@@ -168,7 +171,7 @@ function loadFile() {
       style="padding-top: calc(env(safe-area-inset-top) + 1rem)"
     >
       <button
-        v-if="selectedDocumentId !== undefined"
+        v-if="selectedDocumentId !== undefined && documentState !== undefined"
         class="btn btn-square btn-ghost btn-sm absolute right-2"
         style="top: calc(env(safe-area-inset-top) + 0.5rem)"
         aria-label="Back to editor"
@@ -318,6 +321,20 @@ function loadFile() {
       <!-- Editor surface: mounted on first visit, then kept mounted across surface switches -->
       <div v-show="surface === 'editor'" class="absolute inset-0">
         <template v-if="editorMounted">
+          <!-- Blank doc with no content yet: pick a module to fill it in place (mirrors desktop). -->
+          <div
+            v-if="
+              selectedDocumentId !== undefined && !documentLoading && documentState === undefined
+            "
+            class="absolute inset-0 overflow-y-auto"
+            style="scrollbar-gutter: stable"
+          >
+            <BlankDocumentCanvasMobile
+              :module-cards="modules"
+              :source-document-id="selectedDocumentId"
+              @open="overrideWithContent"
+            />
+          </div>
           <component
             tabindex="0"
             v-for="loadedDocument of loadedDocuments"
