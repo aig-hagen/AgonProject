@@ -20,20 +20,27 @@ import type { ComputedRef, Ref } from 'vue'
 import { computed, ref, watchEffect } from 'vue'
 
 import type { GraphEditorState, Highlight, NodeId } from '@/modules/common/graph-editor/graphEditor'
+import {
+  getContrastingLabelColor,
+  setNodeLabelColor,
+} from '@/modules/common/graph-editor/graphEditorUtils'
 import type { GraphStyle } from '@/modules/common/graph-editor/graphStyle'
 import type { IdMapping } from '@/modules/common/ids'
 
 interface HighlightCapable {
   setColor(color: string, ids: number | number[]): void
+  $el?: Element
 }
 
 export function useHighlight({
   graphComponentRef,
+  graphComponentId,
   getIdMapping,
   stateRef,
   effectiveStyle,
 }: {
   graphComponentRef: Ref<HighlightCapable | null>
+  graphComponentId: string
   getIdMapping: () => IdMapping<number, number>
   stateRef: Ref<GraphEditorState> | ComputedRef<GraphEditorState>
   effectiveStyle: Ref<GraphStyle> | ComputedRef<GraphStyle>
@@ -91,14 +98,23 @@ export function useHighlight({
       }
     }
 
-    // Apply colors
+    // Apply colors, and give each node a label color that contrasts with its
+    // background so white-on-pastel highlights stay readable in dark mode.
+    const graphEl = graphComponent.$el
+    const applyColors = (color: string, ids: number[]) => {
+      graphComponent.setColor(color, ids)
+      const labelColor = getContrastingLabelColor(color)
+      for (const id of ids) setNodeLabelColor(graphEl, graphComponentId, id, labelColor)
+    }
     for (let i = 0; i < groups.length; i++) {
-      graphComponent.setColor(groups[i]!.color, groupBuckets[i]!)
+      applyColors(groups[i]!.color, groupBuckets[i]!)
     }
     if (highlight?.attackedByFirst !== undefined) {
-      graphComponent.setColor(highlight.attackedByFirst, attackedBucket)
+      applyColors(highlight.attackedByFirst, attackedBucket)
     }
+    // Reset the default bucket's label color to inherit the theme color.
     graphComponent.setColor(effectiveStyle.value.nodeColor, defaultBucket)
+    for (const id of defaultBucket) setNodeLabelColor(graphEl, graphComponentId, id, '')
   })
 
   return { extensionHighlightRef, serialisationHighlightRef }

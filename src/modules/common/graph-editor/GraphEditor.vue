@@ -424,6 +424,7 @@ watch(snapMode, (enabled) => {
 })
 const { extensionHighlightRef, serialisationHighlightRef } = useHighlight({
   graphComponentRef,
+  graphComponentId,
   getIdMapping: () => idMapping,
   stateRef,
   effectiveStyle,
