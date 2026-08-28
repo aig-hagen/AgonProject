@@ -1,10 +1,5 @@
 ## Bugs and Issues
 
-### General
-
-- **[Enhancement]** double the request limit to the TweetyProject backend
-- ~~The mode/type selector in the eval window does use a slightly different style than the semantics selector~~ — fixed: `PickerSelect` now renders the shared `GroupedSelect` on desktop too, so Mode/type matches Semantics exactly
-
 ### Mobile
 
 #### Open items from the mobile-layout plan (plan now closed)
@@ -45,11 +40,6 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
   still clamp). Note on "references are missing entirely": they aren't — every module has
   publications, but they only surface via a hover-only book icon (top-right of the desktop cards).
   Surfacing them on the card is a **[Design]** decision, still open.
-- ~~**[Bug]** home view: expanding one mobile card warps the width of all cards~~ — fixed: the
-  "new" surface reserves the scrollbar gutter (`scrollbar-gutter: stable`), so the scrollbar
-  appearing no longer shrinks the content width.
-- ~~**[Enhancement]** no confirmation when deleting a document~~ — done: the mobile overflow-menu
-  Delete now deletes immediately (removed the inline confirm step); bulk "Delete all" still confirms
 - **[Decision needed]** "Document" should be renamed to something more fitting
 - **[Design]** Switch document icons to AF type icon; like the ones in the home view. Blocked:
   document metadata only stores `{ id, name }`, so the AF type must either be persisted (small DB
@@ -59,12 +49,8 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 #### Graph editor and interaction
 
 - **[Bug]** The relayout sheet should disappear on selecting an option. This works in the browser mobile preview, but not on the actual phone (for AF, for ADF it works)
-- **[Bug]** SVG doesnt render on mobile device; is this a general mobile problem?
 - **[Enhancement]** Extension highlighting: could use some way to deactivate highlighting (other than clicking the extension again)
-- **[Bug]** dont open keyboard on argument creation on mobile
 - **[Design]** rethink the mobile command-action scheme from scratch; large rework of the command contract, needs changes to the graph-component
-- ~~**[Enhancement]** add undo action to menu, next to redo~~ — done: Undo now sits above Redo in the mobile menu's Edit section
-- ~~**[Decision needed]** what happens with the hover tooltips on mobile? currently the highlighting shows, but they are not clickable. How can we handle this?~~ — done: on the compact layout `HoverTooltip` toggles on tap (with an outside-tap catcher), keeping ancestor tooltips open so nested term refs stay tappable; desktop hover unchanged
 - **[Decision needed]** add some kind of toggle for physics mode: something that activated physics for a brief moment to let arguments adjust position. or something that enables pyhsics while pressed
 
 #### ADF editing and evaluation
@@ -86,20 +72,14 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
   (title = framework name, description = arg/attack counts) — the share server currently only
   serves JSON. Stretch goal: a dynamic `og:image` rendering the actual graph (server-side
   SVG→PNG). Crawlers don't run JS, so this can't be done from the SPA.
-- ~~**[Design]** Export sheet: Code&Data -> Text~~ — done: renamed the section header to "Text"
-- ~~**[Design]** switch exprt logo to a share icon~~ — done: mobile export button now uses a share icon (desktop unchanged)
-- ~~**[Enhancement]** export sheet should close when clicking the share link button~~ — done: share button emits `close`, closing the sheet
 
 #### Settings and visual design
 
-- ~~**[Bug]** settings toggles dont show the selected option visually; the default~~ — fixed: replaced `input.btn`/`:checked` join groups with an explicit `SegmentedControl` that shows selection clearly
 - **[Design]** look of the bottom bar doesnt feel that nice, maybe redesign the buttons; not important now
-- ~~**[Design]** mobile settings menu does actually need a pass to make it fit the mobile theme better~~ — done: settings now opens as a `BottomSheet` on mobile with grouped-card sections, shared with the desktop modal
 - **[Design]** could update the creation-mode-switchers in the bottom left. visual style doesnt really fit well
 
 #### Tutorials, glossary, and help
 
-- ~~**[Bug]** Glossary AF-type Pills show wrong names; just use AF, BAF, etc; same for desktop~~ — fixed: pills/tabs now show the acronym (AF, BAF, ADF, …) on mobile and desktop
 - **[Enhancement]** Several tutorials need updating; in particular also for mobile; update highlighting of next action on mobile
 - **[Design]** tutorial start buttons look bad
 
