@@ -5,6 +5,9 @@ overloads a single finger-press on a node (split only by a 250 ms timer and a 2 
 while leaving one-finger drag on the canvas dead. This plan replaces it with a
 **select-first** model driven by a reusable gesture layer.
 
+> **Branch:** the whole of this plan — the gesture layer, the `graph-component` changes,
+> and the override audit — is developed on the `docs/mobile-gesture-plan` branch.
+
 Companion documents:
 
 - [mobile-action-inventory.md](mobile-action-inventory.md) — the full action set the
