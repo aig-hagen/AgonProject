@@ -1783,6 +1783,13 @@ defineExpose({
             <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Edit</h3>
             <button
               class="btn btn-ghost justify-start gap-3"
+              :disabled="!historyState.canUndo"
+              @click="runFromMenu(() => emit('undo'))"
+            >
+              <ArrowUturnLeftIcon class="size-5 text-primary/80" /> Undo
+            </button>
+            <button
+              class="btn btn-ghost justify-start gap-3"
               :disabled="!historyState.canRedo"
               @click="runFromMenu(() => emit('redo'))"
             >
