@@ -141,7 +141,7 @@ provide(NESTING_DEPTH, depth + 1)
   </span>
   <Teleport to="body">
     <div
-      v-show="isOpen"
+      v-if="isOpen"
       ref="panel"
       :style="[floatingStyles, { zIndex: 9000 + depth }]"
       class="max-w-xs rounded-box bg-base-100 border border-base-300 shadow-lg p-3 text-sm"
