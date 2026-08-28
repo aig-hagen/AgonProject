@@ -84,7 +84,8 @@ function openContent(content: DocumentT, newNamePrefix: string) {
           <span class="font-semibold">{{ moduleCard.displayNameSingular }}</span>
           <span
             v-if="moduleCard.description"
-            class="text-xs text-base-content/60 mt-0.5 line-clamp-2"
+            class="text-xs text-base-content/60 mt-0.5"
+            :class="{ 'line-clamp-2': expanded !== index }"
           >
             {{ moduleCard.description }}
           </span>

@@ -30,7 +30,9 @@ const NESTING_DEPTH: InjectionKey<number> = Symbol('hoverTooltipDepth')
 <script setup lang="ts">
 import type { Placement } from '@floating-ui/vue'
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
-import { inject, provide, ref, useTemplateRef } from 'vue'
+import { inject, onBeforeUnmount, provide, ref, useTemplateRef, watch } from 'vue'
+
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
 defineOptions({ inheritAttrs: false })
 
@@ -40,6 +42,9 @@ const { placement = 'bottom' } = defineProps<{
 
 const triggerEl = useTemplateRef('trigger')
 const panelEl = useTemplateRef('panel')
+
+// On touch layouts hover never fires, so the term toggles the panel on tap instead.
+const { isCompact: tapMode } = useLayoutMode()
 
 const depth = inject(NESTING_DEPTH, 0)
 const ancestorKeepOpenFns = inject(ANCESTOR_KEEP_OPEN_FNS, [])
@@ -71,10 +76,51 @@ function scheduleClose() {
 }
 
 function onEnter() {
+  if (tapMode.value) return
   keepOpen()
   // Keep all ancestor tooltips open while this one (or a descendant) is hovered.
   ancestorKeepOpenFns.forEach((fn) => fn())
 }
+
+function onLeave() {
+  if (tapMode.value) return
+  scheduleClose()
+}
+
+function onTap(event: MouseEvent) {
+  if (!tapMode.value) return
+  event.stopPropagation()
+  if (isOpen.value) {
+    isOpen.value = false
+  } else {
+    keepOpen()
+    // Keep ancestors open too, so tapping a nested term doesn't collapse the chain.
+    ancestorKeepOpenFns.forEach((fn) => fn())
+  }
+}
+
+// A tap anywhere outside this term and its panel closes it; keepOpen (from a descendant
+// tap) cancels the pending close, so only truly-outside taps dismiss.
+function onDocumentPointerDown(event: PointerEvent) {
+  const target = event.target as Node | null
+  if (target === null) return
+  if (triggerEl.value?.contains(target) || panelEl.value?.contains(target)) return
+  scheduleClose()
+}
+
+watch(isOpen, (open) => {
+  if (!tapMode.value) return
+  if (open) {
+    document.addEventListener('pointerdown', onDocumentPointerDown, true)
+  } else {
+    document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (closeTimer !== null) clearTimeout(closeTimer)
+  document.removeEventListener('pointerdown', onDocumentPointerDown, true)
+})
 
 // Expose this tooltip's functions to descendants, chained with any ancestor functions.
 provide(ANCESTOR_KEEP_OPEN_FNS, [...ancestorKeepOpenFns, keepOpen])
@@ -88,19 +134,20 @@ provide(NESTING_DEPTH, depth + 1)
     v-bind="$attrs"
     class="cursor-help border-b border-dotted border-info"
     @mouseenter="onEnter"
-    @mouseleave="scheduleClose"
+    @mouseleave="onLeave"
+    @click="onTap"
   >
     <slot />
   </span>
   <Teleport to="body">
     <div
-      v-show="isOpen"
+      v-if="isOpen"
       ref="panel"
       :style="[floatingStyles, { zIndex: 9000 + depth }]"
       class="max-w-xs rounded-box bg-base-100 border border-base-300 shadow-lg p-3 text-sm"
       @mouseenter="onEnter"
       @mouseover="keepOpen"
-      @mouseleave="scheduleClose"
+      @mouseleave="onLeave"
     >
       <slot name="content" />
     </div>

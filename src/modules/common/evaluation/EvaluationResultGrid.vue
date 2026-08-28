@@ -129,10 +129,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="props.items.length === 0" role="alert" class="alert alert-info alert-soft">
+  <div
+    v-if="props.items.length === 0"
+    data-evaluation-results
+    role="alert"
+    class="alert alert-info alert-soft"
+  >
     <span>{{ props.emptyMessage }}</span>
   </div>
-  <div v-else class="evaluation-result-grid gap-2" ref="container">
+  <div v-else data-evaluation-results class="evaluation-result-grid gap-2" ref="container">
     <button
       v-for="item of props.items"
       :key="item.key"

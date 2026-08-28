@@ -38,6 +38,7 @@ const {
   fullHeight = false,
   modal = true,
   snapPoints,
+  lowestDetentPx = null,
 } = defineProps<{
   title: string
   /** Start expanded to the full snap point instead of sizing to content. */
@@ -49,6 +50,9 @@ const {
       between when the handle is dragged; a drag below the lowest one dismisses it.
       Without it the sheet sizes to its content — for a docked, non-modal sheet. */
   snapPoints?: number[]
+  /** Override the lowest detent with a measured pixel height (clamped to the next
+      detent), so it can size to its content instead of a fixed fraction. */
+  lowestDetentPx?: number | null
 }>()
 
 const emit = defineEmits<{ close: [] }>()
@@ -85,6 +89,11 @@ const liveHeight = ref<number | null>(null)
 function detentPx(index: number): number {
   const points = snapPoints ?? []
   const clamped = Math.min(Math.max(index, 0), points.length - 1)
+  if (clamped === 0 && lowestDetentPx != null && lowestDetentPx > 0) {
+    // Content-sized lowest detent, never taller than the next detent up.
+    const next = (points[1] ?? points[0] ?? 0) * viewportHeight.value
+    return next > 0 ? Math.min(lowestDetentPx, next) : lowestDetentPx
+  }
   return (points[clamped] ?? 0) * viewportHeight.value
 }
 function nearestDetent(height: number): number {

@@ -48,6 +48,7 @@ import {
   PlayIcon,
   QuestionMarkCircleIcon,
   QueueListIcon,
+  ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
   VariableIcon,
@@ -1708,7 +1709,7 @@ defineExpose({
             title="Export"
             @click="isExportOpened = true"
           >
-            <PhotoIcon class="size-6 opacity-70" />
+            <ShareIcon class="size-6 opacity-70" />
           </button>
           <button
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
@@ -1780,6 +1781,13 @@ defineExpose({
           </section>
           <section class="flex flex-col gap-1">
             <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Edit</h3>
+            <button
+              class="btn btn-ghost justify-start gap-3"
+              :disabled="!historyState.canUndo"
+              @click="runFromMenu(() => emit('undo'))"
+            >
+              <ArrowUturnLeftIcon class="size-5 text-primary/80" /> Undo
+            </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               :disabled="!historyState.canRedo"
