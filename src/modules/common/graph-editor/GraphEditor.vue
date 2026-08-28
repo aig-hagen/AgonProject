@@ -48,6 +48,7 @@ import {
   PlayIcon,
   QuestionMarkCircleIcon,
   QueueListIcon,
+  ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
   VariableIcon,
@@ -1708,7 +1709,7 @@ defineExpose({
             title="Export"
             @click="isExportOpened = true"
           >
-            <PhotoIcon class="size-6 opacity-70" />
+            <ShareIcon class="size-6 opacity-70" />
           </button>
           <button
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
