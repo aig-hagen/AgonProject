@@ -40,10 +40,16 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 
 #### Home and document management
 
-- **[Bug]** home view: some AF module description texts are truncated; references are missing entirely
+- ~~**[Bug]** home view: some AF module description texts are truncated~~ — fixed: dropped the
+  fixed-height line-clamp so descriptions show in full. Note on "references are missing entirely":
+  they aren't — every module has publications, but they only surface via a hover-only book icon
+  (top-right of each card). Surfacing them on the card is a **[Design]** decision, still open.
 - **[Enhancement]** no confirmation when deleting a document
 - **[Decision needed]** "Document" should be renamed to something more fitting
-- **[Design]** Switch document icons to AF type icon; like the ones in the home view
+- **[Design]** Switch document icons to AF type icon; like the ones in the home view. Blocked:
+  document metadata only stores `{ id, name }`, so the AF type must either be persisted (small DB
+  migration; existing docs need a backfill/fallback) or derived on load (read each doc's content
+  on the home list). Decision pending.
 
 #### Graph editor and interaction
 
@@ -52,7 +58,7 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 - **[Enhancement]** Extension highlighting: could use some way to deactivate highlighting (other than clicking the extension again)
 - **[Bug]** dont open keyboard on argument creation on mobile
 - **[Design]** rethink the mobile command-action scheme from scratch; large rework of the command contract, needs changes to the graph-component
-- **[Enhancement]** add undo action to menu, next to redo
+- ~~**[Enhancement]** add undo action to menu, next to redo~~ — done: Undo now sits above Redo in the mobile menu's Edit section
 - **[Decision needed]** what happens with the hover tooltips on mobile? currently the highlighting shows, but they are not clickable. How can we handle this?
 - **[Decision needed]** add some kind of toggle for physics mode: something that activated physics for a brief moment to let arguments adjust position. or something that enables pyhsics while pressed
 
