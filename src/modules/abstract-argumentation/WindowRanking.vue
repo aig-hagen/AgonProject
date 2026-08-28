@@ -268,7 +268,10 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
     <template #results>
       <template v-if="data !== undefined">
         <template v-if="data.rankingType === 'lattice'">
-          <div data-evaluation-results class="flex flex-wrap items-center gap-x-1 gap-y-1">
+          <div
+            data-evaluation-results
+            class="flex flex-wrap items-center justify-center gap-x-1 gap-y-1"
+          >
             <template v-for="(group, index) in rankGroups" :key="index">
               <span v-if="index > 0" class="text-sm select-none">&#x227B;</span>
               <span class="text-base">{{ group.entries.map((e) => e.name).join(', ') }}</span>
