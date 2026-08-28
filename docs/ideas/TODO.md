@@ -40,10 +40,14 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 
 #### Home and document management
 
-- ~~**[Bug]** home view: some AF module description texts are truncated~~ — fixed: dropped the
-  fixed-height line-clamp so descriptions show in full. Note on "references are missing entirely":
-  they aren't — every module has publications, but they only surface via a hover-only book icon
-  (top-right of each card). Surfacing them on the card is a **[Design]** decision, still open.
+- ~~**[Bug]** home view: AF description text is truncated in the mobile accordion when expanded~~ —
+  fixed: the description now drops its `line-clamp-2` while its card is expanded (collapsed cards
+  still clamp). Note on "references are missing entirely": they aren't — every module has
+  publications, but they only surface via a hover-only book icon (top-right of the desktop cards).
+  Surfacing them on the card is a **[Design]** decision, still open.
+- ~~**[Bug]** home view: expanding one mobile card warps the width of all cards~~ — fixed: the
+  "new" surface reserves the scrollbar gutter (`scrollbar-gutter: stable`), so the scrollbar
+  appearing no longer shrinks the content width.
 - **[Enhancement]** no confirmation when deleting a document
 - **[Decision needed]** "Document" should be renamed to something more fitting
 - **[Design]** Switch document icons to AF type icon; like the ones in the home view. Blocked:

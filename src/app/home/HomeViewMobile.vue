@@ -327,7 +327,12 @@ function loadFile() {
       </div>
 
       <!-- New surface -->
-      <div v-show="surface === 'new'" class="absolute inset-0 overflow-y-auto">
+      <!-- scrollbar-gutter keeps the width stable so cards don't reflow when one expands. -->
+      <div
+        v-show="surface === 'new'"
+        class="absolute inset-0 overflow-y-auto"
+        style="scrollbar-gutter: stable"
+      >
         <BlankDocumentCanvasMobile :module-cards="modules" @open="createFromNew" />
       </div>
 
