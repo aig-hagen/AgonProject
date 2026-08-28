@@ -76,7 +76,7 @@ watch(
         "
         @click="navigate(m.prefix, '')"
       >
-        {{ m.label }}
+        {{ m.prefix }}
       </button>
     </div>
 

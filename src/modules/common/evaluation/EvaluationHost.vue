@@ -17,9 +17,27 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { CheckIcon, ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronUpIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@heroicons/vue/24/outline'
 import { XMarkIcon } from '@heroicons/vue/24/solid'
-import { computed, inject, nextTick, provide, ref, watch } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  provide,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 
 import {
   EVALUATION_DETENT_KEY,
@@ -80,45 +98,133 @@ watch([open, detentIndex], () => {
 // The active config, surfaced as the header pill (kind glyph + name + chevron).
 const activeChip = computed(() => chips.find((c) => c.id === activeId.value))
 
-// The header pill drops the saved-config list (switch / delete / add). With a single
-// addable kind the add row adds directly; with several it toggles an inline picker.
+// The header pill opens a switcher panel (switch / delete / add) that floats upward from
+// the pill into the empty canvas above the docked sheet, so it is never clipped by the
+// short compact sheet. The panel has two modes: the config list, and — for multi-kind
+// modules — an add-kind chooser reached from its Add row.
 const listOpen = ref(false)
-const addMenuOpen = ref(false)
+const panelMode = ref<'list' | 'kinds'>('list')
+
+const trigger = useTemplateRef<HTMLElement>('trigger')
+const panel = useTemplateRef<HTMLElement>('panel')
+const { floatingStyles } = useFloating(trigger, panel, {
+  placement: 'top-start',
+  middleware: [offset(8), flip(), shift({ padding: 12 })],
+  whileElementsMounted: autoUpdate,
+})
+
+function openPanel() {
+  panelMode.value = 'list'
+  listOpen.value = true
+}
+function closePanel() {
+  listOpen.value = false
+  panelMode.value = 'list'
+}
+function togglePanel() {
+  if (listOpen.value) closePanel()
+  else openPanel()
+}
 
 // A newly created eval needs its selectors, so lift a compact sheet to standard.
 function ensureStandardDetent() {
   if (detentIndex.value < 1) detentIndex.value = 1
 }
 
+// Header toggle between the compact and standard (half) detents.
+const isExpanded = computed(() => detentIndex.value >= 1)
+function toggleDetent() {
+  detentIndex.value = isExpanded.value ? 0 : 1
+}
+
+// Compact detent sizing: fit the sheet to its content up to three result rows, then
+// scroll. The `mt-auto` sticky footer stretches its container, so we can't read a
+// natural height off one box — instead we sum the naturally-sized pieces (the chrome
+// above the results, the row-capped results, and the footer). Only measured at the
+// compact detent, where the parameters are folded away. Every result renderer (grid,
+// ranking, probabilities, …) tags its results element with `data-evaluation-results`.
+const MAX_ROWS = 3
+const ROW_GAP = 8 // result rows sit in a gap-2 flow
+const RESULTS_TO_FOOTER_GAP = 10 // MobileEvaluationBody gap-2.5
+const content = useTemplateRef<HTMLElement>('content')
+const compactDetentPx = ref<number | null>(null)
+let gridObserver: ResizeObserver | undefined
+
+// Inactive configs stay mounted under v-show, so several grids/footers coexist in the
+// DOM; only the active one has a layout box. Pick that one.
+function firstVisible(root: HTMLElement, selector: string): HTMLElement | null {
+  for (const el of root.querySelectorAll<HTMLElement>(selector)) {
+    if (el.getBoundingClientRect().width > 0) return el
+  }
+  return null
+}
+
+function measureCompactDetent() {
+  const root = content.value
+  if (!open.value || root === null || detentLayout.value !== 'compact') return
+  const panel = root.closest<HTMLElement>('.sheet-panel')
+  const results = firstVisible(root, '[data-evaluation-results]')
+  if (panel === null || results === null) {
+    compactDetentPx.value = null
+    return
+  }
+  const resultsRect = results.getBoundingClientRect()
+  const aboveResults = resultsRect.top - panel.getBoundingClientRect().top
+  const firstRow = results.firstElementChild
+  const rowHeight = firstRow?.getBoundingClientRect().height ?? resultsRect.height
+  const cappedResults = Math.min(
+    resultsRect.height,
+    rowHeight * MAX_ROWS + ROW_GAP * (MAX_ROWS - 1),
+  )
+  const footerHeight =
+    firstVisible(root, '[data-evaluation-footer]')?.getBoundingClientRect().height ?? 0
+  const padBottom = parseFloat(getComputedStyle(panel).paddingBottom) || 0
+  compactDetentPx.value = Math.ceil(
+    aboveResults + cappedResults + RESULTS_TO_FOOTER_GAP + footerHeight + padBottom,
+  )
+}
+
+// Re-attach the observer to the active results element (a different one shows on config
+// switch) and remeasure.
+function refreshCompactMeasure() {
+  gridObserver?.disconnect()
+  const results = content.value ? firstVisible(content.value, '[data-evaluation-results]') : null
+  if (results && typeof ResizeObserver !== 'undefined') {
+    gridObserver = new ResizeObserver(() => measureCompactDetent())
+    gridObserver.observe(results)
+  }
+  measureCompactDetent()
+}
+
+watch([open, activeId, detentLayout], () => nextTick(refreshCompactMeasure), { flush: 'post' })
+
+onBeforeUnmount(() => gridObserver?.disconnect())
+
 function onAddClick() {
   if (addKinds.length <= 1) {
     emit('add', addKinds[0] ?? 'extension')
-    listOpen.value = false
+    closePanel()
     ensureStandardDetent()
   } else {
-    // Multi-kind: the picker lives in the dropped list, so open it to reveal the choices.
+    // Multi-kind: reveal the kind chooser inside the same floating panel.
     listOpen.value = true
-    addMenuOpen.value = true
+    panelMode.value = 'kinds'
   }
 }
 
 function chooseKind(kind: EvaluationKind) {
-  addMenuOpen.value = false
-  listOpen.value = false
   emit('add', kind)
+  closePanel()
   ensureStandardDetent()
 }
 
 function selectChip(id: string) {
   activeId.value = id
-  listOpen.value = false
+  closePanel()
 }
 
 watch(open, (isOpen) => {
-  if (!isOpen) {
-    addMenuOpen.value = false
-    listOpen.value = false
-  }
+  if (!isOpen) closePanel()
 })
 
 function selectLast() {
@@ -151,16 +257,18 @@ watch(
     title="Evaluate"
     :modal="false"
     :snap-points="SNAP_POINTS"
+    :lowest-detent-px="compactDetentPx"
   >
     <!-- Header-as-switcher: the active config IS the header; the chevron drops the
          full saved-config list. One control does what the pill strip + title did. -->
     <template #header="{ close }">
       <button
+        ref="trigger"
         type="button"
         class="flex-1 min-w-0 flex items-center gap-2 h-10 px-3 rounded-xl border text-left transition-colors"
         :class="listOpen ? 'border-primary bg-primary/5' : 'border-base-300 bg-base-200/60'"
         :aria-expanded="listOpen"
-        @click="listOpen = !listOpen"
+        @click="togglePanel"
       >
         <KindIcon
           v-if="activeChip"
@@ -176,13 +284,13 @@ watch(
         />
       </button>
       <button
-        v-if="!listOpen"
         type="button"
         class="btn btn-square size-11 btn-ghost shrink-0"
-        aria-label="Add evaluation"
-        @click="onAddClick"
+        :aria-label="isExpanded ? 'Collapse sheet' : 'Expand sheet'"
+        @click="toggleDetent"
       >
-        <PlusIcon class="size-5" />
+        <ChevronDownIcon v-if="isExpanded" class="size-5" />
+        <ChevronUpIcon v-else class="size-5" />
       </button>
       <button
         type="button"
@@ -194,80 +302,8 @@ watch(
       </button>
     </template>
 
-    <div class="relative flex flex-col gap-3 min-h-full">
-      <!-- Dropped saved-config list: switch (tap), per-row delete, add row. Overlays
-           the dimmed body; tapping outside closes it. -->
-      <button
-        v-if="listOpen"
-        class="fixed inset-0 z-10 cursor-default"
-        aria-label="Close list"
-        @click="listOpen = false"
-      ></button>
-      <div
-        v-if="listOpen"
-        class="absolute inset-x-0 top-0 z-20 rounded-2xl border border-base-300 bg-base-100 shadow-lg overflow-hidden"
-      >
-        <template v-for="(chip, index) in chips" :key="chip.id">
-          <div v-if="index > 0" class="h-px bg-base-200 mx-3"></div>
-          <div
-            class="flex items-center gap-3 pl-3 pr-1 h-12"
-            :class="chip.id === activeId && 'bg-primary/5'"
-          >
-            <button
-              type="button"
-              class="flex-1 min-w-0 flex items-center gap-3 h-full text-left"
-              @click="selectChip(chip.id)"
-            >
-              <KindIcon
-                :kind="chip.kind"
-                class="size-[1.05rem] shrink-0"
-                :class="chip.id === activeId ? 'text-primary' : 'opacity-60'"
-              />
-              <span
-                class="flex-1 min-w-0 truncate text-sm"
-                :class="chip.id === activeId ? 'font-semibold text-primary' : 'font-medium'"
-                >{{ chip.label }}</span
-              >
-              <CheckIcon v-if="chip.id === activeId" class="size-4 text-success shrink-0" />
-            </button>
-            <button
-              type="button"
-              class="btn btn-square btn-sm btn-ghost text-error/70 shrink-0"
-              aria-label="Remove evaluation"
-              @click="emit('remove', chip.id)"
-            >
-              <TrashIcon class="size-4" />
-            </button>
-          </div>
-        </template>
-        <div v-if="chips.length > 0" class="h-px bg-base-200 mx-3"></div>
-        <button
-          type="button"
-          class="flex items-center gap-3 px-3 h-12 w-full text-left text-primary"
-          :aria-expanded="addKinds.length > 1 ? addMenuOpen : undefined"
-          @click="onAddClick"
-        >
-          <PlusIcon class="size-5 shrink-0" />
-          <span class="text-sm font-medium">Add evaluation…</span>
-        </button>
-        <!-- Kind picker (multi-kind modules only). -->
-        <div v-if="addMenuOpen" class="flex flex-col gap-1 border-t border-base-200 p-1">
-          <button
-            v-for="kind in addKinds"
-            :key="kind"
-            class="btn btn-sm btn-ghost justify-start gap-2"
-            @click="chooseKind(kind)"
-          >
-            <KindIcon :kind="kind" class="size-4 shrink-0 opacity-70" />
-            {{ KIND_LABEL[kind] }}
-          </button>
-        </div>
-      </div>
-
-      <div
-        class="flex-1 min-h-0 flex flex-col gap-3 transition-opacity"
-        :class="listOpen && 'opacity-30 pointer-events-none'"
-      >
+    <div ref="content" class="relative flex flex-col gap-3 min-h-full">
+      <div class="flex-1 min-h-0 flex flex-col gap-3">
         <div v-if="chips.length === 0" class="flex flex-col items-center gap-3 py-10 text-center">
           <p class="opacity-60 text-sm">No evaluation yet.</p>
           <button class="btn btn-primary gap-2" @click="onAddClick">
@@ -278,5 +314,91 @@ watch(
         <slot v-if="chips.length > 0" :active-id="activeId" />
       </div>
     </div>
+
+    <!-- Switcher panel: floats upward from the header pill into the canvas above the
+         sheet (flips down only if there is no room), so it is never clipped. -->
+    <Teleport to="body">
+      <template v-if="listOpen">
+        <button
+          class="fixed inset-0 z-60 cursor-default"
+          aria-label="Close switcher"
+          @click="closePanel"
+        ></button>
+        <div
+          ref="panel"
+          :style="[floatingStyles, { zIndex: 61 }]"
+          class="w-[min(20rem,calc(100vw-1.5rem))] max-h-[70dvh] overflow-y-auto rounded-2xl border border-base-300 bg-base-100 shadow-xl"
+          role="menu"
+        >
+          <template v-if="panelMode === 'list'">
+            <template v-for="(chip, index) in chips" :key="chip.id">
+              <div v-if="index > 0" class="h-px bg-base-200 mx-3"></div>
+              <div
+                class="flex items-center gap-3 pl-3 pr-1 h-12"
+                :class="chip.id === activeId && 'bg-primary/5'"
+              >
+                <button
+                  type="button"
+                  class="flex-1 min-w-0 flex items-center gap-3 h-full text-left"
+                  @click="selectChip(chip.id)"
+                >
+                  <KindIcon
+                    :kind="chip.kind"
+                    class="size-[1.05rem] shrink-0"
+                    :class="chip.id === activeId ? 'text-primary' : 'opacity-60'"
+                  />
+                  <span
+                    class="flex-1 min-w-0 truncate text-sm"
+                    :class="chip.id === activeId ? 'font-semibold text-primary' : 'font-medium'"
+                    >{{ chip.label }}</span
+                  >
+                  <CheckIcon v-if="chip.id === activeId" class="size-4 text-success shrink-0" />
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-square btn-sm btn-ghost text-error/70 shrink-0"
+                  aria-label="Remove evaluation"
+                  @click="emit('remove', chip.id)"
+                >
+                  <TrashIcon class="size-4" />
+                </button>
+              </div>
+            </template>
+            <div v-if="chips.length > 0" class="h-px bg-base-200 mx-3"></div>
+            <button
+              type="button"
+              class="flex items-center gap-3 px-3 h-12 w-full text-left text-primary"
+              @click="onAddClick"
+            >
+              <PlusIcon class="size-5 shrink-0" />
+              <span class="text-sm font-medium">Add evaluation</span>
+            </button>
+          </template>
+
+          <template v-else>
+            <button
+              type="button"
+              class="flex items-center gap-2 px-2 h-11 w-full text-left"
+              @click="panelMode = 'list'"
+            >
+              <ChevronLeftIcon class="size-5 shrink-0 opacity-60" />
+              <span class="text-sm font-semibold">Add evaluation</span>
+            </button>
+            <div class="h-px bg-base-200 mx-3"></div>
+            <button
+              v-for="kind in addKinds"
+              :key="kind"
+              type="button"
+              class="flex items-center gap-3 px-3 h-12 w-full text-left"
+              @click="chooseKind(kind)"
+            >
+              <KindIcon :kind="kind" class="size-[1.05rem] shrink-0 text-primary" />
+              <span class="flex-1 text-sm font-medium">{{ KIND_LABEL[kind] }}</span>
+              <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
+            </button>
+          </template>
+        </div>
+      </template>
+    </Teleport>
   </BottomSheet>
 </template>

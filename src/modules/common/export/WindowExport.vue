@@ -206,6 +206,7 @@ watchEffect(() => {
       :input="input"
       :export-configs="exportConfigs"
       @export="emit('export', $event)"
+      @close="open = false"
     />
     <div v-else class="p-4">
       <fieldset class="fieldset">

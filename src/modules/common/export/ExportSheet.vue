@@ -43,7 +43,12 @@ const { input, exportConfigs } = defineProps<{
   exportConfigs: ExportConfig<DocumentT>[]
 }>()
 
-const emit = defineEmits<{ export: [filedata: ExportFileData] }>()
+const emit = defineEmits<{ export: [filedata: ExportFileData]; close: [] }>()
+
+function shareAndClose() {
+  quickShare?.()
+  emit('close')
+}
 
 const { gridCellScale } = useSettings()
 const quickShare = inject(QUICK_SHARE_KEY, undefined)
@@ -133,7 +138,7 @@ function download(config: ExportConfig<DocumentT>) {
       <button
         v-if="quickShare"
         class="flex items-center gap-3 h-14 px-4 rounded-2xl bg-primary text-primary-content shadow-md shadow-primary/30"
-        @click="quickShare()"
+        @click="shareAndClose()"
       >
         <ShareIcon class="size-5" />
         <span class="flex-1 text-left font-semibold">{{
@@ -165,7 +170,7 @@ function download(config: ExportConfig<DocumentT>) {
 
       <section class="flex flex-col gap-2">
         <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
-          Code &amp; data
+          Text
         </h3>
         <button
           v-if="codeConfig"

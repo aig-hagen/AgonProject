@@ -174,7 +174,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
     </template>
     <template #results>
       <template v-if="data !== undefined">
-        <div class="flex flex-wrap gap-2">
+        <div data-evaluation-results class="flex flex-wrap gap-2">
           <span
             v-for="entry in data.entries"
             :key="entry.id"

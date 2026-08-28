@@ -308,7 +308,7 @@ export function useHomeController<DocumentT extends Objectish>(
       // (WhatsApp, email, …); otherwise — or if it fails — fall back to clipboard copy.
       if (canNativeShare({ url })) {
         try {
-          await navigator.share({ title: name, text: `${name} — AgonProject`, url })
+          await navigator.share({ title: name, url })
           return
         } catch (error) {
           // User dismissed the sheet: leave it there, don't also copy.

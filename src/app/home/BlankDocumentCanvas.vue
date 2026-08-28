@@ -44,7 +44,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
 }
 </script>
 <template>
-  <div class="h-full w-full overflow-y-auto">
+  <div class="h-full w-full overflow-y-auto bg-base-200">
     <div class="min-h-full flex items-center justify-center">
       <div class="max-w-5xl w-full p-4 sm:p-8">
         <h2 class="text-2xl sm:text-4xl font-bold mb-2">
@@ -57,7 +57,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
         <div class="divider"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
-            class="card bg-base-200 shadow-sm h-80"
+            class="card bg-base-100 border border-base-300 shadow-md h-80"
             :class="{ 'opacity-50': moduleCard.underConstruction }"
             v-for="(moduleCard, index) in moduleCards"
             :key="index"

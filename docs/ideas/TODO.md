@@ -3,7 +3,7 @@
 ### General
 
 - **[Enhancement]** double the request limit to the TweetyProject backend
-- The mode/type selector in the eval window does use a slightly different style than the semantics selector
+- ~~The mode/type selector in the eval window does use a slightly different style than the semantics selector~~ — fixed: `PickerSelect` now renders the shared `GroupedSelect` on desktop too, so Mode/type matches Semantics exactly
 
 ### Mobile
 
@@ -40,10 +40,21 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 
 #### Home and document management
 
-- **[Bug]** home view: some AF module description texts are truncated; references are missing entirely
-- **[Enhancement]** no confirmation when deleting a document
+- ~~**[Bug]** home view: AF description text is truncated in the mobile accordion when expanded~~ —
+  fixed: the description now drops its `line-clamp-2` while its card is expanded (collapsed cards
+  still clamp). Note on "references are missing entirely": they aren't — every module has
+  publications, but they only surface via a hover-only book icon (top-right of the desktop cards).
+  Surfacing them on the card is a **[Design]** decision, still open.
+- ~~**[Bug]** home view: expanding one mobile card warps the width of all cards~~ — fixed: the
+  "new" surface reserves the scrollbar gutter (`scrollbar-gutter: stable`), so the scrollbar
+  appearing no longer shrinks the content width.
+- ~~**[Enhancement]** no confirmation when deleting a document~~ — done: the mobile overflow-menu
+  Delete now deletes immediately (removed the inline confirm step); bulk "Delete all" still confirms
 - **[Decision needed]** "Document" should be renamed to something more fitting
-- **[Design]** Switch document icons to AF type icon; like the ones in the home view
+- **[Design]** Switch document icons to AF type icon; like the ones in the home view. Blocked:
+  document metadata only stores `{ id, name }`, so the AF type must either be persisted (small DB
+  migration; existing docs need a backfill/fallback) or derived on load (read each doc's content
+  on the home list). Decision pending.
 
 #### Graph editor and interaction
 
@@ -52,21 +63,32 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 - **[Enhancement]** Extension highlighting: could use some way to deactivate highlighting (other than clicking the extension again)
 - **[Bug]** dont open keyboard on argument creation on mobile
 - **[Design]** rethink the mobile command-action scheme from scratch; large rework of the command contract, needs changes to the graph-component
-- **[Enhancement]** add undo action to menu, next to redo
-- **[Decision needed]** what happens with the hover tooltips on mobile? currently the highlighting shows, but they are not clickable. How can we handle this?
+- ~~**[Enhancement]** add undo action to menu, next to redo~~ — done: Undo now sits above Redo in the mobile menu's Edit section
+- ~~**[Decision needed]** what happens with the hover tooltips on mobile? currently the highlighting shows, but they are not clickable. How can we handle this?~~ — done: on the compact layout `HoverTooltip` toggles on tap (with an outside-tap catcher), keeping ancestor tooltips open so nested term refs stay tappable; desktop hover unchanged
 - **[Decision needed]** add some kind of toggle for physics mode: something that activated physics for a brief moment to let arguments adjust position. or something that enables pyhsics while pressed
 
 #### ADF editing and evaluation
 
 - **[Design]** ADF condition editor needs a rework: no argument name editing here; better design
-- **[Enhancement]** compact eval sheet should resize to fit content: fit up to three rows of results, if more enable scroll, if less contract to fit content
+- ~~**[Enhancement]** compact eval sheet should resize to fit content: fit up to three rows of
+  results, if more enable scroll, if less contract to fit content~~ — done: the sheet's lowest
+  detent is now content-sized (BottomSheet `lowestDetentPx`), measured in EvaluationHost as chrome +
+  the results grid capped to three rows; more rows scroll in the sheet body, fewer contract to fit
+- ~~compact eval switcher: the drop-down list is clipped by the short sheet, and the add-kind picker
+  is nested/awkward~~ — done: the switcher now floats upward from the header pill into the canvas
+  above the sheet (teleported, flips down only if no room), and Add is an in-place list↔kinds swap
 
 #### Sharing and export
 
-- **[Decision needed]** The Web Share action includes "AF - AgonProject". Why? just plain link probably
-- **[Design]** Export sheet: Code&Data -> Text
-- **[Design]** switch exprt logo to a share icon
-- **[Enhancement]** export sheet should close when clicking the share link button
+- **[Feature]** Per-share link preview cards. `index.html` now serves static Open Graph tags,
+  so a shared link shows one *generic* branded card. To get a card specific to the shared
+  framework, the `/share/:id` route must return server-rendered HTML with per-share `og:*` tags
+  (title = framework name, description = arg/attack counts) — the share server currently only
+  serves JSON. Stretch goal: a dynamic `og:image` rendering the actual graph (server-side
+  SVG→PNG). Crawlers don't run JS, so this can't be done from the SPA.
+- ~~**[Design]** Export sheet: Code&Data -> Text~~ — done: renamed the section header to "Text"
+- ~~**[Design]** switch exprt logo to a share icon~~ — done: mobile export button now uses a share icon (desktop unchanged)
+- ~~**[Enhancement]** export sheet should close when clicking the share link button~~ — done: share button emits `close`, closing the sheet
 
 #### Settings and visual design
 
@@ -77,7 +99,7 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 
 #### Tutorials, glossary, and help
 
-- **[Bug]** Glossary AF-type Pills show wrong names; just use AF, BAF, etc; same for desktop
+- ~~**[Bug]** Glossary AF-type Pills show wrong names; just use AF, BAF, etc; same for desktop~~ — fixed: pills/tabs now show the acronym (AF, BAF, ADF, …) on mobile and desktop
 - **[Enhancement]** Several tutorials need updating; in particular also for mobile; update highlighting of next action on mobile
 - **[Design]** tutorial start buttons look bad
 
