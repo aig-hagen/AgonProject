@@ -140,11 +140,12 @@ function toggleDetent() {
 // Compact detent sizing: fit the sheet to its content up to three result rows, then
 // scroll. The `mt-auto` sticky footer stretches its container, so we can't read a
 // natural height off one box — instead we sum the naturally-sized pieces (the chrome
-// above the grid, the row-capped grid, and the footer). Only measured at the compact
-// detent, where the parameters are folded away.
+// above the results, the row-capped results, and the footer). Only measured at the
+// compact detent, where the parameters are folded away. Every result renderer (grid,
+// ranking, probabilities, …) tags its results element with `data-evaluation-results`.
 const MAX_ROWS = 3
-const ROW_GAP = 8 // .evaluation-result-grid gap-2
-const GRID_TO_FOOTER_GAP = 10 // MobileEvaluationBody gap-2.5
+const ROW_GAP = 8 // result rows sit in a gap-2 flow
+const RESULTS_TO_FOOTER_GAP = 10 // MobileEvaluationBody gap-2.5
 const content = useTemplateRef<HTMLElement>('content')
 const compactDetentPx = ref<number | null>(null)
 let gridObserver: ResizeObserver | undefined
@@ -162,30 +163,35 @@ function measureCompactDetent() {
   const root = content.value
   if (!open.value || root === null || detentLayout.value !== 'compact') return
   const panel = root.closest<HTMLElement>('.sheet-panel')
-  const grid = firstVisible(root, '.evaluation-result-grid')
-  if (panel === null || grid === null) {
+  const results = firstVisible(root, '[data-evaluation-results]')
+  if (panel === null || results === null) {
     compactDetentPx.value = null
     return
   }
-  const gridRect = grid.getBoundingClientRect()
-  const aboveGrid = gridRect.top - panel.getBoundingClientRect().top
-  const rowHeight = grid.querySelector('button')?.getBoundingClientRect().height ?? gridRect.height
-  const cappedGrid = Math.min(gridRect.height, rowHeight * MAX_ROWS + ROW_GAP * (MAX_ROWS - 1))
+  const resultsRect = results.getBoundingClientRect()
+  const aboveResults = resultsRect.top - panel.getBoundingClientRect().top
+  const firstRow = results.firstElementChild
+  const rowHeight = firstRow?.getBoundingClientRect().height ?? resultsRect.height
+  const cappedResults = Math.min(
+    resultsRect.height,
+    rowHeight * MAX_ROWS + ROW_GAP * (MAX_ROWS - 1),
+  )
   const footerHeight =
     firstVisible(root, '[data-evaluation-footer]')?.getBoundingClientRect().height ?? 0
   const padBottom = parseFloat(getComputedStyle(panel).paddingBottom) || 0
   compactDetentPx.value = Math.ceil(
-    aboveGrid + cappedGrid + GRID_TO_FOOTER_GAP + footerHeight + padBottom,
+    aboveResults + cappedResults + RESULTS_TO_FOOTER_GAP + footerHeight + padBottom,
   )
 }
 
-// Re-attach the observer to the active grid (a different one shows on config switch) and remeasure.
+// Re-attach the observer to the active results element (a different one shows on config
+// switch) and remeasure.
 function refreshCompactMeasure() {
   gridObserver?.disconnect()
-  const grid = content.value ? firstVisible(content.value, '.evaluation-result-grid') : null
-  if (grid && typeof ResizeObserver !== 'undefined') {
+  const results = content.value ? firstVisible(content.value, '[data-evaluation-results]') : null
+  if (results && typeof ResizeObserver !== 'undefined') {
     gridObserver = new ResizeObserver(() => measureCompactDetent())
-    gridObserver.observe(grid)
+    gridObserver.observe(results)
   }
   measureCompactDetent()
 }
