@@ -39,7 +39,7 @@ http://:8080 {
 		rate_limit {
 			zone tweety {
 				key {remote_host}
-				events 30
+				events 60
 				window 1m
 			}
 		}
