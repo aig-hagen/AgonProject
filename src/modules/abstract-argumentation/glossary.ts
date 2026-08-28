@@ -33,6 +33,7 @@ import {
   DD17,
   DG16,
   DMT07,
+  DRT20,
   GM15,
   LM11,
   MT08,
@@ -650,17 +651,61 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   QLD: {
     label: 'qualified',
     title: 'Qualified Semantics',
-    content: ['TODO'],
+    content: [
+      'Given an ',
+      { ref: 'sccRecursive', label: 'SCC-decomposable semantics' },
+      ' $\\sigma$, qualified $\\sigma$-semantics evaluates each ',
+      { ref: 'scc', label: 'SCC' },
+      ' using the ',
+      { ref: 'qualifiedLocalFn' },
+      ', which treats external attackers labelled undecided as if they were labelled out.',
+    ],
+    reference: DRT20,
   },
   SQLD: {
     label: 'semi-qualified',
     title: 'Semi-Qualified Semantics',
-    content: ['TODO'],
+    content: [
+      'Given an ',
+      { ref: 'sccRecursive', label: 'SCC-decomposable semantics' },
+      ' $\\sigma$, semi-qualified $\\sigma$-semantics evaluates each ',
+      { ref: 'scc', label: 'SCC' },
+      ' using the ',
+      { ref: 'semiQualifiedLocalFn' },
+      ". This treats an undecided outparent as out only when no alternative labelling of the SCC's outparents labels it in.",
+    ],
+    reference: DRT20,
+  },
+  qualifiedLocalFn: {
+    label: 'qualified local function',
+    title: 'Qualified Local Function $f_{q-\\sigma}$',
+    content: [
+      'Let $f_\\sigma$ be the local function of an ',
+      { ref: 'sccRecursive', label: 'SCC-decomposable semantics' },
+      " $\\sigma$. Its qualified local function is defined by $f_{q-\\sigma}((A,R), A_{\\mathrm{in}}, R_{\\mathrm{in}}, L_{\\mathrm{in}}) = f_\\sigma((A,R), A_{\\mathrm{in}}, R_{\\mathrm{in}}, L'_{\\mathrm{in}})$, where $L'_{\\mathrm{in}}(x) = \\mathrm{I}$ if $L_{\\mathrm{in}}(x) = \\mathrm{I}$, and $L'_{\\mathrm{in}}(x) = \\mathrm{O}$ if $L_{\\mathrm{in}}(x) \\in \\{\\mathrm{O}, \\mathrm{U}\\}$.",
+    ],
+    reference: DRT20,
+  },
+  semiQualifiedLocalFn: {
+    label: 'semi-qualified local function',
+    title: 'Semi-Qualified Weak Local Function $g_{sq-\\sigma}$',
+    content: [
+      'Let $f_\\sigma$ be the local function of an ',
+      { ref: 'sccRecursive', label: 'SCC-decomposable semantics' },
+      " $\\sigma$, and let $S_{\\mathrm{in}}$ be the set of possible labellings of the outparents of the current SCC. The semi-qualified weak local function is defined by $g_{sq-\\sigma}((A,R), A_{\\mathrm{in}}, R_{\\mathrm{in}}, L_{\\mathrm{in}}, S_{\\mathrm{in}}) = f_\\sigma((A,R), A_{\\mathrm{in}}, R_{\\mathrm{in}}, L'_{\\mathrm{in}})$, where $L'_{\\mathrm{in}}(x) = \\mathrm{I}$ if $L_{\\mathrm{in}}(x) = \\mathrm{I}$, $L'_{\\mathrm{in}}(x) = \\mathrm{O}$ if $L_{\\mathrm{in}}(x) = \\mathrm{O}$, and an undecided $x$ is relabelled $\\mathrm{O}$ iff no $L \\in S_{\\mathrm{in}}$ labels $x$ as $\\mathrm{I}$; otherwise it remains $\\mathrm{U}$.",
+    ],
+    reference: DRT20,
   },
   VR: {
     label: 'vacuous reduct',
     title: 'Vacuous Reduct Semantics',
-    content: ['TODO'],
+    content: [
+      'Given a base semantics $\\sigma$ and a reduct semantics $\\tau$, a set $E$ is a $\\sigma^{\\tau}$-extension of an ',
+      { ref: 'AF' },
+      ' $F$ iff $E \\in \\sigma(F)$ and the ',
+      { ref: 'reduct' },
+      ' $F^E$ is $\\tau$-vacuous, i.e. $\\tau(F^E) \\subseteq \\{\\emptyset\\}$.',
+    ],
     reference: T23,
   },
   SER: {
@@ -817,7 +862,52 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
   IGD: {
     label: 'iterated graded defense',
     title: 'Iterated Graded Defense Ranking',
-    content: ['TODO'],
+    content: [
+      'The iterated graded defense ranking associates to any ',
+      { ref: 'AF' },
+      ' $F$ a ranking $\\succeq_F^\\mathrm{IGD}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{IGD} b$ iff, for every $m,n \\geq 1$, whenever $b$ is ',
+      { ref: 'skepticalAcceptance', label: 'skeptically accepted' },
+      ' under ',
+      { ref: 'mnComplete', label: '$mn$-complete semantics' },
+      ', so is $a$.',
+    ],
+    reference: GM15,
+  },
+
+  gradedDefenseFunction: {
+    label: 'graded defense function',
+    title: 'Graded Defense Function $d_n^m$',
+    content: [
+      'For an ',
+      { ref: 'AF' },
+      ' $F=(A,R)$, a set $X \\subseteq A$, and integers $m,n \\geq 1$, the graded defense function is defined by $d_n^m(X) = \\{x \\in A \\mid |\\{y \\in A \\mid (y,x) \\in R \\text{ and } |\\{z \\in X \\mid (z,y) \\in R\\}| < n\\}| < m\\}$.',
+    ],
+    reference: GM15,
+  },
+
+  gradedNeutralityFunction: {
+    label: 'graded neutrality function',
+    title: 'Graded Neutrality Function $n_m$',
+    content: [
+      'For an ',
+      { ref: 'AF' },
+      ' $F=(A,R)$, a set $X \\subseteq A$, and an integer $m \\geq 1$, the graded neutrality function is defined by $n_m(X) = \\{x \\in A \\mid |\\{y \\in X \\mid (y,x) \\in R\\}| < m\\}$. A set $X$ is $m$-conflict-free iff $X \\subseteq n_m(X)$.',
+    ],
+    reference: GM15,
+  },
+
+  mnComplete: {
+    label: '$mn$-complete',
+    title: '$mn$-Complete Semantics',
+    content: [
+      'A set $X \\subseteq A$ is an $mn$-complete extension of an ',
+      { ref: 'AF' },
+      ' $F$ iff $X$ is ',
+      { ref: 'gradedNeutralityFunction', label: '$m$-conflict-free' },
+      ' and a fixed point of the ',
+      { ref: 'gradedDefenseFunction' },
+      ', i.e. $X \\subseteq n_m(X)$ and $X = d_n^m(X)$.',
+    ],
     reference: GM15,
   },
 
@@ -896,8 +986,14 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
 
   strategyGame: {
     label: 'strategic game',
-    title: 'Two-person zero-sum Strategic Game',
-    content: ['TODO'],
+    title: 'Two-Person Zero-Sum Strategic Game',
+    content: [
+      'For an ',
+      { ref: 'AF' },
+      " $F=(A,R)$ and an argument $a \\in A$, the associated two-person zero-sum game lets the proponent choose a set containing $a$ and the opponent choose any set. The payoff reflects whether the proponent's set is ",
+      { ref: 'CF', label: 'conflict-free' },
+      ' and the attacks between the chosen sets; the value under optimal play is the strength $\\mathrm{s}(a)$.',
+    ],
     reference: MT08,
   },
 

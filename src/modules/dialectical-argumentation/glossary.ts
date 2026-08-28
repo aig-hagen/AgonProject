@@ -187,9 +187,11 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
     content: [
       'A three-valued interpretation $v$ of an ',
       { ref: 'ADF' },
-      ' is a conflict-free model iff TODO.',
+      ' is a conflict-free model iff, for every argument $a \\in A$, $v(a) = \\mathbf{t}$ implies that $C_a$ is satisfied by at least one ',
+      { ref: 'completions', label: 'two-valued completion' },
+      ' of $v$, and $v(a) = \\mathbf{f}$ implies that $C_a$ is falsified by at least one two-valued completion of $v$.',
     ],
-    reference: BW10,
+    reference: SW15,
   },
 
   adfNA: {
@@ -198,7 +200,7 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
     content: [
       'A three-valued interpretation $v$ of an ',
       { ref: 'ADF' },
-      ' is a naive model iff iff $v$ is ',
+      ' is a naive model iff $v$ is ',
       { ref: 'adfCF', label: 'conflict-free' },
       " and there is no conflict-free model $v'$ such that $v <_i v'$.",
     ],

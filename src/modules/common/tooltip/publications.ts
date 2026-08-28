@@ -46,6 +46,13 @@ export const BBU20: Publication = {
   href: 'https://doi.org/10.1609/aaai.v34i03.5661',
 }
 
+export const DRT20: Publication = {
+  shortLabel: 'Dauphin et al. (2020)',
+  label:
+    'Dauphin, J., Rienstra, T. & van der Torre, L. (2020). A Principle-Based Analysis of Weakly Admissible Semantics. In: Computational Models of Argument – Proceedings of COMMA 2020, pp. 167–178. IOS Press.',
+  href: 'https://doi.org/10.3233/FAIA200502',
+}
+
 export const C06: Publication = {
   shortLabel: 'Caminada (2006)',
   label:
