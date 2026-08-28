@@ -101,7 +101,6 @@ function openDocument(id: number) {
 // Per-row rename / delete-confirm state for the Documents surface.
 const renamingId = ref<number | null>(null)
 const renameText = ref('')
-const confirmDeleteId = ref<number | null>(null)
 const confirmDeleteAll = ref(false)
 
 // Per-row overflow menu (rename / save / delete) rendered as a bottom sheet.
@@ -115,7 +114,6 @@ const menuOpen = computed({
 })
 
 function startRename(document: { id: number; name: string }) {
-  confirmDeleteId.value = null
   renamingId.value = document.id
   renameText.value = document.name
 }
@@ -125,11 +123,6 @@ function commitRename() {
   const name = renameText.value.trim()
   if (name.length > 0) renameDocument(renamingId.value, name)
   renamingId.value = null
-}
-
-function confirmDelete(id: number) {
-  deleteDocument(id)
-  confirmDeleteId.value = null
 }
 
 // Overflow-sheet actions: close the sheet, then run the row action.
@@ -143,7 +136,7 @@ function menuSave(id: number) {
 }
 function menuDelete(id: number) {
   menuDocId.value = null
-  confirmDeleteId.value = id
+  deleteDocument(id)
 }
 
 function deleteAll() {
@@ -251,20 +244,6 @@ function loadFile() {
               />
               <button class="btn btn-ghost btn-sm" @click="renamingId = null">Cancel</button>
               <button class="btn btn-primary btn-sm" @click="commitRename">Save</button>
-            </div>
-
-            <!-- Delete confirm -->
-            <div
-              v-else-if="confirmDeleteId === document.id"
-              class="flex items-center gap-2 rounded-xl border border-error px-3 py-2 my-1"
-            >
-              <span class="flex-1 truncate text-sm"
-                >Delete “{{ document.name || 'Untitled' }}”?</span
-              >
-              <button class="btn btn-ghost btn-sm" @click="confirmDeleteId = null">Cancel</button>
-              <button class="btn btn-error btn-sm" @click="confirmDelete(document.id)">
-                Delete
-              </button>
             </div>
 
             <!-- Default row -->

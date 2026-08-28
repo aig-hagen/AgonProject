@@ -48,7 +48,8 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 - ~~**[Bug]** home view: expanding one mobile card warps the width of all cards~~ — fixed: the
   "new" surface reserves the scrollbar gutter (`scrollbar-gutter: stable`), so the scrollbar
   appearing no longer shrinks the content width.
-- **[Enhancement]** no confirmation when deleting a document
+- ~~**[Enhancement]** no confirmation when deleting a document~~ — done: the mobile overflow-menu
+  Delete now deletes immediately (removed the inline confirm step); bulk "Delete all" still confirms
 - **[Decision needed]** "Document" should be renamed to something more fitting
 - **[Design]** Switch document icons to AF type icon; like the ones in the home view. Blocked:
   document metadata only stores `{ id, name }`, so the AF type must either be persisted (small DB
