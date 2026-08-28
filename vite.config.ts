@@ -61,8 +61,9 @@ export default defineConfig({
       ],
     }),
     gzipFixPlugin(),
-    // The devtools overlay intercepts pointer events; disable it under e2e.
-    ...(process.env.E2E ? [] : [vueDevTools()]),
+    // The devtools overlay intercepts pointer events (disabled under e2e) and shows
+    // a floating icon (set NO_DEVTOOLS=1 for clean screenshots).
+    ...(process.env.E2E || process.env.NO_DEVTOOLS ? [] : [vueDevTools()]),
   ],
   resolve: {
     alias: {

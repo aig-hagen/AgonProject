@@ -134,7 +134,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                     "
                     class="btn btn-sm btn-soft w-fit"
                   >
-                    Generate random {{ moduleCard.newNamePrefix }}
+                    Generate {{ moduleCard.newNamePrefix }}
                   </RouterLink>
                 </div>
               </template>

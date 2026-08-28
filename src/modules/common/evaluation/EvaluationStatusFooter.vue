@@ -56,7 +56,7 @@ function notifyCopied(format: 'plain' | 'tex') {
     class="flex items-center justify-between gap-2"
     :class="
       stickyFooter &&
-      'sticky bottom-0 z-10 -mx-3 mt-auto border-t border-base-200 bg-base-100 px-3 py-1.5'
+      'sticky bottom-0 z-10 -mx-3 mt-auto border-t border-base-300 bg-base-100 px-3 py-1.5 shadow-[0_-4px_6px_-4px_rgba(0,0,0,0.15)]'
     "
   >
     <p v-if="statusLine" class="label min-w-0 truncate">{{ statusLine }}</p>
