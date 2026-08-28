@@ -175,7 +175,7 @@ export function exportLatexArgumentationCommon(
   const afOptions = `[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]`
   return {
     text,
-    svg: renderSvg(text.replace('\\begin{af}', `\\begin{af}${afOptions}`)),
+    svg: () => renderSvg(text.replace('\\begin{af}', `\\begin{af}${afOptions}`)),
   }
 }
 

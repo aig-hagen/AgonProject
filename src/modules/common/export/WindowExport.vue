@@ -27,11 +27,12 @@ import {
 import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
-import { computed, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
+import { computed, inject, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ExportSheet from '@/modules/common/export/ExportSheet.vue'
+import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
@@ -54,7 +55,19 @@ const editorView = shallowRef<EditorView | undefined>(undefined)
 const { gridCellScale } = useSettings()
 const { layoutMode } = useLayoutMode()
 
-const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exportConfigs[0])
+// A device-agnostic SVG export that serializes the live graph canvas (see renderGraphSvg). It
+// sits alongside the real ExportConfigs in the format picker but has no model-based export()
+// and no code/style options, so it's tracked by a sentinel key rather than a config object.
+const WYSIWYG_SVG_KEY = '__wysiwyg_svg__'
+const graphSvgRenderer = inject(GRAPH_SVG_RENDERER_KEY, undefined)
+
+const selectedFormatKey = shallowRef<string>(exportConfigs[0]?.name ?? WYSIWYG_SVG_KEY)
+const isWysiwygSvg = computed(() => selectedFormatKey.value === WYSIWYG_SVG_KEY)
+const selectedExportConfig = computed<ExportConfig<DocumentT> | undefined>(() =>
+  isWysiwygSvg.value
+    ? undefined
+    : exportConfigs.find((config) => config.name === selectedFormatKey.value),
+)
 const selectedArgumentStyle = shallowRef<string>('standard')
 const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
@@ -126,11 +139,11 @@ const saveFiledataText = computed(() => {
 const svgTextEvaluating = shallowRef(false)
 const svgTextMaybeLoading = computedAsync(
   async () => {
-    const svgPromise = exportResult.value?.svg
-    if (svgPromise === undefined) {
+    const svgFactory = exportResult.value?.svg
+    if (svgFactory === undefined) {
       return null
     }
-    return await svgPromise
+    return await svgFactory()
   },
   null,
   svgTextEvaluating,
@@ -152,6 +165,16 @@ const saveFiledataSvg = computed(() => {
     ending: 'svg',
   }
 })
+
+// Recomputed whenever the SVG format is (re)selected while the window is open, capturing the
+// graph as it currently looks on screen.
+const wysiwygSvgText = computed(() => {
+  if (!open.value || !isWysiwygSvg.value) return undefined
+  return graphSvgRenderer?.() ?? undefined
+})
+const saveFiledataWysiwygSvg = computed(() =>
+  wysiwygSvgText.value === undefined ? undefined : { content: wysiwygSvgText.value, ending: 'svg' },
+)
 
 watchEffect(() => {
   if (soureViewRef.value === null) {
@@ -213,14 +236,15 @@ watchEffect(() => {
         <div class="flex gap-2 flex-wrap">
           <label class="select select-sm w-66">
             <span class="label">Format</span>
-            <select v-model="selectedExportConfig">
+            <select v-model="selectedFormatKey">
               <option
                 v-for="exportConfig in exportConfigs"
                 :key="exportConfig.name"
-                :value="exportConfig"
+                :value="exportConfig.name"
               >
                 {{ exportConfig.name }}
               </option>
+              <option v-if="graphSvgRenderer" :value="WYSIWYG_SVG_KEY">SVG (image)</option>
             </select>
           </label>
           <a
@@ -310,7 +334,29 @@ watchEffect(() => {
           </button>
         </div>
       </fieldset>
-      <div class="flex gap-2 flex-wrap">
+      <div v-if="isWysiwygSvg" class="flex flex-col gap-2">
+        <div class="flex gap-2 flex-wrap">
+          <ButtonSave
+            class="btn btn-sm btn-soft w-28 justify-start"
+            :filedata="saveFiledataWysiwygSvg"
+            @export="emit('export', $event)"
+          >
+            SVG
+          </ButtonSave>
+          <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="wysiwygSvgText">
+            SVG
+          </ButtonCopy>
+        </div>
+        <div
+          v-if="wysiwygSvgText"
+          v-html="wysiwygSvgText"
+          class="w-fit max-w-full overflow-auto rounded border border-base-300 p-1"
+        ></div>
+        <div v-else role="alert" class="alert alert-warning alert-soft">
+          <span>No graph to export.</span>
+        </div>
+      </div>
+      <div v-else class="flex gap-2 flex-wrap">
         <div class="grow max-w-80">
           <fieldset class="fieldset">
             <div class="flex gap-2 flex-wrap mb-2">

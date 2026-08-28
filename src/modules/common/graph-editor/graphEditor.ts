@@ -92,6 +92,12 @@ export type EditorComponent<DocumentT> = Component<
 export const SHEET_REFIT_KEY: InjectionKey<(coveredFraction: number | null) => void> =
   Symbol('sheet-refit')
 
+// Serializes the live graph canvas into a standalone SVG string (or null if the canvas
+// isn't mounted). Provided by the common GraphEditor so the export UI can offer a
+// WYSIWYG SVG export without touching the module-agnostic ExportConfig pipeline.
+export const GRAPH_SVG_RENDERER_KEY: InjectionKey<() => string | null> =
+  Symbol('graph-svg-renderer')
+
 export type LinkType = (typeof LinkType)[keyof typeof LinkType]
 
 export type LinkConfigs = Partial<

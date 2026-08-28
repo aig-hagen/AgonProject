@@ -27,11 +27,11 @@ import {
   PhotoIcon,
   ShareIcon,
 } from '@heroicons/vue/24/outline'
-import { computedAsync } from '@vueuse/core'
 import { computed, inject, ref, shallowRef } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
+import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import { supportsNativeShare } from '@/modules/common/share/nativeShare'
 import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
@@ -52,6 +52,7 @@ function shareAndClose() {
 
 const { gridCellScale } = useSettings()
 const quickShare = inject(QUICK_SHARE_KEY, undefined)
+const graphSvgRenderer = inject(GRAPH_SVG_RENDERER_KEY, undefined)
 const canShareNatively = supportsNativeShare()
 
 type Screen = 'picker' | 'svg' | 'code'
@@ -98,19 +99,11 @@ const packageLine = computed(() => {
   return `\\usepackage[${opts.join(',')}]{argumentation}`
 })
 
-// Only render the SVG on the preview screen, so opening Export doesn't run TikZ.
-const svgLoading = shallowRef(false)
-const svgTextMaybe = computedAsync(
-  async () => {
-    if (screen.value !== 'svg') return null
-    const svg = codeResult.value?.svg
-    return svg === undefined ? null : await svg
-  },
-  null,
-  svgLoading,
-)
+// WYSIWYG SVG snapshot of the live graph. Serialized only on the preview screen, and only when
+// a renderer is provided (i.e. inside a graph editor). No TikZ/WebAssembly, so it works on any
+// phone — unlike the old rendered preview, which could hang on mobile.
 const svgText = computed(() =>
-  svgLoading.value || svgTextMaybe.value === null ? undefined : svgTextMaybe.value,
+  screen.value === 'svg' ? (graphSvgRenderer?.() ?? undefined) : undefined,
 )
 
 const svgFiledata = computed<ExportFileData | undefined>(() =>
@@ -146,7 +139,7 @@ function download(config: ExportConfig<DocumentT>) {
         }}</span>
       </button>
 
-      <section v-if="codeConfig" class="flex flex-col gap-2">
+      <section v-if="graphSvgRenderer" class="flex flex-col gap-2">
         <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
           Image
         </h3>
@@ -159,11 +152,8 @@ function download(config: ExportConfig<DocumentT>) {
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">SVG image</b>
-            <span class="text-xs text-base-content/60 truncate"
-              >Rendered diagram — with style options</span
-            >
+            <span class="text-xs text-base-content/60 truncate">Snapshot of the current graph</span>
           </span>
-          <span class="badge badge-sm badge-ghost text-primary/80 shrink-0">Preview</span>
           <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
         </button>
       </section>
@@ -214,11 +204,11 @@ function download(config: ExportConfig<DocumentT>) {
         <ChevronLeftIcon class="size-4" /> Formats
       </button>
 
-      <div class="overflow-auto rounded bg-white p-2">
-        <div v-if="svgText === undefined" role="alert" class="alert alert-info alert-soft">
-          <span>Rendering SVG…</span>
+      <div class="overflow-auto rounded border border-base-300 p-2">
+        <div v-if="svgText" v-html="svgText" class="w-fit"></div>
+        <div v-else role="alert" class="alert alert-warning alert-soft">
+          <span>No graph to export.</span>
         </div>
-        <div v-else v-html="svgText" class="w-fit"></div>
       </div>
 
       <div class="flex gap-2">
@@ -229,72 +219,6 @@ function download(config: ExportConfig<DocumentT>) {
         />
         <ButtonCopy class="btn btn-sm btn-soft flex-1" :text="svgText">SVG</ButtonCopy>
       </div>
-
-      <details class="collapse collapse-arrow bg-base-200/60 rounded-field">
-        <summary class="collapse-title text-sm font-medium">Style options</summary>
-        <div class="collapse-content flex flex-col gap-3">
-          <div class="flex flex-col gap-2">
-            <span class="text-[0.65rem] uppercase tracking-wide opacity-50"
-              >Appearance · image only</span
-            >
-            <div class="grid grid-cols-2 gap-2">
-              <label class="select select-sm">
-                <span class="label">Argument</span>
-                <select v-model="argumentStyle">
-                  <option>standard</option>
-                  <option>large</option>
-                  <option>thick</option>
-                  <option>gray</option>
-                  <option>colored</option>
-                </select>
-              </label>
-              <label class="select select-sm">
-                <span class="label">Name</span>
-                <select v-model="nameStyle">
-                  <option>math</option>
-                  <option>bold</option>
-                  <option>monospace</option>
-                  <option>monoemph</option>
-                  <option>none</option>
-                </select>
-              </label>
-              <label class="select select-sm">
-                <span class="label">Attack</span>
-                <select v-model="attackStyle">
-                  <option>standard</option>
-                  <option>large</option>
-                  <option>modern</option>
-                </select>
-              </label>
-              <label v-if="isBipolarDocument" class="select select-sm">
-                <span class="label">Support</span>
-                <select v-model="supportStyle">
-                  <option>standard</option>
-                  <option>dashed</option>
-                  <option>double</option>
-                </select>
-              </label>
-            </div>
-          </div>
-          <div class="flex flex-col gap-2">
-            <span class="text-[0.65rem] uppercase tracking-wide opacity-50"
-              >Structure · image + TikZ</span
-            >
-            <label class="label gap-2">
-              <span>Node distance</span>
-              <input
-                type="range"
-                class="range range-sm flex-1"
-                min="0.5"
-                max="4"
-                step="0.25"
-                v-model.number="nodeDistance"
-              />
-              <span class="text-sm w-6 text-right opacity-60">{{ nodeDistance }}</span>
-            </label>
-          </div>
-        </div>
-      </details>
     </div>
 
     <!-- LaTeX code -->
@@ -333,9 +257,47 @@ function download(config: ExportConfig<DocumentT>) {
         class="overflow-auto rounded bg-base-200 p-2 text-[0.7rem] leading-relaxed max-h-64"
       ><code>{{ codeResult?.text }}</code></pre>
 
-      <details class="collapse collapse-arrow bg-base-200/60 rounded-field">
-        <summary class="collapse-title text-sm font-medium">Structure options</summary>
-        <div class="collapse-content">
+      <details v-if="packageLine" class="collapse collapse-arrow bg-base-200/60 rounded-field">
+        <summary class="collapse-title text-sm font-medium">Style options</summary>
+        <div class="collapse-content flex flex-col gap-3">
+          <div class="grid grid-cols-2 gap-2">
+            <label class="select select-sm">
+              <span class="label">Argument</span>
+              <select v-model="argumentStyle">
+                <option>standard</option>
+                <option>large</option>
+                <option>thick</option>
+                <option>gray</option>
+                <option>colored</option>
+              </select>
+            </label>
+            <label class="select select-sm">
+              <span class="label">Name</span>
+              <select v-model="nameStyle">
+                <option>math</option>
+                <option>bold</option>
+                <option>monospace</option>
+                <option>monoemph</option>
+                <option>none</option>
+              </select>
+            </label>
+            <label class="select select-sm">
+              <span class="label">Attack</span>
+              <select v-model="attackStyle">
+                <option>standard</option>
+                <option>large</option>
+                <option>modern</option>
+              </select>
+            </label>
+            <label v-if="isBipolarDocument" class="select select-sm">
+              <span class="label">Support</span>
+              <select v-model="supportStyle">
+                <option>standard</option>
+                <option>dashed</option>
+                <option>double</option>
+              </select>
+            </label>
+          </div>
           <label class="label gap-2">
             <span>Node distance</span>
             <input

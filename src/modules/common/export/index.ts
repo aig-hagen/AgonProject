@@ -49,7 +49,9 @@ export interface ExportConfig<DocumentT> {
 
 export interface ExportResult {
   text: string
-  svg?: Promise<string>
+  // A factory rather than an eager promise: rendering the TikZ SVG spins up a heavy WebAssembly
+  // TeX engine, so it must only run when a preview actually asks for it (never on mobile).
+  svg?: () => Promise<string>
 }
 
 export interface ExportFileData {
