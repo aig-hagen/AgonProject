@@ -23,6 +23,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   PlusIcon,
   TrashIcon,
 } from '@heroicons/vue/24/outline'
@@ -128,6 +129,12 @@ function togglePanel() {
 // A newly created eval needs its selectors, so lift a compact sheet to standard.
 function ensureStandardDetent() {
   if (detentIndex.value < 1) detentIndex.value = 1
+}
+
+// Header toggle between the compact and standard (half) detents.
+const isExpanded = computed(() => detentIndex.value >= 1)
+function toggleDetent() {
+  detentIndex.value = isExpanded.value ? 0 : 1
 }
 
 // Compact detent sizing: fit the sheet to its content up to three result rows, then
@@ -271,13 +278,13 @@ watch(
         />
       </button>
       <button
-        v-if="!listOpen"
         type="button"
         class="btn btn-square size-11 btn-ghost shrink-0"
-        aria-label="Add evaluation"
-        @click="onAddClick"
+        :aria-label="isExpanded ? 'Collapse sheet' : 'Expand sheet'"
+        @click="toggleDetent"
       >
-        <PlusIcon class="size-5" />
+        <ChevronDownIcon v-if="isExpanded" class="size-5" />
+        <ChevronUpIcon v-else class="size-5" />
       </button>
       <button
         type="button"
