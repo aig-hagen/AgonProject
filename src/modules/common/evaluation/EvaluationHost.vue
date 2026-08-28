@@ -111,11 +111,20 @@ const content = useTemplateRef<HTMLElement>('content')
 const compactDetentPx = ref<number | null>(null)
 let gridObserver: ResizeObserver | undefined
 
+// Inactive configs stay mounted under v-show, so several grids/footers coexist in the
+// DOM; only the active one has a layout box. Pick that one.
+function firstVisible(root: HTMLElement, selector: string): HTMLElement | null {
+  for (const el of root.querySelectorAll<HTMLElement>(selector)) {
+    if (el.getBoundingClientRect().width > 0) return el
+  }
+  return null
+}
+
 function measureCompactDetent() {
   const root = content.value
   if (!open.value || root === null || detentLayout.value !== 'compact') return
   const panel = root.closest<HTMLElement>('.sheet-panel')
-  const grid = root.querySelector<HTMLElement>('.evaluation-result-grid')
+  const grid = firstVisible(root, '.evaluation-result-grid')
   if (panel === null || grid === null) {
     compactDetentPx.value = null
     return
@@ -125,17 +134,17 @@ function measureCompactDetent() {
   const rowHeight = grid.querySelector('button')?.getBoundingClientRect().height ?? gridRect.height
   const cappedGrid = Math.min(gridRect.height, rowHeight * MAX_ROWS + ROW_GAP * (MAX_ROWS - 1))
   const footerHeight =
-    root.querySelector<HTMLElement>('[data-evaluation-footer]')?.getBoundingClientRect().height ?? 0
+    firstVisible(root, '[data-evaluation-footer]')?.getBoundingClientRect().height ?? 0
   const padBottom = parseFloat(getComputedStyle(panel).paddingBottom) || 0
   compactDetentPx.value = Math.ceil(
     aboveGrid + cappedGrid + GRID_TO_FOOTER_GAP + footerHeight + padBottom,
   )
 }
 
-// Re-attach the observer to the current grid (it remounts on config switch) and remeasure.
+// Re-attach the observer to the active grid (a different one shows on config switch) and remeasure.
 function refreshCompactMeasure() {
   gridObserver?.disconnect()
-  const grid = content.value?.querySelector<HTMLElement>('.evaluation-result-grid')
+  const grid = content.value ? firstVisible(content.value, '.evaluation-result-grid') : null
   if (grid && typeof ResizeObserver !== 'undefined') {
     gridObserver = new ResizeObserver(() => measureCompactDetent())
     gridObserver.observe(grid)
