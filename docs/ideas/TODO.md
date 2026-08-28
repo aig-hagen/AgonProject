@@ -64,7 +64,7 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 - **[Bug]** dont open keyboard on argument creation on mobile
 - **[Design]** rethink the mobile command-action scheme from scratch; large rework of the command contract, needs changes to the graph-component
 - ~~**[Enhancement]** add undo action to menu, next to redo~~ — done: Undo now sits above Redo in the mobile menu's Edit section
-- **[Decision needed]** what happens with the hover tooltips on mobile? currently the highlighting shows, but they are not clickable. How can we handle this?
+- ~~**[Decision needed]** what happens with the hover tooltips on mobile? currently the highlighting shows, but they are not clickable. How can we handle this?~~ — done: on the compact layout `HoverTooltip` toggles on tap (with an outside-tap catcher), keeping ancestor tooltips open so nested term refs stay tappable; desktop hover unchanged
 - **[Decision needed]** add some kind of toggle for physics mode: something that activated physics for a brief moment to let arguments adjust position. or something that enables pyhsics while pressed
 
 #### ADF editing and evaluation
