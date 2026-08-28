@@ -3,7 +3,7 @@
 ### General
 
 - **[Enhancement]** double the request limit to the TweetyProject backend
-- The mode/type selector in the eval window does use a slightly different style than the semantics selector
+- ~~The mode/type selector in the eval window does use a slightly different style than the semantics selector~~ — fixed: `PickerSelect` now renders the shared `GroupedSelect` on desktop too, so Mode/type matches Semantics exactly
 
 ### Mobile
 
@@ -63,10 +63,15 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 
 #### Sharing and export
 
-- **[Decision needed]** The Web Share action includes "AF - AgonProject". Why? just plain link probably
-- **[Design]** Export sheet: Code&Data -> Text
-- **[Design]** switch exprt logo to a share icon
-- **[Enhancement]** export sheet should close when clicking the share link button
+- **[Feature]** Per-share link preview cards. `index.html` now serves static Open Graph tags,
+  so a shared link shows one *generic* branded card. To get a card specific to the shared
+  framework, the `/share/:id` route must return server-rendered HTML with per-share `og:*` tags
+  (title = framework name, description = arg/attack counts) — the share server currently only
+  serves JSON. Stretch goal: a dynamic `og:image` rendering the actual graph (server-side
+  SVG→PNG). Crawlers don't run JS, so this can't be done from the SPA.
+- ~~**[Design]** Export sheet: Code&Data -> Text~~ — done: renamed the section header to "Text"
+- ~~**[Design]** switch exprt logo to a share icon~~ — done: mobile export button now uses a share icon (desktop unchanged)
+- ~~**[Enhancement]** export sheet should close when clicking the share link button~~ — done: share button emits `close`, closing the sheet
 
 #### Settings and visual design
 
@@ -77,7 +82,7 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 
 #### Tutorials, glossary, and help
 
-- **[Bug]** Glossary AF-type Pills show wrong names; just use AF, BAF, etc; same for desktop
+- ~~**[Bug]** Glossary AF-type Pills show wrong names; just use AF, BAF, etc; same for desktop~~ — fixed: pills/tabs now show the acronym (AF, BAF, ADF, …) on mobile and desktop
 - **[Enhancement]** Several tutorials need updating; in particular also for mobile; update highlighting of next action on mobile
 - **[Design]** tutorial start buttons look bad
 
