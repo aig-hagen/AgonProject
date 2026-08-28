@@ -70,9 +70,11 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                   :publications="moduleCard.publications"
                 />
               </div>
-              <p v-if="moduleCard.description" class="text-sm text-base-content/60">
-                {{ moduleCard.description }}
-              </p>
+              <div class="h-15 overflow-hidden">
+                <p v-if="moduleCard.description" class="text-sm text-base-content/60 line-clamp-3">
+                  {{ moduleCard.description }}
+                </p>
+              </div>
               <template v-if="moduleCard.underConstruction">
                 <div class="flex-1"></div>
                 <p class="text-sm text-base-content/50 italic">Under Construction</p>
