@@ -179,6 +179,25 @@
          \faImage\ \ screenshot to come};%
     \par\vspace{0.5em}{\color{muted}\fontsize{23}{28}\selectfont #2\par}}
 
+% One framed portrait phone screenshot, sized by height. Same border + shadow
+% treatment as \screenshot.
+\newcommand{\phoneshot}[2]{%
+    \tikz\node[inner sep=0pt, draw=rulegrey, line width=1.2pt,
+        blur shadow={shadow blur steps=12, shadow xshift=0pt,
+            shadow yshift=-5pt, shadow blur radius=9pt, shadow opacity=28}]
+        {\includegraphics[height=#1]{#2}};}
+
+% A titled panel holding a row of four mobile screenshots. The row occupies the
+% same footprint as a \shotpanel screenshot: 0.9\linewidth wide, and phones
+% sized to the landscape shot height (0.9 * 0.509 aspect). \hfill spreads them.
+\newcommand{\phonepanel}[6]{%
+    {\sffamily\bfseries\color{aigblue}\fontsize{33}{37}\selectfont #1\par}
+    \vspace{0.7em}%
+    \noindent\makebox[0.9\linewidth][s]{%
+        \phoneshot{0.4585\linewidth}{#2}\hfill\phoneshot{0.4585\linewidth}{#3}%
+        \hfill\phoneshot{0.4585\linewidth}{#4}\hfill\phoneshot{0.4585\linewidth}{#5}}\par
+    \vspace{0.6em}{\color{muted}\fontsize{23}{28}\selectfont #6\par}}
+
 % One capability: title on the left, FontAwesome icon pushed to the right.
 \newcommand{\featureitem}[3]{%
     \noindent{\sffamily\bfseries\color{ink}\fontsize{33}{37}\selectfont #1}%
