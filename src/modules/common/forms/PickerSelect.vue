@@ -20,11 +20,10 @@
 import { computed } from 'vue'
 
 import GroupedSelect from '@/modules/common/forms/GroupedSelect.vue'
-import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
 // Flat single-level picker used in the module #parameters slots (Mode, Support type, …).
-// Desktop keeps the native <select> unchanged; the compact shell renders the shared
-// tap-to-open .seg-styled list (via GroupedSelect with one unnamed group).
+// Renders the shared GroupedSelect (one unnamed group) on both desktop and compact so it
+// matches the Semantics selector exactly.
 export interface PickerOption {
   value: string
   label: string
@@ -36,8 +35,6 @@ const { modelValue, options } = defineProps<{
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
-
-const { isCompact } = useLayoutMode()
 
 const groups = computed(() => [
   {
@@ -54,18 +51,9 @@ const selected = computed(
 
 <template>
   <GroupedSelect
-    v-if="isCompact"
     :model-value="selected"
     :groups="groups"
     full-width
     @update:model-value="emit('update:modelValue', $event.key)"
   />
-  <select
-    v-else
-    class="select select-sm w-full bg-base-200"
-    :value="modelValue"
-    @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
-  >
-    <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
-  </select>
 </template>
