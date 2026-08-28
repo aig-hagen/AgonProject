@@ -1,40 +1,39 @@
 ## Highlights
 
-**AgonProject is now usable on phones.** This release is a ground-up mobile rework of the
-core workflows — modelling, evaluation, settings and export — so the platform works on a
-small touch screen, not just on desktop.
+A follow-up to the mobile launch: this release adds **SVG export straight from the live
+graph**, **Undo on mobile**, and a **blank-document module picker**, alongside a batch of
+mobile evaluation, tooltip, and dark-mode fixes.
 
-## Mobile
+## New features
 
-- **Evaluation as a bottom sheet** — a detent-driven sheet (peek / half / full) with
-  native-feeling pickers, a header that doubles as the semantics switcher, and a pinned
-  copy-result footer that stays reachable at every height.
-- The argumentation graph re-fits above the sheet at the half detent, so you can see the
-  framework and its evaluation at the same time.
-- **Settings as a bottom sheet**, with a new `SegmentedControl` for option toggles.
-- Themed glossary, compact layout, and icon-based copy buttons throughout.
-- 44px minimum touch targets and enlarged document-row action targets.
+- **WYSIWYG SVG export** — export the graph exactly as it appears on screen, straight from
+  the live view.
+- **Blank-document module picker** in the mobile editor, so you can start a new framework of
+  any type without leaving the small-screen flow.
+- **Undo** is now available from the mobile menu.
+- **Tap-to-open term tooltips** on mobile — glossary terms respond to a tap instead of hover.
+- **Open Graph tags** for richer social link previews when sharing the app.
 
-## Accessibility
+## Mobile evaluation
 
-- Notifications are announced through an ARIA live region.
-- Per-module mobile Help now describes the real node-tap action for that formalism.
-- Reduced-motion is respected in the UI and emulated in tests.
+- The evaluation header's add button is now a detent toggle, and the compact switcher floats
+  up from the pill.
+- The compact eval sheet sizes itself to its content, measuring the active grid.
+- Fit-to-content now works for non-grid evaluation result sheets.
+- Added a scroll cue so longer evaluation results read as scrollable.
 
-## Responsive layout
+## Fixes
 
-- Verified reflow down to 320px with no horizontal scroll.
-- Documents survive resizing across the compact breakpoint.
+- Keep the on-screen keyboard closed when creating a node on mobile.
+- Keep the edge-creation preview aligned after a viewport restore.
+- Keep node labels readable on dark-mode highlights.
+- Recompute tooltip position on each open.
+- Delete mobile documents without the extra confirmation step.
+- Share a plain link via the Web Share API.
+- Show AF-type acronyms in glossary pills and tabs.
 
-## Testing & CI
+## Other
 
-- New mobile e2e coverage: per-module evaluate/export flows, a11y checks, and a
-  many-documents stress smoke.
-- Added a CI test workflow; Prettier formatting is now gated in CI.
-- Stabilised WebKit sheet-animation flakiness (CI retry + reduced-motion emulation).
-
-## Docs
-
-- New AgonProject conference poster and refreshed project docs.
-
-**Full changelog:** https://github.com/aig-hagen/AgonProject/compare/v0.7.4...v0.8.0
+- Raised the TweetyProject backend rate limit to 60 requests/min.
+- Updated the bundled graph component to 5.0.0-rc.11.
+- Refined the mobile export sheet and completed the glossary entries from issue #33.
