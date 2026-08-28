@@ -52,6 +52,7 @@ function notifyCopied(format: 'plain' | 'tex') {
 <template>
   <div
     v-if="statusLine || showCopy"
+    data-evaluation-footer
     class="flex items-center justify-between gap-2"
     :class="
       stickyFooter &&

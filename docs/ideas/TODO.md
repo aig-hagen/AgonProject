@@ -70,7 +70,10 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 #### ADF editing and evaluation
 
 - **[Design]** ADF condition editor needs a rework: no argument name editing here; better design
-- **[Enhancement]** compact eval sheet should resize to fit content: fit up to three rows of results, if more enable scroll, if less contract to fit content
+- ~~**[Enhancement]** compact eval sheet should resize to fit content: fit up to three rows of
+  results, if more enable scroll, if less contract to fit content~~ — done: the sheet's lowest
+  detent is now content-sized (BottomSheet `lowestDetentPx`), measured in EvaluationHost as chrome +
+  the results grid capped to three rows; more rows scroll in the sheet body, fewer contract to fit
 
 #### Sharing and export
 

@@ -19,7 +19,16 @@
 <script setup lang="ts">
 import { CheckIcon, ChevronDownIcon, PlusIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { XMarkIcon } from '@heroicons/vue/24/solid'
-import { computed, inject, nextTick, provide, ref, watch } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  provide,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 
 import {
   EVALUATION_DETENT_KEY,
@@ -90,6 +99,54 @@ function ensureStandardDetent() {
   if (detentIndex.value < 1) detentIndex.value = 1
 }
 
+// Compact detent sizing: fit the sheet to its content up to three result rows, then
+// scroll. The `mt-auto` sticky footer stretches its container, so we can't read a
+// natural height off one box — instead we sum the naturally-sized pieces (the chrome
+// above the grid, the row-capped grid, and the footer). Only measured at the compact
+// detent, where the parameters are folded away.
+const MAX_ROWS = 3
+const ROW_GAP = 8 // .evaluation-result-grid gap-2
+const GRID_TO_FOOTER_GAP = 10 // MobileEvaluationBody gap-2.5
+const content = useTemplateRef<HTMLElement>('content')
+const compactDetentPx = ref<number | null>(null)
+let gridObserver: ResizeObserver | undefined
+
+function measureCompactDetent() {
+  const root = content.value
+  if (!open.value || root === null || detentLayout.value !== 'compact') return
+  const panel = root.closest<HTMLElement>('.sheet-panel')
+  const grid = root.querySelector<HTMLElement>('.evaluation-result-grid')
+  if (panel === null || grid === null) {
+    compactDetentPx.value = null
+    return
+  }
+  const gridRect = grid.getBoundingClientRect()
+  const aboveGrid = gridRect.top - panel.getBoundingClientRect().top
+  const rowHeight = grid.querySelector('button')?.getBoundingClientRect().height ?? gridRect.height
+  const cappedGrid = Math.min(gridRect.height, rowHeight * MAX_ROWS + ROW_GAP * (MAX_ROWS - 1))
+  const footerHeight =
+    root.querySelector<HTMLElement>('[data-evaluation-footer]')?.getBoundingClientRect().height ?? 0
+  const padBottom = parseFloat(getComputedStyle(panel).paddingBottom) || 0
+  compactDetentPx.value = Math.ceil(
+    aboveGrid + cappedGrid + GRID_TO_FOOTER_GAP + footerHeight + padBottom,
+  )
+}
+
+// Re-attach the observer to the current grid (it remounts on config switch) and remeasure.
+function refreshCompactMeasure() {
+  gridObserver?.disconnect()
+  const grid = content.value?.querySelector<HTMLElement>('.evaluation-result-grid')
+  if (grid && typeof ResizeObserver !== 'undefined') {
+    gridObserver = new ResizeObserver(() => measureCompactDetent())
+    gridObserver.observe(grid)
+  }
+  measureCompactDetent()
+}
+
+watch([open, activeId, detentLayout], () => nextTick(refreshCompactMeasure), { flush: 'post' })
+
+onBeforeUnmount(() => gridObserver?.disconnect())
+
 function onAddClick() {
   if (addKinds.length <= 1) {
     emit('add', addKinds[0] ?? 'extension')
@@ -151,6 +208,7 @@ watch(
     title="Evaluate"
     :modal="false"
     :snap-points="SNAP_POINTS"
+    :lowest-detent-px="compactDetentPx"
   >
     <!-- Header-as-switcher: the active config IS the header; the chevron drops the
          full saved-config list. One control does what the pill strip + title did. -->
@@ -194,7 +252,7 @@ watch(
       </button>
     </template>
 
-    <div class="relative flex flex-col gap-3 min-h-full">
+    <div ref="content" class="relative flex flex-col gap-3 min-h-full">
       <!-- Dropped saved-config list: switch (tap), per-row delete, add row. Overlays
            the dimmed body; tapping outside closes it. -->
       <button
