@@ -74,6 +74,9 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
   results, if more enable scroll, if less contract to fit content~~ — done: the sheet's lowest
   detent is now content-sized (BottomSheet `lowestDetentPx`), measured in EvaluationHost as chrome +
   the results grid capped to three rows; more rows scroll in the sheet body, fewer contract to fit
+- ~~compact eval switcher: the drop-down list is clipped by the short sheet, and the add-kind picker
+  is nested/awkward~~ — done: the switcher now floats upward from the header pill into the canvas
+  above the sheet (teleported, flips down only if no room), and Add is an in-place list↔kinds swap
 
 #### Sharing and export
 
