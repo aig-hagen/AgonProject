@@ -60,7 +60,7 @@ const router = useRouter()
           "
           @click="selectModule(m.prefix)"
         >
-          {{ m.label }}
+          {{ m.prefix }}
         </button>
       </div>
     </div>
