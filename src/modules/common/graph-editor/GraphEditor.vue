@@ -927,13 +927,23 @@ onMounted(() => {
       const target = event.target
       if (!(target instanceof HTMLInputElement)) return
       if (target.id !== 'node-label-input-field' && target.id !== 'link-label-input-field') return
-      target.select()
       // Suppress the browser's spellcheck/autocomplete suggestion popover for argument
       // and link names — they're short labels, not prose, so suggestions are just noise.
       target.setAttribute('spellcheck', 'false')
       target.setAttribute('autocomplete', 'off')
       target.setAttribute('autocorrect', 'off')
       target.setAttribute('autocapitalize', 'off')
+      // On touch devices, focusing the fresh label input pops the on-screen keyboard over
+      // the graph on every node creation. Commit the default label (same simulated Enter the
+      // pointerdown handler uses) so the library tears the input down and the keyboard stays
+      // closed; the user taps the node to rename when they actually want to type.
+      if (window.matchMedia('(pointer: coarse)').matches) {
+        target.dispatchEvent(
+          new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }),
+        )
+        return
+      }
+      target.select()
     }
     renameCommitGraphHost.addEventListener('focusin', handleRenameOpenFocus)
 
