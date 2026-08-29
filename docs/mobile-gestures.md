@@ -322,9 +322,27 @@ component's binding map. Fold the confirmed cleanups into the phases below.
   - **Known follow-ups:** on-device tuning (hold threshold, a "lifting" affordance for move);
     migrate the audit-table shims (`handleDoubleTap`, `handleMiddleClick`, ctrl-snap,
     rename-commit) into the component.
-- **Phase 2 — Edges.** Long-press→drag connect; tap-select edge; delete + switch-type in
-  the edge bar; add select/delete support for SetAF hyperlinks. Retire the
-  tap-cycles-a-popup type switcher.
+- **Phase 2 — Edges.** Connect is **already shipped** — on touch a plain drag from a node
+  draws the edge (the rc.17 revised contract inverted the original "long-press→connect": drag
+  now connects, long-press→drag moves). The remaining work is edge *selection* and its bar.
+  - **Edge tap-select landed (rc.19).** On touch a tap on an edge (its click-box or label)
+    emits the typed `select`, opening the action bar (Rename hidden, Delete shown). The bar's
+    Delete routes the edge deletion through the document (`parseLinkId` → `linkDeleted`), the
+    same way node delete does — `deleteElement` alone emits a PROGRAMMATIC event the app
+    ignores. The touch `linkClicked` (which drove the tap-cycles-a-popup type switcher) is
+    suppressed so a tap selects instead of cycling. Desktop is unchanged: click a label edits
+    it, the popup still opens on click.
+  - **Edge action bar anchors to the edge midpoint.** Unlike nodes (whose bounding box is the
+    element), an edge's bounding box is large and diagonal, so anchoring to it floated the bar
+    off in a corner. `getElementAnchor` special-cases edges to a zero-size box at the path
+    midpoint (`getPointAtLength(len/2)` mapped through the screen CTM), so the bar sits on the
+    middle of the edge and rides along on pan/zoom.
+  - **Long-press-to-delete retained on edges.** Unlike nodes (delete is bar-only), an edge
+    keeps its touch hold-to-delete: a quick tap selects, a hold runs the delete animation. The
+    action bar's Delete is the discoverable alternative; both coexist.
+  - **Remaining:** switch-type in the edge bar (module-contributed action: BAF attack↔support,
+    iAF definite↔uncertain) to fully retire the popup; select/delete support for SetAF
+    hyperlinks.
 - **Phase 3 — Per-module actions.** ADF condition, PAF probability, iAF certainty toggle
   (implemented in the iAF document model), SetAF collective-attack multi-select. ADF
   annotation tap emits `activate` and opens the condition editor immediately.

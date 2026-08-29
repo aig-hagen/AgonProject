@@ -179,6 +179,18 @@ function onSelectionDelete() {
     graphComponentRef.value?.deleteElement(sel.id)
     emit('nodeDeleted', { id: publicId })
     triggerSettle()
+  } else if (sel.kind === 'edge') {
+    // Same reason as nodes: deleteElement alone emits a PROGRAMMATIC linkDeleted that
+    // onLinkDeleted ignores, so drive the document deletion ourselves.
+    const { sourceId, targetId } = parseLinkId(sel.id as string)
+    graphComponentRef.value?.deleteElement(sel.id)
+    if (idMapping.has(sourceId) && idMapping.has(targetId)) {
+      emit('linkDeleted', {
+        sourceId: idMapping.getOrFail(sourceId),
+        targetId: idMapping.getOrFail(targetId),
+      })
+    }
+    triggerSettle()
   } else {
     graphComponentRef.value?.deleteElement(sel.id)
   }
