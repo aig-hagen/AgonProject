@@ -18,6 +18,7 @@
 -->
 <script setup lang="ts">
 import { NodeOutline } from '@aig-hagen/graph-component/lib'
+import { CheckCircleIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
@@ -35,6 +36,7 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -168,6 +170,26 @@ function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   })
 }
 
+function toggleArgumentCertainty(id: NodeId) {
+  createNewState((draft) => {
+    const argument = draft.getArgument(id)
+    argument.uncertain = !argument.uncertain
+  })
+}
+
+/** Action-bar button: flip a selected argument between definite and uncertain. */
+function iafNodeSelectionActions(id: NodeId): SelectionAction[] {
+  const uncertain = renderedState.value.current.content.getArgument(id).uncertain
+  return [
+    {
+      key: 'certainty',
+      label: uncertain ? 'Mark definite' : 'Mark uncertain',
+      icon: uncertain ? CheckCircleIcon : QuestionMarkCircleIcon,
+      run: () => toggleArgumentCertainty(id),
+    },
+  ]
+}
+
 function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
   createNewState((draft) => {
     data.forEach((node) => {
@@ -281,6 +303,7 @@ const tutorialRefs = computed(() => ({
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :node-outlines="argumentOutlines"
+    :node-selection-actions="iafNodeSelectionActions"
     :state="editorState"
     :history-state="historyState"
     :tutorials="iafTutorials"

@@ -354,6 +354,15 @@ component's binding map. Fold the confirmed cleanups into the phases below.
 - **Phase 3 — Per-module actions.** ADF condition, PAF probability, iAF certainty toggle
   (implemented in the iAF document model), SetAF collective-attack multi-select. ADF
   annotation tap emits `activate` and opens the condition editor immediately.
+  - **iAF certainty toggle landed** — first module action through the descriptor seam. The iAF
+    wrapper passes `nodeSelectionActions`, contributing a **Mark uncertain / Mark definite**
+    button (icon flips with state) that toggles `IafArgumentData.uncertain` via the normal
+    `createNewState` immer/history path. The change sets `redraw: false`, so it flows through the
+    shared editor's `watch(nodeOutlines)` → in-place outline update — no `setGraph`, so the
+    selection and its action bar survive and the button label recomputes to the opposite state.
+    App-only; the generic library has no certainty concept. Verifies the Phase 2 seam end-to-end.
+  - **Remaining:** ADF condition (node bar + annotation `activate`), PAF probability (node/edge
+    via `edgeSelectionActions`), SetAF collective-attack multi-select.
 - **Override audit (runs alongside all phases).** As each area is touched, migrate the
   matching app-side override from the [audit table](#audit-reclaim-app-side-gesture-overrides)
   into the component and delete the app shim — both desktop and mobile.
