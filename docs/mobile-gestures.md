@@ -253,12 +253,25 @@ component's binding map. Fold the confirmed cleanups into the phases below.
 
 ## Implementation phases
 
-- **Phase 0 — Gesture layer.** Build `GestureRecognizer` + `BindingProfile` + intent and
-  target types with unit tests. Add touch/pen and mouse defaults, including the explicit
-  arbitration/cancellation state machine above. No behavior change yet: recognition may be
-  observed behind a flag, but when an action is enabled its corresponding legacy D3/handler
+- **Phase 0 — Gesture layer. ✅ Core done.** Build `GestureRecognizer` + `BindingProfile` +
+  intent and target types with unit tests. Add touch/pen and mouse defaults, including the
+  explicit arbitration/cancellation state machine above. No behavior change yet: recognition may
+  be observed behind a flag, but when an action is enabled its corresponding legacy D3/handler
   recognizer must be disabled atomically so both paths cannot fire. *This is the enabling step;
   everything else binds to it.*
+  - **Landed** on `dev` in `../aig_graph_component` (`src/gestures/`), 28 unit tests, no app
+    impact: `intents.ts` (vocabulary), `recognizer.ts` (state machine: tap / double-tap /
+    drag / long-press→drag connect / pinch, plus cancel paths), `binding.ts`
+    (`resolveAction` / `composeProfile` / `bindingsFromMap` with specificity + capability
+    gates), `dom-adapter.ts` (`PointerAdapter` + `createDomHitTest`), `clock.ts` (injectable
+    clock for testable timing). Commits `f1bf955`, `bb2bdd0`.
+  - **Observe-only mount landed.** `GraphComponent.vue` now mounts a `PointerAdapter` +
+    `GestureRecognizer` behind a `gestureObserveEnabled` config flag (default off), with
+    `toCanvasPoint` wired to `d3.pointer(event, canvasGroup.node())` and the default DOM
+    hit-test. It runs *alongside* the existing D3 handlers and only `console.debug`s the
+    recognized intents — no action dispatch, no legacy path disabled yet. `EventTargetLike`
+    was also fixed to genuinely accept real DOM elements. This is the seam where the atomic
+    legacy-recognizer swap begins in Phase 1.
 - **Design gate — Action bar. ✅ Cleared.** The floating action bar was mocked up and agreed
   (see the [prerequisite above](#selection-and-action-bar-ownership) for the settled behaviour and
   the mockup link). Phase 1+ is unblocked.
