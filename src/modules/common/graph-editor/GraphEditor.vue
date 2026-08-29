@@ -36,6 +36,7 @@ import {
   ArrowDownTrayIcon,
   ArrowLongRightIcon,
   ArrowsPointingInIcon,
+  ArrowsRightLeftIcon,
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
@@ -45,6 +46,7 @@ import {
   ChevronDownIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
+  PencilSquareIcon,
   PhotoIcon,
   PlayIcon,
   QuestionMarkCircleIcon,
@@ -52,6 +54,7 @@ import {
   ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
+  TrashIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
@@ -86,6 +89,7 @@ import {
   type LinkConfigs,
   LinkType,
   type NodeId,
+  type SelectionAction,
   SHEET_REFIT_KEY,
 } from '@/modules/common/graph-editor/graphEditor'
 import {
@@ -197,6 +201,62 @@ function onSelectionDelete() {
   selection.value = null
 }
 
+/** Public source/target of an internal link id, or `undefined` if its endpoints are unmapped. */
+function edgePublicEndpoints(internalLinkId: string) {
+  const { sourceId, targetId } = parseLinkId(internalLinkId)
+  if (!idMapping.has(sourceId) || !idMapping.has(targetId)) return undefined
+  return { sourceId: idMapping.getOrFail(sourceId), targetId: idMapping.getOrFail(targetId) }
+}
+
+function currentLinkType(internalLinkId: string): LinkType | undefined {
+  const ends = edgePublicEndpoints(internalLinkId)
+  if (ends === undefined) return undefined
+  return state.links.find((l) => l.sourceId === ends.sourceId && l.targetId === ends.targetId)?.type
+}
+
+/**
+ * The action-bar buttons for the current selection: common actions (Rename for nodes), the
+ * generic edge type-switch, module-contributed domain actions, and Delete (far right, danger).
+ */
+const selectionActions = computed<SelectionAction[]>(() => {
+  const sel = selection.value
+  if (sel === null) return []
+  const actions: SelectionAction[] = []
+  if (sel.kind === 'node') {
+    actions.push({ key: 'rename', label: 'Rename', icon: PencilSquareIcon, run: onSelectionRename })
+    if (nodeSelectionActions && idMapping.has(sel.id as number)) {
+      actions.push(...nodeSelectionActions(idMapping.getOrFail(sel.id as number)))
+    }
+  } else if (sel.kind === 'edge') {
+    const internalId = sel.id as string
+    const keys = Object.keys(linkConfigs) as LinkType[]
+    if (enableLinkSwitching && keys.length > 0) {
+      const current = currentLinkType(internalId)
+      const next = keys[((current ? keys.indexOf(current) : -1) + 1) % keys.length]!
+      const nextName = linkConfigs[next]?.displayName ?? 'type'
+      actions.push({
+        key: 'switch-type',
+        label: `Switch to ${nextName}`,
+        icon: ArrowsRightLeftIcon,
+        run: () => updateLinkType(internalId, next),
+      })
+    }
+    const ends = edgePublicEndpoints(internalId)
+    const type = currentLinkType(internalId) ?? keys[0]
+    if (edgeSelectionActions && ends !== undefined && type !== undefined) {
+      actions.push(...edgeSelectionActions({ ...ends, type }))
+    }
+  }
+  actions.push({
+    key: 'delete',
+    label: 'Delete',
+    icon: TrashIcon,
+    danger: true,
+    run: onSelectionDelete,
+  })
+  return actions
+})
+
 // WYSIWYG SVG export: serialize the live graph canvas on demand. Injected by the export UI so
 // it can offer an SVG format that works on any device (no TikZ/WebAssembly). Returns null when
 // the canvas isn't mounted or has no content to render.
@@ -226,6 +286,8 @@ const {
   documentName,
   typeBadge,
   nodeTapAction,
+  nodeSelectionActions,
+  edgeSelectionActions,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
@@ -249,6 +311,16 @@ const {
   /** Full node-tap description for the Help sheet (see the primary-action table).
       Defaults to `Rename it`. */
   nodeTapAction?: string
+  /** Module-contributed action-bar buttons for a selected node (public id), e.g. iAF
+      certainty toggle, ADF condition, PAF probability. Merged after the common Rename. */
+  nodeSelectionActions?: (id: NodeId) => SelectionAction[]
+  /** Module-contributed action-bar buttons for a selected edge (public source/target/type),
+      e.g. PAF edge probability. Merged after the generic type-switch. */
+  edgeSelectionActions?: (link: {
+    sourceId: NodeId
+    targetId: NodeId
+    type: LinkType
+  }) => SelectionAction[]
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -1567,9 +1639,7 @@ defineExpose({
     <SelectionActionBar
       v-if="selection"
       :get-reference-rect="selectionReferenceRect"
-      :can-rename="selection.kind === 'node'"
-      @rename="onSelectionRename"
-      @delete="onSelectionDelete"
+      :actions="selectionActions"
       @close="selection = null"
     />
     <svg

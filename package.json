@@ -20,7 +20,7 @@
     "generate-attributions": "node ./scripts/generate-attributions.ts"
   },
   "dependencies": {
-    "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.19.tgz",
+    "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.20.tgz",
     "@drgrice1/tikzjax": "^1.0.0-beta24",
     "@floating-ui/vue": "^1.1.11",
     "@heroicons/vue": "^2.2.0",

@@ -18,26 +18,28 @@
 -->
 <script setup lang="ts">
 import { flip, offset, shift, useFloating } from '@floating-ui/vue'
-import { PencilSquareIcon, TrashIcon } from '@heroicons/vue/24/outline'
-import { onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef } from 'vue'
+
+import type { SelectionAction } from '@/modules/common/graph-editor/graphEditor'
 
 /**
  * The floating action bar for the current graph selection. It follows the selected element
  * (via `getReferenceRect`, polled each frame so it rides along on pan / zoom / drag), flips
  * below when near the top edge and clamps inside the viewport. It stays presentational: the
- * common actions (Rename, Delete) are emitted for the shared editor to carry out; module
- * actions will slot in later.
+ * shared editor composes the `actions` descriptors (common Rename/Delete + module actions) and
+ * this bar just renders them, danger actions (Delete) pushed to the far right.
  */
-const { getReferenceRect, canRename = false } = defineProps<{
+const { getReferenceRect, actions } = defineProps<{
   getReferenceRect: () => DOMRect | null
-  canRename?: boolean
+  actions: SelectionAction[]
 }>()
 
 const emit = defineEmits<{
-  rename: []
-  delete: []
   close: []
 }>()
+
+const safeActions = computed(() => [...actions].filter((a) => !a.danger))
+const dangerActions = computed(() => actions.filter((a) => a.danger))
 
 // A virtual reference: floating-ui reads its rect on every `update()`, so re-reading the
 // live element box keeps the bar glued to a moving element.
@@ -71,19 +73,24 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
       <!-- pointerdown, not click: the tap that selects mounts this bar; a trailing synthetic
            click would otherwise immediately trigger the button under the finger. -->
       <button
-        v-if="canRename"
+        v-for="action in safeActions"
+        :key="action.key"
         class="btn join-item btn-ghost btn-sm"
-        title="Rename"
-        @pointerdown.prevent="emit('rename')"
+        :title="action.label"
+        @pointerdown.prevent="action.run()"
       >
-        <PencilSquareIcon class="size-4" />
+        <component :is="action.icon" v-if="action.icon" class="size-4" />
+        <span v-else>{{ action.label }}</span>
       </button>
       <button
+        v-for="action in dangerActions"
+        :key="action.key"
         class="btn join-item btn-ghost btn-sm text-error"
-        title="Delete"
-        @pointerdown.prevent="emit('delete')"
+        :title="action.label"
+        @pointerdown.prevent="action.run()"
       >
-        <TrashIcon class="size-4" />
+        <component :is="action.icon" v-if="action.icon" class="size-4" />
+        <span v-else>{{ action.label }}</span>
       </button>
     </div>
   </div>

@@ -340,9 +340,17 @@ component's binding map. Fold the confirmed cleanups into the phases below.
   - **Long-press-to-delete retained on edges.** Unlike nodes (delete is bar-only), an edge
     keeps its touch hold-to-delete: a quick tap selects, a hold runs the delete animation. The
     action bar's Delete is the discoverable alternative; both coexist.
-  - **Remaining:** switch-type in the edge bar (module-contributed action: BAF attack↔support,
-    iAF definite↔uncertain) to fully retire the popup; select/delete support for SetAF
-    hyperlinks.
+  - **Descriptor-driven action bar + edge switch-type landed.** `SelectionActionBar` no longer
+    hard-codes Rename/Delete; it renders a `SelectionAction[]` (`{ key, label, icon, danger,
+    run }`, defined in `graphEditor.ts`) with danger actions (Delete) pushed to the far right.
+    The shared editor composes the list per selection: Rename (nodes) → generic edge type-switch
+    → module actions → Delete. Edge **switch-type** is generic — it reads the current type from
+    `state.links`, cycles to the next entry in `linkConfigs`, and calls the existing
+    `updateLinkType` (BAF attack↔support, iAF definite↔uncertain). This is app-only; no library
+    change. Two optional props — `nodeSelectionActions(id)` and `edgeSelectionActions({source,
+    target, type})` — are the seam Phase 3 modules fill (iAF certainty, ADF condition, PAF
+    probability). The desktop click-to-popup type switcher is unchanged.
+  - **Remaining:** select/delete support for SetAF hyperlinks.
 - **Phase 3 — Per-module actions.** ADF condition, PAF probability, iAF certainty toggle
   (implemented in the iAF document model), SetAF collective-attack multi-select. ADF
   annotation tap emits `activate` and opens the condition editor immediately.
