@@ -21,10 +21,11 @@ import type { GridVisibility, PhysicsMode } from '@/modules/common/main-menu/typ
 import SegmentedControl from '@/modules/common/settings/SegmentedControl.vue'
 import type { GridType } from '@/modules/common/settings/useSettings'
 import { useSettings } from '@/modules/common/settings/useSettings'
+import type { ThemePreference } from '@/modules/common/theme/useTheme'
 import { useTheme } from '@/modules/common/theme/useTheme'
 import { useTutorial } from '@/modules/common/tutorial/useTutorial'
 
-const { isDark } = useTheme()
+const { themePreference } = useTheme()
 const {
   graphStyle,
   defaultPhysicsMode,
@@ -40,6 +41,10 @@ const physicsOptions: { value: PhysicsMode; label: string }[] = [
   { value: 'off', label: 'Off' },
   { value: 'on', label: 'On' },
 ]
+const booleanOptions: { value: boolean; label: string }[] = [
+  { value: false, label: 'Off' },
+  { value: true, label: 'On' },
+]
 const gridOptions: { value: GridVisibility; label: string }[] = [
   { value: 'off', label: 'Off' },
   { value: 'auto', label: 'On drag' },
@@ -48,6 +53,11 @@ const gridOptions: { value: GridVisibility; label: string }[] = [
 const gridTypeOptions: { value: GridType; label: string }[] = [
   { value: 'square', label: 'Square' },
   { value: 'rhombus', label: 'Rhombus' },
+]
+const themeOptions: { value: ThemePreference; label: string }[] = [
+  { value: 'light', label: 'Light' },
+  { value: 'system', label: 'System' },
+  { value: 'dark', label: 'Dark' },
 ]
 </script>
 
@@ -59,10 +69,14 @@ const gridTypeOptions: { value: GridType; label: string }[] = [
         Appearance
       </h4>
       <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
-        <label class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
-          <span class="text-sm">Dark mode</span>
-          <input type="checkbox" class="toggle toggle-sm toggle-primary" v-model="isDark" />
-        </label>
+        <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
+          <span class="text-sm">Theme</span>
+          <SegmentedControl
+            v-model="themePreference"
+            :options="themeOptions"
+            aria-label="Theme"
+          />
+        </div>
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">Graph style</span>
           <select class="select select-sm w-36" v-model="graphStyle">
@@ -119,10 +133,14 @@ const gridTypeOptions: { value: GridType; label: string }[] = [
             <span class="w-6 text-right text-sm text-base-content/60">{{ gridCellScale }}×</span>
           </div>
         </div>
-        <label class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
+        <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">Snap to grid</span>
-          <input type="checkbox" class="toggle toggle-sm toggle-primary" v-model="snapMode" />
-        </label>
+          <SegmentedControl
+            v-model="snapMode"
+            :options="booleanOptions"
+            aria-label="Snap to grid"
+          />
+        </div>
       </div>
     </section>
 
@@ -132,10 +150,14 @@ const gridTypeOptions: { value: GridType; label: string }[] = [
         Tutorials
       </h4>
       <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
-        <label class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
+        <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">Show tutorials</span>
-          <input type="checkbox" class="toggle toggle-sm toggle-primary" v-model="showHints" />
-        </label>
+          <SegmentedControl
+            v-model="showHints"
+            :options="booleanOptions"
+            aria-label="Show tutorials"
+          />
+        </div>
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">Tutorial progress</span>
           <button class="btn btn-ghost btn-xs" @click="resetAllTutorials">Reset</button>

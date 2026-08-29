@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { NodeOutline } from '@aig-hagen/graph-component/lib'
-import { CheckCircleIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
+import { ArrowsRightLeftIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
@@ -184,7 +184,7 @@ function iafNodeSelectionActions(id: NodeId): SelectionAction[] {
     {
       key: 'certainty',
       label: uncertain ? 'Mark definite' : 'Mark uncertain',
-      icon: uncertain ? CheckCircleIcon : QuestionMarkCircleIcon,
+      icon: ArrowsRightLeftIcon,
       run: () => toggleArgumentCertainty(id),
     },
   ]

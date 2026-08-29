@@ -77,6 +77,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
         :key="action.key"
         class="btn join-item btn-ghost btn-sm"
         :title="action.label"
+        :aria-label="action.label"
         @pointerdown.prevent="action.run()"
       >
         <component :is="action.icon" v-if="action.icon" class="size-4" />
@@ -87,6 +88,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
         :key="action.key"
         class="btn join-item btn-ghost btn-sm text-error"
         :title="action.label"
+        :aria-label="action.label"
         @pointerdown.prevent="action.run()"
       >
         <component :is="action.icon" v-if="action.icon" class="size-4" />

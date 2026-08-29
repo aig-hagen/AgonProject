@@ -1805,12 +1805,12 @@ defineExpose({
         </button>
       </header>
 
-      <!-- Fixed 5-button command bar: two small actions flank the prominent Evaluate. -->
+      <!-- Fixed 5-button command bar: distribute every action across the available width. -->
       <nav
         class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
         style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
       >
-        <div class="flex gap-2 shrink-0">
+        <div class="contents">
           <button
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Fit to view"
@@ -1838,7 +1838,7 @@ defineExpose({
           <span class="truncate">Evaluate</span>
         </button>
 
-        <div class="flex gap-2 shrink-0">
+        <div class="contents">
           <button
             ref="mobileExportButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
