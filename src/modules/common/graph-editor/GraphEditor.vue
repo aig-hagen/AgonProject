@@ -29,6 +29,7 @@ import {
   NodeOutline,
   NodeShape,
   type PositionSnapshot,
+  type SelectionTarget,
 } from '@aig-hagen/graph-component/lib'
 import {
   AcademicCapIcon,
@@ -103,6 +104,7 @@ import {
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
+import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
@@ -137,6 +139,41 @@ provide(TUTORIAL_INSTANCE_KEY, graphComponentId)
 const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
+
+// --- Contextual action bar (new pointer interaction model) ------------------------------
+// The graph-component emits a clean tap-not-drag `select`; the shared editor owns the bar
+// shell and the common actions. Only active while `gestureBindingsEnabled` is on.
+const selection = shallowRef<SelectionTarget | null>(null)
+
+function onSelect(next: SelectionTarget | null) {
+  selection.value = next
+}
+
+/** Live client-space box of the selected element, for anchoring the floating bar. */
+function selectionReferenceRect(): DOMRect | null {
+  const sel = selection.value
+  if (sel === null) return null
+  const anchor = graphComponentRef.value?.getElementAnchor(sel.kind, sel.id)
+  const host = containerRef.value?.querySelector('.graph-controller__graph-host')
+  if (anchor === undefined || !host) return null
+  const h = host.getBoundingClientRect()
+  return new DOMRect(h.left + anchor.x, h.top + anchor.y, anchor.width, anchor.height)
+}
+
+function onSelectionRename() {
+  const sel = selection.value
+  if (sel === null || sel.kind !== 'node') return
+  const graphEl = graphComponentRef.value?.$el as Element | undefined
+  if (graphEl) startNodeLabelEdit(graphEl, graphComponentId, sel.id as number)
+  selection.value = null
+}
+
+function onSelectionDelete() {
+  const sel = selection.value
+  if (sel === null) return
+  graphComponentRef.value?.deleteElement(sel.id)
+  selection.value = null
+}
 
 // WYSIWYG SVG export: serialize the live graph canvas on demand. Injected by the export UI so
 // it can offer an SVG format that works on any device (no TikZ/WebAssembly). Returns null when
@@ -723,6 +760,7 @@ onMounted(() => {
   graphComponent.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
   graphComponent.setSnapToGrid(snapMode.value)
   graphComponent.setDefaults({
+    gestureBindingsEnabled: true,
     nodeAutoGrowToLabelSize: false,
     nodeProps: {
       shape: NodeShape.CIRCLE,
@@ -991,6 +1029,8 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   if (graphComponent === null) {
     throw new Error('Graph component is not rendered.')
   }
+  // A redraw reassigns internal ids, so any open selection no longer resolves — dismiss it.
+  selection.value = null
   // When physics is active, nodes may have drifted from their stored model positions.
   // Capture current visual positions before resetting so nodes don't snap back.
   const preservedPositions = new Map<number, { x: number; y: number }>()
@@ -1498,8 +1538,17 @@ defineExpose({
       @label-edited="onLabelEdited"
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
+      @select="onSelect"
       :id="graphComponentId"
       ref="graph-component"
+    />
+    <SelectionActionBar
+      v-if="selection"
+      :get-reference-rect="selectionReferenceRect"
+      :can-rename="selection.kind === 'node'"
+      @rename="onSelectionRename"
+      @delete="onSelectionDelete"
+      @close="selection = null"
     />
     <svg
       v-show="!!slots.nodeOverlay"
