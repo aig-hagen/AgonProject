@@ -32,8 +32,7 @@ export const useTheme = createSharedComposable(() => {
 
   const isDark = computed(
     () =>
-      themePreference.value === 'dark' ||
-      (themePreference.value === 'system' && prefersDark.value),
+      themePreference.value === 'dark' || (themePreference.value === 'system' && prefersDark.value),
   )
 
   watchEffect(() => {

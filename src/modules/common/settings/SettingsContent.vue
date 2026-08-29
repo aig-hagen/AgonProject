@@ -71,11 +71,7 @@ const themeOptions: { value: ThemePreference; label: string }[] = [
       <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">Theme</span>
-          <SegmentedControl
-            v-model="themePreference"
-            :options="themeOptions"
-            aria-label="Theme"
-          />
+          <SegmentedControl v-model="themePreference" :options="themeOptions" aria-label="Theme" />
         </div>
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">Graph style</span>
