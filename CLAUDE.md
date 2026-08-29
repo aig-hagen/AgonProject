@@ -77,6 +77,8 @@ pattern-match an existing one — see [`docs/extending.md`](docs/extending.md).
 ## Implementation workflow
 - When working on a multi-phase implementation plan, track progress directly in the plan document.
 - When working on an implementation phase which involves multiple steps, write yourself a TODO list of the necessary steps to track the progress
+- When running a prettier or formatting command, be careful, it might affect other files in the project
+
 
 ## Voicing & Responses
 
