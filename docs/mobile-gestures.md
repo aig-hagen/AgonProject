@@ -361,8 +361,15 @@ component's binding map. Fold the confirmed cleanups into the phases below.
     shared editor's `watch(nodeOutlines)` → in-place outline update — no `setGraph`, so the
     selection and its action bar survive and the button label recomputes to the opposite state.
     App-only; the generic library has no certainty concept. Verifies the Phase 2 seam end-to-end.
-  - **Remaining:** ADF condition (node bar + annotation `activate`), PAF probability (node/edge
-    via `edgeSelectionActions`), SetAF collective-attack multi-select.
+  - **PAF probability landed** — first use of `edgeSelectionActions`. The PAF wrapper passes
+    both `nodeSelectionActions` and `edgeSelectionActions`, each contributing an **Edit
+    probability** button that opens the existing Probabilities sheet focused on that row
+    (`arg-<id>` for a node, `atk-<src>-<tgt>` for an attack) — the same sheet + focus-key
+    machinery compact annotation-tap already used. No new editor, no mutation path added; the
+    action just reuses `openProbabilitySheet`. App-only. (PAF has one link type, so the edge bar
+    is Edit probability + Delete, no type-switch.)
+  - **Remaining:** ADF condition (node bar + annotation `activate`), SetAF collective-attack
+    multi-select.
 - **Override audit (runs alongside all phases).** As each area is touched, migrate the
   matching app-side override from the [audit table](#audit-reclaim-app-side-gesture-overrides)
   into the component and delete the app shim — both desktop and mobile.
