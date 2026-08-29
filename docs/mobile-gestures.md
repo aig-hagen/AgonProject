@@ -298,7 +298,20 @@ component's binding map. Fold the confirmed cleanups into the phases below.
     (follows pan/zoom/drag, flips near the top edge, clamps inward) with **Rename** (nodes) and
     **Delete**; deselect and redraw dismiss it. First cut — the design-gate polish (finger dodge,
     animation, overflow `⋯ More`, edge/set variants) is on-device tuning.
-  - **Remaining in Phase 1:** on-device verification pass; migrate the audit-table shims
+  - **Revised touch contract (on-device, rc.17 — supersedes the "Node" table below for touch):**
+    `tap → select` (action bar), `drag from node → create edge` (the app's established
+    drag-to-connect), `long-press ~300 ms then drag → move node`, `drag on empty canvas → pan`
+    (never on a graph element), `pinch → zoom`, `tap empty → deselect`. Desktop mouse is
+    unchanged: click a node → rename, left-drag → move, right-drag → edge.
+  - **Tap-select is driven by the existing `onNodeLabelClicked` handler, not the recognizer.**
+    That handler already fired reliably on tap (it was what opened the inline editor); under
+    the flag it now emits `select` on touch and still renames on desktop. Node edge/move run
+    through the existing pointer handlers plus a hold timer. The `GestureRecognizer` layer is
+    mounted but **no longer on the critical path** for the node contract — candidate for
+    removal or repurposing. Rename is now a real API (`editNodeLabel(id)`), replacing the
+    synthetic-click hack; the action bar's Rename calls it.
+  - **Known follow-ups:** clean up / remove the now-unused recognizer dispatch; on-device
+    tuning (hold threshold, a "lifting" affordance for move); migrate the audit-table shims
     (`handleDoubleTap`, `handleMiddleClick`, ctrl-snap, rename-commit) into the component.
 - **Phase 2 — Edges.** Long-press→drag connect; tap-select edge; delete + switch-type in
   the edge bar; add select/delete support for SetAF hyperlinks. Retire the
