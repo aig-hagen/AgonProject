@@ -163,8 +163,7 @@ function selectionReferenceRect(): DOMRect | null {
 function onSelectionRename() {
   const sel = selection.value
   if (sel === null || sel.kind !== 'node') return
-  const graphEl = graphComponentRef.value?.$el as Element | undefined
-  if (graphEl) startNodeLabelEdit(graphEl, graphComponentId, sel.id as number)
+  graphComponentRef.value?.editNodeLabel(sel.id as number)
   selection.value = null
 }
 
