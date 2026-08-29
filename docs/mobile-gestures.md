@@ -279,6 +279,15 @@ component's binding map. Fold the confirmed cleanups into the phases below.
   create, node tap select, and node drag move. Remove the two-finger-pan and touch→right-click
   paths in the library. Ship the floating action bar with Rename + Delete. Node double-tap has
   no binding.
+  - **Default binding profiles landed** (`src/gestures/profiles.ts`, 11 tests): declarative
+    touch/pen/mouse maps from the plan's action vocabulary (`pan`, `zoom`, `createNode`,
+    `select`, `move`, `connect`, `activate`, `snapToGrid`) plus the SetAF `node:tap` →
+    `addToGroup` override. Pure/declarative; no dispatch wired yet.
+  - **Next:** the dispatch + atomic legacy-path swap — resolve intents to actions and execute
+    them, flip the d3 zoom/drag filters (1-finger pan, node-drag on touch), and remove the
+    touch→right-click delete/link timer in `onPointerDownNode`, each behind the atomic swap so
+    the legacy path is disabled the moment its gesture is bound. This is the behaviour-changing,
+    on-device-verified step. Then the typed `select`/`activate` events and the app action bar.
 - **Phase 2 — Edges.** Long-press→drag connect; tap-select edge; delete + switch-type in
   the edge bar; add select/delete support for SetAF hyperlinks. Retire the
   tap-cycles-a-popup type switcher.
