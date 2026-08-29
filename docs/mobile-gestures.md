@@ -306,13 +306,22 @@ component's binding map. Fold the confirmed cleanups into the phases below.
   - **Tap-select is driven by the existing `onNodeLabelClicked` handler, not the recognizer.**
     That handler already fired reliably on tap (it was what opened the inline editor); under
     the flag it now emits `select` on touch and still renames on desktop. Node edge/move run
-    through the existing pointer handlers plus a hold timer. The `GestureRecognizer` layer is
-    mounted but **no longer on the critical path** for the node contract — candidate for
-    removal or repurposing. Rename is now a real API (`editNodeLabel(id)`), replacing the
-    synthetic-click hack; the action bar's Rename calls it.
-  - **Known follow-ups:** clean up / remove the now-unused recognizer dispatch; on-device
-    tuning (hold threshold, a "lifting" affordance for move); migrate the audit-table shims
-    (`handleDoubleTap`, `handleMiddleClick`, ctrl-snap, rename-commit) into the component.
+    through the existing pointer handlers plus a hold timer. Rename is now a real API
+    (`editNodeLabel(id)`), replacing the synthetic-click hack; the action bar's Rename calls it.
+  - **Recognizer retired (rc.18).** The `GestureRecognizer` / `PointerAdapter` mount and its
+    `select` / `deselect` / `activate` dispatch were removed from `GraphComponent.vue`, along
+    with the `gestureObserveEnabled` flag. The whole node contract runs on the existing
+    pointer/label handlers, deselect already had a d3 path, and edge-select / annotation-activate
+    were unshipped (Phases 2/3) — the recognizer never became the critical path, so it was
+    unmounted rather than kept as a second, parallel state machine. `src/gestures/` stays in the
+    library as parked, unit-tested code (recognizer, binding, profiles) should Phase 2 revisit a
+    declarative binding map; nothing imports it at runtime. `gestureBindingsEnabled` stays — it
+    still gates the node touch contract. App behaviour unchanged; type-check + 55 unit tests green.
+    Going forward, edge tap-select (Phase 2) and ADF annotation activate (Phase 3) are built as
+    click/pointer handlers mirroring `onNodeLabelClicked`, not binding-map entries.
+  - **Known follow-ups:** on-device tuning (hold threshold, a "lifting" affordance for move);
+    migrate the audit-table shims (`handleDoubleTap`, `handleMiddleClick`, ctrl-snap,
+    rename-commit) into the component.
 - **Phase 2 — Edges.** Long-press→drag connect; tap-select edge; delete + switch-type in
   the edge bar; add select/delete support for SetAF hyperlinks. Retire the
   tap-cycles-a-popup type switcher.
