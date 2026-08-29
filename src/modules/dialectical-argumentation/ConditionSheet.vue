@@ -39,7 +39,6 @@ const { argumentId, adf } = defineProps<{
 
 const emit = defineEmits<{
   'update:formula': [FormulaNode]
-  rename: [id: NodeId, name: string]
 }>()
 
 const argNameMap = computed(() => {
@@ -54,10 +53,6 @@ const argNameToId = computed(() => {
 })
 const availableArguments = computed(() =>
   [...adf.arguments()].map(([id, data]) => ({ id, name: data.name })),
-)
-
-const argumentName = computed(() =>
-  argumentId === null ? '' : (argNameMap.value.get(argumentId) ?? ''),
 )
 
 const inputRef = useTemplateRef<HTMLInputElement>('input')
@@ -136,36 +131,11 @@ const operatorKeys = [
   { label: '⊥', text: '⊥', title: 'Contradiction' },
   { label: '( )', text: '()', title: 'Parentheses', cursorOffset: 1 },
 ]
-
-// Rename lives here too: on mobile a node tap opens this sheet rather than the label edit.
-const nameDraft = ref('')
-watch(argumentName, (name) => {
-  nameDraft.value = name
-})
-function commitRename() {
-  if (argumentId === null) return
-  const trimmed = nameDraft.value.trim()
-  if (trimmed.length === 0 || trimmed === argumentName.value) return
-  emit('rename', argumentId, trimmed)
-}
 </script>
 
 <template>
   <BottomSheet v-model:open="open" title="Acceptance condition">
     <div class="flex flex-col gap-4 pb-4">
-      <label class="flex flex-col gap-1">
-        <span class="text-xs font-semibold uppercase opacity-60">Argument name</span>
-        <input
-          type="text"
-          class="input input-sm w-full font-mono"
-          v-model="nameDraft"
-          spellcheck="false"
-          autocomplete="off"
-          @change="commitRename"
-          @keydown.enter.prevent="commitRename"
-        />
-      </label>
-
       <div class="flex flex-col gap-1.5">
         <span class="text-xs font-semibold uppercase opacity-60">Condition</span>
         <div class="relative">

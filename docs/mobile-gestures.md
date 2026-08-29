@@ -368,8 +368,16 @@ component's binding map. Fold the confirmed cleanups into the phases below.
     machinery compact annotation-tap already used. No new editor, no mutation path added; the
     action just reuses `openProbabilitySheet`. App-only. (PAF has one link type, so the edge bar
     is Edit probability + Delete, no type-switch.)
-  - **Remaining:** ADF condition (node bar + annotation `activate`), SetAF collective-attack
-    multi-select.
+  - **ADF condition landed.** Two parts, most already existed:
+    - *Annotation tap → editor* was **already working** via the pre-existing `annotationClicked`
+      event (fires on touch, ungated) → `onAnnotationClicked` → `openConditionEditor` → sheet.
+      The plan's separate `activate` event was redundant; no library change needed.
+    - *Node-bar Edit condition* is new — the ADF wrapper passes `nodeSelectionActions` (gated to
+      compact, since the action bar is a touch affordance and the sheet only renders in compact)
+      contributing an **Edit condition** button that opens the `ConditionSheet` for the node.
+    - The `ConditionSheet` lost its **Argument name** field (the `rename` emit + keypad row) —
+      Rename now lives in the action bar, so the sheet is condition-only.
+  - **Remaining:** SetAF collective-attack multi-select.
 - **Override audit (runs alongside all phases).** As each area is touched, migrate the
   matching app-side override from the [audit table](#audit-reclaim-app-side-gesture-overrides)
   into the component and delete the app shim — both desktop and mobile.

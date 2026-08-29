@@ -18,6 +18,7 @@
 -->
 <script setup lang="ts">
 import type { AnnotationPosition } from '@aig-hagen/graph-component/lib'
+import { VariableIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
@@ -33,6 +34,7 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -223,10 +225,21 @@ function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
   }
 }
 
-function renameArgument(id: NodeId, name: string) {
-  createNewState((draft) => {
-    draft.getArgument(id).name = name
-  }, true)
+/** Action-bar button (compact only): open the acceptance-condition sheet for a node. */
+function adfNodeSelectionActions(id: NodeId): SelectionAction[] {
+  if (layoutMode.value !== 'compact') return []
+  return [
+    {
+      key: 'condition',
+      label: 'Edit condition',
+      icon: VariableIcon,
+      run: () => {
+        selectedNodeId.value = id
+        conditionEditorOpenCount.value++
+        isConditionSheetOpen.value = true
+      },
+    },
+  ]
 }
 
 function onAnnotationClicked(data: { id: NodeId; content: string }, event: PointerEvent) {
@@ -322,6 +335,7 @@ const tutorialContextExtra = computed(() => ({
     :allow-link-creation="false"
     :allow-link-deletion="false"
     node-tap-action="Open its acceptance condition"
+    :node-selection-actions="adfNodeSelectionActions"
     :state="editorState"
     :node-annotations="conditionAnnotations"
     :history-state="historyState"
@@ -413,7 +427,6 @@ const tutorialContextExtra = computed(() => ({
         :argument-id="selectedNodeId"
         :adf="renderedState.current.content"
         @update:formula="onConditionChanged"
-        @rename="renameArgument"
       />
     </template>
     <template #export="{ isOpen, onIsOpen }">
