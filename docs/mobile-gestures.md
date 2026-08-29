@@ -282,12 +282,24 @@ component's binding map. Fold the confirmed cleanups into the phases below.
   - **Default binding profiles landed** (`src/gestures/profiles.ts`, 11 tests): declarative
     touch/pen/mouse maps from the plan's action vocabulary (`pan`, `zoom`, `createNode`,
     `select`, `move`, `connect`, `activate`, `snapToGrid`) plus the SetAF `node:tap` →
-    `addToGroup` override. Pure/declarative; no dispatch wired yet.
-  - **Next:** the dispatch + atomic legacy-path swap — resolve intents to actions and execute
-    them, flip the d3 zoom/drag filters (1-finger pan, node-drag on touch), and remove the
-    touch→right-click delete/link timer in `onPointerDownNode`, each behind the atomic swap so
-    the legacy path is disabled the moment its gesture is bound. This is the behaviour-changing,
-    on-device-verified step. Then the typed `select`/`activate` events and the app action bar.
+    `addToGroup` override.
+  - **Pan / move / overload-removal landed**, behind a `gestureBindingsEnabled` config flag:
+    the zoom filter accepts a single finger (1-finger pan), and the touch→right-click overload
+    in `onPointerDownNode` is switched off so the implicit capture stays on the node and d3.drag
+    moves it — no more hold-to-delete timer or instant link preview. Mouse controls unchanged.
+  - **Typed `select` / `activate` events landed:** under the flag the mounted recognizer
+    dispatches the conflict-free actions — a tap emits a typed `select` (node/edge/hyperlink +
+    host-relative anchor box) or `null` on empty-canvas deselect; pan/zoom/move stay on d3, so
+    nothing double-fires. `getElementAnchor(kind, id)` exposes live geometry for the action bar.
+  - **Integration milestone:** built + vendored `@aig-hagen/graph-component` **rc.12** into
+    AgonProject; app type-check + 55 unit tests green.
+  - **Floating action bar landed** (`SelectionActionBar.vue`), and `gestureBindingsEnabled` is
+    turned on in the shared editor. A tap opens a floating-ui bar anchored to the element
+    (follows pan/zoom/drag, flips near the top edge, clamps inward) with **Rename** (nodes) and
+    **Delete**; deselect and redraw dismiss it. First cut — the design-gate polish (finger dodge,
+    animation, overflow `⋯ More`, edge/set variants) is on-device tuning.
+  - **Remaining in Phase 1:** on-device verification pass; migrate the audit-table shims
+    (`handleDoubleTap`, `handleMiddleClick`, ctrl-snap, rename-commit) into the component.
 - **Phase 2 — Edges.** Long-press→drag connect; tap-select edge; delete + switch-type in
   the edge bar; add select/delete support for SetAF hyperlinks. Retire the
   tap-cycles-a-popup type switcher.
