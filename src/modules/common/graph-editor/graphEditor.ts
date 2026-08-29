@@ -113,6 +113,20 @@ export type LinkConfigs = Partial<
   >
 >
 
+/**
+ * A button in the floating selection action bar. The shared editor composes these for the
+ * current selection (common Rename/Delete + generic edge type-switch), and module wrappers
+ * contribute their own domain actions (iAF certainty, ADF condition, PAF probability). Array
+ * order is display order; `danger` actions (Delete) are pushed to the far right.
+ */
+export interface SelectionAction {
+  key: string
+  label: string
+  icon?: Component
+  danger?: boolean
+  run: () => void
+}
+
 export type NodeId = number
 
 export interface GraphEditorStateNode {

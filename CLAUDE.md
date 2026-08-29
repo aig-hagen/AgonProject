@@ -44,6 +44,29 @@ lint-enforced by `eslint-plugin-no-relative-import-paths`.
   `chore:`, `docs:`, `refactor:`, ...).
 - Never add yourself (Claude) to the commit message or as an author/co-author.
 
+## Publishing a release
+
+Publishing is driven by pushing a Git tag matching `v*` — the
+[`Publish` workflow](.github/workflows/publish.yml) then builds the frontend, builds and
+pushes the Docker image to `ghcr.io/aig-hagen/AgonProject:<version>`, and creates a GitHub
+Release using `RELEASE_NOTES.md` as the body.
+
+To cut a new version (e.g. `v0.8.1`):
+
+1. Rewrite [`RELEASE_NOTES.md`](RELEASE_NOTES.md) to describe **this** version — it is copied
+   verbatim into the GitHub Release, so stale notes ship as-is. Base it on the commits since
+   the previous tag (`git log <prev-tag>..HEAD`).
+2. Commit the notes (`docs: release notes for v0.8.1`) and push.
+3. Tag and push the tag — **this is what triggers publishing**:
+   ```sh
+   git tag v0.8.1
+   git push origin v0.8.1
+   ```
+4. Watch the run to completion and report the result:
+   ```sh
+   gh run watch <run-id> --exit-status
+   ```
+
 ## Adding features: follow the module shape
 
 Every argumentation type under `src/modules/<type>/` follows the same internal file layout
@@ -52,7 +75,10 @@ Every argumentation type under `src/modules/<type>/` follows the same internal f
 pattern-match an existing one — see [`docs/extending.md`](docs/extending.md).
 
 ## Implementation workflow
-When working on a multi-phase implementation plan, track progress directly in the plan document.
+- When working on a multi-phase implementation plan, track progress directly in the plan document.
+- When working on an implementation phase which involves multiple steps, write yourself a TODO list of the necessary steps to track the progress
+- When running a prettier or formatting command, be careful, it might affect other files in the project
+
 
 ## Voicing & Responses
 

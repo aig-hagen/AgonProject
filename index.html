@@ -30,12 +30,16 @@
     <meta name="twitter:image" content="/favicon-192x192.png" />
     <script>
       // Apply the saved theme before first paint to avoid a flash while the app loads.
+      let initialTheme = 'light'
       try {
-        document.documentElement.setAttribute(
-          'data-theme',
-          localStorage.getItem('vueuse-color-scheme') || 'light',
-        )
+        const preference = localStorage.getItem('vueuse-color-scheme') || 'system'
+        initialTheme =
+          preference === 'dark' ||
+          (preference === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+            ? 'dark'
+            : 'light'
       } catch (e) {}
+      document.documentElement.setAttribute('data-theme', initialTheme)
     </script>
     <style>
       html {

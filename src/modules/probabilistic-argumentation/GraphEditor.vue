@@ -35,6 +35,7 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -295,6 +296,27 @@ function onAnnotationMoved(data: { id: NodeId; position: AnnotationPosition }[])
   })
 }
 
+/** Open the Probabilities sheet focused on one argument or attack row. */
+function openProbabilitySheet(focusKey: string) {
+  probabilityFocusKey.value = focusKey
+  isProbabilitiesOpen.value = true
+}
+
+const probabilityAction = (focusKey: string): SelectionAction => ({
+  key: 'probability',
+  label: 'Edit probability',
+  icon: AdjustmentsHorizontalIcon,
+  run: () => openProbabilitySheet(focusKey),
+})
+
+function pafNodeSelectionActions(id: NodeId): SelectionAction[] {
+  return [probabilityAction(`arg-${id}`)]
+}
+
+function pafEdgeSelectionActions(link: { sourceId: NodeId; targetId: NodeId }): SelectionAction[] {
+  return [probabilityAction(`atk-${link.sourceId}-${link.targetId}`)]
+}
+
 // ── Evaluation window management ───────────────────────────────────────────
 
 const nodeWeights = shallowRef<Map<ArgumentId, number>>(new Map())
@@ -432,6 +454,8 @@ function onPopupKeydown(event: KeyboardEvent) {
       @annotation-moved="onAnnotationMoved"
       :link-configs="linkConfig"
       node-tap-action="Open its probability"
+      :node-selection-actions="pafNodeSelectionActions"
+      :edge-selection-actions="pafEdgeSelectionActions"
       :state="editorState"
       :node-weights="nodeWeights"
       :node-annotations="argumentAnnotations"

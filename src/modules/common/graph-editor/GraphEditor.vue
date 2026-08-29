@@ -29,12 +29,14 @@ import {
   NodeOutline,
   NodeShape,
   type PositionSnapshot,
+  type SelectionTarget,
 } from '@aig-hagen/graph-component/lib'
 import {
   AcademicCapIcon,
   ArrowDownTrayIcon,
   ArrowLongRightIcon,
   ArrowsPointingInIcon,
+  ArrowsRightLeftIcon,
   ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
@@ -44,6 +46,7 @@ import {
   ChevronDownIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
+  PencilSquareIcon,
   PhotoIcon,
   PlayIcon,
   QuestionMarkCircleIcon,
@@ -51,6 +54,7 @@ import {
   ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
+  TrashIcon,
   VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
@@ -85,6 +89,7 @@ import {
   type LinkConfigs,
   LinkType,
   type NodeId,
+  type SelectionAction,
   SHEET_REFIT_KEY,
 } from '@/modules/common/graph-editor/graphEditor'
 import {
@@ -103,6 +108,7 @@ import {
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
+import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
@@ -138,6 +144,119 @@ const graphComponentRef = useTemplateRef('graph-component')
 const containerRef = useTemplateRef<HTMLDivElement>('container')
 const overlayGroupRef = useTemplateRef<SVGGElement>('overlay-group')
 
+// --- Contextual action bar (new pointer interaction model) ------------------------------
+// The graph-component emits a clean tap-not-drag `select`; the shared editor owns the bar
+// shell and the common actions. Only active while `gestureBindingsEnabled` is on.
+const selection = shallowRef<SelectionTarget | null>(null)
+
+function onSelect(next: SelectionTarget | null) {
+  selection.value = next
+}
+
+/** Live client-space box of the selected element, for anchoring the floating bar. */
+function selectionReferenceRect(): DOMRect | null {
+  const sel = selection.value
+  if (sel === null) return null
+  const anchor = graphComponentRef.value?.getElementAnchor(sel.kind, sel.id)
+  const host = containerRef.value?.querySelector('.graph-controller__graph-host')
+  if (anchor === undefined || !host) return null
+  const h = host.getBoundingClientRect()
+  return new DOMRect(h.left + anchor.x, h.top + anchor.y, anchor.width, anchor.height)
+}
+
+function onSelectionRename() {
+  const sel = selection.value
+  if (sel === null || sel.kind !== 'node') return
+  graphComponentRef.value?.editNodeLabel(sel.id as number)
+  selection.value = null
+}
+
+function onSelectionDelete() {
+  const sel = selection.value
+  if (sel === null) return
+  if (sel.kind === 'node' && idMapping.has(sel.id as number)) {
+    // Mirror the user-gesture delete: drop the node from the id map, remove it from the
+    // library view, then tell the module to delete the argument from the document (which
+    // re-renders and rebuilds the id map). Going through deleteElement alone emits a
+    // PROGRAMMATIC event that onNodeDeleted ignores, leaving idMapping stale (physics crash).
+    const publicId = idMapping.delete(sel.id as number)
+    graphComponentRef.value?.deleteElement(sel.id)
+    emit('nodeDeleted', { id: publicId })
+    triggerSettle()
+  } else if (sel.kind === 'edge') {
+    // Same reason as nodes: deleteElement alone emits a PROGRAMMATIC linkDeleted that
+    // onLinkDeleted ignores, so drive the document deletion ourselves.
+    const { sourceId, targetId } = parseLinkId(sel.id as string)
+    graphComponentRef.value?.deleteElement(sel.id)
+    if (idMapping.has(sourceId) && idMapping.has(targetId)) {
+      emit('linkDeleted', {
+        sourceId: idMapping.getOrFail(sourceId),
+        targetId: idMapping.getOrFail(targetId),
+      })
+    }
+    triggerSettle()
+  } else {
+    graphComponentRef.value?.deleteElement(sel.id)
+  }
+  selection.value = null
+}
+
+/** Public source/target of an internal link id, or `undefined` if its endpoints are unmapped. */
+function edgePublicEndpoints(internalLinkId: string) {
+  const { sourceId, targetId } = parseLinkId(internalLinkId)
+  if (!idMapping.has(sourceId) || !idMapping.has(targetId)) return undefined
+  return { sourceId: idMapping.getOrFail(sourceId), targetId: idMapping.getOrFail(targetId) }
+}
+
+function currentLinkType(internalLinkId: string): LinkType | undefined {
+  const ends = edgePublicEndpoints(internalLinkId)
+  if (ends === undefined) return undefined
+  return state.links.find((l) => l.sourceId === ends.sourceId && l.targetId === ends.targetId)?.type
+}
+
+/**
+ * The action-bar buttons for the current selection: common actions (Rename for nodes), the
+ * generic edge type-switch, module-contributed domain actions, and Delete (far right, danger).
+ */
+const selectionActions = computed<SelectionAction[]>(() => {
+  const sel = selection.value
+  if (sel === null) return []
+  const actions: SelectionAction[] = []
+  if (sel.kind === 'node') {
+    actions.push({ key: 'rename', label: 'Rename', icon: PencilSquareIcon, run: onSelectionRename })
+    if (nodeSelectionActions && idMapping.has(sel.id as number)) {
+      actions.push(...nodeSelectionActions(idMapping.getOrFail(sel.id as number)))
+    }
+  } else if (sel.kind === 'edge') {
+    const internalId = sel.id as string
+    const keys = Object.keys(linkConfigs) as LinkType[]
+    if (enableLinkSwitching && keys.length > 0) {
+      const current = currentLinkType(internalId)
+      const next = keys[((current ? keys.indexOf(current) : -1) + 1) % keys.length]!
+      const nextName = linkConfigs[next]?.displayName ?? 'type'
+      actions.push({
+        key: 'switch-type',
+        label: `Switch to ${nextName}`,
+        icon: ArrowsRightLeftIcon,
+        run: () => updateLinkType(internalId, next),
+      })
+    }
+    const ends = edgePublicEndpoints(internalId)
+    const type = currentLinkType(internalId) ?? keys[0]
+    if (edgeSelectionActions && ends !== undefined && type !== undefined) {
+      actions.push(...edgeSelectionActions({ ...ends, type }))
+    }
+  }
+  actions.push({
+    key: 'delete',
+    label: 'Delete',
+    icon: TrashIcon,
+    danger: true,
+    run: onSelectionDelete,
+  })
+  return actions
+})
+
 // WYSIWYG SVG export: serialize the live graph canvas on demand. Injected by the export UI so
 // it can offer an SVG format that works on any device (no TikZ/WebAssembly). Returns null when
 // the canvas isn't mounted or has no content to render.
@@ -167,6 +286,8 @@ const {
   documentName,
   typeBadge,
   nodeTapAction,
+  nodeSelectionActions,
+  edgeSelectionActions,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
@@ -190,6 +311,16 @@ const {
   /** Full node-tap description for the Help sheet (see the primary-action table).
       Defaults to `Rename it`. */
   nodeTapAction?: string
+  /** Module-contributed action-bar buttons for a selected node (public id), e.g. iAF
+      certainty toggle, ADF condition, PAF probability. Merged after the common Rename. */
+  nodeSelectionActions?: (id: NodeId) => SelectionAction[]
+  /** Module-contributed action-bar buttons for a selected edge (public source/target/type),
+      e.g. PAF edge probability. Merged after the generic type-switch. */
+  edgeSelectionActions?: (link: {
+    sourceId: NodeId
+    targetId: NodeId
+    type: LinkType
+  }) => SelectionAction[]
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -723,6 +854,7 @@ onMounted(() => {
   graphComponent.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
   graphComponent.setSnapToGrid(snapMode.value)
   graphComponent.setDefaults({
+    gestureBindingsEnabled: true,
     nodeAutoGrowToLabelSize: false,
     nodeProps: {
       shape: NodeShape.CIRCLE,
@@ -991,6 +1123,8 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   if (graphComponent === null) {
     throw new Error('Graph component is not rendered.')
   }
+  // A redraw reassigns internal ids, so any open selection no longer resolves — dismiss it.
+  selection.value = null
   // When physics is active, nodes may have drifted from their stored model positions.
   // Capture current visual positions before resetting so nodes don't snap back.
   const preservedPositions = new Map<number, { x: number; y: number }>()
@@ -1498,8 +1632,15 @@ defineExpose({
       @label-edited="onLabelEdited"
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
+      @select="onSelect"
       :id="graphComponentId"
       ref="graph-component"
+    />
+    <SelectionActionBar
+      v-if="selection"
+      :get-reference-rect="selectionReferenceRect"
+      :actions="selectionActions"
+      @close="selection = null"
     />
     <svg
       v-show="!!slots.nodeOverlay"
@@ -1664,12 +1805,12 @@ defineExpose({
         </button>
       </header>
 
-      <!-- Fixed 5-button command bar: two small actions flank the prominent Evaluate. -->
+      <!-- Fixed 5-button command bar: distribute every action across the available width. -->
       <nav
         class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
         style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
       >
-        <div class="flex gap-2 shrink-0">
+        <div class="contents">
           <button
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Fit to view"
@@ -1697,7 +1838,7 @@ defineExpose({
           <span class="truncate">Evaluate</span>
         </button>
 
-        <div class="flex gap-2 shrink-0">
+        <div class="contents">
           <button
             ref="mobileExportButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"

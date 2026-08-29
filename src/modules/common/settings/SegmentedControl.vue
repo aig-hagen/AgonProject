@@ -16,7 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<script setup lang="ts" generic="T extends string">
+<script setup lang="ts" generic="T extends string | boolean">
 const model = defineModel<T>({ required: true })
 
 defineProps<{
@@ -33,7 +33,7 @@ defineProps<{
   >
     <button
       v-for="opt in options"
-      :key="opt.value"
+      :key="String(opt.value)"
       type="button"
       role="radio"
       :aria-checked="model === opt.value"
