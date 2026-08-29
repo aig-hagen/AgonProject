@@ -18,6 +18,7 @@
 -->
 <script setup lang="ts">
 import { autoUpdate, offset, useFloating } from '@floating-ui/vue'
+import { useElementBounding } from '@vueuse/core'
 import {
   computed,
   inject,
@@ -101,6 +102,23 @@ const anchorRef = computed<HTMLElement | null>(() => {
 
 const isAnchored = computed(() => anchorRef.value !== null)
 
+const highlightRef = computed<HTMLElement | null>(() => {
+  if (!currentStep.value) return null
+  const h = currentStep.value.highlight
+  if (!h) return null
+  const key = typeof h === 'function' ? h(isTouchDevice) : h
+  if (!key) return null
+  return refs[key] ?? null
+})
+const { x: hlX, y: hlY, width: hlW, height: hlH } = useElementBounding(highlightRef)
+const hasHighlight = computed(() => highlightRef.value !== null && hlW.value > 0)
+const highlightStyle = computed(() => ({
+  left: `${hlX.value}px`,
+  top: `${hlY.value}px`,
+  width: `${hlW.value}px`,
+  height: `${hlH.value}px`,
+}))
+
 const resolvedAdvanceOn = computed<'button' | 'action'>(() => {
   const a = currentStep.value?.advanceOn
   if (!a) return 'button'
@@ -150,6 +168,13 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
 
 <template>
   <template v-if="isOwner && isActive && currentStep">
+    <!-- Spotlight ring over a highlighted element (no card movement). -->
+    <div
+      v-if="hasHighlight"
+      class="fixed z-30 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
+      :style="highlightStyle"
+    ></div>
+
     <!-- Anchored step: floats next to a UI element -->
     <div v-if="isAnchored" ref="floating" :style="floatingStyles" class="z-50 pointer-events-auto">
       <div class="card bg-base-100 shadow-xl w-72 border border-base-300">
@@ -263,3 +288,21 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
     </div>
   </template>
 </template>
+
+<style>
+.spotlight-pulse {
+  animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spotlight-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.06);
+  }
+}
+</style>

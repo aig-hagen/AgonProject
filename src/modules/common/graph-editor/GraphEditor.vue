@@ -358,6 +358,7 @@ const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
 const isTutorialWindowOpen = ref<boolean>(false)
 
+const tutorialMoveCount = ref(0)
 const tutorialPanCount = ref(0)
 const tutorialZoomCount = ref(0)
 const tutorialCenterCount = ref(0)
@@ -378,6 +379,7 @@ const tutorialContext = computed<TutorialContext>(() => ({
   conditionEditCount: tutorialContextExtra?.conditionEditCount ?? 0,
   conditionEditorOpenCount: tutorialContextExtra?.conditionEditorOpenCount ?? 0,
   probabilityEditCount: tutorialContextExtra?.probabilityEditCount ?? 0,
+  moveCount: tutorialMoveCount.value,
   panCount: tutorialPanCount.value,
   zoomCount: tutorialZoomCount.value,
   centerCount: tutorialCenterCount.value,
@@ -736,6 +738,7 @@ function onLinkDeleted(
 }
 
 function onNodesMoved(positions: PositionSnapshot[]) {
+  tutorialMoveCount.value++
   const data = positions.map((position) => {
     const internalId = position.nodeId
     const publicId = idMapping.getOrFail(internalId)
@@ -1536,10 +1539,14 @@ const mobileTopBarRef = useTemplateRef<HTMLElement>('mobileTopBar')
 const mobileMenuButtonRef = useTemplateRef<HTMLButtonElement>('mobileMenuButton')
 const mobileEvaluateButtonRef = useTemplateRef<HTMLButtonElement>('mobileEvaluateButton')
 const mobileExportButtonRef = useTemplateRef<HTMLButtonElement>('mobileExportButton')
+const mobileUndoButtonRef = useTemplateRef<HTMLButtonElement>('mobileUndoButton')
+const mobileFitToViewButtonRef = useTemplateRef<HTMLButtonElement>('mobileFitToViewButton')
 const mobileTutorialRefs = computed<Record<string, HTMLElement | null>>(() => ({
   evaluationButtons: mobileEvaluateButtonRef.value,
   exportButton: mobileExportButtonRef.value,
+  fitToViewButton: mobileFitToViewButtonRef.value,
   mainMenuBottom: mobileMenuButtonRef.value,
+  undoButton: mobileUndoButtonRef.value,
   ...tutorialRefs,
 }))
 // Split the layouts into the two mockup groups: directed (edge-following) vs. the
@@ -1812,10 +1819,11 @@ defineExpose({
       >
         <div class="contents">
           <button
+            ref="mobileFitToViewButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Fit to view"
             title="Fit to view"
-            @click="fitToView()"
+            @click="tutorialCenterCount++, fitToView()"
           >
             <ArrowsPointingInIcon class="size-6 opacity-70" />
           </button>
@@ -1849,6 +1857,7 @@ defineExpose({
             <ShareIcon class="size-6 opacity-70" />
           </button>
           <button
+            ref="mobileUndoButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             :disabled="!historyState.canUndo"
             aria-label="Undo"

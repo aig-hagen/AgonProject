@@ -37,6 +37,8 @@ export interface TutorialContext {
   conditionEditorOpenCount: number
   /** Monotonic count of probability edits (argument or attack) */
   probabilityEditCount: number
+  /** Monotonic count of node move gestures (drag-to-reposition) */
+  moveCount: number
   /** Monotonic count of pan gestures */
   panCount: number
   /** Monotonic count of zoom gestures */
@@ -80,6 +82,8 @@ export interface TutorialStep {
   body: TutorialBody | ((isTouchDevice: boolean) => TutorialBody)
   /** Key into the refs map passed to TutorialOverlay. Absent = fixed top-right. */
   anchor?: string
+  /** Key into the refs map — draws a spotlight ring without moving the card. */
+  highlight?: string | ((isTouchDevice: boolean) => string | undefined)
   placement?: StepPlacement
   /** Offset in px from anchor element. Default: 64 */
   offsetPx?: number

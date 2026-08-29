@@ -104,19 +104,25 @@ const nextTutorial = computed(() => {
   return tutorials.find((t) => t.id === currentStep.value!.nextTutorialId) ?? null
 })
 
-// Spotlight: a ring drawn over the step's anchored control, when it resolves to a mounted
-// element. Unlike desktop, the card itself stays docked; only the target is highlighted.
-const anchorRef = computed<HTMLElement | null>(() => {
-  if (!currentStep.value?.anchor) return null
-  return refs[currentStep.value.anchor] ?? null
+// Spotlight: a ring drawn over the step's highlighted or anchored control.
+// `highlight` takes priority (spotlight-only, no card movement on desktop either).
+const spotlightRef = computed<HTMLElement | null>(() => {
+  if (!currentStep.value) return null
+  const h = currentStep.value.highlight
+  if (h) {
+    const key = typeof h === 'function' ? h(isTouchDevice) : h
+    if (key) return refs[key] ?? null
+  }
+  if (currentStep.value.anchor) return refs[currentStep.value.anchor] ?? null
+  return null
 })
-const { x, y, width, height } = useElementBounding(anchorRef)
-const hasSpotlight = computed(() => anchorRef.value !== null && width.value > 0)
+const { x, y, width, height } = useElementBounding(spotlightRef)
+const hasSpotlight = computed(() => spotlightRef.value !== null && width.value > 0)
 const spotlightStyle = computed(() => ({
-  left: `${x.value - 6}px`,
-  top: `${y.value - 6}px`,
-  width: `${width.value + 12}px`,
-  height: `${height.value + 12}px`,
+  left: `${x.value}px`,
+  top: `${y.value}px`,
+  width: `${width.value}px`,
+  height: `${height.value}px`,
 }))
 
 function handleNext() {
@@ -141,7 +147,7 @@ function handleStartNext() {
     <!-- Spotlight ring over the anchored target (fixed to the viewport rect). -->
     <div
       v-if="hasSpotlight"
-      class="fixed z-30 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] transition-all"
+      class="fixed z-30 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
       :style="spotlightStyle"
     ></div>
 
@@ -241,3 +247,21 @@ function handleStartNext() {
     </div>
   </template>
 </template>
+
+<style>
+.spotlight-pulse {
+  animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spotlight-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.06);
+  }
+}
+</style>
