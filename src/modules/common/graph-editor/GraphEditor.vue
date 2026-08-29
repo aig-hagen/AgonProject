@@ -170,7 +170,18 @@ function onSelectionRename() {
 function onSelectionDelete() {
   const sel = selection.value
   if (sel === null) return
-  graphComponentRef.value?.deleteElement(sel.id)
+  if (sel.kind === 'node' && idMapping.has(sel.id as number)) {
+    // Mirror the user-gesture delete: drop the node from the id map, remove it from the
+    // library view, then tell the module to delete the argument from the document (which
+    // re-renders and rebuilds the id map). Going through deleteElement alone emits a
+    // PROGRAMMATIC event that onNodeDeleted ignores, leaving idMapping stale (physics crash).
+    const publicId = idMapping.delete(sel.id as number)
+    graphComponentRef.value?.deleteElement(sel.id)
+    emit('nodeDeleted', { id: publicId })
+    triggerSettle()
+  } else {
+    graphComponentRef.value?.deleteElement(sel.id)
+  }
   selection.value = null
 }
 
