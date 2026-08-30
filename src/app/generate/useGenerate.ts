@@ -33,7 +33,10 @@ import { SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argu
 import { collectiveAttacksArgumentationModule } from '@/modules/collective-attacks-argumentation/moduleConfig'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { DocumentsDB } from '@/modules/common/documents/db'
-import { useDocumentMetadata } from '@/modules/common/documents/useDocuments'
+import {
+  LAST_SELECTED_DOCUMENT_KEY,
+  useDocumentMetadata,
+} from '@/modules/common/documents/useDocuments'
 import { saveToFile } from '@/modules/common/export/saveFile'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import type { FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
@@ -385,7 +388,13 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
     if (fw instanceof AbstractArgumentation) {
       layout(fw, Layout.ForceDirected)
     }
-    await createDocument(getNextName(prefix), fw as Objectish)
+    const newId = await createDocument(getNextName(prefix), fw as Objectish)
+    // Focus the freshly generated document in the editor, not the source AF.
+    try {
+      localStorage.setItem(LAST_SELECTED_DOCUMENT_KEY, String(newId))
+    } catch {
+      // Ignore storage failures; the editor just falls back to its default selection.
+    }
     const sourceId = Number(route.query.source)
     if (Number.isInteger(sourceId) && sourceId > 0) {
       const sourceDoc = documents.value.find((d) => d.id === sourceId)

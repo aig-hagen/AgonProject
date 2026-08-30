@@ -98,7 +98,8 @@ watch(detentLayout, (layout, previous) => {
   if (layout === 'compact' && previous !== 'compact') reportCollapse?.()
 })
 
-// Register the collapse control so the evaluation tutorial can spotlight it.
+// Register the collapse control and the switcher pill so the evaluation tutorial can
+// spotlight them.
 const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
 const collapseButtonRef = useTemplateRef<HTMLElement>('collapseButton')
 watchEffect(() => {
@@ -133,6 +134,9 @@ const { floatingStyles } = useFloating(trigger, panel, {
   middleware: [offset(8), flip(), shift({ padding: 12 })],
   whileElementsMounted: autoUpdate,
 })
+
+watchEffect(() => registerTutorialRef?.('evalSwitcher', trigger.value ?? null))
+onBeforeUnmount(() => registerTutorialRef?.('evalSwitcher', null))
 
 function openPanel() {
   panelMode.value = 'list'
@@ -253,18 +257,41 @@ function selectLast() {
 }
 
 // A config highlights the canvas only while the sheet is open (mirrors desktop's
-// active-window behaviour); closing the sheet clears the active selection.
+// active-window behaviour); closing the sheet clears the active selection but remembers
+// it, so reopening restores the same config instead of jumping to the last one.
+let rememberedActiveId: string | undefined
 watch(open, (isOpen) => {
-  if (!isOpen) activeId.value = undefined
+  if (!isOpen) {
+    rememberedActiveId = activeId.value
+    activeId.value = undefined
+    return
+  }
+  // Single-kind modules skip the empty "Add evaluation" step: opening the sheet drops
+  // you straight into the default eval's setup, mirroring the desktop evaluation window.
+  // Multi-kind modules (e.g. AF) still show the chooser so the user picks the kind.
+  if (chips.length === 0 && addKinds.length <= 1) {
+    emit('add', addKinds[0] ?? 'extension')
+    ensureStandardDetent()
+    return
+  }
+  if (chips.some((c) => c.id === rememberedActiveId)) activeId.value = rememberedActiveId
   else if (!chips.some((c) => c.id === activeId.value)) selectLast()
 })
 
-// While open, keep a valid config selected as chips are added or removed; a newly
-// added config becomes active.
+// While open, keep a valid config selected as chips are added or removed: a newly added
+// config becomes active (found by id diff, since chips aren't ordered by insertion), and
+// removing the active one falls back to the last remaining config.
+let knownChipIds = chips.map((c) => c.id)
 watch(
   () => chips.map((c) => c.id).join('|'),
   () => {
-    if (open.value && !chips.some((c) => c.id === activeId.value)) selectLast()
+    const ids = chips.map((c) => c.id)
+    if (open.value) {
+      const added = ids.find((id) => !knownChipIds.includes(id))
+      if (added !== undefined) activeId.value = added
+      else if (!ids.some((id) => id === activeId.value)) selectLast()
+    }
+    knownChipIds = ids
   },
 )
 </script>
@@ -279,6 +306,7 @@ watch(
     :modal="false"
     :snap-points="SNAP_POINTS"
     :lowest-detent-px="compactDetentPx"
+    :initial-detent-index="1"
   >
     <!-- Header-as-switcher: the active config IS the header; the chevron drops the
          full saved-config list. One control does what the pill strip + title did. -->
@@ -328,7 +356,20 @@ watch(
       <div class="flex-1 min-h-0 flex flex-col gap-3">
         <div v-if="chips.length === 0" class="flex flex-col items-center gap-3 py-10 text-center">
           <p class="opacity-60 text-sm">No evaluation yet.</p>
-          <button class="btn btn-primary gap-2" @click="onAddClick">
+          <!-- Multi-kind modules offer a button per kind directly; single-kind keeps one. -->
+          <template v-if="addKinds.length > 1">
+            <button
+              v-for="kind in addKinds"
+              :key="kind"
+              type="button"
+              class="btn btn-primary btn-outline gap-2 w-56"
+              @click="chooseKind(kind)"
+            >
+              <KindIcon :kind="kind" class="size-5" />
+              {{ KIND_LABEL[kind] }}
+            </button>
+          </template>
+          <button v-else class="btn btn-primary gap-2" @click="onAddClick">
             <PlusIcon class="size-5" /> Add evaluation
           </button>
         </div>

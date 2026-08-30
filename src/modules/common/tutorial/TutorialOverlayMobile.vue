@@ -113,9 +113,10 @@ watch(
   { immediate: true },
 )
 
+// Auto-advance whenever a step declares an advanceCondition — including `advanceOn: 'button'`
+// steps, which then offer a manual Next *and* advance when the user does the action.
 watchEffect(() => {
   if (!isOwner.value || !isActive.value || !currentStep.value) return
-  if (resolvedAdvanceOn.value !== 'action') return
   if (!currentStep.value.advanceCondition) return
   if (!baselineContext.value) return
   if (currentStep.value.advanceCondition(context, baselineContext.value)) {

@@ -278,6 +278,7 @@ const tutorialContextExtra = computed(() => ({
   uncertainNodeCount: [...renderedState.value.current.content.uncertainArguments()].length,
   uncertainLinkCount: [...renderedState.value.current.content.uncertainAttacks()].length,
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
 }))

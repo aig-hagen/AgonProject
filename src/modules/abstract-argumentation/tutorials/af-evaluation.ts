@@ -40,7 +40,7 @@ export const afEvaluationTutorial: Tutorial = {
       title: 'Open the evaluation',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? `${action('Tap')} the <strong>Evaluate</strong> button, then <strong>Add evaluation</strong> → <strong>Extension semantics</strong> to open an evaluation.`
+          ? `${action('Tap')} the <strong>Evaluate</strong> button, then <strong>Extension semantics</strong> to open the evaluation.`
           : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
       highlight: 'openEvalButton',
       advanceOn: 'action',
@@ -51,7 +51,7 @@ export const afEvaluationTutorial: Tutorial = {
       title: 'Pick a semantics',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? `Open the <strong>Semantics</strong> selector and choose one (e.g. <em>Complete</em>) — expand the sheet if the parameters are hidden.`
+          ? `Open the <strong>Semantics</strong> selector and choose one (e.g. <em>Complete</em>).`
           : `Open the <strong>Semantics</strong> selector and choose one (e.g. <em>Complete</em>). Each semantics formalises a different notion of acceptance.`,
       highlight: 'semanticsSelector',
       advanceOn: 'action',
@@ -92,6 +92,19 @@ export const afEvaluationTutorial: Tutorial = {
       refitOnEnter: true,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,
+    },
+    {
+      id: 'multiple-evals',
+      title: 'Open multiple evaluations',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `You can run several evaluations at once. ${action('Tap')} the <strong>switcher</strong> at the top of the sheet, then <strong>Add evaluation</strong> to open another — for example to compare two semantics.`
+          : `You can run several evaluations at once. ${action('Click')} the ${barAction('extension', 'Extension Semantics')} button again to open another evaluation window — for example to compare two semantics.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalSwitcher' : 'openEvalButton'),
+      advanceOn: 'button',
+      advanceCondition: (ctx, baseline) =>
+        ctx.evaluationWindowCount > baseline.evaluationWindowCount,
+      firstEvalOnly: true,
     },
     {
       id: 'done',

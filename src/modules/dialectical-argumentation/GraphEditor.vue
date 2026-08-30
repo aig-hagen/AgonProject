@@ -312,6 +312,7 @@ const adfTutorials = [adfBasicsTutorial, adfEvaluationTutorial, ...commonTutoria
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
   conditionEditCount: conditionEditCount.value,
   conditionEditorOpenCount: conditionEditorOpenCount.value,
   evaluationCount: evaluationCount.value,

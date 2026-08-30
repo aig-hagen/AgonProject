@@ -376,6 +376,10 @@ const modeInteractCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount:
+    extensionInstances.value.length +
+    rankingInstances.value.length +
+    serialisationInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
   semanticsInteractCount: semanticsInteractCount.value,

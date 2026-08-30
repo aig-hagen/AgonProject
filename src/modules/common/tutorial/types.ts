@@ -23,6 +23,8 @@ export interface TutorialContext {
   canUndo: boolean
   canRedo: boolean
   isExtensionWindowOpen: boolean
+  /** Number of open evaluation windows/instances (all kinds) — compare against baseline to detect a newly opened one */
+  evaluationWindowCount: number
   /** Monotonic count of evaluations triggered — compare against baseline to detect a new one */
   evaluationCount: number
   /** Monotonic count of result highlights — compare against baseline to detect a new one */
@@ -118,6 +120,11 @@ export interface TutorialStep {
    * always show. For generic evaluation-window guidance that only needs teaching once on desktop.
    */
   firstEvalOnlyDesktop?: boolean
+  /**
+   * Only show during the user's first evaluation (`*-evaluation`) tutorial, on every platform.
+   * For generic evaluation guidance that needs teaching only once (e.g. opening multiple evals).
+   */
+  firstEvalOnly?: boolean
   /** On touch, re-fit the graph into the visible band when this step becomes active. */
   refitOnEnter?: boolean
 }

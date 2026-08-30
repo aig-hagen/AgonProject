@@ -74,7 +74,8 @@ export const useTutorial = createSharedComposable(() => {
       (step) =>
         !(step.desktopOnly && isTouchDevice.value) &&
         !(step.firstBasicOnly && hasDoneBasics) &&
-        !(step.firstEvalOnlyDesktop && !isTouchDevice.value && hasDoneEval),
+        !(step.firstEvalOnlyDesktop && !isTouchDevice.value && hasDoneEval) &&
+        !(step.firstEvalOnly && hasDoneEval),
     )
     return steps.length === tutorial.steps.length ? tutorial : { ...tutorial, steps }
   }

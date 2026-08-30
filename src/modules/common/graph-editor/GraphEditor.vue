@@ -172,6 +172,10 @@ function onSelectionRename() {
   const sel = selection.value
   if (sel === null || sel.kind !== 'node') return
   graphComponentRef.value?.editNodeLabel(sel.id as number)
+  // The library only focuses the label input; preselect its text so the user can
+  // type over the current name immediately (matches desktop double-click behaviour).
+  const input = containerRef.value?.querySelector<HTMLInputElement>('#node-label-input-field')
+  input?.select()
   selection.value = null
 }
 
@@ -383,6 +387,7 @@ const tutorialContext = computed<TutorialContext>(() => ({
   uncertainNodeCount: tutorialContextExtra?.uncertainNodeCount ?? 0,
   uncertainLinkCount: tutorialContextExtra?.uncertainLinkCount ?? 0,
   isExtensionWindowOpen: tutorialContextExtra?.isExtensionWindowOpen ?? false,
+  evaluationWindowCount: tutorialContextExtra?.evaluationWindowCount ?? 0,
   evaluationCount: tutorialContextExtra?.evaluationCount ?? 0,
   highlightCount: tutorialContextExtra?.highlightCount ?? 0,
   semanticsInteractCount: tutorialContextExtra?.semanticsInteractCount ?? 0,
@@ -1875,7 +1880,7 @@ defineExpose({
         <!-- Switcher chip: back to home / document picker -->
         <button
           class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
-          aria-label="Back to documents"
+          aria-label="Back to frameworks"
           @click="openDocumentSwitcher"
         >
           <span
@@ -2005,12 +2010,12 @@ defineExpose({
       <BottomSheet v-model:open="isMenuOpen" title="Menu">
         <div class="flex flex-col gap-4 pb-4">
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Document</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Framework</h3>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('new'))"
             >
-              <DocumentPlusIcon class="size-5 text-primary/80" /> New document
+              <DocumentPlusIcon class="size-5 text-primary/80" /> New framework
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"

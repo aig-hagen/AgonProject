@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="T extends { key: string; displayName: string }">
-import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
+import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/24/outline'
 import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
 
@@ -57,7 +57,17 @@ const panelEl = useTemplateRef('panel')
 
 const { floatingStyles } = useFloating(triggerEl, panelEl, {
   placement: 'bottom-start',
-  middleware: [offset(4), flip(), shift({ padding: 8 })],
+  middleware: [
+    offset(4),
+    flip(),
+    shift({ padding: 8 }),
+    // Match the panel's min-width to the trigger so it never overhangs a narrow selector.
+    size({
+      apply({ rects, elements }) {
+        elements.floating.style.minWidth = `${rects.reference.width}px`
+      },
+    }),
+  ],
   whileElementsMounted: autoUpdate,
 })
 
@@ -224,7 +234,7 @@ watch(isOpen, (open) => {
         :id="`grouped-select-${instanceId}-listbox`"
         ref="panel"
         :style="[floatingStyles, { zIndex: 9000 }]"
-        class="min-w-48 max-h-80 overflow-y-auto rounded-box bg-base-100 border border-base-300 shadow-lg py-1 focus:outline-none"
+        class="max-h-80 overflow-y-auto rounded-box bg-base-100 border border-base-300 shadow-lg py-1 focus:outline-none"
         role="listbox"
         tabindex="-1"
         :aria-activedescendant="activeOptionId"

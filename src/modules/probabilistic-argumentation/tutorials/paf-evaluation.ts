@@ -40,7 +40,7 @@ export const pafEvaluationTutorial: Tutorial = {
       title: 'Open the evaluation',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? `${action('Tap')} the <strong>Evaluate</strong> button, then <strong>Add evaluation</strong> → <strong>Extension semantics</strong> to open an evaluation.`
+          ? `${action('Tap')} the <strong>Evaluate</strong> button to open the evaluation.`
           : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
       highlight: 'openEvalButton',
       advanceOn: 'action',
@@ -90,6 +90,19 @@ export const pafEvaluationTutorial: Tutorial = {
         ' (the toggle in the panel) to use a Monte Carlo sampling approach — much faster at the cost of small numerical errors.',
       ],
       advanceOn: 'button',
+    },
+    {
+      id: 'multiple-evals',
+      title: 'Open multiple evaluations',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `You can run several evaluations at once. ${action('Tap')} the <strong>switcher</strong> at the top of the sheet, then <strong>Add evaluation</strong> to open another — for example to compare two semantics.`
+          : `You can run several evaluations at once. ${action('Click')} the ${barAction('extension', 'Extension Semantics')} button again to open another evaluation window — for example to compare two semantics.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalSwitcher' : 'openEvalButton'),
+      advanceOn: 'button',
+      advanceCondition: (ctx, baseline) =>
+        ctx.evaluationWindowCount > baseline.evaluationWindowCount,
+      firstEvalOnly: true,
     },
     {
       id: 'done',

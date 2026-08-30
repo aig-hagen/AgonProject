@@ -385,6 +385,7 @@ const evaluationCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: evaluationInstances.value.length > 0,
+  evaluationWindowCount: evaluationInstances.value.length,
   evaluationCount: evaluationCount.value,
   probabilityEditCount: probabilityEditCount.value,
 }))
