@@ -1,7 +1,6 @@
 ## Bugs and Issues
 
 ### desktop/general
-- help screen needs a pass
 - need a ranking tutorial for AF
 - impressum etc
 - track number of unique? accesses to site; maybe some other stats
