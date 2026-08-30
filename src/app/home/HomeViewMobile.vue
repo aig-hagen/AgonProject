@@ -36,6 +36,7 @@ import type { HomeController } from '@/app/home/useHomeController'
 import { useHomeSurface } from '@/app/home/useHomeSurface'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
+import { formatRelativeTime } from '@/modules/common/util'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 const { modules, controller } = defineProps<{
@@ -206,7 +207,7 @@ function loadFile() {
           :class="surface === 'documents' ? 'bg-base-100 shadow-sm' : 'opacity-60'"
           @click="goTo('documents')"
         >
-          Documents
+          Frameworks
         </button>
         <button
           class="h-9 rounded-lg text-sm font-semibold transition-colors"
@@ -225,12 +226,12 @@ function loadFile() {
           v-if="confirmDeleteAll"
           class="flex items-center gap-2 rounded-xl border border-error px-3 py-2 my-2"
         >
-          <span class="flex-1 text-sm">Delete all documents?</span>
+          <span class="flex-1 text-sm">Delete all frameworks?</span>
           <button class="btn btn-ghost btn-sm" @click="confirmDeleteAll = false">Cancel</button>
           <button class="btn btn-error btn-sm" @click="deleteAll">Delete all</button>
         </div>
 
-        <p v-if="documents.length === 0" class="text-center opacity-60 py-10">No documents yet.</p>
+        <p v-if="documents.length === 0" class="text-center opacity-60 py-10">No frameworks yet.</p>
 
         <ul class="flex flex-col">
           <li v-for="document of documents" :key="document.id">
@@ -264,14 +265,15 @@ function loadFile() {
                 @click="openDocument(document.id)"
               >
                 <span
-                  class="grid place-items-center size-11 shrink-0 rounded-xl"
+                  class="grid place-items-center size-11 shrink-0 rounded-xl text-xs font-bold"
                   :class="
                     document.id === selectedDocumentId
                       ? 'bg-primary text-primary-content'
                       : 'bg-base-200 text-primary'
                   "
                 >
-                  <DocumentTextIcon class="size-6" />
+                  <template v-if="document.type">{{ document.type }}</template>
+                  <DocumentTextIcon v-else class="size-6" />
                 </span>
                 <span class="flex flex-col min-w-0 leading-tight">
                   <span class="truncate text-[0.95rem] font-semibold">{{
@@ -281,6 +283,11 @@ function loadFile() {
                     v-if="document.id === selectedDocumentId"
                     class="text-xs text-base-content/60"
                     >Open now</span
+                  >
+                  <span
+                    v-else-if="document.lastEdited !== undefined"
+                    class="text-xs text-base-content/60"
+                    >Edited {{ formatRelativeTime(document.lastEdited) }}</span
                   >
                 </span>
               </button>
@@ -304,7 +311,7 @@ function loadFile() {
           class="btn btn-ghost btn-sm text-error/80 mt-4 mx-auto flex"
           @click="confirmDeleteAll = true"
         >
-          Delete all documents
+          Delete all frameworks
         </button>
       </div>
 
@@ -372,7 +379,7 @@ function loadFile() {
       style="padding-bottom: max(env(safe-area-inset-bottom), 0.75rem)"
     >
       <button class="btn btn-primary w-full h-13 rounded-2xl gap-2 text-base" @click="goTo('new')">
-        <PlusIcon class="size-5" /> New document
+        <PlusIcon class="size-5" /> New framework
       </button>
     </footer>
   </div>

@@ -111,7 +111,7 @@ function openClearAllModal() {
           <XMarkIcon class="size-4" />
         </button>
       </form>
-      <h3 class="text-lg font-bold">Delete all documents</h3>
+      <h3 class="text-lg font-bold">Delete all frameworks</h3>
       <p class="py-4">
         All unsaved data will be <span class="font-bold">permanently deleted</span>.
         <br />

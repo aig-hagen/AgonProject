@@ -35,15 +35,16 @@ type DocumentName = string
 export interface DocumentMetadata {
   id: DocumentId
   name: DocumentName
+  /** Epoch millis of the last content edit. Absent on documents created before this was tracked. */
+  lastEdited?: number
+  /** AF-type marker (the module's `newNamePrefix`), set once when content is first written. */
+  type?: string
 }
 
 export interface DocumentsDB extends DBSchema {
   metadata: {
     key: DocumentId
-    value: {
-      id: DocumentId
-      name: DocumentName
-    }
+    value: DocumentMetadata
     keyPath: typeof OBJECT_STORE_METADATA_KEY_PATH
   }
   content: {
