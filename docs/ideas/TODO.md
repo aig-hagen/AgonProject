@@ -3,11 +3,8 @@
 ### desktop/general
 - need a ranking tutorial for AF
 - setAF tutorials need update
-- e2e tests based on the tutorial. does that make sense?
 
 ### Mobile
-- set-attack creation on mobile is still missing
-
 - the select toolbar should disappear on any other interaction, ie panning or creating an edge somewhere etc
 - make nodes react on interaction (pulse size or something); maybe also on hover
 

@@ -46,9 +46,11 @@ import {
   ChevronDownIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
+  MinusCircleIcon,
   PencilSquareIcon,
   PhotoIcon,
   PlayIcon,
+  PlusCircleIcon,
   QuestionMarkCircleIcon,
   QueueListIcon,
   ShareIcon,
@@ -157,6 +159,16 @@ function onSelect(next: SelectionTarget | null) {
   selection.value = next
 }
 
+// --- Collective-attack source set (touch) -----------------------------------------------
+// On touch there is no shift-click to build a hyperlink source set. We drive it from the
+// action bar's Add/Remove-to-attack button and mirror the library's set here (internal ids)
+// to render the pending-set pill. Only meaningful when `allowHyperLinkCreation` is on (SetAF).
+const hyperLinkSources = shallowRef<number[]>([])
+
+function onHyperLinkSourcesChanged(ids: number[]) {
+  hyperLinkSources.value = ids
+}
+
 /** Live client-space box of the selected element, for anchoring the floating bar. */
 function selectionReferenceRect(): DOMRect | null {
   const sel = selection.value
@@ -231,6 +243,18 @@ const selectionActions = computed<SelectionAction[]>(() => {
   if (sel === null) return []
   const actions: SelectionAction[] = []
   if (sel.kind === 'node') {
+    // Collective-attack source toggle (touch alternative to the desktop shift-click). Kept
+    // before Rename, and leaves the bar open so it flips to Remove and the node's source
+    // highlight stays visible — the source set is built across several taps.
+    if (allowHyperLinkCreation && layoutMode.value === 'compact') {
+      const inSet = hyperLinkSources.value.includes(sel.id as number)
+      actions.push({
+        key: 'attack-source',
+        label: inSet ? 'Remove from attack' : 'Add to attack',
+        icon: inSet ? MinusCircleIcon : PlusCircleIcon,
+        run: () => graphComponentRef.value?.toggleHyperLinkSource(sel.id as number),
+      })
+    }
     actions.push({ key: 'rename', label: 'Rename', icon: PencilSquareIcon, run: onSelectionRename })
     if (nodeSelectionActions && idMapping.has(sel.id as number)) {
       actions.push(...nodeSelectionActions(idMapping.getOrFail(sel.id as number)))
@@ -1174,6 +1198,9 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   }
   // A redraw reassigns internal ids, so any open selection no longer resolves — dismiss it.
   selection.value = null
+  // The library resets its hyperlink source set on setGraph too; drop our mirror so the
+  // pending-set pill doesn't linger with stale internal ids after a re-render.
+  hyperLinkSources.value = []
   // When physics is active, nodes may have drifted from their stored model positions.
   // Capture current visual positions before resetting so nodes don't snap back.
   const preservedPositions = new Map<number, { x: number; y: number }>()
@@ -1748,6 +1775,7 @@ defineExpose({
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
       @select="onSelect"
+      @hyper-link-sources-changed="onHyperLinkSourcesChanged"
       :id="graphComponentId"
       ref="graph-component"
     />

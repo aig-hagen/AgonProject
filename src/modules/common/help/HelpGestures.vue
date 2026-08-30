@@ -63,9 +63,9 @@ const rows = computed<GestureRow[]>(() => {
     { icon: TrashIcon, title: 'Hold an argument', desc: 'Delete it', danger: true },
     {
       icon: ArrowLongRightIcon,
-      title: 'Hold + drag to another argument',
+      title: 'Drag to another argument',
       desc: allowHyperLinkCreation
-        ? `Tap arguments to select sources, then drag from a selected one to create a collective ${linkNames[0] ?? 'attack'}`
+        ? `Draw a ${linkNames[0] ?? 'attack'} — from a source set, this becomes a collective ${linkNames[0] ?? 'attack'}`
         : `Create a ${linkNamesSlash.value} between them`,
     },
     { icon: ArrowsPointingOutIcon, title: 'Drag / pinch', desc: 'Pan and zoom the canvas' },
@@ -75,6 +75,14 @@ const rows = computed<GestureRow[]>(() => {
       desc: 'Recenter everything — moving arguments by hand is not needed; use Relayout',
     },
   ]
+
+  if (allowHyperLinkCreation) {
+    list.push({
+      icon: PlusCircleIcon,
+      title: 'Add to attack',
+      desc: `Tap an argument and choose "Add to attack" (or long-press it) to build a source set, then drag from a highlighted source to the target`,
+    })
+  }
 
   if (hasTypes.value) {
     list.push({
