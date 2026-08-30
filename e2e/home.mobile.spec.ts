@@ -7,9 +7,9 @@ test('compact viewport renders the mobile home shell, not the desktop landing', 
   page,
 }) => {
   await page.goto('/')
-  // Mobile hero + Documents/New segmented control instead of the desktop landing hero.
+  // Mobile hero + Frameworks/New segmented control instead of the desktop landing hero.
   await expect(page.getByRole('heading', { name: 'AgonProject' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Documents', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Frameworks', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'New', exact: true })).toBeVisible()
   // The desktop landing heading must not be present in the compact shell.
   await expect(
@@ -25,7 +25,7 @@ test('create a document from New and land on the editor surface', async ({ page 
   await page.getByRole('button', { name: 'Create new' }).first().click()
 
   // Editor surface: the switcher chip doubles as the home button.
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
   await expect(page).toHaveURL(/surface=editor/)
 })
 
@@ -36,11 +36,11 @@ test('switcher chip opens Documents and Back returns to the editor', async ({ pa
   await expect(page).toHaveURL(/surface=editor/)
 
   // Tapping the switcher chip pushes the Documents surface.
-  await page.getByRole('button', { name: 'Back to documents' }).click()
+  await page.getByRole('button', { name: 'Back to frameworks' }).click()
   await expect(page).toHaveURL(/surface=documents/)
 
   // Browser Back returns to the editor, which stayed mounted underneath.
   await page.goBack()
   await expect(page).toHaveURL(/surface=editor/)
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
 })

@@ -18,17 +18,17 @@ test('creates and lists many documents without console errors', async ({ page })
   async function createOne() {
     await page.getByRole('button', { name: 'New', exact: true }).click()
     await page.getByRole('button', { name: 'Create new' }).first().click()
-    await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
   }
 
   await createOne()
   for (let i = 1; i < COUNT; i++) {
-    await page.getByRole('button', { name: 'Back to documents' }).click()
+    await page.getByRole('button', { name: 'Back to frameworks' }).click()
     await createOne()
   }
 
   // The Documents list holds every created document.
-  await page.getByRole('button', { name: 'Back to documents' }).click()
+  await page.getByRole('button', { name: 'Back to frameworks' }).click()
   await expect(page.getByRole('button', { name: /^Actions for/ })).toHaveCount(COUNT)
 
   // Reopening one still lands in a working editor.
