@@ -43,8 +43,8 @@ import {
 } from 'vue'
 
 import { type DocumentId, DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
-import { TUTORIAL_REF_REGISTRY_KEY } from '@/modules/common/graph-editor/graphEditor'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
+import { TUTORIAL_REF_REGISTRY_KEY } from '@/modules/common/graph-editor/graphEditor'
 import { POINTER_SHIELD_Z_INDEX, useZIndex } from '@/modules/common/window/useZIndex'
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY, undefined)

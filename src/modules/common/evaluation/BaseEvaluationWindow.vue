@@ -21,8 +21,8 @@ import { computed, inject, type Ref, ref, watch } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import EvaluationCard from '@/modules/common/evaluation/EvaluationCard.vue'
-import { TUTORIAL_COLLAPSE_KEY } from '@/modules/common/graph-editor/graphEditor'
 import MobileEvaluationBody from '@/modules/common/evaluation/MobileEvaluationBody.vue'
+import { TUTORIAL_COLLAPSE_KEY } from '@/modules/common/graph-editor/graphEditor'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 export interface EvaluationWindowQuery {
