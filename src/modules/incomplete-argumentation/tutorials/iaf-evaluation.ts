@@ -60,6 +60,7 @@ export const iafEvaluationTutorial: Tutorial = {
         { text: 'necessary', tooltipId: 'necessaryAcceptance' },
         ' acceptance. Possible is more permissive; necessary is the conservative choice.',
       ],
+      highlight: 'typeSelector',
       advanceOn: 'button',
     },
     {
@@ -72,6 +73,7 @@ export const iafEvaluationTutorial: Tutorial = {
         { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
         ' to check individual argument acceptance.',
       ],
+      highlight: 'semanticsSelector',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
     },
@@ -91,6 +93,7 @@ export const iafEvaluationTutorial: Tutorial = {
       id: 'read-results',
       title: 'Reading the results',
       body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured depending on their status:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — accepted</li><li><span class="text-info font-medium">Blue</span> — undecided</li><li><span class="text-error font-medium">Red</span> — rejected</li></ul>',
+      highlight: 'resultArea',
       refitOnEnter: true,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,

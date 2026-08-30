@@ -6,9 +6,6 @@
 - setAF tutorials need update
 - in editor -> generate random -> generate -> open in editor (opens the prev open AF not the new one)
 - e2e tests based on the tutorial. does that make sense?
-- some advance-on-action gaps in the eval tutorials remain; in particular the "select semantics and eval" step should be adjusted
-- highlight result area in corresponding tutorial step; missing for all modules except AF
-- recenter graph on basic tutorial show in mobile
 
 ### Mobile
 - if only one eval type exists open that immediately

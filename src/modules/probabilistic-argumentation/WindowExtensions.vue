@@ -17,7 +17,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
+import {
+  computed,
+  inject,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  toRef,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
@@ -28,6 +39,7 @@ import type { Input } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
+import { TUTORIAL_REF_REGISTRY_KEY } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -113,6 +125,28 @@ const query = usePafEvaluationQuery(
 
 const { data } = query
 
+// Register the semantics selector and the results panel as tutorial-spotlight targets while this
+// window is the active one, so the evaluation tutorial can highlight them.
+const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
+const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect')
+const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
+watchEffect(() => {
+  if (!registerTutorialRef || suppressed) return
+  registerTutorialRef('semanticsSelector', semanticsSelectRef.value?.$el ?? null)
+})
+watch(
+  [resultsAreaRef, () => data.value?.entries.length, () => suppressed],
+  () => {
+    if (!registerTutorialRef) return
+    registerTutorialRef('resultArea', suppressed ? null : (resultsAreaRef.value ?? null))
+  },
+  { flush: 'post', immediate: true },
+)
+onUnmounted(() => {
+  registerTutorialRef?.('semanticsSelector', null)
+  registerTutorialRef?.('resultArea', null)
+})
+
 // Suppressed instances (all but the active one in the compact host) own no node weights.
 const emittedWeights = computed(() =>
   suppressed || data.value === undefined
@@ -146,7 +180,12 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
   >
     <template #parameters>
       <ParameterField label="Semantics" min-width="10rem">
-        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+        <GroupedSelect
+          ref="semanticsSelect"
+          v-model="selectedSemantic"
+          :groups="semanticsSelectGroups"
+          full-width
+        />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
         <PickerSelect
@@ -174,7 +213,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
     </template>
     <template #results>
       <template v-if="data !== undefined">
-        <div data-evaluation-results class="flex flex-wrap gap-2">
+        <div ref="resultsArea" data-evaluation-results class="flex flex-wrap gap-2">
           <span
             v-for="entry in data.entries"
             :key="entry.id"

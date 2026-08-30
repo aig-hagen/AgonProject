@@ -52,6 +52,7 @@ export const bipolarEvaluationTutorial: Tutorial = {
         { text: 'necessary', tooltipId: 'necessarySupport' },
         '. Different interpretations can lead to different results for the same framework.',
       ],
+      highlight: 'supportSelector',
       advanceOn: 'button',
     },
     {
@@ -64,6 +65,7 @@ export const bipolarEvaluationTutorial: Tutorial = {
         { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
         ').',
       ],
+      highlight: 'semanticsSelector',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
     },
@@ -83,6 +85,7 @@ export const bipolarEvaluationTutorial: Tutorial = {
       id: 'read-results',
       title: 'Reading the results',
       body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured depending on their status:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — accepted</li><li><span class="text-info font-medium">Blue</span> — undecided</li><li><span class="text-error font-medium">Red</span> — rejected</li></ul>',
+      highlight: 'resultArea',
       refitOnEnter: true,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,

@@ -1504,6 +1504,21 @@ onUnmounted(() => {
   renameCommitCleanup?.()
 })
 
+// While a mobile tutorial is active this holds the docked card's clearance (px it reaches from the
+// viewport top); null when no tutorial is docked. Persisting it means every fitToView — including
+// the plain refits fired after an async example load or a physics settle — keeps the graph clear of
+// the card, instead of a later fitToView() re-centering it under the card and winning the race.
+const tutorialTopClearancePx = ref<number | null>(null)
+
+// The bottom band covered while a mobile tutorial is docked: the command bar, or a taller open
+// sheet (e.g. the compacted evaluation sheet). Recomputed per fit so it tracks the live chrome.
+function tutorialBottomInset() {
+  if (layoutMode.value !== 'compact') return 0
+  const commandBar = mobileBottomBarRef.value?.offsetHeight ?? 0
+  const sheet = document.querySelector<HTMLElement>('.sheet-panel')?.offsetHeight ?? 0
+  return Math.max(commandBar, sheet)
+}
+
 function fitToView(extraBottomInset = 0, topClearancePx = 0) {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) return
@@ -1515,13 +1530,21 @@ function fitToView(extraBottomInset = 0, topClearancePx = 0) {
   // The compact top bar floats over the full-height canvas, so inset the fit by its
   // occupied height (offsetHeight = the band it covers) to keep the graph clear of it.
   const topInset = layoutMode.value === 'compact' ? (mobileTopBarRef.value?.offsetHeight ?? 0) : 0
-  // The mobile tutorial card floats lower down; `topClearancePx` is how far it reaches from
-  // the viewport top, so take whichever exclusion is larger to keep the graph clear of both.
-  const top = margin + Math.max(topInset, topClearancePx)
+  // While a mobile tutorial is docked, always honor its card clearance and bottom band, so refits
+  // triggered elsewhere (async load, settle) can't re-center the graph under the card.
+  let clearance = topClearancePx
+  let bottomInset = extraBottomInset
+  if (tutorialTopClearancePx.value !== null && layoutMode.value === 'compact') {
+    clearance = Math.max(clearance, tutorialTopClearancePx.value)
+    bottomInset = Math.max(bottomInset, tutorialBottomInset())
+  }
+  // The mobile tutorial card floats lower down; `clearance` is how far it reaches from the
+  // viewport top, so take whichever exclusion is larger to keep the graph clear of both.
+  const top = margin + Math.max(topInset, clearance)
   // A docked sheet covers the bottom band; the extra inset there fits the graph into
   // the visible band above it instead of centring it under the sheet.
   graphComponent.centerView(
-    { top, right: margin, bottom: margin + extraBottomInset, left: margin },
+    { top, right: margin, bottom: margin + bottomInset, left: margin },
     undefined,
     1,
   )
@@ -1537,17 +1560,12 @@ function refitAboveSheet(coveredFraction: number | null) {
 }
 provide(SHEET_REFIT_KEY, refitAboveSheet)
 
-// The docked mobile tutorial card covers the top of the canvas; re-fit the graph into the band
-// between it and whatever covers the bottom — the command bar, or a taller open sheet (e.g. the
-// compacted evaluation sheet) — or restore the full fit with null on close.
+// The docked mobile tutorial card covers the top of the canvas; record its clearance (so every
+// subsequent fitToView keeps the graph clear of it) and re-fit into the band below it now — or
+// clear the clearance and restore the full fit with null on close.
 provide(TUTORIAL_REFIT_KEY, (coveredTopPx: number | null) => {
-  let bottomInset = 0
-  if (layoutMode.value === 'compact') {
-    const commandBar = mobileBottomBarRef.value?.offsetHeight ?? 0
-    const sheet = document.querySelector<HTMLElement>('.sheet-panel')?.offsetHeight ?? 0
-    bottomInset = Math.max(commandBar, sheet)
-  }
-  fitToView(bottomInset, coveredTopPx ?? 0)
+  tutorialTopClearancePx.value = coveredTopPx
+  fitToView()
 })
 
 function doLayout(layout: Layout) {
