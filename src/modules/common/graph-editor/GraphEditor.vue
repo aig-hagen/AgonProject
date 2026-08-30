@@ -930,6 +930,7 @@ onMounted(() => {
   graphComponent.setSnapToGrid(snapMode.value)
   graphComponent.setDefaults({
     gestureBindingsEnabled: true,
+    interactiveNodeFeedbackEnabled: true,
     nodeAutoGrowToLabelSize: false,
     nodeProps: {
       shape: NodeShape.CIRCLE,
@@ -1339,7 +1340,8 @@ function setGraph(state: GraphEditorState, center: boolean): void {
   })
 
   if (center) {
-    fitToView()
+    // Initial fit after (re)loading a graph: jump instantly, no glide from the reset transform.
+    fitToView(0, 0, 0)
   }
 }
 
@@ -1569,7 +1571,12 @@ function tutorialBottomInset() {
   return Math.max(commandBar, sheet)
 }
 
-function fitToView(extraBottomInset = 0, topClearancePx = 0) {
+// Duration (ms) of the animated recenter. `fitToView` animates by default so button/menu
+// fits and the mobile eval re-fit glide; callers that must not feel sluggish (initial load)
+// pass `0` for an instant jump.
+const FIT_ANIMATION_MS = 280
+
+function fitToView(extraBottomInset = 0, topClearancePx = 0, duration = FIT_ANIMATION_MS) {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) return
   // Centering math divides by the container size; a 0×0 box (e.g. while hidden in a
@@ -1597,6 +1604,7 @@ function fitToView(extraBottomInset = 0, topClearancePx = 0) {
     { top, right: margin, bottom: margin + bottomInset, left: margin },
     undefined,
     1,
+    duration,
   )
 }
 

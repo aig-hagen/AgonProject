@@ -60,6 +60,11 @@ body {
   stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
+/* Node hold-to-move charge glow: dark halo on the light canvas, light halo on the dark one. */
+[data-theme='dark'] {
+  --node-charge-glow: rgba(255, 255, 255, 0.5);
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--graph-node-stroke-color, #5a87a8) transparent;
