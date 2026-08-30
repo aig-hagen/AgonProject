@@ -19,6 +19,8 @@
 <script setup lang="ts">
 import { computed, inject, type Ref, ref, watch } from 'vue'
 
+import { ANALYTICS_EVENTS } from '@/app/analytics/events'
+import { trackEvent } from '@/app/analytics/track'
 import type { DocumentId } from '@/modules/common/documents/db'
 import EvaluationCard from '@/modules/common/evaluation/EvaluationCard.vue'
 import MobileEvaluationBody from '@/modules/common/evaluation/MobileEvaluationBody.vue'
@@ -52,6 +54,8 @@ const emit = defineEmits<{
   focus: []
   evaluate: []
 }>()
+
+trackEvent(ANALYTICS_EVENTS.evaluationOpen, props.title)
 
 const reportCollapse = inject(TUTORIAL_COLLAPSE_KEY, null)
 

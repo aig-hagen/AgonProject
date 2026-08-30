@@ -19,6 +19,8 @@
 <script setup lang="ts" generic="DocumentT">
 import { RouterLink } from 'vue-router'
 
+import { ANALYTICS_EVENTS } from '@/app/analytics/events'
+import { trackEvent } from '@/app/analytics/track'
 import type { ModuleCard } from '@/app/home/moduleCard'
 import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
@@ -36,10 +38,12 @@ const emit = defineEmits<{
 function openExample(example: Example<DocumentT>, newNamePrefix: string) {
   const content = example.load()
   example.applyLayout?.(content)
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, newNamePrefix, { source: 'example' })
   emit('open', content, newNamePrefix)
 }
 
 function openContent(content: DocumentT, newNamePrefix: string) {
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, newNamePrefix, { source: 'blank' })
   emit('open', content, newNamePrefix)
 }
 </script>

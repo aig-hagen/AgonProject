@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { ANALYTICS_EVENTS } from '@/app/analytics/events'
+import { trackEvent } from '@/app/analytics/track'
 
 export async function uploadShare(content: string): Promise<{ id: string; url: string }> {
   const response = await fetch('/shares', {
@@ -30,6 +32,7 @@ export async function uploadShare(content: string): Promise<{ id: string; url: s
     throw new Error(body.error ?? `Upload failed (${response.status})`)
   }
   const { id } = (await response.json()) as { id: string }
+  trackEvent(ANALYTICS_EVENTS.shareCreate)
   return { id, url: `${window.location.origin}/share/${id}` }
 }
 

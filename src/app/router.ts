@@ -18,6 +18,7 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
+import { trackPageView } from '@/app/analytics/track'
 import GenerateView from '@/app/generate/GenerateView.vue'
 import GlossaryView from '@/app/glossary/GlossaryView.vue'
 import HomeView from '@/app/home/HomeView.vue'
@@ -48,6 +49,13 @@ const router = createRouter({
       component: ThirdPartyView,
     },
   ],
+})
+
+// Track the route pattern (e.g. '/share/:id'), never the concrete path, so no
+// share IDs or other path parameters are recorded.
+router.afterEach((to) => {
+  const pattern = to.matched[to.matched.length - 1]?.path ?? to.path
+  trackPageView(pattern)
 })
 
 export default router

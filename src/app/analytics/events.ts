@@ -16,15 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-interface ViteTypeOptions {
-  strictImportMetaEnv: unknown
-}
+// Analytics event types. Keep in sync with the ALLOWED_TYPES allowlist in
+// servers/share/src/analytics.ts — the backend rejects anything not listed there.
+export const ANALYTICS_EVENTS = {
+  pageView: 'page_view',
+  moduleOpen: 'module_open',
+  evaluationOpen: 'evaluation_open',
+  evaluationRateLimited: 'evaluation_rate_limited',
+  shareCreate: 'share_create',
+  tutorialStart: 'tutorial_start',
+  tutorialComplete: 'tutorial_complete',
+} as const
 
-interface ImportMetaEnv {
-  readonly VITE_APP_SOURCE_TREE: string
-  readonly VITE_ANALYTICS_ENABLED?: string
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv
-}
+export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]
