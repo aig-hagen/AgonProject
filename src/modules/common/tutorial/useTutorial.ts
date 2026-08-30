@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { useStorage } from '@vueuse/core'
+import { useMediaQuery, useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
 import { computed, type InjectionKey, ref } from 'vue'
 
@@ -37,6 +37,7 @@ export const useTutorial = createSharedComposable(() => {
   const autoStartedTutorials = useStorage<string[]>('tutorial:autoStarted', [], undefined, {
     onError: notifyStorageFailureOnce,
   })
+  const isTouchDevice = useMediaQuery('(pointer: coarse)')
 
   const activeTutorial = ref<Tutorial | null>(null)
   const activeStepIndex = ref(0)
@@ -57,8 +58,29 @@ export const useTutorial = createSharedComposable(() => {
     return completedTutorials.value.includes(id)
   }
 
+  /**
+   * Filter out steps that don't apply to this run: `desktopOnly` steps on touch devices, and
+   * `firstBasicOnly` steps once the user has completed any other basic (`*-basics`) tutorial —
+   * the generic delete/undo teaching only needs to happen once.
+   */
+  function withGatedSteps(tutorial: Tutorial): Tutorial {
+    const hasDoneBasics = completedTutorials.value.some(
+      (id) => id.endsWith('-basics') && id !== tutorial.id,
+    )
+    const hasDoneEval = completedTutorials.value.some(
+      (id) => id.endsWith('-evaluation') && id !== tutorial.id,
+    )
+    const steps = tutorial.steps.filter(
+      (step) =>
+        !(step.desktopOnly && isTouchDevice.value) &&
+        !(step.firstBasicOnly && hasDoneBasics) &&
+        !(step.firstEvalOnlyDesktop && !isTouchDevice.value && hasDoneEval),
+    )
+    return steps.length === tutorial.steps.length ? tutorial : { ...tutorial, steps }
+  }
+
   function startTutorial(tutorial: Tutorial, ctx?: TutorialContext, ownerId?: string): void {
-    activeTutorial.value = tutorial
+    activeTutorial.value = withGatedSteps(tutorial)
     activeStepIndex.value = 0
     baselineContext.value = ctx ?? null
     if (ownerId !== undefined) activeOwnerId.value = ownerId
@@ -115,6 +137,7 @@ export const useTutorial = createSharedComposable(() => {
     stepCount,
     isActive,
     isLastStep,
+    isTouchDevice,
     isTutorialDone,
     startTutorial,
     nextStep,

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const adfBasicsTutorial: Tutorial = {
@@ -30,7 +31,7 @@ export const adfBasicsTutorial: Tutorial = {
         { text: 'Abstract Dialectical Frameworks (ADFs)', tooltipId: 'ADF' },
         ' generalise abstract argumentation by attaching an ',
         { text: 'acceptance condition', tooltipId: 'acceptanceCondition' },
-        ' to each argument — a propositional formula that determines when the argument is accepted. You can skip this tutorial at any time and restart it from the <strong>Tutorials</strong> menu.',
+        ' to each argument — a propositional formula that determines when the argument is accepted.',
       ],
       advanceOn: 'button',
     },
@@ -39,18 +40,21 @@ export const adfBasicsTutorial: Tutorial = {
       title: 'Create an argument',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Double-tap</strong> on an empty area of the canvas to create a new argument.'
-          : '<strong>Double-click</strong> on an empty area of the canvas to create a new argument.',
+          ? `${action('Double-tap')} on an empty area of the canvas to create a new argument.`
+          : `${action('Double-click')} on an empty area of the canvas to create a new argument.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.nodeCount > baseline.nodeCount,
     },
     {
       id: 'open-condition-editor',
       title: 'Acceptance conditions',
-      body: [
+      body: (isTouchDevice) => [
         'Each argument has an ',
         { text: 'acceptance condition', tooltipId: 'acceptanceCondition' },
-        ' shown as a formula next to it on the canvas. The default is <strong>⊤</strong> (tautology) — the argument is always accepted. <strong>Click the formula text</strong> next to any argument to open the condition editor.',
+        ' shown as a formula next to it on the canvas. The default is <strong>⊤</strong> (tautology) — the argument is always accepted. ',
+        isTouchDevice
+          ? `${action('Tap')} an argument and choose ${barAction('condition', 'Edit condition')} in the action bar to open the condition editor.`
+          : `${action('Click the formula')} next to any argument to open the condition editor.`,
       ],
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) =>
@@ -78,10 +82,23 @@ export const adfBasicsTutorial: Tutorial = {
       title: 'Delete an argument',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Long-press</strong> on an argument to delete it.'
-          : '<strong>Right-click and hold</strong> on an argument to delete it. The argument will then also be removed from any acceptance conditions that reference it.',
+          ? `${action('Tap')} an argument to select it, then tap ${barAction('delete', 'Delete')} in the action bar. It is also removed from any conditions that reference it.`
+          : `${action('Right-click and hold')} on an argument to delete it. It is also removed from any acceptance conditions that reference it.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.nodeCount < baseline.nodeCount,
+      firstBasicOnly: true,
+    },
+    {
+      id: 'undo',
+      title: 'Undo & Redo',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `Made a mistake? ${action('Tap')} the <strong>Undo</strong> button to step backward through your changes. Try it now to undo the deletion.`
+          : `Made a mistake? Press <kbd class="kbd kbd-sm">Ctrl Z</kbd> to undo and <kbd class="kbd kbd-sm">Ctrl Shift Z</kbd> to redo. Try it now to undo the deletion.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'undoButton' : undefined),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.nodeCount > baseline.nodeCount,
+      firstBasicOnly: true,
     },
     {
       id: 'done',

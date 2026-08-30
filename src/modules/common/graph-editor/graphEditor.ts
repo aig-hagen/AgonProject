@@ -92,6 +92,24 @@ export type EditorComponent<DocumentT> = Component<
 export const SHEET_REFIT_KEY: InjectionKey<(coveredFraction: number | null) => void> =
   Symbol('sheet-refit')
 
+// Provided by the common GraphEditor so the docked mobile tutorial card (which floats over
+// the top of the canvas) can ask the graph to re-fit into the band below it. The argument is
+// the number of viewport px the card covers from the top; null re-fits using the full canvas.
+export const TUTORIAL_REFIT_KEY: InjectionKey<(coveredTopPx: number | null) => void> =
+  Symbol('tutorial-refit')
+
+// Provided by the common GraphEditor so controls rendered deep inside evaluation windows/sheets
+// (the semantics and mode selectors) can register their DOM element under a tutorial-ref key for
+// the overlay to spotlight. Pass null to deregister (on unmount).
+export const TUTORIAL_REF_REGISTRY_KEY: InjectionKey<
+  (key: string, el: HTMLElement | null) => void
+> = Symbol('tutorial-ref-registry')
+
+// Provided by the common GraphEditor so shared evaluation components can report a parameter-panel
+// collapse (desktop card header, or mobile sheet folding to the compact detent) as a tutorial
+// action, without each module wiring its own counter.
+export const TUTORIAL_COLLAPSE_KEY: InjectionKey<() => void> = Symbol('tutorial-collapse')
+
 // Serializes the live graph canvas into a standalone SVG string (or null if the canvas
 // isn't mounted). Provided by the common GraphEditor so the export UI can offer a
 // WYSIWYG SVG export without touching the module-agnostic ExportConfig pipeline.

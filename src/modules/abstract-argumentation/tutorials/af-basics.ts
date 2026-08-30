@@ -16,16 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
-
-const action = (text: string) =>
-  `<kbd class="kbd kbd-sm bg-primary/10 text-primary border-primary/20">${text}</kbd>`
 
 export const afBasicsTutorial: Tutorial = {
   id: 'af-basics',
   name: 'Basic AF Tutorial',
   description:
-    'Learn how to create arguments and attacks, use undo/redo, and apply layout algorithms.',
+    'Learn how to create arguments and attacks, delete elements, and undo your changes.',
   steps: [
     {
       id: 'welcome',
@@ -33,7 +31,7 @@ export const afBasicsTutorial: Tutorial = {
       body: [
         'An ',
         { text: 'argumentation framework (AF)', tooltipId: 'AF' },
-        " consists of <strong>arguments</strong> and <strong>attacks</strong> between them. This short tutorial will guide you through the basic features.",
+        ' consists of <strong>arguments</strong> and <strong>attacks</strong> between them. This short tutorial will guide you through the basic features.',
       ],
       advanceOn: 'button',
     },
@@ -62,11 +60,12 @@ export const afBasicsTutorial: Tutorial = {
       title: 'Delete an argument or attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? `${action('Tap')} an argument or attack to select it, then tap <strong>Delete</strong> in the action bar.`
+          ? `${action('Tap')} an argument or attack to select it, then tap ${barAction('delete', 'Delete')} in the action bar.`
           : `${action('Right-click and hold')} on an argument or attack to delete it.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) =>
         ctx.nodeCount < baseline.nodeCount || ctx.linkCount < baseline.linkCount,
+      firstBasicOnly: true,
     },
     {
       id: 'undo',
@@ -79,6 +78,7 @@ export const afBasicsTutorial: Tutorial = {
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) =>
         ctx.nodeCount > baseline.nodeCount || ctx.linkCount > baseline.linkCount,
+      firstBasicOnly: true,
     },
     {
       id: 'done',

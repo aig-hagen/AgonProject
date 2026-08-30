@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const setafEvaluationTutorial: Tutorial = {
@@ -38,11 +39,12 @@ export const setafEvaluationTutorial: Tutorial = {
     },
     {
       id: 'open-eval',
-      title: 'Open the evaluation panel',
-      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) on the left to open an evaluation window.',
-      anchor: 'evaluationButtons',
-      placement: 'right-start',
-      offsetPx: 64,
+      title: 'Open the evaluation',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} the <strong>Evaluate</strong> button, then <strong>Add evaluation</strong> → <strong>Extension semantics</strong> to open an evaluation.`
+          : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
+      highlight: 'openEvalButton',
       advanceOn: 'action',
       advanceCondition: (ctx) => ctx.isExtensionWindowOpen,
     },
@@ -54,15 +56,28 @@ export const setafEvaluationTutorial: Tutorial = {
         { text: 'Credulous', tooltipId: 'credulousAcceptance' },
         '/',
         { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
-        ' to check individual argument acceptance — then press <strong>Evaluate</strong>.',
+        ' to check individual argument acceptance.',
       ],
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
     },
     {
+      id: 'compact-window',
+      title: 'Focus on the results',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Drag')} the sheet down to snap it smaller, or tap ${barAction('collapse', 'Collapse')}, to fold the parameters away and focus on the results.`
+          : `${action('Click')} the window header to hide the parameters and show only the results.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalCollapse' : 'evalHeader'),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.paramsCollapseCount > baseline.paramsCollapseCount,
+      firstEvalOnlyDesktop: true,
+    },
+    {
       id: 'read-results',
       title: 'Reading the results',
       body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured depending on their status:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — accepted</li><li><span class="text-info font-medium">Blue</span> — undecided</li><li><span class="text-error font-medium">Red</span> — rejected</li></ul>',
+      refitOnEnter: true,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,
     },

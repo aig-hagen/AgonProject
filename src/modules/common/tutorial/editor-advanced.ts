@@ -22,6 +22,8 @@ export const editorAdvancedTutorial: Tutorial = {
   id: 'editor-advanced',
   name: 'Advanced Editing',
   description: 'Physics simulation, grid overlay, snap-to-grid, and keyboard shortcuts.',
+  // Desktop-centric (keyboard shortcuts, Ctrl-snap); hidden on touch for now.
+  desktopOnly: true,
   steps: [
     {
       id: 'intro',

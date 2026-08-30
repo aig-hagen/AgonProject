@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const pafEvaluationTutorial: Tutorial = {
@@ -36,11 +37,12 @@ export const pafEvaluationTutorial: Tutorial = {
     },
     {
       id: 'open-eval',
-      title: 'Open the evaluation panel',
-      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) on the left to open an evaluation window.',
-      anchor: 'evaluationButtons',
-      placement: 'right-start',
-      offsetPx: 64,
+      title: 'Open the evaluation',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} the <strong>Evaluate</strong> button, then <strong>Add evaluation</strong> → <strong>Extension semantics</strong> to open an evaluation.`
+          : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
+      highlight: 'openEvalButton',
       advanceOn: 'action',
       advanceCondition: (ctx) => ctx.isExtensionWindowOpen,
     },
@@ -52,15 +54,28 @@ export const pafEvaluationTutorial: Tutorial = {
         { text: 'Credulous', tooltipId: 'credulousAcceptance' },
         ' or ',
         { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
-        ' — then press <strong>Evaluate</strong> to compute the acceptance probabilities.',
+        '.',
       ],
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
     },
     {
+      id: 'compact-window',
+      title: 'Focus on the results',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Drag')} the sheet down to snap it smaller, or tap ${barAction('collapse', 'Collapse')}, to fold the parameters away and focus on the results.`
+          : `${action('Click')} the window header to hide the parameters and show only the results.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalCollapse' : 'evalHeader'),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.paramsCollapseCount > baseline.paramsCollapseCount,
+      firstEvalOnlyDesktop: true,
+    },
+    {
       id: 'results',
       title: 'Reading the results',
       body: 'The panel shows each argument together with its acceptance probability under the chosen semantics and mode. A value of <strong>1.0</strong> means the argument is accepted in every relevant subframework; <strong>0.0</strong> means it is never accepted.',
+      refitOnEnter: true,
       advanceOn: 'button',
     },
     {

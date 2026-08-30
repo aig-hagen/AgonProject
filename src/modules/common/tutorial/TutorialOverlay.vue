@@ -18,14 +18,15 @@
 -->
 <script setup lang="ts">
 import { autoUpdate, offset, useFloating } from '@floating-ui/vue'
-import { useElementBounding } from '@vueuse/core'
 import {
   computed,
   inject,
   nextTick,
   onMounted,
   onUnmounted,
+  ref,
   useTemplateRef,
+  watch,
   watchEffect,
 } from 'vue'
 
@@ -110,8 +111,43 @@ const highlightRef = computed<HTMLElement | null>(() => {
   if (!key) return null
   return refs[key] ?? null
 })
-const { x: hlX, y: hlY, width: hlW, height: hlH } = useElementBounding(highlightRef)
-const hasHighlight = computed(() => highlightRef.value !== null && hlW.value > 0)
+// The highlighted element may live inside a draggable evaluation window that moves via JS
+// transforms (no scroll/resize event), so measure its rect directly each frame while a spotlight
+// is shown — keeping the ring glued to it from the first frame and as the window moves.
+const hlX = ref(0)
+const hlY = ref(0)
+const hlW = ref(0)
+const hlH = ref(0)
+const hasHighlight = computed(() => hlW.value > 0)
+let highlightRaf: number | null = null
+function trackHighlight() {
+  const el = highlightRef.value
+  if (el) {
+    const r = el.getBoundingClientRect()
+    hlX.value = r.x
+    hlY.value = r.y
+    hlW.value = r.width
+    hlH.value = r.height
+  } else {
+    hlW.value = 0
+  }
+  highlightRaf = requestAnimationFrame(trackHighlight)
+}
+watch(
+  () => highlightRef.value !== null,
+  (present) => {
+    if (present && highlightRaf === null) trackHighlight()
+    else if (!present && highlightRaf !== null) {
+      cancelAnimationFrame(highlightRaf)
+      highlightRaf = null
+      hlW.value = 0
+    }
+  },
+  { immediate: true },
+)
+onUnmounted(() => {
+  if (highlightRaf !== null) cancelAnimationFrame(highlightRaf)
+})
 const highlightStyle = computed(() => ({
   left: `${hlX.value}px`,
   top: `${hlY.value}px`,
@@ -171,7 +207,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
     <!-- Spotlight ring over a highlighted element (no card movement). -->
     <div
       v-if="hasHighlight"
-      class="fixed z-30 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
+      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
       :style="highlightStyle"
     ></div>
 

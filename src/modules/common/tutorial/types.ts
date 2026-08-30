@@ -27,8 +27,16 @@ export interface TutorialContext {
   evaluationCount: number
   /** Monotonic count of result highlights — compare against baseline to detect a new one */
   highlightCount: number
+  /** Monotonic count of semantics-selector presses in an evaluation window */
+  semanticsInteractCount: number
+  /** Monotonic count of mode-selector presses in an evaluation window */
+  modeInteractCount: number
+  /** Monotonic count of parameter-panel collapses in an evaluation window */
+  paramsCollapseCount: number
   /** Count of uncertain arguments currently in the framework — compare against baseline */
   uncertainNodeCount: number
+  /** Count of uncertain attacks currently in the framework — compare against baseline */
+  uncertainLinkCount: number
   /** Count of hyper-links (collective attacks) currently in the framework — compare against baseline */
   hyperLinkCount: number
   /** Monotonic count of acceptance condition edits — compare against baseline to detect a change */
@@ -39,6 +47,12 @@ export interface TutorialContext {
   probabilityEditCount: number
   /** Monotonic count of node move gestures (drag-to-reposition) */
   moveCount: number
+  /** Monotonic count of link type-switches (e.g. attack ↔ support) */
+  linkTypeSwitchCount: number
+  /** Monotonic count of argument renames (label edits) */
+  renameCount: number
+  /** Monotonic count of applied auto-layouts (relayout) */
+  relayoutCount: number
   /** Monotonic count of pan gestures */
   panCount: number
   /** Monotonic count of zoom gestures */
@@ -92,6 +106,20 @@ export interface TutorialStep {
   advanceCondition?: (ctx: TutorialContext, baseline: TutorialContext) => boolean
   /** ID of tutorial to offer as follow-up on the final step */
   nextTutorialId?: string
+  /**
+   * Only show this step during the user's first basic (`*-basics`) tutorial of any AF type.
+   * Once any basic tutorial is completed, these generic steps (e.g. delete, undo) are skipped.
+   */
+  firstBasicOnly?: boolean
+  /** Skip this step on touch devices (e.g. steps about a desktop-only toolbar control). */
+  desktopOnly?: boolean
+  /**
+   * On desktop, only show during the user's first evaluation (`*-evaluation`) tutorial; on touch
+   * always show. For generic evaluation-window guidance that only needs teaching once on desktop.
+   */
+  firstEvalOnlyDesktop?: boolean
+  /** On touch, re-fit the graph into the visible band when this step becomes active. */
+  refitOnEnter?: boolean
 }
 
 export interface Tutorial {
@@ -99,4 +127,6 @@ export interface Tutorial {
   name: string
   description: string
   steps: TutorialStep[]
+  /** Hide this tutorial on touch devices (listing + follow-up chaining). */
+  desktopOnly?: boolean
 }

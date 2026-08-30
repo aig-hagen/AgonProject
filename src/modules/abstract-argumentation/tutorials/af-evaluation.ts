@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const afEvaluationTutorial: Tutorial = {
@@ -27,39 +28,68 @@ export const afEvaluationTutorial: Tutorial = {
     {
       id: 'intro',
       title: 'Evaluating your framework',
-      body: 'Evaluation computes which arguments are <em>accepted</em> under a chosen semantics — for example, which sets of arguments can be jointly defended. Different semantics formalise different intuitions about which arguments should be accepted together.',
+      body: [
+        'Evaluation computes which arguments are <em>accepted</em> under a chosen ',
+        { text: 'semantics', tooltipId: 'semantics' },
+        ' — for example, which sets of arguments can be jointly defended. Different semantics formalise different intuitions about which arguments should be accepted together.',
+      ],
       advanceOn: 'button',
     },
     {
       id: 'open-eval',
-      title: 'Open the evaluation panel',
-      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) to open the evaluation window.',
-      anchor: 'evaluationButtons',
-      placement: 'right-start',
-      offsetPx: 64,
+      title: 'Open the evaluation',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} the <strong>Evaluate</strong> button, then <strong>Add evaluation</strong> → <strong>Extension semantics</strong> to open an evaluation.`
+          : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
+      highlight: 'openEvalButton',
       advanceOn: 'action',
       advanceCondition: (ctx) => ctx.isExtensionWindowOpen,
     },
     {
       id: 'pick-semantics',
-      title: 'Pick a semantics and evaluate',
-      body: 'In the evaluation window, select a <strong>semantics</strong> (e.g. <em>Complete</em>) and a <strong>mode</strong> (e.g. <em>Credulous</em> or <em>Skeptical</em>), then press <strong>Evaluate</strong> to compute the result.',
+      title: 'Pick a semantics',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `Open the <strong>Semantics</strong> selector and choose one (e.g. <em>Complete</em>) — expand the sheet if the parameters are hidden.`
+          : `Open the <strong>Semantics</strong> selector and choose one (e.g. <em>Complete</em>). Each semantics formalises a different notion of acceptance.`,
+      highlight: 'semanticsSelector',
       advanceOn: 'action',
-      advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
+      advanceCondition: (ctx, baseline) =>
+        ctx.semanticsInteractCount > baseline.semanticsInteractCount,
     },
     {
-      id: 'compact-window',
-      title: 'Window management',
-      body:
-        'Use the <span class="inline-flex items-center justify-center align-middle size-5 rounded bg-base-200 mx-0.5">' +
-        '<svg viewBox="0 0 24 24" fill="currentColor" class="size-4"><path d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" /></svg>' +
-        '</span> <strong>Hide parameters</strong> button in the window header to collapse the controls and show only the results. You can also open <strong>multiple evaluation windows</strong> simultaneously — useful for comparing different semantics side by side.',
-      advanceOn: 'button',
+      id: 'pick-mode',
+      title: 'Choose a mode',
+      body: [
+        'Open the <strong>Mode</strong> selector. <em>Enumerate</em> lists every extension, while ',
+        { text: 'Credulous', tooltipId: 'credulousAcceptance' },
+        ' and ',
+        { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
+        ' ask whether an argument is accepted in <em>some</em> or in <em>all</em> extensions.',
+      ],
+      highlight: 'modeSelector',
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.modeInteractCount > baseline.modeInteractCount,
+    },
+    {
+      id: 'collapse',
+      title: 'Focus on the results',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Drag')} the sheet down to snap it smaller, or tap ${barAction('collapse', 'Collapse')}, to fold the parameters away and focus on the results.`
+          : `${action('Click')} the window header to hide the parameters and show only the results.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalCollapse' : 'evalHeader'),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.paramsCollapseCount > baseline.paramsCollapseCount,
+      firstEvalOnlyDesktop: true,
     },
     {
       id: 'read-results',
       title: 'Reading the results',
       body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured by their status:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — accepted</li><li><span class="text-info font-medium">Blue</span> — undecided</li><li><span class="text-error font-medium">Red</span> — rejected</li></ul>',
+      highlight: 'resultArea',
+      refitOnEnter: true,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,
     },

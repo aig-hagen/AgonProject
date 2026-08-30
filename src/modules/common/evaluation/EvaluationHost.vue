@@ -37,6 +37,7 @@ import {
   ref,
   useTemplateRef,
   watch,
+  watchEffect,
 } from 'vue'
 
 import {
@@ -45,7 +46,11 @@ import {
 } from '@/modules/common/evaluation/hostContext'
 import KindIcon from '@/modules/common/evaluation/KindIcon.vue'
 import type { EvaluationKind } from '@/modules/common/evaluation/types'
-import { SHEET_REFIT_KEY } from '@/modules/common/graph-editor/graphEditor'
+import {
+  SHEET_REFIT_KEY,
+  TUTORIAL_COLLAPSE_KEY,
+  TUTORIAL_REF_REGISTRY_KEY,
+} from '@/modules/common/graph-editor/graphEditor'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 export interface EvaluationChip {
@@ -68,6 +73,8 @@ const activeId = defineModel<string | undefined>('activeId', { default: undefine
 
 const emit = defineEmits<{ add: [kind: EvaluationKind]; remove: [id: string] }>()
 
+const reportCollapse = inject(TUTORIAL_COLLAPSE_KEY, null)
+
 const KIND_LABEL: Record<EvaluationKind, string> = {
   extension: 'Extension semantics',
   ranking: 'Ranking semantics',
@@ -84,6 +91,20 @@ const detentLayout = computed<EvaluationDetentLayout>(() =>
   detentIndex.value <= 0 ? 'compact' : detentIndex.value === 1 ? 'standard' : 'full',
 )
 provide(EVALUATION_DETENT_KEY, detentLayout)
+
+// Folding back to the compact detent hides the parameters — the mobile equivalent of
+// collapsing the parameter panel (used by the evaluation tutorial).
+watch(detentLayout, (layout, previous) => {
+  if (layout === 'compact' && previous !== 'compact') reportCollapse?.()
+})
+
+// Register the collapse control so the evaluation tutorial can spotlight it.
+const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
+const collapseButtonRef = useTemplateRef<HTMLElement>('collapseButton')
+watchEffect(() => {
+  registerTutorialRef?.('evalCollapse', collapseButtonRef.value ?? null)
+})
+onBeforeUnmount(() => registerTutorialRef?.('evalCollapse', null))
 
 // Fit the graph into the band above the sheet only when it reaches the standard (half)
 // detent — the everyday view where the graph would otherwise sit under the sheet. Compact
@@ -284,6 +305,7 @@ watch(
         />
       </button>
       <button
+        ref="collapseButton"
         type="button"
         class="btn btn-square size-11 btn-ghost shrink-0"
         :aria-label="isExpanded ? 'Collapse sheet' : 'Expand sheet'"

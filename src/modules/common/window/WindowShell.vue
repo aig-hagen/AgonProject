@@ -45,6 +45,7 @@ const {
   stateKey,
   active = false,
   fullHeight = false,
+  tutorialHeaderKey,
 } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
@@ -59,6 +60,8 @@ const {
   active?: boolean
   /** Sheet-only: start expanded to the full snap point instead of sizing to content. */
   fullHeight?: boolean
+  /** Register the window header under this tutorial-ref key so a tutorial can spotlight it. */
+  tutorialHeaderKey?: string
 }>()
 
 const emit = defineEmits<{ focus: [] }>()
@@ -92,6 +95,7 @@ const openSheet = computed<boolean>({
     :document-id="documentId"
     :state-key="stateKey"
     :active="active"
+    :tutorial-header-key="tutorialHeaderKey"
     @focus="emit('focus')"
   >
     <template #default="{ compact: isCompact }">

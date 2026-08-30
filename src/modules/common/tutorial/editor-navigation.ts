@@ -18,15 +18,13 @@
  */
 import { editorAdvancedTutorial } from '@/modules/common/tutorial/editor-advanced'
 import { editorExportTutorial } from '@/modules/common/tutorial/editor-export'
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
-
-const action = (text: string) =>
-  `<kbd class="kbd kbd-sm bg-primary/10 text-primary border-primary/20">${text}</kbd>`
 
 export const editorNavigationTutorial: Tutorial = {
   id: 'editor-navigation',
   name: 'Navigation Tutorial',
-  description: 'Learn how to pan, zoom, move arguments, and navigate the canvas.',
+  description: 'Learn how to pan, zoom, move, arrange, and rename arguments on the canvas.',
   steps: [
     {
       id: 'pan',
@@ -68,6 +66,27 @@ export const editorNavigationTutorial: Tutorial = {
       highlight: (isTouchDevice) => (isTouchDevice ? 'fitToViewButton' : undefined),
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.centerCount > baseline.centerCount,
+    },
+    {
+      id: 'relayout',
+      title: 'Auto-arranging the framework',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `Tap the ${action('Relayout')} button and pick a layout to arrange the whole framework automatically — handy when arguments overlap.`
+          : `Open the ${action('Layout')} menu and pick a layout to arrange the whole framework automatically — handy when arguments overlap.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'relayoutButton' : undefined),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.relayoutCount > baseline.relayoutCount,
+    },
+    {
+      id: 'rename',
+      title: 'Renaming an argument',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} an argument to select it, then tap ${barAction('rename', 'Rename')} in the action bar to give it a new name.`
+          : `${action('Left-click')} an argument to select it, then click ${barAction('rename', 'Rename')} in the action bar to give it a new name.`,
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.renameCount > baseline.renameCount,
     },
     {
       id: 'done',
