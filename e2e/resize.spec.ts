@@ -14,16 +14,16 @@ test('open document survives resizing across the compact breakpoint', async ({ p
   await page.goto('/')
   await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('button', { name: 'Create new' }).first().click()
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
 
   // Grow to the desktop shell: the same document is now an editor tab.
   await page.setViewportSize(DESKTOP)
   await expect(page.getByRole('tab').getByRole('textbox')).toBeVisible()
   // The compact chrome is gone (no duplicate mounted shell).
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toHaveCount(0)
 
   // Shrink back to compact: still the editor surface, document intact.
   await page.setViewportSize(MOBILE)
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
   await expect(page).toHaveURL(/surface=editor/)
 })

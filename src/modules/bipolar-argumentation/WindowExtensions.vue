@@ -17,7 +17,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
+import {
+  computed,
+  inject,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  toRef,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
@@ -37,7 +48,10 @@ import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtension
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
-import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import {
+  type Highlight,
+  TUTORIAL_REF_REGISTRY_KEY,
+} from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -111,6 +125,34 @@ const {
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query)
 
+// Register the support/semantics selectors and the result grid as tutorial-spotlight targets
+// while this window is the active one, so the evaluation tutorial can highlight them.
+const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
+const supportSelectRef = useTemplateRef<{ $el: HTMLElement }>('supportSelect')
+const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect')
+const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
+watchEffect(() => {
+  if (!registerTutorialRef || suppressed) return
+  registerTutorialRef('supportSelector', supportSelectRef.value?.$el ?? null)
+  registerTutorialRef('semanticsSelector', semanticsSelectRef.value?.$el ?? null)
+})
+watch(
+  [resultsAreaRef, () => resultItems.value.length, () => suppressed],
+  () => {
+    if (!registerTutorialRef) return
+    const grid = suppressed
+      ? null
+      : (resultsAreaRef.value?.querySelector<HTMLElement>('.evaluation-result-grid') ?? null)
+    registerTutorialRef('resultArea', grid)
+  },
+  { flush: 'post', immediate: true },
+)
+onUnmounted(() => {
+  registerTutorialRef?.('supportSelector', null)
+  registerTutorialRef?.('semanticsSelector', null)
+  registerTutorialRef?.('resultArea', null)
+})
+
 // Suppressed instances (all but the active one in the compact host) emit no highlight.
 const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
 watch(emittedHighlight, (h) => emit('highlight', h))
@@ -163,6 +205,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
     <template #parameters>
       <ParameterField label="Support" max-width="10rem">
         <PickerSelect
+          ref="supportSelect"
           v-model="selectedSupportType"
           :options="[
             { value: 'coalition', label: 'Coalition' },
@@ -172,7 +215,12 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
         />
       </ParameterField>
       <ParameterField label="Semantics" min-width="10rem">
-        <GroupedSelect v-model="selectedSemantics" :groups="semanticsSelectGroups" full-width />
+        <GroupedSelect
+          ref="semanticsSelect"
+          v-model="selectedSemantics"
+          :groups="semanticsSelectGroups"
+          full-width
+        />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
         <PickerSelect
@@ -190,7 +238,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
       <TermDefinitionBlock :id="selectedSemantics.tooltipId ?? selectedSemantics.key" />
     </template>
     <template #results>
-      <template v-if="dataExtensionsFormatedAndSorted !== undefined">
+      <div v-if="dataExtensionsFormatedAndSorted !== undefined" ref="resultsArea" class="contents">
         <EvaluationResultGrid
           v-model:selected="selectedExtension"
           result-noun="extensions"
@@ -199,7 +247,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
           :selection-hint="selectionHint"
           :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
         />
-      </template>
+      </div>
     </template>
   </BaseEvaluationWindow>
 </template>

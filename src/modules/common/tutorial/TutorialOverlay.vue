@@ -24,7 +24,9 @@ import {
   nextTick,
   onMounted,
   onUnmounted,
+  ref,
   useTemplateRef,
+  watch,
   watchEffect,
 } from 'vue'
 
@@ -84,9 +86,10 @@ onUnmounted(() => {
   }
 })
 
+// Auto-advance whenever a step declares an advanceCondition — including `advanceOn: 'button'`
+// steps, which then offer a manual Next *and* advance when the user does the action.
 watchEffect(() => {
   if (!isOwner.value || !isActive.value || !currentStep.value) return
-  if (resolvedAdvanceOn.value !== 'action') return
   if (!currentStep.value.advanceCondition) return
   if (!baselineContext.value) return
   if (currentStep.value.advanceCondition(context, baselineContext.value)) {
@@ -100,6 +103,58 @@ const anchorRef = computed<HTMLElement | null>(() => {
 })
 
 const isAnchored = computed(() => anchorRef.value !== null)
+
+const highlightRef = computed<HTMLElement | null>(() => {
+  if (!currentStep.value) return null
+  const h = currentStep.value.highlight
+  if (!h) return null
+  const key = typeof h === 'function' ? h(isTouchDevice) : h
+  if (!key) return null
+  return refs[key] ?? null
+})
+// The highlighted element may live inside a draggable evaluation window that moves via JS
+// transforms (no scroll/resize event), so measure its rect directly each frame while a spotlight
+// is shown — keeping the ring glued to it from the first frame and as the window moves.
+const hlX = ref(0)
+const hlY = ref(0)
+const hlW = ref(0)
+const hlH = ref(0)
+const hasHighlight = computed(() => hlW.value > 0)
+let highlightRaf: number | null = null
+function trackHighlight() {
+  const el = highlightRef.value
+  if (el) {
+    const r = el.getBoundingClientRect()
+    hlX.value = r.x
+    hlY.value = r.y
+    hlW.value = r.width
+    hlH.value = r.height
+  } else {
+    hlW.value = 0
+  }
+  highlightRaf = requestAnimationFrame(trackHighlight)
+}
+watch(
+  () => highlightRef.value !== null,
+  (present) => {
+    if (present && highlightRaf === null) trackHighlight()
+    else if (!present && highlightRaf !== null) {
+      cancelAnimationFrame(highlightRaf)
+      highlightRaf = null
+      hlW.value = 0
+    }
+  },
+  { immediate: true },
+)
+onUnmounted(() => {
+  if (highlightRaf !== null) cancelAnimationFrame(highlightRaf)
+})
+const highlightStyle = computed(() => ({
+  left: `${hlX.value}px`,
+  top: `${hlY.value}px`,
+  width: `${hlW.value}px`,
+  height: `${hlH.value}px`,
+}))
 
 const resolvedAdvanceOn = computed<'button' | 'action'>(() => {
   const a = currentStep.value?.advanceOn
@@ -150,6 +205,13 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
 
 <template>
   <template v-if="isOwner && isActive && currentStep">
+    <!-- Spotlight ring over a highlighted element (no card movement). -->
+    <div
+      v-if="hasHighlight"
+      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
+      :style="highlightStyle"
+    ></div>
+
     <!-- Anchored step: floats next to a UI element -->
     <div v-if="isAnchored" ref="floating" :style="floatingStyles" class="z-50 pointer-events-auto">
       <div class="card bg-base-100 shadow-xl w-72 border border-base-300">
@@ -263,3 +325,21 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
     </div>
   </template>
 </template>
+
+<style>
+.spotlight-pulse {
+  animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spotlight-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.06);
+  }
+}
+</style>

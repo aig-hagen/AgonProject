@@ -66,6 +66,7 @@ import {
   onUnmounted,
   provide,
   ref,
+  shallowReactive,
   shallowRef,
   toRef,
   useId,
@@ -91,6 +92,9 @@ import {
   type NodeId,
   type SelectionAction,
   SHEET_REFIT_KEY,
+  TUTORIAL_COLLAPSE_KEY,
+  TUTORIAL_REF_REGISTRY_KEY,
+  TUTORIAL_REFIT_KEY,
 } from '@/modules/common/graph-editor/graphEditor'
 import {
   adjustNodeLabelFontSize,
@@ -168,6 +172,10 @@ function onSelectionRename() {
   const sel = selection.value
   if (sel === null || sel.kind !== 'node') return
   graphComponentRef.value?.editNodeLabel(sel.id as number)
+  // The library only focuses the label input; preselect its text so the user can
+  // type over the current name immediately (matches desktop double-click behaviour).
+  const input = containerRef.value?.querySelector<HTMLInputElement>('#node-label-input-field')
+  input?.select()
   selection.value = null
 }
 
@@ -358,6 +366,11 @@ const isExportOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
 const isTutorialWindowOpen = ref<boolean>(false)
 
+const tutorialMoveCount = ref(0)
+const tutorialLinkTypeSwitchCount = ref(0)
+const tutorialRenameCount = ref(0)
+const tutorialRelayoutCount = ref(0)
+const tutorialParamsCollapseCount = ref(0)
 const tutorialPanCount = ref(0)
 const tutorialZoomCount = ref(0)
 const tutorialCenterCount = ref(0)
@@ -372,12 +385,21 @@ const tutorialContext = computed<TutorialContext>(() => ({
   canUndo: historyState.canUndo,
   canRedo: historyState.canRedo,
   uncertainNodeCount: tutorialContextExtra?.uncertainNodeCount ?? 0,
+  uncertainLinkCount: tutorialContextExtra?.uncertainLinkCount ?? 0,
   isExtensionWindowOpen: tutorialContextExtra?.isExtensionWindowOpen ?? false,
+  evaluationWindowCount: tutorialContextExtra?.evaluationWindowCount ?? 0,
   evaluationCount: tutorialContextExtra?.evaluationCount ?? 0,
   highlightCount: tutorialContextExtra?.highlightCount ?? 0,
+  semanticsInteractCount: tutorialContextExtra?.semanticsInteractCount ?? 0,
+  modeInteractCount: tutorialContextExtra?.modeInteractCount ?? 0,
+  paramsCollapseCount: tutorialParamsCollapseCount.value,
   conditionEditCount: tutorialContextExtra?.conditionEditCount ?? 0,
   conditionEditorOpenCount: tutorialContextExtra?.conditionEditorOpenCount ?? 0,
   probabilityEditCount: tutorialContextExtra?.probabilityEditCount ?? 0,
+  moveCount: tutorialMoveCount.value,
+  linkTypeSwitchCount: tutorialLinkTypeSwitchCount.value,
+  renameCount: tutorialRenameCount.value,
+  relayoutCount: tutorialRelayoutCount.value,
   panCount: tutorialPanCount.value,
   zoomCount: tutorialZoomCount.value,
   centerCount: tutorialCenterCount.value,
@@ -389,15 +411,41 @@ const tutorialContext = computed<TutorialContext>(() => ({
 
 const { startTutorial, autoStartedTutorials, isTutorialDone, isActive } = useTutorial()
 
-watch(isExportOpened, (opened) => {
-  if (!opened || !showHints.value || isActive.value) return
-  const id = 'editor-export'
+// Tutorial refs registered by controls deep inside evaluation windows/sheets (semantics/mode
+// selectors), merged into the refs maps below so the overlay can spotlight them. A reactive map
+// mutated by property so the setter never *reads* it — reading here would let a caller's
+// watchEffect track this map and re-trigger itself in a loop.
+const dynamicTutorialRefs = shallowReactive<Record<string, HTMLElement | null>>({})
+// Shared evaluation components report parameter-panel collapses here, so every module's
+// evaluation tutorial can advance its collapse step on action without per-module wiring.
+provide(TUTORIAL_COLLAPSE_KEY, () => tutorialParamsCollapseCount.value++)
+provide(TUTORIAL_REF_REGISTRY_KEY, (key: string, el: HTMLElement | null) => {
+  if (el) dynamicTutorialRefs[key] = el
+  else delete dynamicTutorialRefs[key]
+})
+
+function autoStartTutorial(id: string | undefined) {
+  if (!id || !showHints.value || isActive.value) return
   if (autoStartedTutorials.value.includes(id) || isTutorialDone(id)) return
   const tutorial = tutorials?.find((t) => t.id === id)
   if (!tutorial) return
+  if (tutorial.desktopOnly && isTouchDevice.value) return
   autoStartedTutorials.value = [...autoStartedTutorials.value, id]
   startTutorial(tutorial, tutorialContext.value, graphComponentId)
+}
+
+watch(isExportOpened, (opened) => {
+  if (opened) autoStartTutorial('editor-export')
 })
+
+// Opening an evaluation window/sheet kicks off the module's evaluation tutorial (its own
+// open step then auto-advances, since the window is already open).
+watch(
+  () => tutorialContext.value.isExtensionWindowOpen,
+  (open) => {
+    if (open) autoStartTutorial(tutorials?.find((t) => t.id.endsWith('-evaluation'))?.id)
+  },
+)
 
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
@@ -736,6 +784,7 @@ function onLinkDeleted(
 }
 
 function onNodesMoved(positions: PositionSnapshot[]) {
+  tutorialMoveCount.value++
   const data = positions.map((position) => {
     const internalId = position.nodeId
     const publicId = idMapping.getOrFail(internalId)
@@ -1253,6 +1302,7 @@ function setGraph(state: GraphEditorState, center: boolean): void {
 
 function updateLinkType(linkId: string, linkType: LinkType) {
   arrowSwitcherTarget.value = undefined
+  tutorialLinkTypeSwitchCount.value++
   const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(linkId)
   const publicSourceId = idMapping.getOrFail(internalSourceId)
   const publicTargetId = idMapping.getOrFail(internalTargetId)
@@ -1278,6 +1328,22 @@ function onLabelEdited(
     return
   }
   const publicId = idMapping.getOrFail(privateId)
+  // Reject blank names: restore the argument's previous label instead of leaving it unnamed.
+  // Runs after the library finishes committing the (empty) edit, so the restore isn't overwritten.
+  if (label.trim() === '') {
+    const previous = state.nodes.find((node) => node.id === publicId)?.label ?? ''
+    nextTick(() => {
+      graphComponentRef.value?.setLabel(previous, privateId)
+      adjustNodeLabelFontSize(
+        graphComponentRef.value?.$el as Element | undefined,
+        graphComponentId,
+        privateId,
+        previous,
+      )
+    })
+    return
+  }
+  tutorialRenameCount.value++
   emit('nodeLabelEdited', { id: publicId, label: label })
   nextTick(() =>
     adjustNodeLabelFontSize(
@@ -1443,7 +1509,22 @@ onUnmounted(() => {
   renameCommitCleanup?.()
 })
 
-function fitToView(extraBottomInset = 0) {
+// While a mobile tutorial is active this holds the docked card's clearance (px it reaches from the
+// viewport top); null when no tutorial is docked. Persisting it means every fitToView — including
+// the plain refits fired after an async example load or a physics settle — keeps the graph clear of
+// the card, instead of a later fitToView() re-centering it under the card and winning the race.
+const tutorialTopClearancePx = ref<number | null>(null)
+
+// The bottom band covered while a mobile tutorial is docked: the command bar, or a taller open
+// sheet (e.g. the compacted evaluation sheet). Recomputed per fit so it tracks the live chrome.
+function tutorialBottomInset() {
+  if (layoutMode.value !== 'compact') return 0
+  const commandBar = mobileBottomBarRef.value?.offsetHeight ?? 0
+  const sheet = document.querySelector<HTMLElement>('.sheet-panel')?.offsetHeight ?? 0
+  return Math.max(commandBar, sheet)
+}
+
+function fitToView(extraBottomInset = 0, topClearancePx = 0) {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) return
   // Centering math divides by the container size; a 0×0 box (e.g. while hidden in a
@@ -1454,10 +1535,21 @@ function fitToView(extraBottomInset = 0) {
   // The compact top bar floats over the full-height canvas, so inset the fit by its
   // occupied height (offsetHeight = the band it covers) to keep the graph clear of it.
   const topInset = layoutMode.value === 'compact' ? (mobileTopBarRef.value?.offsetHeight ?? 0) : 0
+  // While a mobile tutorial is docked, always honor its card clearance and bottom band, so refits
+  // triggered elsewhere (async load, settle) can't re-center the graph under the card.
+  let clearance = topClearancePx
+  let bottomInset = extraBottomInset
+  if (tutorialTopClearancePx.value !== null && layoutMode.value === 'compact') {
+    clearance = Math.max(clearance, tutorialTopClearancePx.value)
+    bottomInset = Math.max(bottomInset, tutorialBottomInset())
+  }
+  // The mobile tutorial card floats lower down; `clearance` is how far it reaches from the
+  // viewport top, so take whichever exclusion is larger to keep the graph clear of both.
+  const top = margin + Math.max(topInset, clearance)
   // A docked sheet covers the bottom band; the extra inset there fits the graph into
   // the visible band above it instead of centring it under the sheet.
   graphComponent.centerView(
-    { top: margin + topInset, right: margin, bottom: margin + extraBottomInset, left: margin },
+    { top, right: margin, bottom: margin + bottomInset, left: margin },
     undefined,
     1,
   )
@@ -1473,10 +1565,19 @@ function refitAboveSheet(coveredFraction: number | null) {
 }
 provide(SHEET_REFIT_KEY, refitAboveSheet)
 
+// The docked mobile tutorial card covers the top of the canvas; record its clearance (so every
+// subsequent fitToView keeps the graph clear of it) and re-fit into the band below it now — or
+// clear the clearance and restore the full fit with null on close.
+provide(TUTORIAL_REFIT_KEY, (coveredTopPx: number | null) => {
+  tutorialTopClearancePx.value = coveredTopPx
+  fitToView()
+})
+
 function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
     return
   }
+  tutorialRelayoutCount.value++
   const wasPhysicsOn = physicsMode.value === 'on'
   if (wasPhysicsOn) disablePhysics()
 
@@ -1511,6 +1612,7 @@ function doLayout(layout: Layout) {
 
 const linkSwitchButtonRef = useTemplateRef('linkSwitchButton')
 const evaluationButtonsRef = useTemplateRef<HTMLDivElement>('evaluationButtons')
+const extensionEvalButtonRef = useTemplateRef<HTMLButtonElement>('extensionEvalButton')
 const exportButtonRef = useTemplateRef('exportButton')
 const mainMenuBottomRef = useTemplateRef<HTMLDivElement>('mainMenuBottom')
 
@@ -1536,11 +1638,24 @@ const mobileTopBarRef = useTemplateRef<HTMLElement>('mobileTopBar')
 const mobileMenuButtonRef = useTemplateRef<HTMLButtonElement>('mobileMenuButton')
 const mobileEvaluateButtonRef = useTemplateRef<HTMLButtonElement>('mobileEvaluateButton')
 const mobileExportButtonRef = useTemplateRef<HTMLButtonElement>('mobileExportButton')
+const mobileUndoButtonRef = useTemplateRef<HTMLButtonElement>('mobileUndoButton')
+const mobileFitToViewButtonRef = useTemplateRef<HTMLButtonElement>('mobileFitToViewButton')
+const mobileBottomBarRef = useTemplateRef<HTMLElement>('mobileBottomBar')
+const mobileRelayoutButtonRef = useTemplateRef<HTMLButtonElement>('mobileRelayoutButton')
+const mobileLinkSwitchButtonRef = useTemplateRef<HTMLElement>('mobileLinkSwitchButton')
 const mobileTutorialRefs = computed<Record<string, HTMLElement | null>>(() => ({
   evaluationButtons: mobileEvaluateButtonRef.value,
   exportButton: mobileExportButtonRef.value,
+  fitToViewButton: mobileFitToViewButtonRef.value,
   mainMenuBottom: mobileMenuButtonRef.value,
+  undoButton: mobileUndoButtonRef.value,
+  linkSwitchButton: mobileLinkSwitchButtonRef.value,
+  relayoutButton: mobileRelayoutButtonRef.value,
+  // Spotlight the evaluate button only until the eval sheet opens, so it doesn't linger while
+  // the user taps through Add evaluation → Extension semantics.
+  openEvalButton: evaluationOpen.value ? null : mobileEvaluateButtonRef.value,
   ...tutorialRefs,
+  ...dynamicTutorialRefs,
 }))
 // Split the layouts into the two mockup groups: directed (edge-following) vs. the
 // force/geometric engines. The first four entries are the directed ones.
@@ -1718,6 +1833,7 @@ defineExpose({
           </div>
           <div ref="evaluationButtons" class="flex flex-col gap-2">
             <button
+              ref="extensionEvalButton"
               class="btn btn-square btn-sm"
               @click="emit('open-extension-window')"
               title="Extension Semantics"
@@ -1764,7 +1880,7 @@ defineExpose({
         <!-- Switcher chip: back to home / document picker -->
         <button
           class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
-          aria-label="Back to documents"
+          aria-label="Back to frameworks"
           @click="openDocumentSwitcher"
         >
           <span
@@ -1807,19 +1923,22 @@ defineExpose({
 
       <!-- Fixed 5-button command bar: distribute every action across the available width. -->
       <nav
+        ref="mobileBottomBar"
         class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
         style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
       >
         <div class="contents">
           <button
+            ref="mobileFitToViewButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Fit to view"
             title="Fit to view"
-            @click="fitToView()"
+            @click="(tutorialCenterCount++, fitToView())"
           >
             <ArrowsPointingInIcon class="size-6 opacity-70" />
           </button>
           <button
+            ref="mobileRelayoutButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             aria-label="Relayout"
             title="Relayout"
@@ -1849,6 +1968,7 @@ defineExpose({
             <ShareIcon class="size-6 opacity-70" />
           </button>
           <button
+            ref="mobileUndoButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
             :disabled="!historyState.canUndo"
             aria-label="Undo"
@@ -1869,7 +1989,7 @@ defineExpose({
         style="bottom: calc(env(safe-area-inset-bottom, 0px) + 4.75rem)"
       >
         <slot name="canvasSelector" />
-        <div v-if="enableLinkSwitching" class="join shadow-md">
+        <div v-if="enableLinkSwitching" ref="mobileLinkSwitchButton" class="join shadow-md">
           <button
             v-for="(linkConfig, linkKey) in linkConfigs"
             :key="linkKey"
@@ -1890,12 +2010,12 @@ defineExpose({
       <BottomSheet v-model:open="isMenuOpen" title="Menu">
         <div class="flex flex-col gap-4 pb-4">
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Document</h3>
+            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">Framework</h3>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('new'))"
             >
-              <DocumentPlusIcon class="size-5 text-primary/80" /> New document
+              <DocumentPlusIcon class="size-5 text-primary/80" /> New framework
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
@@ -2017,9 +2137,12 @@ defineExpose({
       :refs="{
         mainMenuBottom: mainMenuBottomRef,
         evaluationButtons: evaluationButtonsRef,
+        extensionEvalButton: extensionEvalButtonRef,
+        openEvalButton: extensionEvalButtonRef,
         exportButton: exportButtonRef,
         linkSwitchButton: linkSwitchButtonRef,
         ...tutorialRefs,
+        ...dynamicTutorialRefs,
       }"
       :context="tutorialContext"
     />

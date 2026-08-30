@@ -112,7 +112,7 @@ const deleteButtonRef = useTemplateRef('deleteButton')
       </form>
       <h3 class="text-lg font-bold">
         Delete <span v-if="value" class="underline">{{ value }}</span
-        ><template v-else>unnamed document</template>
+        ><template v-else>unnamed framework</template>
       </h3>
       <p class="py-4">
         All unsaved data will be <span class="font-bold">permanently deleted</span>.

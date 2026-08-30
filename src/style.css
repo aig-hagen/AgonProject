@@ -23,6 +23,13 @@
     dark;
 }
 
+/* Brand primary: aigblue = RGB(0, 76, 151). */
+:root,
+[data-theme='dark'] {
+  --color-primary: #004c97;
+  --color-primary-content: #ffffff;
+}
+
 html,
 body {
   background-color: var(--color-base-100);

@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const afBasicsTutorial: Tutorial = {
   id: 'af-basics',
   name: 'Basic AF Tutorial',
-  description:
-    'Learn how to create arguments and attacks, use undo/redo, and apply layout algorithms.',
+  description: 'Learn how to create arguments and attacks, delete elements, and undo your changes.',
   steps: [
     {
       id: 'welcome',
@@ -30,7 +30,7 @@ export const afBasicsTutorial: Tutorial = {
       body: [
         'An ',
         { text: 'argumentation framework (AF)', tooltipId: 'AF' },
-        ' consists of <strong>arguments</strong> and <strong>attacks</strong> between them. This short tutorial will guide you through the basic features. You can skip it at any time and restart it from the <strong>Tutorials</strong> entry in the menu.',
+        ' consists of <strong>arguments</strong> and <strong>attacks</strong> between them. This short tutorial will guide you through the basic features.',
       ],
       advanceOn: 'button',
     },
@@ -39,8 +39,8 @@ export const afBasicsTutorial: Tutorial = {
       title: 'Create an argument',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Double-tap</strong> on an empty area of the canvas to create a new argument.'
-          : '<strong>Double-click</strong> on an empty area of the canvas to create a new argument.',
+          ? `${action('Double-tap')} on an empty area of the canvas to create a new argument.`
+          : `${action('Double-click')} on an empty area of the canvas to create a new argument.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.nodeCount > baseline.nodeCount,
     },
@@ -49,8 +49,8 @@ export const afBasicsTutorial: Tutorial = {
       title: 'Draw an attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Hold and drag</strong> from one argument towards another to create an attack between them.'
-          : '<strong>Right-click</strong> on an argument, hold, and drag towards another argument to create an attack between them.',
+          ? `${action('Hold and drag')} from one argument towards another to create an attack between them.`
+          : `${action('Right-click')} on an argument, hold, and drag towards another argument to create an attack between them.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
     },
@@ -59,26 +59,25 @@ export const afBasicsTutorial: Tutorial = {
       title: 'Delete an argument or attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Long-press</strong> on an argument or attack to delete it.'
-          : '<strong>Right-click and hold</strong> on an argument or attack to delete it.',
+          ? `${action('Tap')} an argument or attack to select it, then tap ${barAction('delete', 'Delete')} in the action bar.`
+          : `${action('Right-click and hold')} on an argument or attack to delete it.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) =>
         ctx.nodeCount < baseline.nodeCount || ctx.linkCount < baseline.linkCount,
+      firstBasicOnly: true,
     },
     {
-      id: 'undo-redo',
+      id: 'undo',
       title: 'Undo & Redo',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? 'Made a mistake? Use the <strong>Undo</strong> and <strong>Redo</strong> buttons in the menu to step backward or forward through your changes.'
-          : 'Made a mistake? Press <kbd class="kbd kbd-sm">Ctrl Z</kbd> to undo and <kbd class="kbd kbd-sm">Ctrl Shift Z</kbd> to redo. You can also use the buttons in the menu.',
-      advanceOn: 'button',
-    },
-    {
-      id: 'layout',
-      title: 'Auto-layout',
-      body: 'The <strong>Layout</strong> option in the menu lets you automatically arrange your framework using various graph layout algorithms — useful when arguments overlap or the structure is hard to read.',
-      advanceOn: 'button',
+          ? `Made a mistake? ${action('Tap')} the <strong>Undo</strong> button to step backward through your changes. Try it now to undo the deletion.`
+          : `Made a mistake? Press <kbd class="kbd kbd-sm">Ctrl Z</kbd> to undo and <kbd class="kbd kbd-sm">Ctrl Shift Z</kbd> to redo. Try it now to undo the deletion.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'undoButton' : undefined),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.nodeCount > baseline.nodeCount || ctx.linkCount > baseline.linkCount,
+      firstBasicOnly: true,
     },
     {
       id: 'done',

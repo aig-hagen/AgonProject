@@ -276,15 +276,19 @@ const highlightCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   uncertainNodeCount: [...renderedState.value.current.content.uncertainArguments()].length,
+  uncertainLinkCount: [...renderedState.value.current.content.uncertainAttacks()].length,
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
 }))
 
 const argumentModeButtonRef = useTemplateRef<HTMLElement>('argumentModeButton')
+const mobileArgumentModeButtonRef = useTemplateRef<HTMLElement>('mobileArgumentModeButton')
 
 const tutorialRefs = computed(() => ({
-  argumentModeButton: argumentModeButtonRef.value ?? null,
+  // Only one of the two layouts is mounted at a time; pick whichever is live.
+  argumentModeButton: argumentModeButtonRef.value ?? mobileArgumentModeButtonRef.value ?? null,
 }))
 </script>
 
@@ -319,7 +323,7 @@ const tutorialRefs = computed(() => ({
   >
     <template #canvasSelector>
       <!-- Compact twin of the desktop argument-type toolbar (horizontal). -->
-      <div class="join shadow-md" title="Argument type">
+      <div ref="mobileArgumentModeButton" class="join shadow-md" title="Argument type">
         <button
           class="join-item btn btn-sm btn-square"
           :class="isDefiniteArgumentMode ? 'btn-primary' : 'btn-neutral'"

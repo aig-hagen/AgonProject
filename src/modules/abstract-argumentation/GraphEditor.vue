@@ -371,11 +371,19 @@ const afTutorials = [afBasicsTutorial, afEvaluationTutorial, ...commonTutorials]
 
 const evaluationCount = ref(0)
 const highlightCount = ref(0)
+const semanticsInteractCount = ref(0)
+const modeInteractCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount:
+    extensionInstances.value.length +
+    rankingInstances.value.length +
+    serialisationInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
+  semanticsInteractCount: semanticsInteractCount.value,
+  modeInteractCount: modeInteractCount.value,
 }))
 </script>
 <template>
@@ -437,6 +445,8 @@ const tutorialContextExtra = computed(() => ({
               }
             "
             @evaluate="evaluationCount++"
+            @semantics-interact="semanticsInteractCount++"
+            @mode-interact="modeInteractCount++"
           />
           <WindowRanking
             v-for="instance in rankingInstances"
@@ -494,6 +504,8 @@ const tutorialContextExtra = computed(() => ({
         "
         @focus="activeWindow = { source: 'extension', id: instance.id }"
         @evaluate="evaluationCount++"
+        @semantics-interact="semanticsInteractCount++"
+        @mode-interact="modeInteractCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>

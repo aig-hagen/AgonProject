@@ -17,7 +17,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
+import {
+  computed,
+  inject,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  toRef,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
 import {
@@ -38,7 +49,10 @@ import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtension
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
-import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import {
+  type Highlight,
+  TUTORIAL_REF_REGISTRY_KEY,
+} from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -73,7 +87,26 @@ const emit = defineEmits<{
   close: []
   evaluate: []
   focus: []
+  semanticsInteract: []
+  modeInteract: []
 }>()
+
+// Register the semantics/mode selectors and the result area as tutorial-spotlight targets while
+// this window is the active one, so the evaluation tutorial can highlight them.
+const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
+const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect')
+const modeSelectRef = useTemplateRef<{ $el: HTMLElement }>('modeSelect')
+const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
+watchEffect(() => {
+  if (!registerTutorialRef || suppressed) return
+  registerTutorialRef('semanticsSelector', semanticsSelectRef.value?.$el ?? null)
+  registerTutorialRef('modeSelector', modeSelectRef.value?.$el ?? null)
+})
+onUnmounted(() => {
+  registerTutorialRef?.('semanticsSelector', null)
+  registerTutorialRef?.('modeSelector', null)
+  registerTutorialRef?.('resultArea', null)
+})
 
 provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
@@ -183,6 +216,20 @@ const {
 // showing exactly 3 columns.
 const hasFourParamFields = computed(() => (selectedSemantic.value.parameters?.length ?? 0) >= 2)
 
+// Spotlight just the extensions grid (not the duration footer) for the tutorial's results step;
+// re-resolve after each render since the grid element appears once results are computed.
+watch(
+  [resultsAreaRef, () => resultItems.value.length, () => suppressed],
+  () => {
+    if (!registerTutorialRef) return
+    const grid = suppressed
+      ? null
+      : (resultsAreaRef.value?.querySelector<HTMLElement>('.evaluation-result-grid') ?? null)
+    registerTutorialRef('resultArea', grid)
+  },
+  { flush: 'post', immediate: true },
+)
+
 const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
@@ -223,16 +270,24 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
       <div class="@container basis-full">
         <div class="grid gap-3" :class="hasFourParamFields ? GRID_COLS_UP_TO_4 : GRID_COLS_UP_TO_2">
           <ParameterField label="Semantics" min-width="10rem">
-            <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+            <GroupedSelect
+              ref="semanticsSelect"
+              v-model="selectedSemantic"
+              :groups="semanticsSelectGroups"
+              full-width
+              @update:model-value="emit('semanticsInteract')"
+            />
           </ParameterField>
           <ParameterField label="Mode" max-width="8rem">
             <PickerSelect
+              ref="modeSelect"
               v-model="selectedMode"
               :options="[
                 { value: 'enumerate', label: 'Enumerate' },
                 { value: 'credulous', label: 'Credulous' },
                 { value: 'skeptical', label: 'Skeptical' },
               ]"
+              @update:model-value="emit('modeInteract')"
             />
           </ParameterField>
           <ParameterField
@@ -255,7 +310,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
       <TermDefinitionBlock :id="selectedSemantic.key" />
     </template>
     <template #results>
-      <template v-if="dataExtensionsFormatedAndSorted !== undefined">
+      <div v-if="dataExtensionsFormatedAndSorted !== undefined" ref="resultsArea" class="contents">
         <EvaluationResultGrid
           v-model:selected="selectedExtension"
           result-noun="extensions"
@@ -264,7 +319,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
           :selection-hint="selectionHint"
           :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
         />
-      </template>
+      </div>
     </template>
   </BaseEvaluationWindow>
 </template>

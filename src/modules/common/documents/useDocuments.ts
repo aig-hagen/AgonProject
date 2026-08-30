@@ -75,8 +75,11 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
 
   async function createDocument(name: string, content?: DocumentT) {
     let rawContent: Objectish = {}
+    let type: string | undefined
     if (content !== undefined) {
-      ;[rawContent] = serializeContent(content, modules)
+      let module: ModuleConfig<DocumentT>
+      ;[rawContent, module] = serializeContent(content, modules)
+      type = module.newNamePrefix
     }
     const tx = db.transaction([OBJECT_STORE_METADATA_NAME, OBJECT_STORE_CONTENT_NAME], 'readwrite')
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
@@ -85,6 +88,8 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
     // @ts-expect-error id will be autogenrated
     const id = await metadataStore.add({
       name: name,
+      lastEdited: Date.now(),
+      ...(type !== undefined ? { type } : {}),
     })
     await contentStore.add(
       {
@@ -133,7 +138,7 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
       const metadata = await metadataStore.get(id)
       if (metadata !== undefined) {
         await metadataStore.put({
-          id: id,
+          ...metadata,
           name: name,
         })
         updated = true
@@ -254,6 +259,9 @@ export function useDocumentContent<DocumentT extends Objectish>(
   const documentStateRef: ShallowRef<DocumentState<DocumentT> | undefined> = shallowRef(undefined)
   const moduleRef: ShallowRef<ModuleConfig<DocumentT> | undefined> = shallowRef(undefined)
 
+  // Notifies the metadata list so an edit's new `lastEdited`/`type` shows up there.
+  const metadataChannel = new BroadcastChannel(CHANNEL_DOCUMENTS_METADATA)
+
   async function updateDocument(state: DocumentState<DocumentT>) {
     const id = unref(idRef)
     if (id === undefined) {
@@ -268,14 +276,25 @@ export function useDocumentContent<DocumentT extends Objectish>(
         content: rawContent,
       },
     }
-    const tx = db.transaction([OBJECT_STORE_CONTENT_NAME], 'readwrite')
+    const tx = db.transaction([OBJECT_STORE_CONTENT_NAME, OBJECT_STORE_METADATA_NAME], 'readwrite')
     const contentStore = tx.objectStore(OBJECT_STORE_CONTENT_NAME)
     await contentStore.put(rawState, id)
+    const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
+    const metadata = await metadataStore.get(id)
+    if (metadata !== undefined) {
+      // Type is set once (blank docs learn it on first write); it never changes afterwards.
+      await metadataStore.put({
+        ...metadata,
+        lastEdited: Date.now(),
+        type: metadata.type ?? module.newNamePrefix,
+      })
+    }
     await tx.done
     documentStateRef.value = state
     moduleRef.value = module
 
     notifyUpdate(id)
+    metadataChannel.postMessage(undefined)
   }
 
   async function loadState(id: DocumentId) {
@@ -318,6 +337,7 @@ export function useDocumentContent<DocumentT extends Objectish>(
 
   onScopeDispose(() => {
     closeAndDeleteAllChannels()
+    metadataChannel.close()
   })
 
   return {

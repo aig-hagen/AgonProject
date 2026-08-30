@@ -31,10 +31,20 @@ import {
 } from '@heroicons/vue/24/solid'
 import interact from '@interactjs/interact'
 import { useEventListener } from '@vueuse/core'
-import { inject, nextTick, onMounted, ref, useTemplateRef, watch, watchEffect } from 'vue'
+import {
+  inject,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 
 import { type DocumentId, DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
+import { TUTORIAL_REF_REGISTRY_KEY } from '@/modules/common/graph-editor/graphEditor'
 import { POINTER_SHIELD_Z_INDEX, useZIndex } from '@/modules/common/window/useZIndex'
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY, undefined)
@@ -59,6 +69,7 @@ const {
   documentId,
   stateKey,
   active = false,
+  tutorialHeaderKey,
 } = defineProps<{
   title: string
   initialPosition: { x: number; y: number }
@@ -71,7 +82,17 @@ const {
   documentId?: DocumentId
   stateKey?: string
   active?: boolean
+  /** Register the window header under this tutorial-ref key so a tutorial can spotlight it. */
+  tutorialHeaderKey?: string
 }>()
+
+const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
+watchEffect(() => {
+  if (registerTutorialRef && tutorialHeaderKey) registerTutorialRef(tutorialHeaderKey, header.value)
+})
+onUnmounted(() => {
+  if (registerTutorialRef && tutorialHeaderKey) registerTutorialRef(tutorialHeaderKey, null)
+})
 
 const position = { ...initialPosition }
 const minimized = ref(false)

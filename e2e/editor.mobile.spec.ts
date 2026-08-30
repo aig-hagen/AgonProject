@@ -7,7 +7,7 @@ async function openEditor(page: Page) {
   await page.goto('/')
   await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('button', { name: 'Create new' }).first().click()
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
   await expect(page).toHaveURL(/surface=editor/)
 }
 

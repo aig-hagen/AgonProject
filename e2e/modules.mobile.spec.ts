@@ -23,7 +23,7 @@ async function openExample(page: Page, moduleName: string) {
     await header.click()
   }
   await page.getByRole('main').locator('button.rounded-full').first().click()
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
 }
 
 for (const moduleName of MODULES) {

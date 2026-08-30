@@ -17,9 +17,19 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { useElementBounding } from '@vueuse/core'
-import { computed, inject, nextTick, onMounted, onUnmounted, watchEffect } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 
+import { TUTORIAL_REFIT_KEY } from '@/modules/common/graph-editor/graphEditor'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import type { Tutorial, TutorialBodyPart, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
@@ -71,14 +81,42 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  refitBelowCard?.(null)
   if (activeOwnerId.value === instanceId) {
     skipTutorial()
   }
 })
 
+// Keep the graph clear of the docked card: re-fit the graph into the band below the card when the
+// tutorial opens and when entering a `refitOnEnter` step (e.g. after the eval sheet is compacted),
+// and restore the full fit when it closes.
+const cardRef = useTemplateRef<HTMLElement>('tutorialCard')
+const refitBelowCard = inject(TUTORIAL_REFIT_KEY, null)
+
+async function refitToVisibleBand() {
+  if (!refitBelowCard) return
+  await nextTick()
+  const bottom = cardRef.value?.getBoundingClientRect().bottom ?? 0
+  if (bottom > 0) refitBelowCard(bottom)
+}
+
+watch(
+  () => (isActive.value && isOwner.value ? activeStepIndex.value : -1),
+  (index, previous) => {
+    if (!refitBelowCard) return
+    if (index === -1) {
+      refitBelowCard(null)
+      return
+    }
+    if (previous === -1 || currentStep.value?.refitOnEnter) refitToVisibleBand()
+  },
+  { immediate: true },
+)
+
+// Auto-advance whenever a step declares an advanceCondition — including `advanceOn: 'button'`
+// steps, which then offer a manual Next *and* advance when the user does the action.
 watchEffect(() => {
   if (!isOwner.value || !isActive.value || !currentStep.value) return
-  if (resolvedAdvanceOn.value !== 'action') return
   if (!currentStep.value.advanceCondition) return
   if (!baselineContext.value) return
   if (currentStep.value.advanceCondition(context, baselineContext.value)) {
@@ -101,22 +139,65 @@ const bodyParts = computed<TutorialBodyPart[]>(() => {
 
 const nextTutorial = computed(() => {
   if (!currentStep.value?.nextTutorialId) return null
-  return tutorials.find((t) => t.id === currentStep.value!.nextTutorialId) ?? null
+  const next = tutorials.find((t) => t.id === currentStep.value!.nextTutorialId) ?? null
+  if (next?.desktopOnly && isTouchDevice) return null
+  return next
 })
 
-// Spotlight: a ring drawn over the step's anchored control, when it resolves to a mounted
-// element. Unlike desktop, the card itself stays docked; only the target is highlighted.
-const anchorRef = computed<HTMLElement | null>(() => {
-  if (!currentStep.value?.anchor) return null
-  return refs[currentStep.value.anchor] ?? null
+// Spotlight: a ring drawn over the step's highlighted or anchored control.
+// `highlight` takes priority (spotlight-only, no card movement on desktop either).
+const spotlightRef = computed<HTMLElement | null>(() => {
+  if (!currentStep.value) return null
+  const h = currentStep.value.highlight
+  if (h) {
+    const key = typeof h === 'function' ? h(isTouchDevice) : h
+    if (key) return refs[key] ?? null
+  }
+  if (currentStep.value.anchor) return refs[currentStep.value.anchor] ?? null
+  return null
 })
-const { x, y, width, height } = useElementBounding(anchorRef)
-const hasSpotlight = computed(() => anchorRef.value !== null && width.value > 0)
+// The spotlit control may live inside the draggable evaluation sheet, which moves via JS
+// transforms (no scroll/resize event), so measure its rect directly each frame while a spotlight
+// is shown — keeping the ring glued to it from the first frame and as the sheet snaps detents.
+const spX = ref(0)
+const spY = ref(0)
+const spW = ref(0)
+const spH = ref(0)
+const hasSpotlight = computed(() => spW.value > 0)
+let spotlightRaf: number | null = null
+function trackSpotlight() {
+  const el = spotlightRef.value
+  if (el) {
+    const r = el.getBoundingClientRect()
+    spX.value = r.x
+    spY.value = r.y
+    spW.value = r.width
+    spH.value = r.height
+  } else {
+    spW.value = 0
+  }
+  spotlightRaf = requestAnimationFrame(trackSpotlight)
+}
+watch(
+  () => spotlightRef.value !== null,
+  (present) => {
+    if (present && spotlightRaf === null) trackSpotlight()
+    else if (!present && spotlightRaf !== null) {
+      cancelAnimationFrame(spotlightRaf)
+      spotlightRaf = null
+      spW.value = 0
+    }
+  },
+  { immediate: true },
+)
+onUnmounted(() => {
+  if (spotlightRaf !== null) cancelAnimationFrame(spotlightRaf)
+})
 const spotlightStyle = computed(() => ({
-  left: `${x.value - 6}px`,
-  top: `${y.value - 6}px`,
-  width: `${width.value + 12}px`,
-  height: `${height.value + 12}px`,
+  left: `${spX.value}px`,
+  top: `${spY.value}px`,
+  width: `${spW.value}px`,
+  height: `${spH.value}px`,
 }))
 
 function handleNext() {
@@ -141,12 +222,13 @@ function handleStartNext() {
     <!-- Spotlight ring over the anchored target (fixed to the viewport rect). -->
     <div
       v-if="hasSpotlight"
-      class="fixed z-30 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] transition-all"
+      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
       :style="spotlightStyle"
     ></div>
 
     <!-- Docked card below the top bar; the canvas stays live underneath. -->
     <div
+      ref="tutorialCard"
       class="absolute inset-x-2 z-30 pointer-events-auto"
       style="top: calc(env(safe-area-inset-top) + 3.75rem)"
     >
@@ -241,3 +323,21 @@ function handleStartNext() {
     </div>
   </template>
 </template>
+
+<style>
+.spotlight-pulse {
+  animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spotlight-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.06);
+  }
+}
+</style>

@@ -39,10 +39,13 @@ const {
   modal = true,
   snapPoints,
   lowestDetentPx = null,
+  initialDetentIndex = 0,
 } = defineProps<{
   title: string
   /** Start expanded to the full snap point instead of sizing to content. */
   fullHeight?: boolean
+  /** Detent the sheet opens at (index into snapPoints); ignored when fullHeight. */
+  initialDetentIndex?: number
   /** Modal (default): a backdrop blocks and dismisses. Non-modal: no backdrop, so
       the content behind the sheet stays visible and interactive. */
   modal?: boolean
@@ -139,7 +142,12 @@ const dragging = ref(false)
 const CLOSE_THRESHOLD = 120
 
 function resetToInitial() {
-  activeIndex.value = isDetent.value && fullHeight ? (snapPoints?.length ?? 1) - 1 : 0
+  if (isDetent.value) {
+    const last = (snapPoints?.length ?? 1) - 1
+    activeIndex.value = fullHeight ? last : Math.min(Math.max(initialDetentIndex, 0), last)
+  } else {
+    activeIndex.value = 0
+  }
   liveHeight.value = null
   dragOffset.value = 0
 }

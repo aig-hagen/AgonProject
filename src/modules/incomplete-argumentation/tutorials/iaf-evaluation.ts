@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const iafEvaluationTutorial: Tutorial = {
@@ -40,11 +41,12 @@ export const iafEvaluationTutorial: Tutorial = {
     },
     {
       id: 'open-eval',
-      title: 'Open the evaluation panel',
-      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) on the left to open an evaluation window.',
-      anchor: 'evaluationButtons',
-      placement: 'right-start',
-      offsetPx: 64,
+      title: 'Open the evaluation',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} the <strong>Evaluate</strong> button to open the evaluation.`
+          : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
+      highlight: 'openEvalButton',
       advanceOn: 'action',
       advanceCondition: (ctx) => ctx.isExtensionWindowOpen,
     },
@@ -58,6 +60,7 @@ export const iafEvaluationTutorial: Tutorial = {
         { text: 'necessary', tooltipId: 'necessaryAcceptance' },
         ' acceptance. Possible is more permissive; necessary is the conservative choice.',
       ],
+      highlight: 'typeSelector',
       advanceOn: 'button',
     },
     {
@@ -68,17 +71,45 @@ export const iafEvaluationTutorial: Tutorial = {
         { text: 'Credulous', tooltipId: 'credulousAcceptance' },
         '/',
         { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
-        ' to check individual argument acceptance — then press <strong>Evaluate</strong>.',
+        ' to check individual argument acceptance.',
       ],
+      highlight: 'semanticsSelector',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
+    },
+    {
+      id: 'compact-window',
+      title: 'Focus on the results',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Drag')} the sheet down to snap it smaller, or tap ${barAction('collapse', 'Collapse')}, to fold the parameters away and focus on the results.`
+          : `${action('Click')} the window header to hide the parameters and show only the results.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalCollapse' : 'evalHeader'),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.paramsCollapseCount > baseline.paramsCollapseCount,
+      firstEvalOnlyDesktop: true,
     },
     {
       id: 'read-results',
       title: 'Reading the results',
       body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured depending on their status:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — accepted</li><li><span class="text-info font-medium">Blue</span> — undecided</li><li><span class="text-error font-medium">Red</span> — rejected</li></ul>',
+      highlight: 'resultArea',
+      refitOnEnter: true,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,
+    },
+    {
+      id: 'multiple-evals',
+      title: 'Open multiple evaluations',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `You can run several evaluations at once. ${action('Tap')} the <strong>switcher</strong> at the top of the sheet, then <strong>Add evaluation</strong> to open another — for example to compare two semantics.`
+          : `You can run several evaluations at once. ${action('Click')} the ${barAction('extension', 'Extension Semantics')} button again to open another evaluation window — for example to compare two semantics.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalSwitcher' : 'openEvalButton'),
+      advanceOn: 'button',
+      advanceCondition: (ctx, baseline) =>
+        ctx.evaluationWindowCount > baseline.evaluationWindowCount,
+      firstEvalOnly: true,
     },
     {
       id: 'done',

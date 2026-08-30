@@ -251,6 +251,7 @@ const highlightCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
 }))

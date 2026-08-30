@@ -22,6 +22,8 @@ export const editorExportTutorial: Tutorial = {
   id: 'editor-export',
   name: 'Export Tutorial',
   description: 'Learn how to export your framework as LaTeX, SVG, or a text-based exchange format.',
+  // Desktop-centric (Ctrl-snap alignment, side-by-side LaTeX preview); hidden on touch for now.
+  desktopOnly: true,
   steps: [
     {
       id: 'intro',

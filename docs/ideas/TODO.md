@@ -1,68 +1,24 @@
 ## Bugs and Issues
 
+### desktop/general
+- need a ranking tutorial for AF
+- setAF tutorials need update
+- e2e tests based on the tutorial. does that make sense?
+
 ### Mobile
+- set-attack creation on mobile is still missing
 
-#### Open items from the mobile-layout plan (plan now closed)
-
-The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
-
-*Blocked on the real-device gesture work (all hinge on the same spike):*
-
-- **[Spike — Phase 1]** Real-device gesture spike. On real iOS + Android, verify tap/hold
-  node gestures with node-moving disabled: tap, hold-to-delete vs hold-drag-to-link
-  disambiguation, pointer cancellation, scroll prevention, and agreed movement/time
-  thresholds. Blocks the two items below.
-- **[Feature — Phase 5]** iAF node context menu (rename / certainty / delete on tap). Needs
-  the gesture spike's thresholds first.
-- **[Feature — Phase 5]** SETAF (collective attacks) editing entirely: tap-to-toggle source
-  selection distinct from eval highlights, hold-drag from selected sources to create a
-  collective attack, Clear-selection / Rename / Delete actions, and tapping a collective
-  attack to inspect its sources. Needs the gesture spike, a *collective attacks* mockup, and
-  Decision #5 (tap-to-select vs a dedicated creation mode).
-
-*Phase 7 (hardening) follow-ups:*
-
-- **[Content]** Tutorial-step wording pass for mobile: audit each tutorial's steps against the
-  settled mobile gestures / primary-action table and update copy (e.g. "double-tap to add",
-  per-module tap actions). Scope unclear — needs a decision on which tutorials change.
-- **[Perf]** Memory/perf profiling with **many evaluation configs** open (real device/profiler;
-  emulated e2e can't prove it). Many-*documents* is already covered by `e2e/stress.mobile.spec.ts`.
-- **[CI]** First-run validation of the new `Test` workflow: open a PR so it actually executes on
-  Ubuntu — this is the first real **WebKit / Mobile Safari** coverage (they can't run on the Arch
-  dev box) and the first time the workflow itself runs.
-- **[Test]** e2e asserts evaluation *sheets open*, not backend-computed **results** (TweetyProject
-  servers aren't up in e2e). Add result-level coverage if/when a backend is available in CI.
+- the select toolbar should disappear on any other interaction, ie panning or creating an edge somewhere etc
+- make nodes react on interaction (pulse size or something); maybe also on hover
 
 #### Home and document management
 
-- ~~**[Bug]** home view: AF description text is truncated in the mobile accordion when expanded~~ —
-  fixed: the description now drops its `line-clamp-2` while its card is expanded (collapsed cards
-  still clamp). Note on "references are missing entirely": they aren't — every module has
-  publications, but they only surface via a hover-only book icon (top-right of the desktop cards).
-  Surfacing them on the card is a **[Design]** decision, still open.
-- **[Decision needed]** "Document" should be renamed to something more fitting
-- **[Design]** Switch document icons to AF type icon; like the ones in the home view. Blocked:
-  document metadata only stores `{ id, name }`, so the AF type must either be persisted (small DB
-  migration; existing docs need a backfill/fallback) or derived on load (read each doc's content
-  on the home list). Decision pending.
+- show reference on main view cards
 
 #### Graph editor and interaction
 
-- **[Bug]** The relayout sheet should disappear on selecting an option. This works in the browser mobile preview, but not on the actual phone (for AF, for ADF it works)
 - **[Enhancement]** Extension highlighting: could use some way to deactivate highlighting (other than clicking the extension again)
-- **[Design]** rethink the mobile command-action scheme from scratch; large rework of the command contract, needs changes to the graph-component
 - **[Decision needed]** add some kind of toggle for physics mode: something that activated physics for a brief moment to let arguments adjust position. or something that enables pyhsics while pressed
-
-#### ADF editing and evaluation
-
-- **[Design]** ADF condition editor needs a rework: no argument name editing here; better design
-- ~~**[Enhancement]** compact eval sheet should resize to fit content: fit up to three rows of
-  results, if more enable scroll, if less contract to fit content~~ — done: the sheet's lowest
-  detent is now content-sized (BottomSheet `lowestDetentPx`), measured in EvaluationHost as chrome +
-  the results grid capped to three rows; more rows scroll in the sheet body, fewer contract to fit
-- ~~compact eval switcher: the drop-down list is clipped by the short sheet, and the add-kind picker
-  is nested/awkward~~ — done: the switcher now floats upward from the header pill into the canvas
-  above the sheet (teleported, flips down only if no room), and Add is an in-place list↔kinds swap
 
 #### Sharing and export
 
@@ -75,19 +31,12 @@ The `docs/mobile-layout.md` plan is closed; its remaining threads live here.
 
 #### Settings and visual design
 
-- **[Design]** look of the bottom bar doesnt feel that nice, maybe redesign the buttons; not important now
 - **[Design]** could update the creation-mode-switchers in the bottom left. visual style doesnt really fit well
-
-#### Tutorials, glossary, and help
-
-- **[Enhancement]** Several tutorials need updating; in particular also for mobile; update highlighting of next action on mobile
-- **[Design]** tutorial start buttons look bad
 
 #### Other
 - Can we somehow enforce fullscreen on mobile? does that make sense?
 
 ## Features
-- track last edited time per document; show on mobile
 
 ### Smooth graph recenter (animate `centerView`)
 `centerView` (graph-component) currently jumps: internally it does the instant d3-zoom
@@ -117,9 +66,6 @@ Tags are now defined and associated with each module (see `src/modules/common/ta
 
 ### Split Basic Tutorials into functional part and argumentation part
 There should be a short tutorial, just for the controls, and one more detailed tutorial that explains in more detail the specifics of the argumentation formalism.
-
-### Qualified Reasoners
-Make available all (Semi-)Qualified Reasoners in the interface
 
 ## New Framework Types
 

@@ -17,11 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, type Ref, ref, watch } from 'vue'
+import { computed, inject, type Ref, ref, watch } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import EvaluationCard from '@/modules/common/evaluation/EvaluationCard.vue'
 import MobileEvaluationBody from '@/modules/common/evaluation/MobileEvaluationBody.vue'
+import { TUTORIAL_COLLAPSE_KEY } from '@/modules/common/graph-editor/graphEditor'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 export interface EvaluationWindowQuery {
@@ -52,6 +53,8 @@ const emit = defineEmits<{
   evaluate: []
 }>()
 
+const reportCollapse = inject(TUTORIAL_COLLAPSE_KEY, null)
+
 const internalOpen = ref(true)
 watch(internalOpen, (v) => {
   if (!v) emit('close')
@@ -61,6 +64,9 @@ watch(internalOpen, (v) => {
 // the semantics can be picked first. In the compact host the sheet is short, so
 // params start collapsed to a summary header and results stay visible.
 const paramsOpen = ref(!props.hosted)
+watch(paramsOpen, (open, wasOpen) => {
+  if (wasOpen && !open) reportCollapse?.()
+})
 
 const offset = computed(() => props.instanceOffset ?? 0)
 const basePos = computed(() => props.initialPositionBase ?? { x: 128, y: 64 })
@@ -88,6 +94,7 @@ const size = computed(() => props.initialSize ?? { width: 400, height: 360 })
     :state-key="props.stateKey"
     :active="props.active"
     :minimizable="false"
+    tutorial-header-key="evalHeader"
     @focus="emit('focus')"
   >
     <EvaluationCard v-model:params-open="paramsOpen" :query="query" @evaluate="emit('evaluate')">

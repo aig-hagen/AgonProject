@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const pafEvaluationTutorial: Tutorial = {
@@ -36,11 +37,12 @@ export const pafEvaluationTutorial: Tutorial = {
     },
     {
       id: 'open-eval',
-      title: 'Open the evaluation panel',
-      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) on the left to open an evaluation window.',
-      anchor: 'evaluationButtons',
-      placement: 'right-start',
-      offsetPx: 64,
+      title: 'Open the evaluation',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} the <strong>Evaluate</strong> button to open the evaluation.`
+          : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
+      highlight: 'openEvalButton',
       advanceOn: 'action',
       advanceCondition: (ctx) => ctx.isExtensionWindowOpen,
     },
@@ -52,15 +54,30 @@ export const pafEvaluationTutorial: Tutorial = {
         { text: 'Credulous', tooltipId: 'credulousAcceptance' },
         ' or ',
         { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
-        ' — then press <strong>Evaluate</strong> to compute the acceptance probabilities.',
+        '.',
       ],
+      highlight: 'semanticsSelector',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
+    },
+    {
+      id: 'compact-window',
+      title: 'Focus on the results',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Drag')} the sheet down to snap it smaller, or tap ${barAction('collapse', 'Collapse')}, to fold the parameters away and focus on the results.`
+          : `${action('Click')} the window header to hide the parameters and show only the results.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalCollapse' : 'evalHeader'),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.paramsCollapseCount > baseline.paramsCollapseCount,
+      firstEvalOnlyDesktop: true,
     },
     {
       id: 'results',
       title: 'Reading the results',
       body: 'The panel shows each argument together with its acceptance probability under the chosen semantics and mode. A value of <strong>1.0</strong> means the argument is accepted in every relevant subframework; <strong>0.0</strong> means it is never accepted.',
+      highlight: 'resultArea',
+      refitOnEnter: true,
       advanceOn: 'button',
     },
     {
@@ -73,6 +90,19 @@ export const pafEvaluationTutorial: Tutorial = {
         ' (the toggle in the panel) to use a Monte Carlo sampling approach — much faster at the cost of small numerical errors.',
       ],
       advanceOn: 'button',
+    },
+    {
+      id: 'multiple-evals',
+      title: 'Open multiple evaluations',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `You can run several evaluations at once. ${action('Tap')} the <strong>switcher</strong> at the top of the sheet, then <strong>Add evaluation</strong> to open another — for example to compare two semantics.`
+          : `You can run several evaluations at once. ${action('Click')} the ${barAction('extension', 'Extension Semantics')} button again to open another evaluation window — for example to compare two semantics.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalSwitcher' : 'openEvalButton'),
+      advanceOn: 'button',
+      advanceCondition: (ctx, baseline) =>
+        ctx.evaluationWindowCount > baseline.evaluationWindowCount,
+      firstEvalOnly: true,
     },
     {
       id: 'done',

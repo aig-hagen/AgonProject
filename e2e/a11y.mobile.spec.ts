@@ -9,7 +9,7 @@ async function openEditor(page: Page) {
   await page.goto('/')
   await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByRole('button', { name: 'Create new' }).first().click()
-  await expect(page.getByRole('button', { name: 'Back to documents' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Back to frameworks' })).toBeVisible()
 }
 
 test('opening a sheet moves focus into it; Escape closes and restores focus', async ({ page }) => {
@@ -46,7 +46,7 @@ test('notifications render inside a live region', async ({ page }) => {
 
 test('editor chrome touch targets meet the minimum size', async ({ page }) => {
   await openEditor(page)
-  const labels = ['Back to documents', 'Menu', 'Fit to view', 'Relayout', 'Export', 'Evaluate']
+  const labels = ['Back to frameworks', 'Menu', 'Fit to view', 'Relayout', 'Export', 'Evaluate']
   for (const name of labels) {
     const box = await page.getByRole('button', { name }).boundingBox()
     expect(box, `${name} should be measurable`).not.toBeNull()
