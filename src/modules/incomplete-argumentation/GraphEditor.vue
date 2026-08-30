@@ -185,6 +185,8 @@ function iafNodeSelectionActions(id: NodeId): SelectionAction[] {
       key: 'certainty',
       label: uncertain ? 'Mark definite' : 'Mark uncertain',
       icon: ArrowsRightLeftIcon,
+      // In-place switcher: stay open so the user can toggle certainty across taps.
+      keepOpen: true,
       run: () => toggleArgumentCertainty(id),
     },
   ]

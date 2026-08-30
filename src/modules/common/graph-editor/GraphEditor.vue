@@ -244,8 +244,8 @@ const selectionActions = computed<SelectionAction[]>(() => {
   const actions: SelectionAction[] = []
   if (sel.kind === 'node') {
     // Collective-attack source toggle (touch alternative to the desktop shift-click). Kept
-    // before Rename, and leaves the bar open so it flips to Remove and the node's source
-    // highlight stays visible — the source set is built across several taps.
+    // before Rename; dismisses the bar on tap — the library keeps its own source highlight on
+    // the node, so the pending set stays visible across the taps that build it.
     if (allowHyperLinkCreation && layoutMode.value === 'compact') {
       const inSet = hyperLinkSources.value.includes(sel.id as number)
       actions.push({
@@ -270,6 +270,8 @@ const selectionActions = computed<SelectionAction[]>(() => {
         key: 'switch-type',
         label: `Switch to ${nextName}`,
         icon: ArrowsRightLeftIcon,
+        // In-place switcher: stay open so the user can cycle types across taps.
+        keepOpen: true,
         run: () => updateLinkType(internalId, next),
       })
     }
@@ -1157,6 +1159,20 @@ onMounted(() => {
       renameCommitGraphHost.removeEventListener('focusin', handleRenameOpenFocus)
     }
   }
+
+  // Dismiss the action bar as soon as the user touches something else. Taps inside the graph
+  // canvas manage the selection themselves (via `select`), and taps on the bar's own buttons
+  // are handled there — everything else in the app closes it.
+  const handleOutsidePointerDown = (event: PointerEvent) => {
+    if (selection.value === null) return
+    const target = event.target as Element | null
+    if (target?.closest('.selection-action-bar')) return
+    if (target?.closest('.graph-controller__graph-host')) return
+    selection.value = null
+  }
+  document.addEventListener('pointerdown', handleOutsidePointerDown, true)
+  selectionDismissCleanup = () =>
+    document.removeEventListener('pointerdown', handleOutsidePointerDown, true)
 })
 
 function toArrowType(linkType: LinkType): ArrowType {
@@ -1502,6 +1518,7 @@ let doubleTapCleanup: (() => void) | undefined
 let middleClickCleanup: (() => void) | undefined
 let ctrlSnapCleanup: (() => void) | undefined
 let renameCommitCleanup: (() => void) | undefined
+let selectionDismissCleanup: (() => void) | undefined
 let ctrlSnapNodeId: number | null = null
 // Live node positions updated on every D3 tick during drag, so the overlay
 // doesn't lag behind until nodes-moved fires on mouseup.
@@ -1534,6 +1551,7 @@ onUnmounted(() => {
   middleClickCleanup?.()
   ctrlSnapCleanup?.()
   renameCommitCleanup?.()
+  selectionDismissCleanup?.()
 })
 
 // While a mobile tutorial is active this holds the docked card's clearance (px it reaches from the

@@ -142,6 +142,8 @@ export interface SelectionAction {
   label: string
   icon?: Component
   danger?: boolean
+  /** Keep the bar open after running (for in-place toggles/switchers); default closes it. */
+  keepOpen?: boolean
   run: () => void
 }
 

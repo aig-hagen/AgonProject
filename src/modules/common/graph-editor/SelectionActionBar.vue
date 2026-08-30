@@ -52,6 +52,25 @@ const { floatingStyles, update } = useFloating(reference, floating, {
   middleware: [offset(10), flip({ fallbackPlacements: ['bottom'] }), shift({ padding: 8 })],
 })
 
+// Run an action, then dismiss the bar unless the action opts to stay open (in-place
+// switchers like the edge type-switch and the iAF certainty toggle).
+function runAction(action: SelectionAction) {
+  action.run()
+  if (action.keepOpen) return
+  // Closing unmounts the bar on this pointerdown, so the trailing synthetic click lands on
+  // whatever is underneath — usually empty canvas, whose handler would e.g. clear the SetAF
+  // source set the action just built. Swallow that one ghost click before closing.
+  const swallow = (event: MouseEvent) => {
+    event.stopPropagation()
+    event.preventDefault()
+    document.removeEventListener('click', swallow, true)
+  }
+  document.addEventListener('click', swallow, true)
+  // Failsafe: pointer setups that emit no follow-up click shouldn't leave the trap armed.
+  setTimeout(() => document.removeEventListener('click', swallow, true), 500)
+  emit('close')
+}
+
 let frame = 0
 function follow() {
   if (getReferenceRect() === null) {
@@ -68,7 +87,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
 </script>
 
 <template>
-  <div ref="floating" :style="floatingStyles" class="z-30">
+  <div ref="floating" :style="floatingStyles" class="selection-action-bar z-30">
     <div class="join rounded-box border border-base-300 bg-base-100 shadow-md">
       <!-- pointerdown, not click: the tap that selects mounts this bar; a trailing synthetic
            click would otherwise immediately trigger the button under the finger. -->
@@ -78,7 +97,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
         class="btn join-item btn-ghost btn-sm"
         :title="action.label"
         :aria-label="action.label"
-        @pointerdown.prevent="action.run()"
+        @pointerdown.prevent="runAction(action)"
       >
         <component :is="action.icon" v-if="action.icon" class="size-4" />
         <span v-else>{{ action.label }}</span>
@@ -89,7 +108,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
         class="btn join-item btn-ghost btn-sm text-error"
         :title="action.label"
         :aria-label="action.label"
-        @pointerdown.prevent="action.run()"
+        @pointerdown.prevent="runAction(action)"
       >
         <component :is="action.icon" v-if="action.icon" class="size-4" />
         <span v-else>{{ action.label }}</span>

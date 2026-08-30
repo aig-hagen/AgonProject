@@ -22,9 +22,6 @@ instant/short so it doesn't feel sluggish.
 - track number of unique? accesses to site; maybe some other stats
 
 ### Mobile
-- the select toolbar should disappear on any other interaction, ie panning or creating an edge somewhere etc
-- after adding a argument to the hyperlink source set, the action bar should close
-
 #### Home and document management
 
 - show reference on main view cards
