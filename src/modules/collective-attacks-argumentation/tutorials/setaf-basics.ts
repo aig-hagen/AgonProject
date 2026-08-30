@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const setafBasicsTutorial: Tutorial = {
@@ -40,8 +41,8 @@ export const setafBasicsTutorial: Tutorial = {
       title: 'Create an argument',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Double-tap</strong> on an empty area of the canvas to create a new argument.'
-          : '<strong>Double-click</strong> on an empty area of the canvas to create a new argument.',
+          ? `${action('Double-tap')} on an empty area of the canvas to create a new argument.`
+          : `${action('Double-click')} on an empty area of the canvas to create a new argument.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.nodeCount > baseline.nodeCount,
     },
@@ -50,8 +51,8 @@ export const setafBasicsTutorial: Tutorial = {
       title: 'Draw a single-source attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Hold and drag</strong> from one argument to another to create a regular (single-source) attack.'
-          : '<strong>Right-click</strong> on an argument, hold, and drag towards another argument to create a regular (single-source) attack.',
+          ? `${action('Hold and drag')} from one argument towards another to create a regular (single-source) attack.`
+          : `${action('Right-click')} on an argument, hold, and drag towards another argument to create a regular (single-source) attack.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
     },
@@ -60,8 +61,8 @@ export const setafBasicsTutorial: Tutorial = {
       title: 'Draw a collective attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? 'To create a collective attack: <strong>tap</strong> two or more arguments to select them as sources, then <strong>hold and drag</strong> from one of the selected arguments to the target.'
-          : 'To create a collective attack: <strong>Shift+Left-click</strong> two or more arguments to select them as sources, then <strong>right-click</strong> on a selected source, hold, and drag to the target. A branching arrow will appear connecting all sources to the target.',
+          ? `To create a collective attack, first build the source set: ${action('Tap')} two or more arguments and choose ${barAction('add', 'Add to attack')} in the action bar for each source you want (Or you can ${action('long-press')} an argument). Then ${action('Hold and drag')} from some selected argument to the target.`
+          : `To create a collective attack: ${action('Shift+Left-click')} two or more arguments to select them as sources, then ${action('Right-click')} on a selected source, hold, and drag to the target. A branching arrow will appear connecting all sources to the target.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.hyperLinkCount > baseline.hyperLinkCount,
     },
@@ -70,13 +71,29 @@ export const setafBasicsTutorial: Tutorial = {
       title: 'Delete an argument or attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Long-press</strong> on an argument or attack to delete it.'
-          : '<strong>Right-click and hold</strong> on an argument or attack to delete it.',
+          ? `${action('Tap')} an argument or attack to select it, then tap ${barAction('delete', 'Delete')} in the action bar.`
+          : `${action('Right-click and hold')} on an argument or attack to delete it.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) =>
         ctx.nodeCount < baseline.nodeCount ||
         ctx.linkCount < baseline.linkCount ||
         ctx.hyperLinkCount < baseline.hyperLinkCount,
+      firstBasicOnly: true,
+    },
+    {
+      id: 'undo',
+      title: 'Undo & Redo',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `Made a mistake? ${action('Tap')} the <strong>Undo</strong> button to step backward through your changes. Try it now to undo the deletion.`
+          : `Made a mistake? Press <kbd class="kbd kbd-sm">Ctrl Z</kbd> to undo and <kbd class="kbd kbd-sm">Ctrl Shift Z</kbd> to redo. Try it now to undo the deletion.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'undoButton' : undefined),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.nodeCount > baseline.nodeCount ||
+        ctx.linkCount > baseline.linkCount ||
+        ctx.hyperLinkCount > baseline.hyperLinkCount,
+      firstBasicOnly: true,
     },
     {
       id: 'done',

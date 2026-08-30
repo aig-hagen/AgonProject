@@ -63,7 +63,7 @@ const rows = computed<GestureRow[]>(() => {
     { icon: TrashIcon, title: 'Hold an argument', desc: 'Delete it', danger: true },
     {
       icon: ArrowLongRightIcon,
-      title: 'Drag to another argument',
+      title: 'Hold + drag to another argument',
       desc: allowHyperLinkCreation
         ? `Draw a ${linkNames[0] ?? 'attack'} — from a source set, this becomes a collective ${linkNames[0] ?? 'attack'}`
         : `Create a ${linkNamesSlash.value} between them`,
@@ -80,7 +80,7 @@ const rows = computed<GestureRow[]>(() => {
     list.push({
       icon: PlusCircleIcon,
       title: 'Add to attack',
-      desc: `Tap an argument and choose "Add to attack" (or long-press it) to build a source set, then drag from a highlighted source to the target`,
+      desc: `Tap an argument and choose "Add to attack" to build a source set, then hold + drag from a highlighted source to the target`,
     })
   }
 

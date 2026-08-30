@@ -1,12 +1,29 @@
 ## Bugs and Issues
 
+### next up in library changes
+- Make nodes more reactive. ie synched longpress animation, maybe hover animation, see theme branch for ideas
+- Smooth graph recenter (animate `centerView`)
+`centerView` (graph-component) currently jumps: internally it does the instant d3-zoom
+`zoom.transform(selection, t)`. d3-zoom animates natively, so add an optional `duration`
+param and pass a transitioning selection when set:
+```js
+const target = duration ? selection.transition().duration(duration) : selection
+zoom.transform(target, d3.zoomIdentity.scale(k).translate(-x, -y))
+```
+Then have `fitToView` / the mobile eval re-fit pass ~250–300ms. Needs a graph-component
+change + new rc tarball (it's the `@aig-hagen` package). Keep the sheet-close re-fit
+instant/short so it doesn't feel sluggish.
+
+
 ### desktop/general
+- help screen needs a pass
 - need a ranking tutorial for AF
-- setAF tutorials need update
+- impressum etc
+- track number of unique? accesses to site; maybe some other stats
 
 ### Mobile
 - the select toolbar should disappear on any other interaction, ie panning or creating an edge somewhere etc
-- make nodes react on interaction (pulse size or something); maybe also on hover
+- after adding a argument to the hyperlink source set, the action bar should close
 
 #### Home and document management
 
@@ -34,18 +51,6 @@
 - Can we somehow enforce fullscreen on mobile? does that make sense?
 
 ## Features
-
-### Smooth graph recenter (animate `centerView`)
-`centerView` (graph-component) currently jumps: internally it does the instant d3-zoom
-`zoom.transform(selection, t)`. d3-zoom animates natively, so add an optional `duration`
-param and pass a transitioning selection when set:
-```js
-const target = duration ? selection.transition().duration(duration) : selection
-zoom.transform(target, d3.zoomIdentity.scale(k).translate(-x, -y))
-```
-Then have `fitToView` / the mobile eval re-fit pass ~250–300ms. Needs a graph-component
-change + new rc tarball (it's the `@aig-hagen` package). Keep the sheet-close re-fit
-instant/short so it doesn't feel sluggish.
 
 ### Mobile eval sheet: full-detent two-pane compare
 At the `full` (~90dvh) detent, the mobile evaluation sheet should show a **second, one-off,
