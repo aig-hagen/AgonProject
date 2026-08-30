@@ -22,10 +22,9 @@ import {
   ArrowLongRightIcon,
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
-  Bars3Icon,
   CursorArrowRaysIcon,
-  PencilSquareIcon,
   PlusCircleIcon,
+  SparklesIcon,
   TrashIcon,
 } from '@heroicons/vue/24/outline'
 import { type Component, computed } from 'vue'
@@ -45,6 +44,10 @@ const {
 const linkNamesSlash = computed(() => linkNames.join('/'))
 const hasTypes = computed(() => linkNames.length > 1)
 
+const nodeTapActionLower = computed(
+  () => nodeTapAction.charAt(0).toLowerCase() + nodeTapAction.slice(1),
+)
+
 interface GestureRow {
   icon: Component
   title: string
@@ -56,23 +59,14 @@ const rows = computed<GestureRow[]>(() => {
   const list: GestureRow[] = [
     { icon: PlusCircleIcon, title: 'Double-tap the canvas', desc: 'Add a new argument' },
     {
-      icon: /rename/i.test(nodeTapAction) ? PencilSquareIcon : CursorArrowRaysIcon,
+      icon: CursorArrowRaysIcon,
       title: 'Tap an argument',
-      desc: nodeTapAction,
+      desc: `Open its action bar — ${nodeTapActionLower.value}, delete and more`,
     },
-    { icon: TrashIcon, title: 'Hold an argument', desc: 'Delete it', danger: true },
     {
       icon: ArrowLongRightIcon,
       title: 'Hold + drag to another argument',
-      desc: allowHyperLinkCreation
-        ? `Draw a ${linkNames[0] ?? 'attack'} — from a source set, this becomes a collective ${linkNames[0] ?? 'attack'}`
-        : `Create a ${linkNamesSlash.value} between them`,
-    },
-    { icon: ArrowsPointingOutIcon, title: 'Drag / pinch', desc: 'Pan and zoom the canvas' },
-    {
-      icon: ArrowsPointingInIcon,
-      title: 'Fit-view button',
-      desc: 'Recenter everything — moving arguments by hand is not needed; use Relayout',
+      desc: `Create a ${linkNamesSlash.value} between them`,
     },
   ]
 
@@ -80,7 +74,7 @@ const rows = computed<GestureRow[]>(() => {
     list.push({
       icon: PlusCircleIcon,
       title: 'Add to attack',
-      desc: `Tap an argument and choose "Add to attack" to build a source set, then hold + drag from a highlighted source to the target`,
+      desc: `Tap an argument and choose "Add to attack" — or long-press it — to build a source set, then hold + drag from a highlighted source to the target`,
     })
   }
 
@@ -93,21 +87,26 @@ const rows = computed<GestureRow[]>(() => {
     list.push({
       icon: CursorArrowRaysIcon,
       title: `Tap a ${linkNamesSlash.value}`,
-      desc: 'Change its type or delete it',
+      desc: 'Open its action bar to switch type or delete it — or long-press to delete',
     })
   } else {
     list.push({
-      icon: CursorArrowRaysIcon,
-      title: `Tap a ${linkNamesSlash.value}`,
-      desc: 'Delete it',
+      icon: TrashIcon,
+      title: `Long-press a ${linkNamesSlash.value}`,
+      desc: 'Delete it — or tap it and use the action bar',
+      danger: true,
     })
   }
 
-  list.push({
-    icon: Bars3Icon,
-    title: 'Menu',
-    desc: 'Redo, share, settings, tutorials, glossary and file actions',
-  })
+  list.push(
+    {
+      icon: ArrowsPointingOutIcon,
+      title: 'Drag with one finger',
+      desc: 'Pan the canvas — pinch to zoom',
+    },
+    { icon: ArrowsPointingInIcon, title: 'Fit-view button', desc: 'Recenter the view' },
+    { icon: SparklesIcon, title: 'Relayout button', desc: 'Auto-arrange the graph' },
+  )
 
   return list
 })
