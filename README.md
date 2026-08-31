@@ -18,7 +18,7 @@ The platform to explore different approaches to formal argumentation.
 
 ## Features
 
-- **Interactive graph editor** — create and connect arguments visually, with undo/redo, auto-layouting and grid-aligned placement
+- **Interactive graph editor** — create and connect arguments visually, with undo/redo, auto-layouting, grid-aligned placement
 - **Semantical evaluation** — compute extensions/interpretations under a wide range of semantics, with results highlighted directly on the graph
 - **Argument-ranking semantics** — compute argument-ranking semantics for abstract argumentation
 - **Serialisation sequences** — step through how admissible sets are built up incrementally via Serialisability
@@ -26,6 +26,7 @@ The platform to explore different approaches to formal argumentation.
 - **Glossary with inline tooltips** — hover key terms for formal definitions, linked to their publications
 - **Export** — LaTeX (TikZ), ICCMA, and TGF formats, alongside native save files
 - **Sharing** — generate a link to share a framework instance with others
+- **Touch & mobile support** — full editing and evaluation on phones and tablets, with a tap-select action bar for per-argument actions
 
 ## Usage
 
