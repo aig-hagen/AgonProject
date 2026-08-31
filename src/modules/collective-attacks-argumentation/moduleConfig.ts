@@ -91,8 +91,8 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document, _name) {
-    return saveAsString(document)
+  getSaveString(document, name) {
+    return saveAsString(document, name)
   },
   generateHref: '/generate?type=setaf',
   description:

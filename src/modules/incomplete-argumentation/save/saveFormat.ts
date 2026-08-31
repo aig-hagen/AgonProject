@@ -60,7 +60,10 @@ export const SaveSchema = z
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(argumentation: IncompleteArgumentation<IafArgumentData>): string {
+export function saveAsString(
+  argumentation: IncompleteArgumentation<IafArgumentData>,
+  name: string,
+): string {
   const argumentsSave = Object.create(null)
   for (const [argumentId, argumentData] of argumentation.arguments()) {
     argumentsSave[argumentId] = {
@@ -78,8 +81,9 @@ export function saveAsString(argumentation: IncompleteArgumentation<IafArgumentD
   for (const [sourceId, targetId] of argumentation.uncertainAttacks()) {
     uncertainAttacksSave.push([sourceId, targetId])
   }
-  const save: Save = {
+  const save: z.infer<typeof ExampleSaveSchema> = {
     apiVersion: API_VERSION,
+    name,
     arguments: argumentsSave,
     definiteAttacks: definiteAttacksSave,
     uncertainAttacks: uncertainAttacksSave,
@@ -91,7 +95,7 @@ export function loadFromString(
   dataString: string,
   fileName: string,
 ): DeserializationResult<IncompleteArgumentation<IafArgumentData>> {
-  return loadFromStringWithSchema(SaveSchema, dataString, fileName, (data) => {
+  return loadFromStringWithSchema(ExampleSaveSchema, dataString, fileName, (data) => {
     const argumentation = new IncompleteArgumentation<IafArgumentData>()
     for (const [id, argumentData] of Object.entries(data.arguments)) {
       const numericId = parseInt(id, 10)

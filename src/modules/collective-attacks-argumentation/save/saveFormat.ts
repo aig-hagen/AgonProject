@@ -82,13 +82,16 @@ export const SaveSchema = z
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(af: SetAF<SetAfArgumentData>): string {
+export const ExampleSaveSchema = SaveSchema.extend(ExampleSaveExtension)
+
+export function saveAsString(af: SetAF<SetAfArgumentData>, name: string): string {
   const argumentsSave = Object.create(null)
   for (const [id, data] of af.arguments()) {
     argumentsSave[id] = { name: data.name, x: data.x, y: data.y }
   }
-  const save: Save = {
+  const save: z.infer<typeof ExampleSaveSchema> = {
     apiVersion: API_VERSION,
+    name,
     arguments: argumentsSave,
     attacks: af.attacks().map((a) => ({ id: a.id, attackers: a.attackers, target: a.target })),
   }
@@ -99,7 +102,7 @@ export function loadFromString(
   dataString: string,
   fileName: string,
 ): DeserializationResult<SetAF<SetAfArgumentData>> {
-  return loadFromStringWithSchema(SaveSchema, dataString, fileName, (data) => {
+  return loadFromStringWithSchema(ExampleSaveSchema, dataString, fileName, (data) => {
     const af = new SetAF<SetAfArgumentData>()
     for (const [id, argData] of Object.entries(data.arguments)) {
       af.addArgument(parseInt(id, 10), { name: argData.name, x: argData.x, y: argData.y })
@@ -112,13 +115,6 @@ export function loadFromString(
 }
 
 export const canLoadFromObject = makeCanLoadFromObject(API_VERSION)
-
-const ExampleSaveSchema = z.object({
-  apiVersion: z.literal(API_VERSION),
-  ...ExampleSaveExtension,
-  arguments: SetAfArgumentsSaveSchema,
-  attacks: SetAfAttacksSaveSchema,
-})
 
 export function loadExampleFromJson(json: unknown) {
   return loadExampleFromJsonWithSchema(ExampleSaveSchema, json, ({ arguments: args, attacks }) => {

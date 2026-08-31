@@ -88,7 +88,10 @@ export const SaveSchema = z
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(argumentation: ProbabilisticArgumentation<PafArgumentData>): string {
+export function saveAsString(
+  argumentation: ProbabilisticArgumentation<PafArgumentData>,
+  name: string,
+): string {
   const argumentsSave = Object.create(null)
   for (const [id, data] of argumentation.arguments()) {
     argumentsSave[id] = {
@@ -103,8 +106,9 @@ export function saveAsString(argumentation: ProbabilisticArgumentation<PafArgume
   for (const [sourceId, targetId, prob] of argumentation.attacks()) {
     attacksSave.push([sourceId, targetId, prob])
   }
-  const save: Save = {
+  const save: z.infer<typeof ExampleSaveSchema> = {
     apiVersion: API_VERSION,
+    name,
     arguments: argumentsSave,
     attacks: attacksSave,
   }
@@ -115,7 +119,7 @@ export function loadFromString(
   dataString: string,
   fileName: string,
 ): DeserializationResult<ProbabilisticArgumentation<PafArgumentData>> {
-  return loadFromStringWithSchema(SaveSchema, dataString, fileName, (data) => {
+  return loadFromStringWithSchema(ExampleSaveSchema, dataString, fileName, (data) => {
     const argumentation = new ProbabilisticArgumentation<PafArgumentData>()
     for (const [id, argumentData] of Object.entries(data.arguments)) {
       const numericId = parseInt(id, 10)

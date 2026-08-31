@@ -171,7 +171,7 @@ test('load successfully', () => {
   argumentation.addAttack(0, 1)
   argumentation.addSupport(1, 0)
   argumentation.addAttack(1, 1)
-  const stringifiedData = saveAsString(argumentation)
+  const stringifiedData = saveAsString(argumentation, 'test')
   const result = loadFromString(stringifiedData, FILE_NAME)
 
   expect(result.errors).toBeUndefined()

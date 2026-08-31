@@ -124,8 +124,8 @@ export const dialecticalArgumentationModule: ModuleConfig<
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document, _name) {
-    return saveAsString(document)
+  getSaveString(document, name) {
+    return saveAsString(document, name)
   },
   generateHref: '/generate?type=adf',
   description: 'Relations between arguments are modelled via propositional acceptance conditions.',
