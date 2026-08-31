@@ -61,10 +61,7 @@ export const SaveSchema = z.object({
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(
-  adf: DialecticalArgumentation<AdfArgumentData>,
-  name: string,
-): string {
+export function saveAsString(adf: DialecticalArgumentation<AdfArgumentData>, name: string): string {
   const argumentsSave: Record<string, AdfArgumentData> = Object.create(null)
   for (const [argumentId, argumentData] of adf.arguments()) {
     argumentsSave[argumentId] = {

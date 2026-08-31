@@ -48,53 +48,37 @@
   "attacks": [
     {
       "id": 0,
-      "attackers": [
-        1
-      ],
+      "attackers": [1],
       "target": 0
     },
     {
       "id": 1,
-      "attackers": [
-        2,
-        3
-      ],
+      "attackers": [2, 3],
       "target": 1
     },
     {
       "id": 2,
-      "attackers": [
-        4,
-        5
-      ],
+      "attackers": [4, 5],
       "target": 1
     },
     {
       "id": 3,
-      "attackers": [
-        6
-      ],
+      "attackers": [6],
       "target": 3
     },
     {
       "id": 4,
-      "attackers": [
-        3
-      ],
+      "attackers": [3],
       "target": 6
     },
     {
       "id": 5,
-      "attackers": [
-        7
-      ],
+      "attackers": [7],
       "target": 5
     },
     {
       "id": 6,
-      "attackers": [
-        5
-      ],
+      "attackers": [5],
       "target": 7
     }
   ]
