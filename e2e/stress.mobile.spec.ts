@@ -7,6 +7,10 @@ import { expect, test } from '@playwright/test'
 const COUNT = 8
 
 test('creates and lists many documents without console errors', async ({ page }) => {
+  // Stub the fire-and-forget analytics endpoint; without a share backend it 500s,
+  // which the browser logs as a resource-load console error and this test would flag.
+  await page.route('**/events', (route) => route.fulfill({ status: 204 }))
+
   const errors: string[] = []
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(msg.text())
