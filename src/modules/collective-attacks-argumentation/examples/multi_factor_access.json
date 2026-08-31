@@ -1,0 +1,101 @@
+{
+  "apiVersion": "set-af/v1",
+  "name": "multi_factor_access",
+  "description": "A locked account can be accessed either with both password and token, or with both recovery information and identity verification. Whether a token is usable and whether identity verification succeeds are contested.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": {
+      "name": "Access",
+      "x": 360,
+      "y": 40
+    },
+    "1": {
+      "name": "Locked",
+      "x": 360,
+      "y": 180
+    },
+    "2": {
+      "name": "Password",
+      "x": 80,
+      "y": 340
+    },
+    "3": {
+      "name": "Token",
+      "x": 240,
+      "y": 340
+    },
+    "4": {
+      "name": "Recovery",
+      "x": 480,
+      "y": 340
+    },
+    "5": {
+      "name": "Identity",
+      "x": 640,
+      "y": 340
+    },
+    "6": {
+      "name": "Expired",
+      "x": 180,
+      "y": 500
+    },
+    "7": {
+      "name": "Fraud",
+      "x": 560,
+      "y": 500
+    }
+  },
+  "attacks": [
+    {
+      "id": 0,
+      "attackers": [
+        1
+      ],
+      "target": 0
+    },
+    {
+      "id": 1,
+      "attackers": [
+        2,
+        3
+      ],
+      "target": 1
+    },
+    {
+      "id": 2,
+      "attackers": [
+        4,
+        5
+      ],
+      "target": 1
+    },
+    {
+      "id": 3,
+      "attackers": [
+        6
+      ],
+      "target": 3
+    },
+    {
+      "id": 4,
+      "attackers": [
+        3
+      ],
+      "target": 6
+    },
+    {
+      "id": 5,
+      "attackers": [
+        7
+      ],
+      "target": 5
+    },
+    {
+      "id": 6,
+      "attackers": [
+        5
+      ],
+      "target": 7
+    }
+  ]
+}
