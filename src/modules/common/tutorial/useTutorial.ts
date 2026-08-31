@@ -20,8 +20,8 @@ import { useMediaQuery, useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
 import { computed, type InjectionKey, ref } from 'vue'
 
-import { ANALYTICS_EVENTS } from '@/app/analytics/events'
-import { trackEvent } from '@/app/analytics/track'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 

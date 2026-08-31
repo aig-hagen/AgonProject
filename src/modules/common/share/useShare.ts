@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { ANALYTICS_EVENTS } from '@/app/analytics/events'
-import { trackEvent } from '@/app/analytics/track'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 
 export async function uploadShare(content: string): Promise<{ id: string; url: string }> {
   const response = await fetch('/shares', {

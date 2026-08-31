@@ -18,8 +18,8 @@
  */
 import z from 'zod'
 
-import { ANALYTICS_EVENTS } from '@/app/analytics/events'
-import { trackEvent } from '@/app/analytics/track'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import {
   EvaluationTimeoutError,
   RateLimitError,

@@ -21,9 +21,9 @@ import { ChevronDownIcon, PlusIcon, Squares2X2Icon } from '@heroicons/vue/24/out
 import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
-import { ANALYTICS_EVENTS } from '@/app/analytics/events'
-import { trackEvent } from '@/app/analytics/track'
 import type { ModuleCard } from '@/app/home/moduleCard'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import type { Example } from '@/modules/common/examples'
 
 const { moduleCards, sourceDocumentId } = defineProps<{

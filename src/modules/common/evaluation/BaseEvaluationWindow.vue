@@ -19,8 +19,8 @@
 <script setup lang="ts">
 import { computed, inject, type Ref, ref, watch } from 'vue'
 
-import { ANALYTICS_EVENTS } from '@/app/analytics/events'
-import { trackEvent } from '@/app/analytics/track'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import type { DocumentId } from '@/modules/common/documents/db'
 import EvaluationCard from '@/modules/common/evaluation/EvaluationCard.vue'
 import MobileEvaluationBody from '@/modules/common/evaluation/MobileEvaluationBody.vue'

@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowUpRightIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
+import { ArrowUpRightIcon, ShieldCheckIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
 
 import GithubMarkIcon from '@/modules/common/help/GithubMarkIcon.vue'
 
@@ -43,6 +43,9 @@ const sourceLink = `https://github.com/aig-hagen/AgonProject/tree/${sourceTree}`
     /></a>
     <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" href="/third-party"
       ><UserGroupIcon class="size-4" />Third-Party<ArrowUpRightIcon class="size-2"
+    /></a>
+    <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" href="/privacy"
+      ><ShieldCheckIcon class="size-4" />Privacy<ArrowUpRightIcon class="size-2"
     /></a>
   </div>
 </template>

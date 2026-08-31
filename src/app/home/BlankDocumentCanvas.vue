@@ -19,9 +19,9 @@
 <script setup lang="ts" generic="DocumentT">
 import { RouterLink } from 'vue-router'
 
-import { ANALYTICS_EVENTS } from '@/app/analytics/events'
-import { trackEvent } from '@/app/analytics/track'
 import type { ModuleCard } from '@/app/home/moduleCard'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
 import PublicationsTooltip from '@/modules/common/tooltip/PublicationsTooltip.vue'

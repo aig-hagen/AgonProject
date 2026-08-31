@@ -34,14 +34,22 @@ set, nothing is sent. Analytics is on in production builds and off in dev unless
 `VITE_ANALYTICS_ENABLED=true`; set `VITE_ANALYTICS_ENABLED=false` to disable a production
 build entirely.
 
+## User-facing notice
+
+The plain-language version shown to visitors lives at the `/privacy` route
+([`src/app/privacy/`](/src/app/privacy/)), linked from the Help window's links bar
+([`HelpLinks.vue`](/src/modules/common/help/HelpLinks.vue)). Keep it in sync with the
+"What is collected" and "Opt-out" sections above.
+
 ## Where it lives
 
 - Ingest + storage: [`servers/share/src/analytics.ts`](/servers/share/src/analytics.ts),
   registered on the share server. Data goes to `analytics.db` in the same persisted
   volume as `shares.db`.
-- Client: [`src/app/analytics/track.ts`](/src/app/analytics/track.ts) (fire-and-forget
-  `trackEvent`) and [`events.ts`](/src/app/analytics/events.ts) (the event allowlist,
-  kept in sync with the backend).
+- Client: [`src/app/usage/report.ts`](/src/app/usage/report.ts) (fire-and-forget
+  `trackEvent`) and [`signals.ts`](/src/app/usage/signals.ts) (the event allowlist,
+  kept in sync with the backend). The directory is deliberately named `usage` (not
+  `analytics`) so content blockers like uBlock don't block the module requests in dev.
 - Routing: `/events` (rate-limited) and `/stats` in
   [`deployment/Caddyfile`](/deployment/Caddyfile).
 
@@ -111,7 +119,7 @@ docker compose up -d
 
 ## Adding a new event
 
-1. Add the type to `ANALYTICS_EVENTS` in [`events.ts`](/src/app/analytics/events.ts).
+1. Add the type to `ANALYTICS_EVENTS` in [`signals.ts`](/src/app/usage/signals.ts).
 2. Add the same string to `ALLOWED_TYPES` in
    [`analytics.ts`](/servers/share/src/analytics.ts) (the backend rejects unknown types).
 3. Call `trackEvent(ANALYTICS_EVENTS.yourEvent, name?, props?)` at the call site.

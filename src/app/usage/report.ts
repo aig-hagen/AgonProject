@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { AnalyticsEvent } from '@/app/analytics/events'
-import { ANALYTICS_EVENTS } from '@/app/analytics/events'
+import type { AnalyticsEvent } from '@/app/usage/signals'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 
 // On by default in production builds; off in dev unless explicitly enabled.
 // Set VITE_ANALYTICS_ENABLED=false to opt a production build out entirely.
