@@ -134,10 +134,14 @@ export function registerAnalytics(app: Express, dataDir: string): void {
          WHERE type = 'module_open' AND name IS NOT NULL GROUP BY name ORDER BY count DESC`,
       )
       .all()
+    // Module comes from the event's props ({ module: "AF" }); older rows predate
+    // it and report NULL. Grouping by (module, endpoint) also stops identical
+    // semantics labels from different modules collapsing into one row.
     const topEvaluations = db
       .prepare(
-        `SELECT name AS endpoint, COUNT(*) AS count FROM events
-         WHERE type = 'evaluation_open' AND name IS NOT NULL GROUP BY name ORDER BY count DESC`,
+        `SELECT json_extract(props, '$.module') AS module, name AS endpoint, COUNT(*) AS count
+         FROM events WHERE type = 'evaluation_open' AND name IS NOT NULL
+         GROUP BY module, name ORDER BY count DESC`,
       )
       .all()
     // Per-day, per-type time series (all event types) so evals, module opens,

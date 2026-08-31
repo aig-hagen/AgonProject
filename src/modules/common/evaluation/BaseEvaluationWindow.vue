@@ -17,8 +17,10 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { watchDebounced } from '@vueuse/core'
 import { computed, inject, type Ref, ref, watch } from 'vue'
 
+import { ACTIVE_MODULE_KEY } from '@/app/usage/moduleContext'
 import { trackEvent } from '@/app/usage/report'
 import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import type { DocumentId } from '@/modules/common/documents/db'
@@ -55,7 +57,15 @@ const emit = defineEmits<{
   evaluate: []
 }>()
 
-trackEvent(ANALYTICS_EVENTS.evaluationOpen, props.title)
+// Evaluations auto-run when semantics/mode change, so record the *current*
+// selection (deduped on distinct titles, debounced past rapid dropdown scrubbing)
+// rather than a one-shot snapshot of the default at mount.
+const activeModule = inject(ACTIVE_MODULE_KEY, undefined)
+watchDebounced(
+  () => props.title,
+  (title) => trackEvent(ANALYTICS_EVENTS.evaluationOpen, title, { module: activeModule?.value }),
+  { immediate: true, debounce: 300 },
+)
 
 const reportCollapse = inject(TUTORIAL_COLLAPSE_KEY, null)
 
