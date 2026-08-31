@@ -81,8 +81,8 @@ export const probabilisticArgumentationModule: ModuleConfig<
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document, _name) {
-    return saveAsString(document)
+  getSaveString(document, name) {
+    return saveAsString(document, name)
   },
   generateHref: '/generate?type=probabilistic',
   description:

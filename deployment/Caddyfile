@@ -65,6 +65,26 @@ http://:8080 {
 		reverse_proxy http://localhost:8001
 	}
 
+	# Usage analytics ingest. Rate limited per-IP; the limit is generous because
+	# eval windows auto-request and a shared campus IP may carry many users.
+	@events path /events
+	handle @events {
+		rate_limit {
+			zone analytics {
+				key {remote_host}
+				events 300
+				window 1m
+			}
+		}
+		reverse_proxy http://localhost:8001
+	}
+
+	# Aggregated analytics readout — token-guarded by the share server itself.
+	@stats path /stats
+	handle @stats {
+		reverse_proxy http://localhost:8001
+	}
+
 	# Content-hashed build assets (Vite emits a hash in every filename) never
 	# change once deployed, so they can be cached indefinitely.
 	@assets path /assets/*

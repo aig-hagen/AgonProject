@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.45.1/apexcharts.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        /* surfaces & ink */
+        --bg: #0a0e17;
+        --surface: rgba(23, 31, 48, 0.6);
+        --surface-solid: #131a2a;
+        --border: rgba(148, 163, 184, 0.14);
+        --border-strong: rgba(148, 163, 184, 0.28);
+        --text: #e6ecf5;
+        --text-muted: #8b98ad;
+        --text-faint: #5f6b80;
+        /* validated dark categorical palette */
+        --c-blue: #3987e5;
+        --c-orange: #d95926;
+        --c-aqua: #199e70;
+        --c-yellow: #c98500;
+        --c-magenta: #d55181;
+        --c-green: #008300;
+        --c-violet: #9085e9;
+        --c-red: #e66767;
+        --good: #0ca30c;
+        --bad: #e66767;
+      }
+
+      * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      body {
+        background-image:
+          radial-gradient(900px 500px at 12% -8%, rgba(57, 135, 229, 0.14), transparent 60%),
+          radial-gradient(800px 480px at 100% 0%, rgba(144, 133, 233, 0.12), transparent 55%);
+        background-attachment: fixed;
+      }
+
+      .gradient-text {
+        background: linear-gradient(120deg, #7cb0ff 0%, #b7a6ff 60%, #e39ec6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* ---- generic panel ---- */
+      .card {
+        background: var(--surface);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        transition:
+          border-color 0.2s ease,
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .card:hover {
+        border-color: var(--border-strong);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      .card-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin: 0;
+      }
+      .card-sub {
+        font-size: 0.68rem;
+        color: var(--text-faint);
+      }
+
+      /* ---- KPI tile ---- */
+      .kpi {
+        position: relative;
+        overflow: hidden;
+        border-radius: 14px;
+        padding: 14px 16px;
+        background: var(--surface);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border);
+        transition:
+          border-color 0.2s ease,
+          transform 0.2s ease;
+      }
+      .kpi:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-strong);
+      }
+      .kpi::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 3px;
+        background: var(--accent, var(--c-blue));
+      }
+      .kpi-label {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      .kpi-value {
+        font-size: 1.85rem;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-top: 2px;
+        color: var(--text);
+      }
+      .kpi-sub {
+        font-size: 0.7rem;
+        color: var(--text-faint);
+        margin-top: 3px;
+      }
+      .kpi-spark {
+        position: absolute;
+        right: 12px;
+        bottom: 10px;
+        opacity: 0.85;
+      }
+      .delta-up {
+        color: var(--good);
+        font-weight: 600;
+      }
+      .delta-down {
+        color: var(--bad);
+        font-weight: 600;
+      }
+
+      /* ---- bars / lists ---- */
+      .idx {
+        color: var(--text-faint);
+        font-variant-numeric: tabular-nums;
+        width: 1.1rem;
+        text-align: right;
+        flex: none;
+      }
+      .bar-count {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--text);
+        flex: none;
+      }
+      .stack-track {
+        display: flex;
+        gap: 2px;
+        height: 14px;
+        border-radius: 6px;
+        background: rgba(148, 163, 184, 0.08);
+        overflow: hidden;
+      }
+      .stack-track .seg {
+        height: 100%;
+        min-width: 2px;
+      }
+      .src-legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 7px;
+      }
+
+      /* ---- progress / ranked bar ---- */
+      .funnel-track {
+        height: 12px;
+        border-radius: 6px;
+        background: rgba(148, 163, 184, 0.08);
+        overflow: hidden;
+      }
+      .funnel-bar {
+        height: 100%;
+        border-radius: 6px;
+      }
+      .conv {
+        font-size: 0.66rem;
+        color: var(--text-faint);
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 3px;
+        flex: none;
+      }
+
+      /* ---- legend ---- */
+      .legend {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px 12px;
+        margin-top: 10px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+      .legend-item .val {
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      /* ---- controls ---- */
+      input[type='password'],
+      input[type='text'] {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        background: rgba(10, 14, 23, 0.6);
+        color: var(--text);
+        font-size: 0.8rem;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      input::placeholder {
+        color: var(--text-faint);
+      }
+      input:focus {
+        border-color: var(--c-blue);
+        box-shadow: 0 0 0 3px rgba(57, 135, 229, 0.18);
+      }
+      .btn {
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.78rem;
+        cursor: pointer;
+        border: 1px solid transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+      }
+      .btn-primary {
+        background: linear-gradient(120deg, #3987e5, #2a6fc9);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        filter: brightness(1.08);
+      }
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: rgba(148, 163, 184, 0.08);
+        border-color: var(--border);
+        color: var(--text);
+      }
+      .btn-secondary:hover {
+        background: rgba(148, 163, 184, 0.16);
+        border-color: var(--border-strong);
+      }
+      .btn-icon {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        font-size: 0.95rem;
+      }
+
+      .alert {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        border: 1px solid transparent;
+      }
+      .alert-error {
+        background: rgba(230, 103, 103, 0.12);
+        border-color: rgba(230, 103, 103, 0.35);
+        color: #f2a3a3;
+      }
+      .alert-success {
+        background: rgba(12, 163, 12, 0.12);
+        border-color: rgba(12, 163, 12, 0.35);
+        color: #86e086;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        background: rgba(148, 163, 184, 0.1);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 0 0 rgba(12, 163, 12, 0.6);
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(12, 163, 12, 0.5);
+        }
+        70% {
+          box-shadow: 0 0 0 6px rgba(12, 163, 12, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(12, 163, 12, 0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.45s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .empty-icon {
+        font-size: 2.4rem;
+      }
+      .apexcharts-tooltip {
+        font-size: 11px !important;
+      }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.25);
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="min-h-screen flex flex-col">
+      <!-- Header -->
+      <header
+        class="sticky top-0 z-50"
+        style="
+          backdrop-filter: blur(12px);
+          background: rgba(10, 14, 23, 0.72);
+          border-bottom: 1px solid var(--border);
+        "
+      >
+        <div class="mx-auto w-full px-6 py-3" style="max-width: 1720px">
+          <div class="flex justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+              <div
+                style="
+                  width: 34px;
+                  height: 34px;
+                  border-radius: 10px;
+                  background: linear-gradient(135deg, #3987e5, #9085e9);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 1.1rem;
+                "
+              >
+                📊
+              </div>
+              <div>
+                <h1 class="text-lg font-bold gradient-text" style="margin: 0; line-height: 1.1">
+                  Agon Analytics
+                </h1>
+                <div class="card-sub">Usage &amp; engagement overview</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="livePill" class="pill hidden">
+                <span class="live-dot"></span><span id="lastUpdated">—</span>
+              </span>
+              <button id="configToggle" class="btn btn-secondary btn-icon" title="Settings">⚙️</button>
+              <button id="refreshBtn" class="btn btn-secondary btn-icon" title="Refresh">↻</button>
+            </div>
+          </div>
+
+          <!-- Config Panel -->
+          <div id="configPanel" class="hidden mt-3 pt-3" style="border-top: 1px solid var(--border)">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+              <div>
+                <label class="card-title" style="display: block; margin-bottom: 5px">Server URL</label>
+                <input id="serverUrl" type="text" placeholder="https://yourdomain.com" />
+              </div>
+              <div>
+                <label class="card-title" style="display: block; margin-bottom: 5px">Stats Token</label>
+                <div class="flex gap-2">
+                  <input id="statsToken" type="password" placeholder="Bearer token" />
+                  <button id="toggleToken" class="btn btn-secondary btn-icon" style="flex: none">👁️</button>
+                </div>
+              </div>
+              <button id="loadButton" class="btn btn-primary">Load stats</button>
+              <button id="clearButton" class="btn btn-secondary">Clear</button>
+            </div>
+            <div id="errorBox" class="mt-2"></div>
+            <div id="successBox" class="mt-2"></div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main -->
+      <main class="flex-1 mx-auto w-full px-6 py-5" style="max-width: 1720px">
+        <!-- Empty state -->
+        <div id="emptyState" class="flex items-center justify-center" style="min-height: 60vh">
+          <div class="card p-8 text-center fade-in" style="max-width: 420px">
+            <div class="empty-icon">🔐</div>
+            <h2 class="text-lg font-semibold" style="margin: 10px 0 6px">No data loaded</h2>
+            <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0 0 16px">
+              Enter your server URL and stats token to pull live usage analytics.
+            </p>
+            <button id="emptyConfigBtn" class="btn btn-primary">Open settings</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div id="statsContainer" class="hidden fade-in" style="display: none">
+          <!-- KPI row -->
+          <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3" id="kpiRow"></div>
+
+          <!-- Row: activity over time + events donut -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-3 mt-3">
+            <div class="card p-4 xl:col-span-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="card-title">Traffic over time</h3>
+                  <div class="card-sub" id="trafficCaption"></div>
+                </div>
+              </div>
+              <div id="pageViewsChart" style="height: 230px; margin-top: 6px"></div>
+            </div>
+            <div class="card p-4">
+              <h3 class="card-title">Event mix</h3>
+              <div class="card-sub" id="eventMixCaption"></div>
+              <div id="eventTypesChart" style="height: 175px; margin-top: 2px"></div>
+              <div class="legend" id="eventLegend"></div>
+            </div>
+          </div>
+
+          <!-- Row: feature activity + weekday + generation algorithms -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-3 mt-3">
+            <div class="card p-4">
+              <h3 class="card-title">Feature activity over time</h3>
+              <div class="card-sub">Interactions per day (page views excluded)</div>
+              <div id="featureChart" style="height: 210px; margin-top: 6px"></div>
+            </div>
+            <div class="card p-4">
+              <h3 class="card-title">Activity by weekday</h3>
+              <div class="card-sub" id="weekdayCaption"></div>
+              <div id="weekdayChart" style="height: 210px; margin-top: 6px"></div>
+            </div>
+            <div class="card p-4">
+              <h3 class="card-title">Tutorials</h3>
+              <div class="card-sub">Guided walkthrough engagement</div>
+              <div id="tutorialsContainer" style="margin-top: 12px"></div>
+            </div>
+          </div>
+
+          <!-- Row: compact ranked lists -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mt-3">
+            <div class="card p-4">
+              <div class="flex justify-between items-center">
+                <h3 class="card-title">Top modules</h3>
+                <span class="card-sub" id="modulesCaption"></span>
+              </div>
+              <div class="src-legend">
+                <span class="legend-item"><span class="dot" style="background: #199e70"></span>New</span>
+                <span class="legend-item"><span class="dot" style="background: #3987e5"></span>Generate</span>
+                <span class="legend-item"><span class="dot" style="background: #d55181"></span>Example</span>
+              </div>
+              <div id="topModulesContainer" style="margin-top: 12px"></div>
+            </div>
+            <div class="card p-4">
+              <div class="flex justify-between items-center">
+                <h3 class="card-title">Top examples</h3>
+                <span class="card-sub" id="examplesCaption"></span>
+              </div>
+              <div class="card-sub">By module · name</div>
+              <div id="topExamplesContainer" style="margin-top: 12px"></div>
+            </div>
+            <div class="card p-4">
+              <h3 class="card-title">Top evaluations</h3>
+              <div class="card-sub">Most-run semantics endpoints</div>
+              <div id="topEvaluationsContainer" style="margin-top: 12px"></div>
+            </div>
+            <div class="card p-4">
+              <div class="flex justify-between items-center">
+                <h3 class="card-title">Generation algorithms</h3>
+                <span class="card-sub" id="generatorsCaption"></span>
+              </div>
+              <div class="card-sub">Runs by algorithm · module</div>
+              <div id="topGeneratorsContainer" style="margin-top: 12px"></div>
+            </div>
+          </div>
+
+          <!-- Rate limiting (evaluation requests only) -->
+          <div id="rateLimitSection" class="hidden mt-3">
+            <div class="card p-4">
+              <div class="flex justify-between items-center">
+                <h3 class="card-title">Rate-limited evaluation requests</h3>
+                <span id="rlBadge" class="pill" style="color: #f2a3a3"></span>
+              </div>
+              <div class="card-sub" id="rlSub"></div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6" id="rlContainer" style="margin-top: 12px"></div>
+            </div>
+          </div>
+
+          <footer class="text-center mt-5" style="color: var(--text-faint); font-size: 0.68rem">
+            Visitor counts are daily-unique, salted per day — no IPs stored.
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id)
+      const serverUrlInput = $('serverUrl')
+      const tokenInput = $('statsToken')
+      const toggleTokenBtn = $('toggleToken')
+      const loadButton = $('loadButton')
+      const clearButton = $('clearButton')
+      const configToggle = $('configToggle')
+      const configPanel = $('configPanel')
+      const errorBox = $('errorBox')
+      const successBox = $('successBox')
+      const statsContainer = $('statsContainer')
+      const emptyState = $('emptyState')
+      const lastUpdated = $('lastUpdated')
+      const livePill = $('livePill')
+      const refreshBtn = $('refreshBtn')
+
+      let charts = {}
+
+      // Event-type metadata: label + validated dark-mode categorical color.
+      const TYPE_META = {
+        page_view: { label: 'Page views', color: '#3987e5' },
+        module_open: { label: 'Module opens', color: '#199e70' },
+        generate_run: { label: 'Generations', color: '#008300' },
+        evaluation_open: { label: 'Evaluations', color: '#d95926' },
+        share_create: { label: 'Shares', color: '#d55181' },
+        tutorial_start: { label: 'Tutorial starts', color: '#9085e9' },
+        tutorial_complete: { label: 'Tutorial completes', color: '#c98500' },
+        evaluation_rate_limited: { label: 'Rate limited', color: '#e66767' },
+      }
+      const meta = (t) => TYPE_META[t] || { label: t.replace(/_/g, ' '), color: '#64748b' }
+
+      // Module-open source segments. Order is the validated stack adjacency
+      // (new → generate → example); 'other' catches historical rows with no source.
+      const SOURCE_SEGMENTS = [
+        { key: 'blank', label: 'New', color: '#199e70' },
+        { key: 'generate', label: 'Generate', color: '#3987e5' },
+        { key: 'example', label: 'Example', color: '#d55181' },
+      ]
+
+      // ---------- helpers ----------
+      function formatNumber(num) {
+        if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M'
+        if (num >= 10_000) return (num / 1000).toFixed(0) + 'k'
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
+        return String(num ?? 0)
+      }
+      function formatDate(dateStr) {
+        return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      }
+      function totalFor(stats, type) {
+        return stats.eventTotals.find((e) => e.type === type)?.count ?? 0
+      }
+      function dayAxis(stats, n = 30) {
+        const set = new Set()
+        stats.eventsByDay.forEach((r) => set.add(r.day))
+        stats.viewsByDay.forEach((r) => set.add(r.day))
+        return [...set].sort().slice(-n)
+      }
+      function seriesFor(stats, type, axis) {
+        const map = {}
+        stats.eventsByDay.forEach((r) => {
+          if (r.type === type) map[r.day] = r.count
+        })
+        return axis.map((d) => map[d] || 0)
+      }
+      function trend(values) {
+        const recent = values.slice(-7).reduce((a, b) => a + b, 0)
+        const prev = values.slice(-14, -7).reduce((a, b) => a + b, 0)
+        if (prev === 0) return null
+        return Math.round(((recent - prev) / prev) * 100)
+      }
+      function trendHtml(t) {
+        if (t === null) return ''
+        if (t > 0) return `<span class="delta-up">▲ ${t}%</span> vs prev 7d`
+        if (t < 0) return `<span class="delta-down">▼ ${Math.abs(t)}%</span> vs prev 7d`
+        return `<span style="color:var(--text-faint)">◦ flat</span> vs prev 7d`
+      }
+      function sparkline(values, color) {
+        const w = 84,
+          h = 30
+        if (!values.length) return ''
+        const max = Math.max(...values, 1)
+        const step = values.length > 1 ? w / (values.length - 1) : 0
+        const pts = values.map((v, i) => `${(i * step).toFixed(1)},${(h - (v / max) * (h - 4) - 2).toFixed(1)}`)
+        const line = pts.join(' ')
+        const area = `0,${h} ${line} ${w},${h}`
+        const gid = 'g' + Math.random().toString(36).slice(2, 8)
+        return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+          <defs><linearGradient id="${gid}" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+          </linearGradient></defs>
+          <polygon points="${area}" fill="url(#${gid})"/>
+          <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`
+      }
+
+      // ---------- config plumbing ----------
+      function loadSaved() {
+        const saved = localStorage.getItem('analyticsConfig')
+        if (saved) {
+          const c = JSON.parse(saved)
+          serverUrlInput.value = c.serverUrl || ''
+          tokenInput.value = c.token || ''
+          return true
+        }
+        return false
+      }
+      function saveConfig() {
+        localStorage.setItem(
+          'analyticsConfig',
+          JSON.stringify({ serverUrl: serverUrlInput.value, token: tokenInput.value }),
+        )
+      }
+      const openConfig = () => configPanel.classList.remove('hidden')
+      configToggle.addEventListener('click', () => configPanel.classList.toggle('hidden'))
+      $('emptyConfigBtn').addEventListener('click', openConfig)
+      toggleTokenBtn.addEventListener('click', () => {
+        tokenInput.type = tokenInput.type === 'password' ? 'text' : 'password'
+      })
+      clearButton.addEventListener('click', () => {
+        serverUrlInput.value = ''
+        tokenInput.value = ''
+        localStorage.removeItem('analyticsConfig')
+        statsContainer.style.display = 'none'
+        emptyState.style.display = 'flex'
+        livePill.classList.add('hidden')
+        errorBox.innerHTML = ''
+        successBox.innerHTML = ''
+      })
+
+      function showError(m) {
+        errorBox.innerHTML = `<div class="alert alert-error">${m}</div>`
+        successBox.innerHTML = ''
+      }
+      function showSuccess(m) {
+        successBox.innerHTML = `<div class="alert alert-success">${m}</div>`
+        errorBox.innerHTML = ''
+      }
+
+      // ---------- fetch ----------
+      async function fetchStats() {
+        if (!tokenInput.value) {
+          openConfig()
+          showError('Token required')
+          return
+        }
+        loadButton.disabled = true
+        const orig = loadButton.textContent
+        loadButton.textContent = 'Loading…'
+        errorBox.innerHTML = ''
+        successBox.innerHTML = ''
+        const serverUrl = serverUrlInput.value || window.location.origin
+        try {
+          const res = await fetch(`${serverUrl}/stats`, {
+            headers: { Authorization: `Bearer ${tokenInput.value}` },
+          })
+          if (!res.ok) {
+            showError(
+              res.status === 401
+                ? 'Invalid token'
+                : res.status === 503
+                  ? 'Stats disabled on server'
+                  : `Error ${res.status}`,
+            )
+            return
+          }
+          const stats = await res.json()
+          saveConfig()
+          displayStats(stats)
+          lastUpdated.textContent = 'Updated ' + new Date().toLocaleTimeString()
+          livePill.classList.remove('hidden')
+          showSuccess('Loaded')
+          configPanel.classList.add('hidden')
+        } catch (err) {
+          showError(err.message)
+        } finally {
+          loadButton.disabled = false
+          loadButton.textContent = orig
+        }
+      }
+
+      // ---------- render ----------
+      function displayStats(stats) {
+        emptyState.style.display = 'none'
+        statsContainer.style.display = 'block'
+
+        const axis = dayAxis(stats, 30)
+        const labels = axis.map(formatDate)
+
+        const totalViews = stats.viewsByDay.reduce((s, d) => s + d.views, 0)
+        const totalVisitors = stats.viewsByDay.reduce((s, d) => s + d.visitors, 0)
+        const moduleOpens = totalFor(stats, 'module_open')
+        const evals = totalFor(stats, 'evaluation_open')
+        const shares = totalFor(stats, 'share_create')
+        const tStart = totalFor(stats, 'tutorial_start')
+        const tDone = totalFor(stats, 'tutorial_complete')
+        const rlTotal = stats.rateLimited.reduce((s, r) => s + r.count, 0)
+
+        const viewSeries = axis.map((d) => stats.viewsByDay.find((r) => r.day === d)?.views || 0)
+        const visitorSeries = axis.map((d) => stats.viewsByDay.find((r) => r.day === d)?.visitors || 0)
+        const activeDays = stats.viewsByDay.filter((d) => d.views > 0).length
+        const avgPerDay = activeDays ? Math.round(totalViews / activeDays) : 0
+        const viewsPerVisitor = totalVisitors ? (totalViews / totalVisitors).toFixed(1) : '—'
+        const tutorialRate = tStart ? Math.round((tDone / tStart) * 100) : null
+
+        // ----- KPI tiles -----
+        const kpis = [
+          {
+            label: 'Page views',
+            value: formatNumber(totalViews),
+            accent: 'var(--c-blue)',
+            sub: trendHtml(trend(viewSeries)),
+            spark: sparkline(viewSeries, '#3987e5'),
+          },
+          {
+            label: 'Visitors',
+            value: formatNumber(totalVisitors),
+            accent: 'var(--c-violet)',
+            sub: `${viewsPerVisitor} views / visitor`,
+            spark: sparkline(visitorSeries, '#9085e9'),
+          },
+          {
+            label: 'Module opens',
+            value: formatNumber(moduleOpens),
+            accent: 'var(--c-aqua)',
+            sub: trendHtml(trend(seriesFor(stats, 'module_open', axis))),
+            spark: sparkline(seriesFor(stats, 'module_open', axis), '#199e70'),
+          },
+          {
+            label: 'Evaluations',
+            value: formatNumber(evals),
+            accent: 'var(--c-orange)',
+            sub: trendHtml(trend(seriesFor(stats, 'evaluation_open', axis))),
+            spark: sparkline(seriesFor(stats, 'evaluation_open', axis), '#d95926'),
+          },
+          {
+            label: 'Shares',
+            value: formatNumber(shares),
+            accent: 'var(--c-magenta)',
+            sub: trendHtml(trend(seriesFor(stats, 'share_create', axis))),
+            spark: sparkline(seriesFor(stats, 'share_create', axis), '#d55181'),
+          },
+          {
+            label: 'Tutorial completion',
+            value: tutorialRate === null ? '—' : tutorialRate + '%',
+            accent: 'var(--c-yellow)',
+            sub: `${formatNumber(tDone)} of ${formatNumber(tStart)} finished`,
+            spark: sparkline(seriesFor(stats, 'tutorial_complete', axis), '#c98500'),
+          },
+        ]
+        $('kpiRow').innerHTML = kpis
+          .map(
+            (k) => `
+          <div class="kpi" style="--accent:${k.accent}">
+            <div class="kpi-label">${k.label}</div>
+            <div class="kpi-value">${k.value}</div>
+            <div class="kpi-sub">${k.sub}</div>
+            <div class="kpi-spark">${k.spark}</div>
+          </div>`,
+          )
+          .join('')
+
+        // ----- Traffic over time -----
+        const peak = stats.viewsByDay.reduce((m, d) => (d.views > (m?.views || 0) ? d : m), null)
+        $('trafficCaption').textContent = `${avgPerDay}/day avg · peak ${
+          peak ? formatNumber(peak.views) + ' on ' + formatDate(peak.day) : '—'
+        }`
+        charts.pageViews?.destroy()
+        charts.pageViews = new ApexCharts($('pageViewsChart'), {
+          series: [
+            { name: 'Views', data: viewSeries },
+            { name: 'Visitors', data: visitorSeries },
+          ],
+          chart: { type: 'area', height: 230, toolbar: { show: false }, fontFamily: 'inherit', animations: { speed: 400 } },
+          colors: ['#3987e5', '#9085e9'],
+          dataLabels: { enabled: false },
+          stroke: { curve: 'smooth', width: 2 },
+          fill: { type: 'gradient', gradient: { opacityFrom: 0.28, opacityTo: 0.02 } },
+          xaxis: {
+            categories: labels,
+            tickAmount: 8,
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: { style: { colors: '#8b98ad', fontSize: '10px' } },
+          },
+          yaxis: { labels: { style: { colors: '#8b98ad', fontSize: '10px' }, formatter: (v) => formatNumber(Math.round(v)) } },
+          grid: { borderColor: 'rgba(148,163,184,0.12)', strokeDashArray: 4, padding: { left: 4, right: 8 } },
+          legend: {
+            show: true,
+            position: 'top',
+            horizontalAlign: 'right',
+            fontSize: '11px',
+            labels: { colors: '#8b98ad' },
+            markers: { width: 9, height: 9, radius: 3 },
+          },
+          tooltip: { theme: 'dark', x: { show: true } },
+        })
+        charts.pageViews.render()
+
+        // ----- Event mix donut -----
+        const totalEvents = stats.eventTotals.reduce((s, e) => s + e.count, 0)
+        $('eventMixCaption').textContent = `${formatNumber(totalEvents)} events tracked`
+        charts.eventTypes?.destroy()
+        charts.eventTypes = new ApexCharts($('eventTypesChart'), {
+          series: stats.eventTotals.map((e) => e.count),
+          chart: { type: 'donut', height: 175, fontFamily: 'inherit' },
+          labels: stats.eventTotals.map((e) => meta(e.type).label),
+          colors: stats.eventTotals.map((e) => meta(e.type).color),
+          stroke: { colors: ['#131a2a'], width: 2 },
+          dataLabels: { enabled: false },
+          legend: { show: false },
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '68%',
+                labels: {
+                  show: true,
+                  name: { fontSize: '11px', color: '#8b98ad' },
+                  value: { fontSize: '18px', fontWeight: 700, color: '#e6ecf5', formatter: (v) => formatNumber(+v) },
+                  total: {
+                    show: true,
+                    label: 'Total',
+                    color: '#8b98ad',
+                    fontSize: '11px',
+                    formatter: () => formatNumber(totalEvents),
+                  },
+                },
+              },
+            },
+          },
+          tooltip: { theme: 'dark', y: { formatter: (v) => formatNumber(v) } },
+        })
+        charts.eventTypes.render()
+        $('eventLegend').innerHTML = stats.eventTotals
+          .map((e) => {
+            const pct = totalEvents ? Math.round((e.count / totalEvents) * 100) : 0
+            return `<div class="legend-item">
+              <span class="dot" style="background:${meta(e.type).color}"></span>
+              <span>${meta(e.type).label}</span>
+              <span class="val">${pct}%</span>
+            </div>`
+          })
+          .join('')
+
+        // ----- Feature activity stacked area (exclude page_view) -----
+        // Ordered by the validated categorical palette so adjacent stack bands stay distinct.
+        const featTypes = [
+          'evaluation_open',
+          'module_open',
+          'tutorial_complete',
+          'share_create',
+          'generate_run',
+          'tutorial_start',
+        ].filter((t) => totalFor(stats, t) > 0)
+        charts.feature?.destroy()
+        charts.feature = new ApexCharts($('featureChart'), {
+          series: featTypes.map((t) => ({ name: meta(t).label, data: seriesFor(stats, t, axis) })),
+          chart: {
+            type: 'area',
+            height: 210,
+            stacked: true,
+            toolbar: { show: false },
+            fontFamily: 'inherit',
+            animations: { speed: 400 },
+          },
+          colors: featTypes.map((t) => meta(t).color),
+          dataLabels: { enabled: false },
+          stroke: { curve: 'smooth', width: 1.5 },
+          fill: { type: 'gradient', gradient: { opacityFrom: 0.5, opacityTo: 0.15 } },
+          xaxis: {
+            categories: labels,
+            tickAmount: 6,
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: { style: { colors: '#8b98ad', fontSize: '10px' } },
+          },
+          yaxis: { labels: { style: { colors: '#8b98ad', fontSize: '10px' }, formatter: (v) => formatNumber(Math.round(v)) } },
+          grid: { borderColor: 'rgba(148,163,184,0.12)', strokeDashArray: 4, padding: { left: 4, right: 8 } },
+          legend: {
+            show: true,
+            position: 'bottom',
+            fontSize: '10px',
+            labels: { colors: '#8b98ad' },
+            markers: { width: 8, height: 8, radius: 3 },
+            itemMargin: { horizontal: 6 },
+          },
+          tooltip: { theme: 'dark' },
+        })
+        charts.feature.render()
+
+        // ----- Weekday activity -----
+        const dow = [0, 0, 0, 0, 0, 0, 0]
+        stats.viewsByDay.forEach((d) => {
+          dow[new Date(d.day + 'T00:00:00').getDay()] += d.views
+        })
+        const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        const ordered = [1, 2, 3, 4, 5, 6, 0]
+        const busiest = ordered.reduce((m, i) => (dow[i] > dow[m] ? i : m), 1)
+        $('weekdayCaption').textContent = `Busiest: ${names[busiest]}`
+        charts.weekday?.destroy()
+        charts.weekday = new ApexCharts($('weekdayChart'), {
+          series: [{ name: 'Views', data: ordered.map((i) => dow[i]) }],
+          chart: { type: 'bar', height: 210, toolbar: { show: false }, fontFamily: 'inherit' },
+          colors: ['#3987e5'],
+          plotOptions: { bar: { borderRadius: 4, columnWidth: '55%', distributed: false } },
+          dataLabels: { enabled: false },
+          xaxis: {
+            categories: ordered.map((i) => names[i]),
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: { style: { colors: '#8b98ad', fontSize: '10px' } },
+          },
+          yaxis: { labels: { style: { colors: '#8b98ad', fontSize: '10px' }, formatter: (v) => formatNumber(Math.round(v)) } },
+          grid: { borderColor: 'rgba(148,163,184,0.12)', strokeDashArray: 4 },
+          tooltip: { theme: 'dark', y: { formatter: (v) => formatNumber(v) + ' views' } },
+        })
+        charts.weekday.render()
+
+        // ----- Top modules (stacked by open source) -----
+        $('modulesCaption').textContent = `${stats.topModules.length} types`
+        renderStackedModules(stats.topModules.slice(0, 8))
+
+        // ----- Top examples (module · name; names are unique only per module) -----
+        const examples = stats.topExamples || []
+        const exampleOpens = examples.reduce((s, e) => s + e.count, 0)
+        $('examplesCaption').textContent = examples.length
+          ? `${formatNumber(exampleOpens)} opens · ${examples.length} distinct`
+          : ''
+        renderBars(
+          'topExamplesContainer',
+          examples.slice(0, 8).map((e) => ({
+            name: `${e.module ? e.module + ' · ' : ''}${e.example}`,
+            count: e.count,
+          })),
+          '#d55181',
+        )
+
+        // ----- Generation algorithms (by algorithm · module) -----
+        const generators = stats.topGenerators || []
+        const genRuns = generators.reduce((s, g) => s + g.count, 0)
+        $('generatorsCaption').textContent = generators.length ? `${formatNumber(genRuns)} runs` : ''
+        renderBars(
+          'topGeneratorsContainer',
+          generators.slice(0, 8).map((g) => ({
+            name: `${g.algorithm}${g.module ? ' · ' + g.module : ''}`,
+            count: g.count,
+          })),
+          '#008300',
+        )
+
+        // ----- Top evaluations -----
+        renderBars(
+          'topEvaluationsContainer',
+          stats.topEvaluations.slice(0, 7).map((e) => ({
+            name: `${e.module ? e.module + ' · ' : ''}${e.endpoint}`,
+            count: e.count,
+          })),
+          '#d95926',
+        )
+
+        // ----- Tutorials (always shown, per-tutorial breakdown) -----
+        const tRate = tStart ? Math.round((tDone / tStart) * 100) : 0
+        const tutorials = (stats.topTutorials || []).filter((t) => t.starts > 0)
+        if (tStart === 0 && tDone === 0) {
+          $('tutorialsContainer').innerHTML = `<div style="color:var(--text-faint);font-size:0.78rem;padding:8px 0">No tutorial activity yet</div>`
+        } else {
+          const overall = `
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px">
+              <span style="font-size:0.78rem;color:var(--text-muted)">Overall completion</span>
+              <span style="font-weight:700">${tRate}%</span>
+            </div>
+            <div class="funnel-track"><div class="funnel-bar" style="width:${tRate}%;background:#c98500"></div></div>
+            <div class="conv" style="margin:5px 0 10px">${formatNumber(tDone)} of ${formatNumber(
+              tStart,
+            )} completed · ${formatNumber(Math.max(tStart - tDone, 0))} dropped off</div>`
+          const rows = tutorials
+            .slice(0, 6)
+            .map((t) => {
+              const rate = t.starts ? Math.round((t.completes / t.starts) * 100) : 0
+              return `<div style="margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;font-size:0.76rem">
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.tutorial}">${t.tutorial}</span>
+                  <span class="bar-count">${formatNumber(t.completes)}/${formatNumber(t.starts)} · ${rate}%</span>
+                </div>
+                <div class="funnel-track"><div class="funnel-bar" style="width:${rate}%;background:#9085e9"></div></div>
+              </div>`
+            })
+            .join('')
+          $('tutorialsContainer').innerHTML = overall + rows
+        }
+
+        // ----- Rate-limited evaluation requests (only when present) -----
+        if (stats.rateLimited.length > 0) {
+          const rlVisitors = stats.rateLimited.reduce((s, r) => s + (r.visitors || 0), 0)
+          $('rlSub').textContent = `Evaluation requests blocked at the edge (429) · ${formatNumber(
+            rlVisitors,
+          )} distinct visitors affected`
+          $('rlBadge').textContent = '⚠ ' + formatNumber(rlTotal) + ' blocks'
+          renderBars(
+            'rlContainer',
+            stats.rateLimited.slice(0, 10).map((r) => ({ name: r.endpoint, count: r.count })),
+            '#e66767',
+          )
+          $('rateLimitSection').classList.remove('hidden')
+        } else {
+          $('rateLimitSection').classList.add('hidden')
+        }
+      }
+
+      function renderStackedModules(items) {
+        const el = $('topModulesContainer')
+        if (!items.length) {
+          el.innerHTML = `<div style="color:var(--text-faint);font-size:0.78rem;padding:8px 0">No data</div>`
+          return
+        }
+        const max = Math.max(...items.map((m) => m.count), 1)
+        el.innerHTML = items
+          .map((m, i) => {
+            const known = SOURCE_SEGMENTS.reduce((s, seg) => s + (m[seg.key] || 0), 0)
+            const other = Math.max(m.count - known, 0)
+            const parts = [
+              ...SOURCE_SEGMENTS.map((seg) => ({ ...seg, value: m[seg.key] || 0 })),
+              { key: 'other', label: 'Other', color: '#64748b', value: other },
+            ].filter((p) => p.value > 0)
+            const segs = parts
+              .map(
+                (p) =>
+                  `<span class="seg" style="width:${(p.value / max) * 100}%;background:${p.color}" title="${p.label}: ${formatNumber(p.value)}"></span>`,
+              )
+              .join('')
+            return `<div style="margin-bottom:9px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;font-size:0.76rem">
+                <span style="display:flex;align-items:center;gap:7px;min-width:0">
+                  <span class="idx">${i + 1}</span>
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m.module}">${m.module}</span>
+                </span>
+                <span class="bar-count">${formatNumber(m.count)}</span>
+              </div>
+              <div class="stack-track">${segs}</div>
+            </div>`
+          })
+          .join('')
+      }
+
+      function renderBars(containerId, items, color) {
+        const el = $(containerId)
+        if (!items.length) {
+          el.innerHTML = `<div style="color:var(--text-faint);font-size:0.78rem;padding:8px 0">No data</div>`
+          return
+        }
+        const max = Math.max(...items.map((i) => i.count), 1)
+        el.innerHTML = items
+          .map((it, i) => {
+            const w = Math.max((it.count / max) * 100, 2)
+            return `<div style="margin-bottom:9px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px">
+                <span style="display:flex;align-items:center;gap:7px;min-width:0;font-size:0.76rem">
+                  <span class="idx">${i + 1}</span>
+                  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${it.name}">${it.name}</span>
+                </span>
+                <span class="bar-count">${formatNumber(it.count)}</span>
+              </div>
+              <div class="funnel-track"><div class="funnel-bar" style="width:${w}%;background:${color}"></div></div>
+            </div>`
+          })
+          .join('')
+      }
+
+      // ---------- events ----------
+      loadButton.addEventListener('click', fetchStats)
+      refreshBtn.addEventListener('click', fetchStats)
+      tokenInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') fetchStats()
+      })
+      serverUrlInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') fetchStats()
+      })
+
+      if (loadSaved()) {
+        fetchStats()
+      } else {
+        openConfig()
+      }
+    </script>
+  </body>
+</html>

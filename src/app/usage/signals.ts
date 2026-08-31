@@ -16,19 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import multiFactorAccessJson from '@/modules/collective-attacks-argumentation/examples/multi_factor_access.json'
-import tandemTripJson from '@/modules/collective-attacks-argumentation/examples/tandem_trip.json'
-import type { SetAF, SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
-import { loadExampleFromJson } from '@/modules/collective-attacks-argumentation/save/saveFormat'
-import type { Example } from '@/modules/common/examples'
+// Analytics event types. Keep in sync with the ALLOWED_TYPES allowlist in
+// servers/share/src/analytics.ts — the backend rejects anything not listed there.
+export const ANALYTICS_EVENTS = {
+  pageView: 'page_view',
+  moduleOpen: 'module_open',
+  generateRun: 'generate_run',
+  evaluationOpen: 'evaluation_open',
+  evaluationRateLimited: 'evaluation_rate_limited',
+  shareCreate: 'share_create',
+  tutorialStart: 'tutorial_start',
+  tutorialComplete: 'tutorial_complete',
+} as const
 
-const exampleJsons: unknown[] = [tandemTripJson, multiFactorAccessJson]
-
-export const datasets: Example<SetAF<SetAfArgumentData>>[] = exampleJsons.map((json) => {
-  const { name, description } = loadExampleFromJson(json)
-  return {
-    name: name ?? 'unknown',
-    description,
-    load: () => loadExampleFromJson(json).framework,
-  }
-})
+export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS]

@@ -85,6 +85,8 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/graph-gen/, ''),
       },
       '/shares': 'http://localhost:8001',
+      '/events': 'http://localhost:8001',
+      '/stats': 'http://localhost:8001',
     },
   },
 })

@@ -20,6 +20,8 @@
 import { RouterLink } from 'vue-router'
 
 import type { ModuleCard } from '@/app/home/moduleCard'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import type { Example } from '@/modules/common/examples'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
 import PublicationsTooltip from '@/modules/common/tooltip/PublicationsTooltip.vue'
@@ -33,14 +35,19 @@ const emit = defineEmits<{
   open: [content: DocumentT, newNamePrefix: string]
 }>()
 
-function openExample(example: Example<DocumentT>, newNamePrefix: string) {
+function openExample(example: Example<DocumentT>, modulePrefix: string) {
   const content = example.load()
   example.applyLayout?.(content)
-  emit('open', content, newNamePrefix)
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, example.name, {
+    source: 'example',
+    module: modulePrefix,
+  })
+  emit('open', content, example.name)
 }
 
-function openContent(content: DocumentT, newNamePrefix: string) {
-  emit('open', content, newNamePrefix)
+function openContent(content: DocumentT, modulePrefix: string) {
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, modulePrefix, { source: 'blank', module: modulePrefix })
+  emit('open', content, modulePrefix)
 }
 </script>
 <template>
@@ -101,14 +108,14 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                         >
                           <a
                             class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
-                            @click="openExample(example, example.name)"
+                            @click="openExample(example, moduleCard.newNamePrefix)"
                             >{{ example.name }}</a
                           >
                         </span>
                         <a
                           v-else
                           class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
-                          @click="openExample(example, example.name)"
+                          @click="openExample(example, moduleCard.newNamePrefix)"
                           >{{ example.name }}</a
                         >
                       </li>

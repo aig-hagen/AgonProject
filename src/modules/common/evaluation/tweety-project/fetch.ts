@@ -18,6 +18,8 @@
  */
 import z from 'zod'
 
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import {
   EvaluationTimeoutError,
   RateLimitError,
@@ -55,7 +57,10 @@ export async function fetchTyped<T extends z.ZodTypeAny>(
   })
   if (!response.ok) {
     if (HTTP_TIMEOUT_STATUSES.has(response.status)) throw new EvaluationTimeoutError()
-    if (response.status === 429) throw new RateLimitError()
+    if (response.status === 429) {
+      trackEvent(ANALYTICS_EVENTS.evaluationRateLimited, url)
+      throw new RateLimitError()
+    }
     if (response.status === 502 || response.status === 503) throw new ServiceUnavailableError()
     throw new Error('HTTP response status: ' + response.status)
   }

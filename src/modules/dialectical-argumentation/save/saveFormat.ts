@@ -61,7 +61,7 @@ export const SaveSchema = z.object({
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(adf: DialecticalArgumentation<AdfArgumentData>): string {
+export function saveAsString(adf: DialecticalArgumentation<AdfArgumentData>, name: string): string {
   const argumentsSave: Record<string, AdfArgumentData> = Object.create(null)
   for (const [argumentId, argumentData] of adf.arguments()) {
     argumentsSave[argumentId] = {
@@ -72,17 +72,19 @@ export function saveAsString(adf: DialecticalArgumentation<AdfArgumentData>): st
       conditionAnnotationPosition: argumentData.conditionAnnotationPosition,
     }
   }
-  return toFormatedJsonString({
+  const save: z.infer<typeof ExampleSaveSchema> = {
     apiVersion: API_VERSION,
+    name,
     arguments: argumentsSave,
-  })
+  }
+  return toFormatedJsonString(save)
 }
 
 export function loadFromString(
   dataString: string,
   fileName: string,
 ): DeserializationResult<DialecticalArgumentation<AdfArgumentData>> {
-  return loadFromStringWithSchema(SaveSchema, dataString, fileName, (data) => {
+  return loadFromStringWithSchema(ExampleSaveSchema, dataString, fileName, (data) => {
     const adf = new DialecticalArgumentation<AdfArgumentData>()
 
     // First pass: add all arguments with their conditions

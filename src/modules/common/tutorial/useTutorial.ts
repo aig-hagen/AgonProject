@@ -20,6 +20,8 @@ import { useMediaQuery, useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
 import { computed, type InjectionKey, ref } from 'vue'
 
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 
@@ -85,6 +87,7 @@ export const useTutorial = createSharedComposable(() => {
     activeStepIndex.value = 0
     baselineContext.value = ctx ?? null
     if (ownerId !== undefined) activeOwnerId.value = ownerId
+    trackEvent(ANALYTICS_EVENTS.tutorialStart, tutorial.id)
   }
 
   function nextStep(currentCtx: TutorialContext): void {
@@ -113,6 +116,7 @@ export const useTutorial = createSharedComposable(() => {
   function completeTutorial(): void {
     if (!activeTutorial.value) return
     const id = activeTutorial.value.id
+    trackEvent(ANALYTICS_EVENTS.tutorialComplete, id)
     if (!completedTutorials.value.includes(id)) {
       completedTutorials.value = [...completedTutorials.value, id]
     }

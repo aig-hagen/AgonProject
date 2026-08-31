@@ -12,6 +12,7 @@ java -jar ./web.jar --logging.config=./logback.xml --server.port=8081 &
 PORT=8001 DB_PATH=/opt/share-server/data/shares.db \
   FRONTEND_URL="${FRONTEND_URL:-http://localhost:5173}" \
   ALLOWED_ORIGIN="${ALLOWED_ORIGIN:-*}" \
+  STATS_TOKEN="${STATS_TOKEN:-}" \
   node /opt/share-server/node_modules/.bin/tsx /opt/share-server/src/index.ts &
 
 # Start the fourth process

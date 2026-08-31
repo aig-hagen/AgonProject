@@ -34,6 +34,7 @@ import BlankDocumentCanvasMobile from '@/app/home/BlankDocumentCanvasMobile.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { HomeController } from '@/app/home/useHomeController'
 import { useHomeSurface } from '@/app/home/useHomeSurface'
+import { ACTIVE_MODULE_KEY } from '@/app/usage/moduleContext'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
 import { formatRelativeTime } from '@/modules/common/util'
@@ -70,6 +71,11 @@ const {
 
 // Let deep editor surfaces (e.g. the export sheet) trigger a quick share.
 provide(QUICK_SHARE_KEY, quickShareDocument)
+// Active module tag for evaluation analytics attribution.
+provide(
+  ACTIVE_MODULE_KEY,
+  computed(() => documentModule.value?.newNamePrefix),
+)
 
 const router = useRouter()
 

@@ -6,6 +6,8 @@ services:
     environment:
       FRONTEND_URL: https://agonproject.aig.fernuni-hagen.de
       ALLOWED_ORIGIN: https://agonproject.aig.fernuni-hagen.de
+      # Token guarding GET /stats. Leave unset to keep the stats readout disabled.
+      STATS_TOKEN: ${STATS_TOKEN:-}
     volumes:
       - shares_data:/opt/share-server/data
     restart: unless-stopped

@@ -19,13 +19,14 @@
 <script setup lang="ts" generic="DocumentT extends Objectish">
 import type { IDBPDatabase } from 'idb'
 import type { Objectish } from 'immer'
-import { useTemplateRef } from 'vue'
+import { computed, provide, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 
 import BlankDocumentCanvas from '@/app/home/BlankDocumentCanvas.vue'
 import LayoutTabs from '@/app/home/EditorTabs.vue'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { HomeController } from '@/app/home/useHomeController'
+import { ACTIVE_MODULE_KEY } from '@/app/usage/moduleContext'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import NotificationsDisplay from '@/modules/common/notifications/NotificationsDisplay.vue'
 import ShareModal from '@/modules/common/share/ShareModal.vue'
@@ -65,6 +66,12 @@ const {
   saveAsFile,
   exportAsFile,
 } = controller
+
+// Active module tag for evaluation analytics attribution.
+provide(
+  ACTIVE_MODULE_KEY,
+  computed(() => documentModule.value?.newNamePrefix),
+)
 
 const router = useRouter()
 
