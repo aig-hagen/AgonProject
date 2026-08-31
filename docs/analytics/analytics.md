@@ -8,14 +8,22 @@ banner while still answering "which parts of the app get used?".
 
 Each event is a row of `{ type, name?, props?, day, visitor_hash }`:
 
-| Event | `name` | Fired when |
-| --- | --- | --- |
-| `page_view` | route pattern (e.g. `/generate`, `/share/:id`) | any route navigation |
-| `module_open` | module name prefix | a blank or example document of a module is opened |
-| `evaluation_open` | evaluation title | an evaluation window is opened |
-| `evaluation_rate_limited` | TweetyProject endpoint | an eval request is throttled (HTTP 429) |
-| `share_create` | — | a share link is created |
-| `tutorial_start` / `tutorial_complete` | tutorial id | a tutorial is started / finished |
+| Event | `name` | `props` | Fired when |
+| --- | --- | --- | --- |
+| `page_view` | route pattern (e.g. `/generate`, `/share/:id`) | — | any route navigation |
+| `module_open` | module prefix, or example name (when `source: 'example'`) | `{ source, module }` | a document is opened in the editor — from a blank (`source: 'blank'`), an example (`'example'`), or a random generation (`'generate'`, on *Open in Editor*) |
+| `generate_run` | module prefix | `{ module, algorithm }` | a random framework is actually generated in the Generate view |
+| `evaluation_open` | evaluation title | `{ module }` | an evaluation window is opened |
+| `evaluation_rate_limited` | TweetyProject endpoint | — | an eval request is throttled (HTTP 429) |
+| `share_create` | — | — | a share link is created |
+| `tutorial_start` / `tutorial_complete` | tutorial id | — | a tutorial is started / finished |
+
+`module_open` carries `props.module` (the module type, e.g. `AF`) so opens group by
+module regardless of how the document was created; for examples `name` still holds the
+concrete example (unique only *per module*). `generate_run` is distinct from
+`module_open` with `source: 'generate'`: the former counts frameworks generated, the
+latter counts those actually opened in the editor. The home-screen *Generate* button —
+which only navigates to the Generate view — is **not** tracked.
 
 Deliberately **not** collected: IP addresses, precise location, share IDs (only the
 `/share/:id` *pattern* is stored), or the content of any framework.
@@ -63,12 +71,25 @@ container environment; while unset the endpoint stays disabled (503). Fields:
 | `viewsByDay` | `{ day, views, visitors }[]` | page views & unique visitors per day |
 | `eventsByDay` | `{ day, type, count, visitors }[]` | per-day, per-type series (evals, module opens, shares, …) — plot any event over time |
 | `eventTotals` | `{ type, count }[]` | all-time totals per event type |
-| `topModules` | `{ module, count }[]` | most-opened modules |
-| `topEvaluations` | `{ endpoint, count }[]` | most-opened evaluations |
+| `topModules` | `{ module, count, blank, generate, example }[]` | most-opened module types, with the open count split by source |
+| `topExamples` | `{ module, example, count }[]` | most-opened examples, keyed by `(module, name)` — names are unique only per module |
+| `topGenerators` | `{ algorithm, module, count }[]` | random generations run, by algorithm and module |
+| `topEvaluations` | `{ module, endpoint, count }[]` | most-run evaluations, grouped by `(module, endpoint)` |
+| `topTutorials` | `{ tutorial, starts, completes }[]` | per-tutorial starts vs completes |
 | `rateLimited` | `{ endpoint, count, visitors }[]` | eval requests throttled (HTTP 429) |
 
 Days are bucketed in **UTC**. `viewsByDay` covers the last 90 days; `eventsByDay` is
-capped at 2000 rows (≈ the most recent days across all types).
+capped at 2000 rows (≈ the most recent days across all types). `topModules` counts group
+by `props.module` (falling back to `name` for rows predating it), so historical example
+opens may still appear under their example name rather than a module type.
+
+### Dashboard viewer
+
+A self-contained HTML dashboard renders this JSON as charts and ranked lists:
+[`analytics-dashboard.html`](./analytics-dashboard.html), next to this doc. Open the file
+in a browser, then enter the server URL (e.g. `https://<host>`) and `STATS_TOKEN` in its
+settings panel to load. Nothing is stored server-side; the token lives only in the
+browser's `localStorage`.
 
 ### One-time setup on the deploy server
 

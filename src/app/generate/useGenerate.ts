@@ -22,6 +22,8 @@ import { computed, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import type { ModuleConfig } from '@/app/home/moduleConfig'
+import { trackEvent } from '@/app/usage/report'
+import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import { availableExports as abstractExports } from '@/modules/abstract-argumentation/export'
 import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
@@ -361,6 +363,12 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
         generated.value = af
         stats.value = { nArgs: n, nAttacks: data.attacks.length }
       }
+      // A framework was actually produced — distinct from merely landing on this
+      // view. Open-in-editor is tracked separately as a module_open.
+      trackEvent(ANALYTICS_EVENTS.generateRun, activeModule.value?.newNamePrefix ?? 'AF', {
+        module: activeModule.value?.newNamePrefix ?? 'AF',
+        algorithm: selectedAlgorithmId.value,
+      })
     } catch (e) {
       error.value =
         e instanceof DOMException && e.name === 'TimeoutError'
@@ -385,6 +393,7 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
     const fw = generated.value
     if (fw === null) return
     const prefix = activeModule.value?.newNamePrefix ?? 'AF'
+    trackEvent(ANALYTICS_EVENTS.moduleOpen, prefix, { source: 'generate', module: prefix })
     if (fw instanceof AbstractArgumentation) {
       layout(fw, Layout.ForceDirected)
     }

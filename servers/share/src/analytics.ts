@@ -5,10 +5,11 @@ import { DatabaseSync } from 'node:sqlite'
 import type { Express, Request, Response } from 'express'
 
 // Allowlisted event types. Anything else is rejected so the endpoint can't be
-// used as a free-form write sink. Keep in sync with src/app/analytics/events.ts.
+// used as a free-form write sink. Keep in sync with src/app/usage/signals.ts.
 const ALLOWED_TYPES = new Set([
   'page_view',
   'module_open',
+  'generate_run',
   'evaluation_open',
   'evaluation_rate_limited',
   'share_create',
@@ -128,10 +129,20 @@ export function registerAnalytics(app: Express, dataDir: string): void {
     const eventTotals = db
       .prepare('SELECT type, COUNT(*) AS count FROM events GROUP BY type ORDER BY count DESC')
       .all()
+    // Group by the module type carried in props ({ module: "AF" }). Historical
+    // rows predate it: blank opens stored the module prefix in name (so name is a
+    // correct fallback), while example opens stored the example name (unavoidable
+    // for old data). New rows all carry props.module across blank/example/generate.
     const topModules = db
       .prepare(
-        `SELECT name AS module, COUNT(*) AS count FROM events
-         WHERE type = 'module_open' AND name IS NOT NULL GROUP BY name ORDER BY count DESC`,
+        `SELECT COALESCE(json_extract(props, '$.module'), name) AS module,
+           COUNT(*) AS count,
+           SUM(CASE WHEN json_extract(props, '$.source') = 'blank' THEN 1 ELSE 0 END) AS blank,
+           SUM(CASE WHEN json_extract(props, '$.source') = 'generate' THEN 1 ELSE 0 END) AS generate,
+           SUM(CASE WHEN json_extract(props, '$.source') = 'example' THEN 1 ELSE 0 END) AS example
+         FROM events
+         WHERE type = 'module_open' AND COALESCE(json_extract(props, '$.module'), name) IS NOT NULL
+         GROUP BY module ORDER BY count DESC`,
       )
       .all()
     // Module comes from the event's props ({ module: "AF" }); older rows predate
@@ -152,6 +163,40 @@ export function registerAnalytics(app: Express, dataDir: string): void {
          FROM events GROUP BY day, type ORDER BY day DESC, type LIMIT 2000`,
       )
       .all()
+    // Which concrete examples get opened, and how often. Example names are only
+    // unique per module (two modules can both ship a "Simple" example), so group
+    // by (module, name). Only source='example' opens — blank/generate aren't examples.
+    const topExamples = db
+      .prepare(
+        `SELECT json_extract(props, '$.module') AS module, name AS example, COUNT(*) AS count
+         FROM events
+         WHERE type = 'module_open' AND json_extract(props, '$.source') = 'example' AND name IS NOT NULL
+         GROUP BY module, name ORDER BY count DESC`,
+      )
+      .all()
+    // Which random-generation algorithms get used, and how often. Algorithm is
+    // carried in the generate_run event's props ({ algorithm: "..." }).
+    const topGenerators = db
+      .prepare(
+        `SELECT json_extract(props, '$.algorithm') AS algorithm,
+           json_extract(props, '$.module') AS module, COUNT(*) AS count
+         FROM events
+         WHERE type = 'generate_run' AND json_extract(props, '$.algorithm') IS NOT NULL
+         GROUP BY algorithm, module ORDER BY count DESC`,
+      )
+      .all()
+    // Per-tutorial starts vs completes so completion can be broken down by
+    // tutorial. name holds the tutorial id for both event types.
+    const topTutorials = db
+      .prepare(
+        `SELECT name AS tutorial,
+           SUM(CASE WHEN type = 'tutorial_start' THEN 1 ELSE 0 END) AS starts,
+           SUM(CASE WHEN type = 'tutorial_complete' THEN 1 ELSE 0 END) AS completes
+         FROM events
+         WHERE type IN ('tutorial_start', 'tutorial_complete') AND name IS NOT NULL
+         GROUP BY name ORDER BY starts DESC`,
+      )
+      .all()
     // How often the TweetyProject eval limit (Caddy 429) actually bites, and
     // how many distinct visitors it affects — to tune the limit with data.
     const rateLimited = db
@@ -162,6 +207,16 @@ export function registerAnalytics(app: Express, dataDir: string): void {
       )
       .all()
 
-    res.json({ viewsByDay, eventsByDay, eventTotals, topModules, topEvaluations, rateLimited })
+    res.json({
+      viewsByDay,
+      eventsByDay,
+      eventTotals,
+      topModules,
+      topExamples,
+      topGenerators,
+      topEvaluations,
+      topTutorials,
+      rateLimited,
+    })
   })
 }

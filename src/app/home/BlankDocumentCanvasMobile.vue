@@ -42,16 +42,19 @@ function toggle(index: number) {
   expanded.value = expanded.value === index ? -1 : index
 }
 
-function openExample(example: Example<DocumentT>, newNamePrefix: string) {
+function openExample(example: Example<DocumentT>, modulePrefix: string) {
   const content = example.load()
   example.applyLayout?.(content)
-  trackEvent(ANALYTICS_EVENTS.moduleOpen, newNamePrefix, { source: 'example' })
-  emit('open', content, newNamePrefix)
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, example.name, {
+    source: 'example',
+    module: modulePrefix,
+  })
+  emit('open', content, example.name)
 }
 
-function openContent(content: DocumentT, newNamePrefix: string) {
-  trackEvent(ANALYTICS_EVENTS.moduleOpen, newNamePrefix, { source: 'blank' })
-  emit('open', content, newNamePrefix)
+function openContent(content: DocumentT, modulePrefix: string) {
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, modulePrefix, { source: 'blank', module: modulePrefix })
+  emit('open', content, modulePrefix)
 }
 </script>
 
@@ -118,7 +121,7 @@ function openContent(content: DocumentT, newNamePrefix: string) {
               v-for="(example, exampleIndex) in moduleCard.examples"
               :key="exampleIndex"
               class="rounded-full bg-base-200 px-3 py-1.5 text-sm text-primary"
-              @click="openExample(example, example.name)"
+              @click="openExample(example, moduleCard.newNamePrefix)"
             >
               {{ example.name }}
             </button>

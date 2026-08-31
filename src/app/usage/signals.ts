@@ -21,6 +21,7 @@
 export const ANALYTICS_EVENTS = {
   pageView: 'page_view',
   moduleOpen: 'module_open',
+  generateRun: 'generate_run',
   evaluationOpen: 'evaluation_open',
   evaluationRateLimited: 'evaluation_rate_limited',
   shareCreate: 'share_create',

@@ -35,16 +35,19 @@ const emit = defineEmits<{
   open: [content: DocumentT, newNamePrefix: string]
 }>()
 
-function openExample(example: Example<DocumentT>, newNamePrefix: string) {
+function openExample(example: Example<DocumentT>, modulePrefix: string) {
   const content = example.load()
   example.applyLayout?.(content)
-  trackEvent(ANALYTICS_EVENTS.moduleOpen, newNamePrefix, { source: 'example' })
-  emit('open', content, newNamePrefix)
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, example.name, {
+    source: 'example',
+    module: modulePrefix,
+  })
+  emit('open', content, example.name)
 }
 
-function openContent(content: DocumentT, newNamePrefix: string) {
-  trackEvent(ANALYTICS_EVENTS.moduleOpen, newNamePrefix, { source: 'blank' })
-  emit('open', content, newNamePrefix)
+function openContent(content: DocumentT, modulePrefix: string) {
+  trackEvent(ANALYTICS_EVENTS.moduleOpen, modulePrefix, { source: 'blank', module: modulePrefix })
+  emit('open', content, modulePrefix)
 }
 </script>
 <template>
@@ -105,14 +108,14 @@ function openContent(content: DocumentT, newNamePrefix: string) {
                         >
                           <a
                             class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
-                            @click="openExample(example, example.name)"
+                            @click="openExample(example, moduleCard.newNamePrefix)"
                             >{{ example.name }}</a
                           >
                         </span>
                         <a
                           v-else
                           class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
-                          @click="openExample(example, example.name)"
+                          @click="openExample(example, moduleCard.newNamePrefix)"
                           >{{ example.name }}</a
                         >
                       </li>

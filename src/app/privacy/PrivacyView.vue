@@ -31,7 +31,6 @@ const isCompact = computed(() => layoutMode.value === 'compact')
 const sections = [
   { id: 'what-we-collect', title: 'What we collect' },
   { id: 'what-we-dont', title: 'What we never collect' },
-  { id: 'how-you-are-counted', title: 'How you are counted' },
   { id: 'opting-out', title: 'Opting out' },
 ]
 </script>
@@ -66,7 +65,9 @@ const sections = [
       <aside v-if="!isCompact" class="w-3xs">
         <ul class="menu">
           <h2 class="menu-title">Privacy</h2>
-          <li v-for="s of sections" :key="s.id"><a :href="'#' + s.id">{{ s.title }}</a></li>
+          <li v-for="s of sections" :key="s.id">
+            <a :href="'#' + s.id">{{ s.title }}</a>
+          </li>
         </ul>
       </aside>
 
@@ -82,8 +83,10 @@ const sections = [
         <h2 id="what-we-collect" class="m-1 font-bold text-lg">What we collect</h2>
         <p class="m-1">
           We record simple, anonymous events — a page view, opening a module or an evaluation,
-          starting or finishing a tutorial, or creating a share link. Each event stores only the
-          type of action or the module name — never the specific content or the share's contents.
+          generating a random framework, starting or finishing a tutorial, or creating a share link.
+          Each event stores only the type of action and, at most, a non-identifying detail like the
+          module or the chosen generation algorithm — never the specific content or the share's
+          contents.
         </p>
 
         <h2 id="what-we-dont" class="m-1 font-bold text-lg mt-4">What we never collect</h2>
