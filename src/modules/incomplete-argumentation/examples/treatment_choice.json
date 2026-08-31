@@ -1,0 +1,65 @@
+{
+  "apiVersion": "incomplete-argumentation-framework/v1",
+  "name": "treatment_choice",
+  "description": "A treatment choice between surgery and medication, with uncertainty about surgical risk and whether urgency rules out medication.",
+  "arguments": {
+    "0": {
+      "name": "Surgery",
+      "x": 258,
+      "y": 33,
+      "uncertain": false
+    },
+    "1": {
+      "name": "Medication",
+      "x": 376,
+      "y": 100,
+      "uncertain": false
+    },
+    "2": {
+      "name": "Risk",
+      "x": 102,
+      "y": 33,
+      "uncertain": true
+    },
+    "3": {
+      "name": "Clearance",
+      "x": -16,
+      "y": 100,
+      "uncertain": false
+    },
+    "5": {
+      "name": "Urgency",
+      "x": 258,
+      "y": 167,
+      "uncertain": false
+    }
+  },
+  "definiteAttacks": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      2
+    ]
+  ],
+  "uncertainAttacks": [
+    [
+      2,
+      0
+    ],
+    [
+      5,
+      1
+    ]
+  ]
+}
