@@ -1646,8 +1646,11 @@ function doLayout(layout: Layout) {
   const positions = getNodePositions(nodes, links, layout)
   const newPositions = []
   for (const nodeId of nodes) {
+    // nodeId is a public document id; the library keys nodes by internal id. Skip any node
+    // not in the mapping (e.g. deleted without a redraw) so one stale id can't abort the layout.
+    if (!idMapping.hasReverse(nodeId)) continue
     const position = positions.get(nodeId)!
-    graphComponentRef.value.setNodePosition(position, undefined, nodeId)
+    graphComponentRef.value.setNodePosition(position, undefined, idMapping.getOrFailReverse(nodeId))
     newPositions.push({
       id: nodeId,
       x: position.x,
