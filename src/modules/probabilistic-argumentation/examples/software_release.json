@@ -1,0 +1,75 @@
+{
+  "apiVersion": "probabilistic-argumentation-framework/v1",
+  "name": "software_release",
+  "description": "Release decision where argument and attack probabilities reflect uncertainty about a critical bug, a flaky test, and a retest.",
+  "layoutType": "Circular",
+  "arguments": {
+    "0": {
+      "name": "Ship",
+      "x": 200,
+      "y": 0,
+      "probability": 1.0
+    },
+    "1": {
+      "name": "Delay",
+      "x": 400,
+      "y": 200,
+      "probability": 1.0
+    },
+    "2": {
+      "name": "Bug",
+      "x": 300,
+      "y": 400,
+      "probability": 0.55
+    },
+    "3": {
+      "name": "Flake",
+      "x": 100,
+      "y": 400,
+      "probability": 0.45
+    },
+    "4": {
+      "name": "Retest",
+      "x": 0,
+      "y": 200,
+      "probability": 0.75
+    }
+  },
+  "attacks": [
+    [
+      0,
+      1,
+      1.0
+    ],
+    [
+      1,
+      0,
+      1.0
+    ],
+    [
+      2,
+      0,
+      1.0
+    ],
+    [
+      2,
+      3,
+      1.0
+    ],
+    [
+      3,
+      2,
+      1.0
+    ],
+    [
+      3,
+      1,
+      0.85
+    ],
+    [
+      4,
+      3,
+      0.95
+    ]
+  ]
+}
