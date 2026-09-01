@@ -36,11 +36,11 @@ export const datasets: Example<IncompleteArgumentation<IafArgumentData>>[] = exa
       description,
       load: () => loadExampleFromJson(json).framework,
       applyLayout: layoutType
-        ? (af) => {
+        ? async (af) => {
             const layout = layoutType
             const nodes = [...af.arguments()].map(([id]) => id)
             const links = [...af.definiteAttacks(), ...af.uncertainAttacks()]
-            const positions = getNodePositions(nodes, links, layout)
+            const positions = await getNodePositions(nodes, links, layout)
             for (const [id, data] of af.arguments()) {
               const pos = positions.get(id)!
               data.x = pos.x

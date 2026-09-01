@@ -40,7 +40,9 @@ export interface ExportConfig<DocumentT> {
   description?: string
   export(document: DocumentT, styleOptions?: ExportStyleOptions): ExportResult
   codemirrorOptions?: {
-    extensions: Extension[]
+    // A loader rather than concrete extensions so the codemirror language package
+    // (~100 kB) only downloads once the export window actually mounts the editor.
+    loadExtensions: () => Promise<Extension[]>
   }
   references?: ExportReference[]
   /** File extension (without dot) to use when saving this export's output. */

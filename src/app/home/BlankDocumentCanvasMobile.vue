@@ -42,9 +42,9 @@ function toggle(index: number) {
   expanded.value = expanded.value === index ? -1 : index
 }
 
-function openExample(example: Example<DocumentT>, modulePrefix: string) {
+async function openExample(example: Example<DocumentT>, modulePrefix: string) {
   const content = example.load()
-  example.applyLayout?.(content)
+  await example.applyLayout?.(content)
   trackEvent(ANALYTICS_EVENTS.moduleOpen, example.name, {
     source: 'example',
     module: modulePrefix,

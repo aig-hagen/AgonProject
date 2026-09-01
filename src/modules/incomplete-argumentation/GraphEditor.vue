@@ -27,7 +27,7 @@ import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
-import WindowExport from '@/modules/common/export/WindowExport.vue'
+import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import ArrowLongRightDashedIcon from '@/modules/common/graph-editor/ArrowLongRightDashedIcon.vue'
 import {
   type GraphEditorStateLink,
@@ -459,8 +459,9 @@ const tutorialRefs = computed(() => ({
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>
-    <template #export="{ isOpen, onIsOpen }">
+    <template #export="{ isOpen, onIsOpen, hasBeenOpened }">
       <WindowExport
+        v-if="hasBeenOpened"
         :input="state.current.content"
         :open="isOpen"
         @update:open="onIsOpen"

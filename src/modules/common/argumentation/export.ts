@@ -17,16 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { type Extension } from '@codemirror/state'
-import { latex } from 'codemirror-lang-latex'
 
 import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from '@/modules/common/argumentation/model'
 import type { ExportResult, ExportStyleOptions } from '@/modules/common/export'
-import { renderSvg } from '@/modules/common/export/renderSvg'
 
 export function latexExportCommonConfig(): {
   name: string
   codemirrorOptions?: {
-    extensions: Extension[]
+    loadExtensions: () => Promise<Extension[]>
   }
   references: { label: string; url: string }[]
   extension: string
@@ -34,13 +32,10 @@ export function latexExportCommonConfig(): {
   return {
     name: 'LaTeX (argumentation)',
     codemirrorOptions: {
-      extensions: [
-        latex({
-          linter: {
-            checkMissingDocumentEnv: false,
-          },
-        }),
-      ],
+      loadExtensions: () =>
+        import('codemirror-lang-latex').then(({ latex }) => [
+          latex({ linter: { checkMissingDocumentEnv: false } }),
+        ]),
     },
     references: [{ label: 'CTAN Package', url: 'https://ctan.org/pkg/argumentation' }],
     extension: 'tex',
@@ -175,7 +170,11 @@ export function exportLatexArgumentationCommon(
   const afOptions = `[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]`
   return {
     text,
-    svg: () => renderSvg(text.replace('\\begin{af}', `\\begin{af}${afOptions}`)),
+    // Loaded on demand: rendering pulls in opentype.js (~240 kB), only needed for SVG preview.
+    svg: async () => {
+      const { renderSvg } = await import('@/modules/common/export/renderSvg')
+      return renderSvg(text.replace('\\begin{af}', `\\begin{af}${afOptions}`))
+    },
   }
 }
 

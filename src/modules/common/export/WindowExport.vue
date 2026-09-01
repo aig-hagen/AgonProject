@@ -27,7 +27,7 @@ import {
 import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
-import { computed, inject, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
+import { computed, inject, ref, shallowRef, useTemplateRef, watch, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
@@ -176,30 +176,41 @@ const saveFiledataWysiwygSvg = computed(() =>
   wysiwygSvgText.value === undefined ? undefined : { content: wysiwygSvgText.value, ending: 'svg' },
 )
 
-watchEffect(() => {
-  if (soureViewRef.value === null) {
-    return
-  }
-  editorView.value?.destroy()
-  if (selectedExportConfig.value === undefined) {
-    return
-  }
-  const codemirrorOptions = selectedExportConfig.value.codemirrorOptions
-
-  const additionalExtensions: Extension[] = codemirrorOptions?.extensions ?? []
-  editorView.value = new EditorView({
-    doc: undefined,
-    parent: soureViewRef.value!,
-    // See https://codemirror.net/examples/readonly/
-    extensions: [
-      basicSetup,
-      EditorState.readOnly.of(true),
-      EditorView.editable.of(false),
-      EditorView.contentAttributes.of({ tabindex: '0' }),
-      ...additionalExtensions,
-    ],
-  })
-})
+// An explicit `watch` (not `watchEffect`) so assigning `editorView` below doesn't feed back
+// as a dependency — with the async body that would re-trigger endlessly and thrash the editor.
+watch(
+  [soureViewRef, selectedExportConfig],
+  async ([sourceView, config], _prev, onCleanup) => {
+    editorView.value?.destroy()
+    editorView.value = undefined
+    if (sourceView == null || config === undefined) {
+      return
+    }
+    // The loader awaits a dynamic import; bail if the watch re-ran (format switched) meanwhile.
+    let stale = false
+    onCleanup(() => {
+      stale = true
+    })
+    const additionalExtensions: Extension[] =
+      (await config.codemirrorOptions?.loadExtensions()) ?? []
+    if (stale) {
+      return
+    }
+    editorView.value = new EditorView({
+      doc: undefined,
+      parent: sourceView,
+      // See https://codemirror.net/examples/readonly/
+      extensions: [
+        basicSetup,
+        EditorState.readOnly.of(true),
+        EditorView.editable.of(false),
+        EditorView.contentAttributes.of({ tabindex: '0' }),
+        ...additionalExtensions,
+      ],
+    })
+  },
+  { immediate: true },
+)
 
 watchEffect(() => {
   if (editorView.value === undefined) {
