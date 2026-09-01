@@ -1674,7 +1674,9 @@ async function doLayout(layout: Layout) {
   if (wasPhysicsOn) {
     triggerSettle()
   } else {
-    fitToView()
+    // Instant jump: the graph just snapped to new positions, so an animated recenter would
+    // feel like a second, sluggish move.
+    fitToView(0, 0, 0)
   }
 }
 
