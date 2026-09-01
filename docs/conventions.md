@@ -14,7 +14,7 @@ This also runs automatically as the first step of `npm run lint`. Don't hand-wri
 
 ## Formatting & linting
 
-- [Prettier](https://prettier.io/) formats the code: no semicolons, single quotes, 100-character print width (see [`.prettierrc`](/.prettierrc)). Run `npm run format`.
+- [Prettier](https://prettier.io/) formats the code: no semicolons, single quotes, 100-character print width (see [`.prettierrc.json`](/.prettierrc.json)). Run `npm run format`.
 - Linting is layered: `oxlint` (fast correctness checks, see [`.oxlintrc.json`](/.oxlintrc.json)) then `eslint` (Vue + TypeScript rules, import sorting). Run `npm run lint`.
 - Imports are auto-sorted by `eslint-plugin-simple-import-sort` — don't hand-order import groups, let `--fix` do it.
 - **No relative imports within `src/`.** `eslint-plugin-no-relative-import-paths` enforces the `@/*` alias (mapped to `src/*` in `tsconfig.app.json`) instead of `../../` paths:
