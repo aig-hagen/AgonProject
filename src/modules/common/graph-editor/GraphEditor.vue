@@ -41,7 +41,6 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   Bars3Icon,
-  BarsArrowUpIcon,
   BookOpenIcon,
   ChevronDownIcon,
   Cog6ToothIcon,
@@ -52,12 +51,10 @@ import {
   PlayIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
-  QueueListIcon,
   ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
   TrashIcon,
-  VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
 import {
@@ -115,6 +112,9 @@ import {
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
+import SerialisationIcon from '@/modules/common/graph-editor/SerialisationIcon.vue'
+import SigmaIcon from '@/modules/common/graph-editor/SigmaIcon.vue'
+import SucceqIcon from '@/modules/common/graph-editor/SucceqIcon.vue'
 import { useHighlight } from '@/modules/common/graph-editor/useHighlight'
 import { usePhysics } from '@/modules/common/graph-editor/usePhysics'
 import HelpControls from '@/modules/common/help/HelpControls.vue'
@@ -1895,7 +1895,7 @@ defineExpose({
               @click="emit('open-extension-window')"
               title="Extension Semantics"
             >
-              <VariableIcon class="size-6 opacity-70" />
+              <SigmaIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasRankingSlot"
@@ -1903,7 +1903,7 @@ defineExpose({
               @click="emit('open-ranking-window')"
               title="Ranking Semantics"
             >
-              <BarsArrowUpIcon class="size-6 opacity-70" />
+              <SucceqIcon class="size-6 opacity-70" />
             </button>
             <button
               v-if="hasSerialisationSlot"
@@ -1911,7 +1911,7 @@ defineExpose({
               @click="emit('open-serialisation-window')"
               title="Serialisation Sequences"
             >
-              <QueueListIcon class="size-6 opacity-70" />
+              <SerialisationIcon class="size-6 opacity-70" />
             </button>
           </div>
           <button

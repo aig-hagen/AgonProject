@@ -16,20 +16,16 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<script setup lang="ts">
-import type { EvaluationKind } from '@/modules/common/evaluation/types'
-import SerialisationIcon from '@/modules/common/graph-editor/SerialisationIcon.vue'
-import SigmaIcon from '@/modules/common/graph-editor/SigmaIcon.vue'
-import SucceqIcon from '@/modules/common/graph-editor/SucceqIcon.vue'
-
-// Kind marker used across the compact host (header pill, saved-config list, add
-// picker). Extension → sigma, ranking → succeeds-or-equal (the literature symbols),
-// serialisation → a tree of sequences. Colour inherits currentColor.
-defineProps<{ kind: EvaluationKind }>()
-</script>
-
 <template>
-  <SigmaIcon v-if="kind === 'extension'" />
-  <SucceqIcon v-else-if="kind === 'ranking'" />
-  <SerialisationIcon v-else />
+  <!--
+    Succeeds-or-equal (⪰) — the ranking relation a ranking semantics Θ produces
+    (a ⪰ b: "a is at least as acceptable as b"). Outlined from STIX Two Math and
+    baked to a path, so it renders identically on every system. Centred in 24×24.
+  -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" data-slot="icon">
+    <path
+      d="M17.48 9.84C13.49 9.51 8.88 8.15 6.52 5V6.5C7.5 8.21 10.67 9.78 13.09 10.47C10.67 11.16 7.5 12.76 6.52 14.45V15.97C8.88 12.8 13.49 11.45 17.48 11.13ZM17.48 19V17.69H6.52V19Z"
+      fill="currentColor"
+    />
+  </svg>
 </template>
