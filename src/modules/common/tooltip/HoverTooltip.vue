@@ -30,11 +30,16 @@ const NESTING_DEPTH: InjectionKey<number> = Symbol('hoverTooltipDepth')
 <script setup lang="ts">
 import type { Placement } from '@floating-ui/vue'
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
-import { inject, onBeforeUnmount, provide, ref, useTemplateRef, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, provide, ref, useTemplateRef, watch } from 'vue'
 
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
 defineOptions({ inheritAttrs: false })
+
+// Desktop only: how long a term must stay hovered before its panel becomes
+// interactive ("sticky"). A quicker pass-over shows the panel briefly but never
+// makes it grabbable, so the pointer can travel on to what's underneath.
+const STICKY_GRACE_MS = 350
 
 const { placement = 'bottom' } = defineProps<{
   placement?: Placement
@@ -51,7 +56,15 @@ const ancestorKeepOpenFns = inject(ANCESTOR_KEEP_OPEN_FNS, [])
 const ancestorScheduleCloseFns = inject(ANCESTOR_SCHEDULE_CLOSE_FNS, [])
 
 const isOpen = ref(false)
+// idle → charging (grace period) → charged (interactive/sticky). Drives the header
+// rule's charge-up animation and whether the panel accepts pointer events.
+const chargeState = ref<'idle' | 'charging' | 'charged'>('idle')
 let closeTimer: ReturnType<typeof setTimeout> | null = null
+let chargeTimer: ReturnType<typeof setTimeout> | null = null
+
+// The panel only grabs the pointer once charged; while charging it's click-through
+// (tap layouts are interactive as soon as they open).
+const panelInteractive = computed(() => tapMode.value || chargeState.value === 'charged')
 
 const { floatingStyles } = useFloating(triggerEl, panelEl, {
   placement,
@@ -59,17 +72,49 @@ const { floatingStyles } = useFloating(triggerEl, panelEl, {
   whileElementsMounted: autoUpdate,
 })
 
-function keepOpen() {
+function clearCloseTimer() {
   if (closeTimer !== null) {
     clearTimeout(closeTimer)
     closeTimer = null
   }
+}
+
+function clearChargeTimer() {
+  if (chargeTimer !== null) {
+    clearTimeout(chargeTimer)
+    chargeTimer = null
+  }
+}
+
+function keepOpen() {
+  clearCloseTimer()
   isOpen.value = true
+}
+
+function closeNow() {
+  clearCloseTimer()
+  clearChargeTimer()
+  isOpen.value = false
+  chargeState.value = 'idle'
+}
+
+// Open the panel and start the dwell timer; once it fires the panel turns sticky.
+function beginCharge() {
+  clearCloseTimer()
+  isOpen.value = true
+  if (chargeState.value === 'charged') return
+  chargeState.value = 'charging'
+  clearChargeTimer()
+  chargeTimer = setTimeout(() => {
+    chargeState.value = 'charged'
+    chargeTimer = null
+  }, STICKY_GRACE_MS)
 }
 
 function scheduleClose() {
   closeTimer = setTimeout(() => {
     isOpen.value = false
+    chargeState.value = 'idle'
   }, 150)
   // When this tooltip closes, ancestors should close too if nothing else keeps them open.
   ancestorScheduleCloseFns.forEach((fn) => fn())
@@ -77,14 +122,20 @@ function scheduleClose() {
 
 function onEnter() {
   if (tapMode.value) return
-  keepOpen()
+  beginCharge()
   // Keep all ancestor tooltips open while this one (or a descendant) is hovered.
   ancestorKeepOpenFns.forEach((fn) => fn())
 }
 
 function onLeave() {
   if (tapMode.value) return
-  scheduleClose()
+  // Sticky panels linger so the pointer can reach them; a still-charging one just
+  // closes, so a quick pass never leaves a grabbable panel behind.
+  if (chargeState.value === 'charged') {
+    scheduleClose()
+  } else {
+    closeNow()
+  }
 }
 
 function onTap(event: MouseEvent) {
@@ -92,8 +143,10 @@ function onTap(event: MouseEvent) {
   event.stopPropagation()
   if (isOpen.value) {
     isOpen.value = false
+    chargeState.value = 'idle'
   } else {
     keepOpen()
+    chargeState.value = 'charged'
     // Keep ancestors open too, so tapping a nested term doesn't collapse the chain.
     ancestorKeepOpenFns.forEach((fn) => fn())
   }
@@ -118,7 +171,8 @@ watch(isOpen, (open) => {
 })
 
 onBeforeUnmount(() => {
-  if (closeTimer !== null) clearTimeout(closeTimer)
+  clearCloseTimer()
+  clearChargeTimer()
   document.removeEventListener('pointerdown', onDocumentPointerDown, true)
 })
 
@@ -145,11 +199,12 @@ provide(NESTING_DEPTH, depth + 1)
       ref="panel"
       :style="[floatingStyles, { zIndex: 9000 + depth }]"
       class="max-w-xs rounded-box bg-base-100 border border-base-300 shadow-lg p-3 text-sm"
+      :class="{ 'pointer-events-none': !panelInteractive }"
       @mouseenter="onEnter"
       @mouseover="keepOpen"
       @mouseleave="onLeave"
     >
-      <slot name="content" />
+      <slot name="content" :charge-state="chargeState" :grace-ms="STICKY_GRACE_MS" />
     </div>
   </Teleport>
 </template>

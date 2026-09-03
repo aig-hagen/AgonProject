@@ -37,10 +37,10 @@ const definition = computed(() => registry[id])
   -->
   <HoverTooltip v-if="definition">
     <slot><KatexInlineElement :text="definition.label" /></slot>
-    <template #content>
+    <template #content="{ chargeState, graceMs }">
       <div
         v-if="definition.title || definition.reference"
-        class="flex items-center justify-between mb-2 pb-1 border-b border-base-300"
+        class="flex items-center justify-between mb-1"
       >
         <KatexInlineElement
           v-if="definition.title"
@@ -58,6 +58,27 @@ const definition = computed(() => registry[id])
           <BookOpenIcon class="size-3" />
         </a>
       </div>
+      <!-- Header rule doubles as a charge bar: it fills during the dwell grace
+           period (a keyframe animation, so it replays from 0 on every open), and
+           only once full does the panel turn interactive. -->
+      <div
+        v-if="definition.title || definition.reference"
+        class="relative h-0.5 mb-2 overflow-hidden rounded-full bg-base-300"
+      >
+        <div
+          class="absolute inset-y-0 left-0 bg-primary"
+          :style="
+            chargeState === 'charging'
+              ? {
+                  animationName: 'tt-charge-fill',
+                  animationDuration: `${graceMs}ms`,
+                  animationTimingFunction: 'linear',
+                  animationFillMode: 'forwards',
+                }
+              : { width: chargeState === 'charged' ? '100%' : '0%' }
+          "
+        />
+      </div>
       <span>
         <template v-for="(part, i) in definition.content" :key="i">
           <KatexInlineElement v-if="typeof part === 'string'" :text="part as string" />
@@ -71,3 +92,14 @@ const definition = computed(() => registry[id])
   </HoverTooltip>
   <slot v-else />
 </template>
+
+<style>
+@keyframes tt-charge-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+</style>
