@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { CheckIcon, ClipboardIcon } from '@heroicons/vue/24/outline'
+import { CheckIcon, ClipboardIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import copy from 'copy-to-clipboard'
 import { ref, useTemplateRef, watch } from 'vue'
 
@@ -56,6 +56,11 @@ function onClose() {
 <template>
   <dialog ref="dialog" class="modal" @close="onClose">
     <div class="modal-box">
+      <form method="dialog">
+        <button class="btn btn-sm btn-square btn-ghost absolute right-2 top-2" aria-label="Close">
+          <XMarkIcon class="size-4" />
+        </button>
+      </form>
       <h3 class="text-lg font-bold mb-4">Share Link</h3>
       <p class="text-sm text-base-content/70 mb-3">
         Anyone with this link can import a copy of this framework into their browser.
@@ -72,11 +77,6 @@ function onClose() {
           <CheckIcon v-if="copied" class="size-4" />
           <ClipboardIcon v-else class="size-4" />
         </button>
-      </div>
-      <div class="modal-action">
-        <form method="dialog">
-          <button class="btn">Close</button>
-        </form>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop">
