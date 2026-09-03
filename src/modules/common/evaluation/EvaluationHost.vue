@@ -362,11 +362,11 @@ watch(
               v-for="kind in addKinds"
               :key="kind"
               type="button"
-              class="btn btn-primary btn-outline gap-2 w-56"
+              class="btn btn-primary btn-outline w-56 justify-start gap-3 px-4"
               @click="chooseKind(kind)"
             >
-              <KindIcon :kind="kind" class="size-5" />
-              {{ KIND_LABEL[kind] }}
+              <KindIcon :kind="kind" class="size-5 shrink-0" />
+              <span class="flex-1 text-left">{{ KIND_LABEL[kind] }}</span>
             </button>
           </template>
           <button v-else class="btn btn-primary gap-2" @click="onAddClick">
