@@ -222,7 +222,7 @@ function handleStartNext() {
     <!-- Spotlight ring over the anchored target (fixed to the viewport rect). -->
     <div
       v-if="hasSpotlight"
-      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-secondary/50 spotlight-pulse"
+      class="fixed z-1100 pointer-events-none rounded-2xl spotlight-pulse"
       :style="spotlightStyle"
     ></div>
 
@@ -289,7 +289,11 @@ function handleStartNext() {
           <div v-else class="flex-0"></div>
           <div class="flex items-center gap-2">
             <template v-if="isLastStep">
-              <button v-if="nextTutorial" class="btn btn-soft btn-sm" @click="handleStartNext">
+              <button
+                v-if="nextTutorial"
+                class="btn btn-soft btn-secondary btn-sm"
+                @click="handleStartNext"
+              >
                 ▶ {{ nextTutorial.name }}
               </button>
               <button class="btn btn-primary btn-sm" @click="handleDone">Done</button>
@@ -325,8 +329,18 @@ function handleStartNext() {
 </template>
 
 <style>
+/* Static dim so only the ring pulses, not the backdrop. */
 .spotlight-pulse {
-  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--color-scrim) 5%, transparent);
+  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--color-scrim) 18%, transparent);
+}
+.spotlight-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 4px var(--color-secondary),
+    0 0 12px 2px color-mix(in srgb, var(--color-secondary) 60%, transparent);
   animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
