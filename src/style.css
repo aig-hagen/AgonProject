@@ -33,6 +33,31 @@
   color: var(--color-primary);
 }
 
+/* One consistent keyboard focus ring app-wide, overriding DaisyUI's per-element
+   focus colors so focus is always the same brand color. */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.btn:focus-visible,
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible,
+.tab:focus-visible,
+.toggle:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Overlay scrim (modal/sheet backdrops) and sticky-footer elevation shadow.
+   The base colors come from the palette; opacity is applied here. */
+.bg-scrim {
+  background-color: color-mix(in srgb, var(--color-scrim) 40%, transparent);
+}
+.shadow-footer {
+  box-shadow: 0 -4px 6px -4px color-mix(in srgb, var(--color-shadow) 15%, transparent);
+}
+
 html,
 body {
   background-color: var(--color-base-100);

@@ -208,7 +208,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
     <!-- Spotlight ring over a highlighted element (no card movement). -->
     <div
       v-if="hasHighlight"
-      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
+      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-secondary/50 spotlight-pulse"
       :style="highlightStyle"
     ></div>
 
@@ -249,7 +249,11 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
                 Skip
               </button>
               <template v-if="isLastStep">
-                <button v-if="nextTutorial" class="btn btn-info btn-xs" @click="handleStartNext">
+                <button
+                  v-if="nextTutorial"
+                  class="btn btn-secondary btn-xs"
+                  @click="handleStartNext"
+                >
                   ▶ {{ nextTutorial.name }}
                 </button>
                 <button class="btn btn-primary btn-xs" @click="handleDone">Done</button>
@@ -305,7 +309,11 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
                 Skip tutorial
               </button>
               <template v-if="isLastStep">
-                <button v-if="nextTutorial" class="btn btn-info btn-xs" @click="handleStartNext">
+                <button
+                  v-if="nextTutorial"
+                  class="btn btn-secondary btn-xs"
+                  @click="handleStartNext"
+                >
                   ▶ {{ nextTutorial.name }}
                 </button>
                 <button class="btn btn-primary btn-xs" @click="handleDone">Done</button>
@@ -328,6 +336,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
 
 <style>
 .spotlight-pulse {
+  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--color-scrim) 5%, transparent);
   animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 

@@ -57,6 +57,10 @@ export type AppColorToken =
   | 'error'
   | 'error-content'
   | 'selection'
+  // Keyboard focus ring, overlay scrim, and elevation shadow base color.
+  | 'focus'
+  | 'scrim'
+  | 'shadow'
 
 export type AppPalette = Record<AppColorToken, string>
 
@@ -81,6 +85,12 @@ export const LIGHT_PALETTE: AppPalette = {
   error: '#b3263e',
   'error-content': '#ffffff',
   selection: '#c6e4fa',
+  // One consistent keyboard focus color app-wide (brand blue).
+  focus: AIG_BLUE,
+  // Overlay scrim and elevation shadow are near-black in both modes (opacity is
+  // applied at the use site); scrim carries a faint cool tint.
+  scrim: '#0a141e',
+  shadow: '#0b1622',
 }
 
 // Dark mode. Provisional cool-dark surfaces; exact neutral hex are tuned in the
@@ -104,6 +114,9 @@ export const DARK_PALETTE: AppPalette = {
   error: '#e8798a',
   'error-content': '#2e0a12',
   selection: '#234b63',
+  focus: AIG_BLUE_DARK,
+  scrim: '#04080d',
+  shadow: '#000000',
 }
 
 export const APP_PALETTE = { light: LIGHT_PALETTE, dark: DARK_PALETTE } as const

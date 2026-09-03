@@ -222,7 +222,7 @@ function handleStartNext() {
     <!-- Spotlight ring over the anchored target (fixed to the viewport rect). -->
     <div
       v-if="hasSpotlight"
-      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
+      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-secondary/50 spotlight-pulse"
       :style="spotlightStyle"
     ></div>
 
@@ -326,6 +326,7 @@ function handleStartNext() {
 
 <style>
 .spotlight-pulse {
+  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--color-scrim) 5%, transparent);
   animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
