@@ -18,13 +18,16 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 
-import GenerateView from '@/app/generate/GenerateView.vue'
-import GlossaryView from '@/app/glossary/GlossaryView.vue'
 import HomeView from '@/app/home/HomeView.vue'
-import PrivacyView from '@/app/privacy/PrivacyView.vue'
-import ShareView from '@/app/share/ShareView.vue'
-import ThirdPartyView from '@/app/third-party/ThirdPartyView.vue'
 import { trackPageView } from '@/app/usage/report'
+
+// Home is the landing route, so it stays in the initial bundle; the rest load on
+// navigation to keep them off first paint.
+const GenerateView = () => import('@/app/generate/GenerateView.vue')
+const GlossaryView = () => import('@/app/glossary/GlossaryView.vue')
+const PrivacyView = () => import('@/app/privacy/PrivacyView.vue')
+const ShareView = () => import('@/app/share/ShareView.vue')
+const ThirdPartyView = () => import('@/app/third-party/ThirdPartyView.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

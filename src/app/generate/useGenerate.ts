@@ -395,7 +395,7 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
     const prefix = activeModule.value?.newNamePrefix ?? 'AF'
     trackEvent(ANALYTICS_EVENTS.moduleOpen, prefix, { source: 'generate', module: prefix })
     if (fw instanceof AbstractArgumentation) {
-      layout(fw, Layout.ForceDirected)
+      await layout(fw, Layout.ForceDirected)
     }
     const newId = await createDocument(getNextName(prefix), fw as Objectish)
     // Focus the freshly generated document in the editor, not the source AF.

@@ -16,14 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { Graphviz } from '@hpcc-js/wasm-graphviz'
+import type { Graphviz } from '@hpcc-js/wasm-graphviz'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { Layout } from '@/modules/common/main-menu/layouting'
 
 const NUMERIC_ID_TO_STRING_RADIX = 16
 
-const graphviz = await Graphviz.load()
+// Graphviz ships an ~820 kB WASM blob only needed for auto-layout, so load it on
+// first use (memoized) and keep it off the initial bundle. `prefetchGraphviz`
+// lets the editor warm it in the background so the first relayout stays snappy.
+let graphvizPromise: Promise<Graphviz> | null = null
+function loadGraphviz(): Promise<Graphviz> {
+  graphvizPromise ??= import('@hpcc-js/wasm-graphviz').then((module) => module.Graphviz.load())
+  return graphvizPromise
+}
+
+export function prefetchGraphviz(): void {
+  void loadGraphviz()
+}
 
 interface DotJson {
   // Objects is unset, when the graph has no nodes.
@@ -38,7 +49,7 @@ interface Position {
   y: number
 }
 
-function renderWithEngine(dotSource: string, layout: Layout): string {
+function renderWithEngine(graphviz: Graphviz, dotSource: string, layout: Layout): string {
   switch (layout) {
     case Layout.ForceDirected:
       return graphviz.fdp(dotSource, 'json')
@@ -53,13 +64,14 @@ function renderWithEngine(dotSource: string, layout: Layout): string {
   }
 }
 
-export function getNodePositions(
+export async function getNodePositions(
   nodes: number[],
   links: [sourceId: number, targetId: number][],
   layout: Layout,
-): Map<number, Position> {
+): Promise<Map<number, Position>> {
+  const graphviz = await loadGraphviz()
   const dotSource = argumentationFrameworkToDotSource(nodes, links, layout)
-  const dotJsonString = renderWithEngine(dotSource, layout)
+  const dotJsonString = renderWithEngine(graphviz, dotSource, layout)
   const dotJson = JSON.parse(dotJsonString) as DotJson
 
   const nodePositions = new Map()

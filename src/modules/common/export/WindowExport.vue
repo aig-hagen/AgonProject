@@ -27,7 +27,7 @@ import {
 import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
-import { computed, inject, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
+import { computed, inject, ref, shallowRef, useTemplateRef, watch, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
@@ -166,40 +166,56 @@ const saveFiledataSvg = computed(() => {
   }
 })
 
-// Recomputed whenever the SVG format is (re)selected while the window is open, capturing the
-// graph as it currently looks on screen.
-const wysiwygSvgText = computed(() => {
-  if (!open.value || !isWysiwygSvg.value) return undefined
-  return graphSvgRenderer?.() ?? undefined
-})
+// Re-serialized whenever the SVG format is selected and the document changes, so the preview
+// tracks the live graph — including moved nodes. `flush: 'post'` runs after the graph canvas has
+// re-rendered the edit, so we serialize the updated DOM rather than the pre-move positions.
+const wysiwygSvgText = shallowRef<string | undefined>(undefined)
+watch(
+  [open, isWysiwygSvg, () => input],
+  ([isOpen, isWysiwyg]) => {
+    wysiwygSvgText.value = isOpen && isWysiwyg ? (graphSvgRenderer?.() ?? undefined) : undefined
+  },
+  { immediate: true, flush: 'post' },
+)
 const saveFiledataWysiwygSvg = computed(() =>
   wysiwygSvgText.value === undefined ? undefined : { content: wysiwygSvgText.value, ending: 'svg' },
 )
 
-watchEffect(() => {
-  if (soureViewRef.value === null) {
-    return
-  }
-  editorView.value?.destroy()
-  if (selectedExportConfig.value === undefined) {
-    return
-  }
-  const codemirrorOptions = selectedExportConfig.value.codemirrorOptions
-
-  const additionalExtensions: Extension[] = codemirrorOptions?.extensions ?? []
-  editorView.value = new EditorView({
-    doc: undefined,
-    parent: soureViewRef.value!,
-    // See https://codemirror.net/examples/readonly/
-    extensions: [
-      basicSetup,
-      EditorState.readOnly.of(true),
-      EditorView.editable.of(false),
-      EditorView.contentAttributes.of({ tabindex: '0' }),
-      ...additionalExtensions,
-    ],
-  })
-})
+// An explicit `watch` (not `watchEffect`) so assigning `editorView` below doesn't feed back
+// as a dependency — with the async body that would re-trigger endlessly and thrash the editor.
+watch(
+  [soureViewRef, selectedExportConfig],
+  async ([sourceView, config], _prev, onCleanup) => {
+    editorView.value?.destroy()
+    editorView.value = undefined
+    if (sourceView == null || config === undefined) {
+      return
+    }
+    // The loader awaits a dynamic import; bail if the watch re-ran (format switched) meanwhile.
+    let stale = false
+    onCleanup(() => {
+      stale = true
+    })
+    const additionalExtensions: Extension[] =
+      (await config.codemirrorOptions?.loadExtensions()) ?? []
+    if (stale) {
+      return
+    }
+    editorView.value = new EditorView({
+      doc: undefined,
+      parent: sourceView,
+      // See https://codemirror.net/examples/readonly/
+      extensions: [
+        basicSetup,
+        EditorState.readOnly.of(true),
+        EditorView.editable.of(false),
+        EditorView.contentAttributes.of({ tabindex: '0' }),
+        ...additionalExtensions,
+      ],
+    })
+  },
+  { immediate: true },
+)
 
 watchEffect(() => {
   if (editorView.value === undefined) {
@@ -350,7 +366,7 @@ watchEffect(() => {
         <div
           v-if="wysiwygSvgText"
           v-html="wysiwygSvgText"
-          class="w-fit max-w-full overflow-auto rounded border border-base-300 p-1"
+          class="wysiwyg-svg-preview w-fit max-w-full overflow-auto rounded border border-base-300 p-1"
         ></div>
         <div v-else role="alert" class="alert alert-warning alert-soft">
           <span>No graph to export.</span>
@@ -413,5 +429,14 @@ watchEffect(() => {
 }
 :deep(.cm-tooltip) {
   display: none;
+}
+
+/* Cap the WYSIWYG SVG preview: the serialized svg has intrinsic px dimensions that grow with
+   the graph, so clamp it (its viewBox keeps the aspect ratio) instead of letting it scale up. */
+.wysiwyg-svg-preview :deep(svg) {
+  max-width: 100%;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
 }
 </style>

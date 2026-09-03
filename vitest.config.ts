@@ -10,7 +10,8 @@ export default mergeConfig(
     test: {
       setupFiles: ['./src/app/setup-immer.ts'],
       environment: 'jsdom',
-      exclude: [...configDefaults.exclude, 'e2e/**'],
+      // servers/** have their own `node --test` suites (run via each server's `npm test`).
+      exclude: [...configDefaults.exclude, 'e2e/**', 'servers/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
     },
   }),

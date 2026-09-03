@@ -27,7 +27,7 @@ import {
   PhotoIcon,
   ShareIcon,
 } from '@heroicons/vue/24/outline'
-import { computed, inject, ref, shallowRef } from 'vue'
+import { computed, inject, ref, shallowRef, watch } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
@@ -101,9 +101,16 @@ const packageLine = computed(() => {
 
 // WYSIWYG SVG snapshot of the live graph. Serialized only on the preview screen, and only when
 // a renderer is provided (i.e. inside a graph editor). No TikZ/WebAssembly, so it works on any
-// phone — unlike the old rendered preview, which could hang on mobile.
-const svgText = computed(() =>
-  screen.value === 'svg' ? (graphSvgRenderer?.() ?? undefined) : undefined,
+// phone — unlike the old rendered preview, which could hang on mobile. Re-serialized on document
+// changes via a post-flush watch so the snapshot reflects edits (e.g. moved nodes), reading the
+// canvas after it has re-rendered rather than the pre-edit positions.
+const svgText = shallowRef<string | undefined>(undefined)
+watch(
+  [screen, () => input],
+  ([currentScreen]) => {
+    svgText.value = currentScreen === 'svg' ? (graphSvgRenderer?.() ?? undefined) : undefined
+  },
+  { immediate: true, flush: 'post' },
 )
 
 const svgFiledata = computed<ExportFileData | undefined>(() =>
@@ -205,7 +212,7 @@ function download(config: ExportConfig<DocumentT>) {
       </button>
 
       <div class="overflow-auto rounded border border-base-300 p-2">
-        <div v-if="svgText" v-html="svgText" class="w-fit"></div>
+        <div v-if="svgText" v-html="svgText" class="wysiwyg-svg-preview w-fit"></div>
         <div v-else role="alert" class="alert alert-warning alert-soft">
           <span>No graph to export.</span>
         </div>
@@ -315,3 +322,14 @@ function download(config: ExportConfig<DocumentT>) {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Cap the WYSIWYG SVG preview: the serialized svg has intrinsic px dimensions that grow with
+   the graph, so clamp it (its viewBox keeps the aspect ratio) instead of letting it scale up. */
+.wysiwyg-svg-preview :deep(svg) {
+  max-width: 100%;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
+}
+</style>

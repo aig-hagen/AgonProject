@@ -16,9 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-export interface Example<DocumentT> {
-  name: string
-  description?: string
-  load(): DocumentT
-  applyLayout?(content: DocumentT): void | Promise<void>
-}
+import { defineAsyncComponent } from 'vue'
+
+// The export window drags in the codemirror editor runtime (~440 kB); load it lazily so it
+// stays off the initial bundle. Consumers gate it behind a `v-if` latch (see the `#export`
+// slot) so the chunk is only fetched the first time a user opens export.
+export const WindowExport = defineAsyncComponent(
+  () => import('@/modules/common/export/WindowExport.vue'),
+)

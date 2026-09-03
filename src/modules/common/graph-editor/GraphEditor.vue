@@ -109,7 +109,7 @@ import {
   GRAPH_STYLE_MINIMAL,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
-import { getNodePositions } from '@/modules/common/graph-editor/layouting'
+import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
 import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import SerialisationIcon from '@/modules/common/graph-editor/SerialisationIcon.vue'
@@ -389,6 +389,9 @@ const linkNames = computed(() =>
   Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
 )
 const isExportOpened = ref<boolean>(false)
+// Latches on first open so the (async) export window mounts lazily, then stays mounted
+// so its close animation still plays. See the `#export` slot consumers.
+const hasExportBeenOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
 const isTutorialWindowOpen = ref<boolean>(false)
 
@@ -461,7 +464,10 @@ function autoStartTutorial(id: string | undefined) {
 }
 
 watch(isExportOpened, (opened) => {
-  if (opened) autoStartTutorial('editor-export')
+  if (opened) {
+    hasExportBeenOpened.value = true
+    autoStartTutorial('editor-export')
+  }
 })
 
 // Opening an evaluation window/sheet kicks off the module's evaluation tutorial (its own
@@ -921,6 +927,12 @@ onMounted(() => {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) {
     throw new Error('Graph component is not rendered.')
+  }
+  // Warm the graphviz WASM in the background so the first auto-layout doesn't wait on it.
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(() => prefetchGraphviz())
+  } else {
+    setTimeout(() => prefetchGraphviz(), 1500)
   }
   graphComponent.toggleZoom(true)
   graphComponent.toggleNodePhysics(false)
@@ -1626,7 +1638,7 @@ provide(TUTORIAL_REFIT_KEY, (coveredTopPx: number | null) => {
   fitToView()
 })
 
-function doLayout(layout: Layout) {
+async function doLayout(layout: Layout) {
   if (graphComponentRef.value === null) {
     return
   }
@@ -1643,7 +1655,7 @@ function doLayout(layout: Layout) {
       hl.sourceIds.map((sourceId) => [sourceId, hl.targetId] as [number, number]),
     ),
   ]
-  const positions = getNodePositions(nodes, links, layout)
+  const positions = await getNodePositions(nodes, links, layout)
   const newPositions = []
   for (const nodeId of nodes) {
     // nodeId is a public document id; the library keys nodes by internal id. Skip any node
@@ -1662,7 +1674,9 @@ function doLayout(layout: Layout) {
   if (wasPhysicsOn) {
     triggerSettle()
   } else {
-    fitToView()
+    // Instant jump: the graph just snapped to new positions, so an animated recenter would
+    // feel like a second, sluggish move.
+    fitToView(0, 0, 0)
   }
 }
 
@@ -2176,7 +2190,12 @@ defineExpose({
         }
       "
     ></slot>
-    <slot name="export" :isOpen="isExportOpened" @isOpen="isExportOpened = $event"></slot>
+    <slot
+      name="export"
+      :isOpen="isExportOpened"
+      :hasBeenOpened="hasExportBeenOpened"
+      @isOpen="isExportOpened = $event"
+    ></slot>
     <slot name="evaluationRanking"></slot>
     <slot
       name="evaluationSerialisation"
