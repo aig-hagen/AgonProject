@@ -44,6 +44,8 @@ export type AppColorToken =
   | 'base-200'
   | 'base-300'
   | 'base-content'
+  | 'neutral'
+  | 'neutral-content'
   | 'primary'
   | 'primary-content'
   | 'secondary'
@@ -72,6 +74,10 @@ export const LIGHT_PALETTE: AppPalette = {
   'base-200': '#eef2f6',
   'base-300': '#dce4ec',
   'base-content': '#162536',
+  // Filled dark-chip surface (buttons, toast pill, tooltip bubbles). A cool slate
+  // in the same blue-gray family as the base scale, lighter than the ink.
+  neutral: '#2b3d4f',
+  'neutral-content': '#eef2f6',
   primary: AIG_BLUE,
   'primary-content': '#ffffff',
   secondary: AIG_OCHRE,
@@ -101,6 +107,9 @@ export const DARK_PALETTE: AppPalette = {
   'base-200': '#17222c',
   'base-300': '#2a3a48',
   'base-content': '#e7eef4',
+  // Lifted just above base-300 so the filled chip stays distinct from the surfaces.
+  neutral: '#35495b',
+  'neutral-content': '#e7eef4',
   primary: AIG_BLUE_DARK,
   'primary-content': '#08243a',
   secondary: AIG_OCHRE_DARK,
