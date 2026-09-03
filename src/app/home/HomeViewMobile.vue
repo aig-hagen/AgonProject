@@ -397,10 +397,10 @@ function loadFile() {
         class="btn btn-ghost justify-start gap-3"
         @click="menuRename({ id: menuDoc.id, name: menuDoc.name })"
       >
-        <PencilSquareIcon class="size-5 text-primary/80" /> Rename
+        <PencilSquareIcon class="size-5 menu-icon" /> Rename
       </button>
       <button class="btn btn-ghost justify-start gap-3" @click="menuSave(menuDoc.id)">
-        <ArrowDownTrayIcon class="size-5 text-primary/80" /> Save to device
+        <ArrowDownTrayIcon class="size-5 menu-icon" /> Save to device
       </button>
       <button class="btn btn-ghost justify-start gap-3 text-error" @click="menuDelete(menuDoc.id)">
         <TrashIcon class="size-5" /> Delete

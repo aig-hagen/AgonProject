@@ -30,6 +30,15 @@
   --color-primary-content: #ffffff;
 }
 
+/* Menu entry icons: brand blue, lightened in dark mode so the dark aigblue stays
+   legible on the dark dropdown/sheet surface. */
+.menu-icon {
+  color: var(--color-primary);
+}
+[data-theme='dark'] .menu-icon {
+  color: color-mix(in oklab, var(--color-primary), white 55%);
+}
+
 html,
 body {
   background-color: var(--color-base-100);

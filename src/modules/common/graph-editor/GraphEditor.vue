@@ -37,7 +37,6 @@ import {
   ArrowLongRightIcon,
   ArrowsPointingInIcon,
   ArrowsRightLeftIcon,
-  ArrowUpTrayIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   Bars3Icon,
@@ -45,6 +44,7 @@ import {
   ChevronDownIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
+  FolderOpenIcon,
   MinusCircleIcon,
   PencilSquareIcon,
   PhotoIcon,
@@ -1865,8 +1865,6 @@ defineExpose({
             :show-save="EntryState.ENABLE"
             :layouts-to-show="GRAPH_EDITOR_LAYOUTS"
             @save="emit('save')"
-            :show-evaluate="EntryState.ENABLE"
-            @evaluate="emit('open-extension-window')"
             :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
             @export="isExportOpened = !isExportOpened"
             :show-share="EntryState.ENABLE"
@@ -2086,25 +2084,25 @@ defineExpose({
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('new'))"
             >
-              <DocumentPlusIcon class="size-5 text-primary/80" /> New framework
+              <DocumentPlusIcon class="size-5 menu-icon" /> New framework
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('load'))"
             >
-              <ArrowUpTrayIcon class="size-5 text-primary/80" /> Open file…
+              <FolderOpenIcon class="size-5 menu-icon" /> Open file
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('save'))"
             >
-              <ArrowDownTrayIcon class="size-5 text-primary/80" /> Save to device
+              <ArrowDownTrayIcon class="size-5 menu-icon" /> Save to device
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(() => emit('generate'))"
             >
-              <Squares2X2Icon class="size-5 text-primary/80" /> Generate random…
+              <Squares2X2Icon class="size-5 menu-icon" /> Generate random
             </button>
           </section>
           <section class="flex flex-col gap-1">
@@ -2114,37 +2112,37 @@ defineExpose({
               :disabled="!historyState.canUndo"
               @click="runFromMenu(() => emit('undo'))"
             >
-              <ArrowUturnLeftIcon class="size-5 text-primary/80" /> Undo
+              <ArrowUturnLeftIcon class="size-5 menu-icon" /> Undo
             </button>
             <button
               class="btn btn-ghost justify-start gap-3"
               :disabled="!historyState.canRedo"
               @click="runFromMenu(() => emit('redo'))"
             >
-              <ArrowUturnRightIcon class="size-5 text-primary/80" /> Redo
+              <ArrowUturnRightIcon class="size-5 menu-icon" /> Redo
             </button>
           </section>
           <section class="flex flex-col gap-1">
             <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">App</h3>
             <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openSettings)">
-              <Cog6ToothIcon class="size-5 text-primary/80" /> Settings
+              <Cog6ToothIcon class="size-5 menu-icon" /> Settings
             </button>
             <button
               v-if="tutorials"
               class="btn btn-ghost justify-start gap-3"
               @click="runFromMenu(openTutorials)"
             >
-              <AcademicCapIcon class="size-5 text-primary/80" /> Tutorials
+              <AcademicCapIcon class="size-5 menu-icon" /> Tutorials
             </button>
             <RouterLink
               to="/glossary"
               class="btn btn-ghost justify-start gap-3"
               @click="isMenuOpen = false"
             >
-              <BookOpenIcon class="size-5 text-primary/80" /> Glossary
+              <BookOpenIcon class="size-5 menu-icon" /> Glossary
             </RouterLink>
             <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openHelp)">
-              <QuestionMarkCircleIcon class="size-5 text-primary/80" /> Help
+              <QuestionMarkCircleIcon class="size-5 menu-icon" /> Help
             </button>
           </section>
         </div>
@@ -2164,7 +2162,7 @@ defineExpose({
                 @click="relayoutTo(option.layout)"
               >
                 <span
-                  class="grid place-items-center size-8 shrink-0 rounded-lg bg-base-200 text-primary"
+                  class="grid place-items-center size-8 shrink-0 rounded-lg bg-base-200 menu-icon"
                 >
                   <component :is="option.icon" class="size-5" />
                 </span>
