@@ -107,7 +107,8 @@ const sections = [
             rel="noopener"
             href="https://globalprivacycontrol.org/"
             >Global Privacy Control</a
-          > and the <em>Do Not Track</em> setting.
+          >
+          and the <em>Do Not Track</em> setting.
         </p>
 
         <h2 id="imprint" class="m-1 font-bold text-lg mt-4">Imprint</h2>
