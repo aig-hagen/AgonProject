@@ -3,7 +3,6 @@
 ### desktop/general
 - need a ranking tutorial for AF
 - impressum etc
-- track number of unique? accesses to site; maybe some other stats
 
 ### Mobile
 #### Home and document management

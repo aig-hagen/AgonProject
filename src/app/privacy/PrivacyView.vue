@@ -32,6 +32,7 @@ const sections = [
   { id: 'what-we-collect', title: 'What we collect' },
   { id: 'what-we-dont', title: 'What we never collect' },
   { id: 'opting-out', title: 'Opting out' },
+  { id: 'imprint', title: 'Imprint' },
 ]
 </script>
 
@@ -50,7 +51,7 @@ const sections = [
       >
         <ChevronLeftIcon class="size-6 opacity-70" />
       </button>
-      <span class="flex-1 text-lg font-bold py-2.5 leading-tight">Privacy Notice</span>
+      <span class="flex-1 text-lg font-bold py-2.5 leading-tight">Privacy Policy and Imprint</span>
     </header>
 
     <div
@@ -64,7 +65,7 @@ const sections = [
       <!-- Desktop section nav -->
       <aside v-if="!isCompact" class="w-3xs">
         <ul class="menu">
-          <h2 class="menu-title">Privacy</h2>
+          <h2 class="menu-title">Privacy Policy and Imprint</h2>
           <li v-for="s of sections" :key="s.id">
             <a :href="'#' + s.id">{{ s.title }}</a>
           </li>
@@ -73,7 +74,7 @@ const sections = [
 
       <!-- Single source of truth for the notice text -->
       <main class="max-w-3xl">
-        <h1 v-if="!isCompact" class="m-1 font-bold text-xl">Privacy Notice</h1>
+        <h1 v-if="!isCompact" class="m-1 font-bold text-xl">Privacy Policy and Imprint</h1>
         <p class="m-1 mb-4">
           AgonProject collects lightweight, <strong>anonymous, aggregated</strong> usage statistics
           so we can see which parts of the app get used. There are no cookies, no personal data, and
@@ -106,8 +107,16 @@ const sections = [
             rel="noopener"
             href="https://globalprivacycontrol.org/"
             >Global Privacy Control</a
-          >, the browser privacy standard — if it is enabled, nothing is sent at all. For
-          compatibility we also respect the <em>Do Not Track</em> setting.
+          > and the <em>Do Not Track</em> setting.
+        </p>
+
+        <h2 id="imprint" class="m-1 font-bold text-lg mt-4">Imprint</h2>
+        <p class="m-1 mb-4">
+          Responsible according to § 5 DDG and § 18 (2) MStV: Lars Bengel (<a
+            class="link link-primary"
+            href="mailto:lars.bengel@fernuni-hagen.de"
+            >lars.bengel@fernuni-hagen.de</a
+          >), Universitätsstraße 11, 58097 Hagen, Germany.
         </p>
       </main>
     </div>

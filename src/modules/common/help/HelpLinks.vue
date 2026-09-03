@@ -18,34 +18,43 @@
 -->
 <script setup lang="ts">
 import { ArrowUpRightIcon, ShieldCheckIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
+import { computed, type Component } from 'vue'
 
 import GithubMarkIcon from '@/modules/common/help/GithubMarkIcon.vue'
 
+const { legalOnly = false } = defineProps<{ legalOnly?: boolean }>()
+
 const sourceTree = import.meta.env.VITE_APP_SOURCE_TREE
 const sourceLink = `https://github.com/aig-hagen/AgonProject/tree/${sourceTree}`
+
+type Link = { label: string; href: string; img?: string; icon?: Component; legal?: boolean }
+
+const links: Link[] = [
+  { label: 'AIG Hagen', href: 'https://www.fernuni-hagen.de/aig/en/', img: '/favicon-32x32.png' },
+  { label: 'TweetyProject', href: 'https://tweetyproject.org', img: '/tweety-logo.png' },
+  { label: `Source ${sourceTree}`, href: sourceLink, icon: GithubMarkIcon },
+  { label: 'Third-Party', href: '/third-party', icon: UserGroupIcon, legal: true },
+  { label: 'Privacy Policy and Imprint', href: '/privacy', icon: ShieldCheckIcon, legal: true },
+]
+
+const shownLinks = computed(() => (legalOnly ? links.filter((l) => l.legal) : links))
 </script>
 <template>
-  <div class="my-4 gap-2 flex flex-wrap">
-    <a
-      class="btn btn-xs btn-soft"
-      target="_blank"
-      rel="noopener"
-      href="https://www.fernuni-hagen.de/aig/en/"
-      ><img src="/favicon-32x32.png" class="size-4" alt="" />AIG Hagen<ArrowUpRightIcon
-        class="size-2"
-    /></a>
-    <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" href="https://tweetyproject.org"
-      ><img src="/tweety-logo.png" class="size-4" alt="" />TweetyProject<ArrowUpRightIcon
-        class="size-2"
-    /></a>
-    <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" :href="sourceLink"
-      ><GithubMarkIcon class="size-4" />Source {{ sourceTree }}<ArrowUpRightIcon class="size-2"
-    /></a>
-    <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" href="/third-party"
-      ><UserGroupIcon class="size-4" />Third-Party<ArrowUpRightIcon class="size-2"
-    /></a>
-    <a class="btn btn-xs btn-soft" target="_blank" rel="noopener" href="/privacy"
-      ><ShieldCheckIcon class="size-4" />Privacy<ArrowUpRightIcon class="size-2"
-    /></a>
+  <div class="my-4">
+    <div class="flex flex-wrap gap-x-4 gap-y-1.5">
+      <a
+        v-for="link in shownLinks"
+        :key="link.label"
+        class="group inline-flex items-center gap-1.5 text-sm text-base-content/60 hover:text-base-content transition-colors"
+        target="_blank"
+        rel="noopener"
+        :href="link.href"
+      >
+        <img v-if="link.img" :src="link.img" class="size-4" alt="" />
+        <component :is="link.icon" v-else class="size-4" />
+        {{ link.label }}
+        <ArrowUpRightIcon class="size-3 opacity-40 group-hover:opacity-70" />
+      </a>
+    </div>
   </div>
 </template>
