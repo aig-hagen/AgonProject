@@ -106,7 +106,7 @@ const deleteButtonRef = useTemplateRef('deleteButton')
   <dialog class="modal" ref="closeModal">
     <div class="modal-box">
       <form method="dialog">
-        <button class="btn btn-sm btn-square btn-ghost absolute right-2 top-2">
+        <button class="btn btn-sm btn-square btn-ghost absolute right-2 top-2" aria-label="Close">
           <XMarkIcon class="size-4"></XMarkIcon>
         </button>
       </form>

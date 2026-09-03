@@ -55,14 +55,14 @@ function onClose() {
 
 <template>
   <dialog ref="dialog" class="modal" @close="onClose">
-    <div class="modal-box">
+    <div class="modal-box max-w-md p-5">
       <form method="dialog">
         <button class="btn btn-sm btn-square btn-ghost absolute right-2 top-2" aria-label="Close">
           <XMarkIcon class="size-4" />
         </button>
       </form>
-      <h3 class="text-lg font-bold mb-4">Share Link</h3>
-      <p class="text-sm text-base-content/70 mb-3">
+      <h3 class="text-base font-bold mb-1 pr-8">Share Link</h3>
+      <p class="text-xs text-base-content/70 mb-3">
         Anyone with this link can import a copy of this framework into their browser.
       </p>
       <div class="flex gap-2">
@@ -70,10 +70,14 @@ function onClose() {
           type="text"
           :value="url ?? ''"
           readonly
-          class="input input-bordered flex-1 font-mono text-sm"
+          class="input input-sm input-bordered flex-1 font-mono text-xs"
           @click="($event.target as HTMLInputElement).select()"
         />
-        <button class="btn btn-primary" @click="onCopy" :title="copied ? 'Copied!' : 'Copy link'">
+        <button
+          class="btn btn-sm btn-square btn-primary"
+          @click="onCopy"
+          :title="copied ? 'Copied!' : 'Copy link'"
+        >
           <CheckIcon v-if="copied" class="size-4" />
           <ClipboardIcon v-else class="size-4" />
         </button>
