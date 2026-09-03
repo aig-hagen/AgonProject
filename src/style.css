@@ -23,20 +23,14 @@
     dark;
 }
 
-/* Brand primary: aigblue = RGB(0, 76, 151). */
-:root,
-[data-theme='dark'] {
-  --color-primary: #004c97;
-  --color-primary-content: #ffffff;
-}
+/* App colors (base scale, brand, status, selection) are the single source of
+   truth in @/modules/common/theme/palette.ts, injected as --color-* custom
+   properties before mount. Graph colors are handled separately. */
 
-/* Menu entry icons: brand blue, lightened in dark mode so the dark aigblue stays
-   legible on the dark dropdown/sheet surface. */
+/* Menu entry icons use the brand blue; dark mode's primary is already lifted for
+   legibility, so no per-mode override is needed here. */
 .menu-icon {
   color: var(--color-primary);
-}
-[data-theme='dark'] .menu-icon {
-  color: color-mix(in oklab, var(--color-primary), white 55%);
 }
 
 html,
