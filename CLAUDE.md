@@ -43,6 +43,14 @@ lint-enforced by `eslint-plugin-no-relative-import-paths`.
   [Conventional Commits](https://www.conventionalcommits.org/) type (`feat:`, `fix:`,
   `chore:`, `docs:`, `refactor:`, ...).
 
+## Opening a PR
+
+- **Before pushing, run `npm run lint` and `npm run format`** (CI checks eslint/oxlint,
+  prettier `--check`, and type-check — a stray formatting issue fails the `Lint & type-check`
+  job). Commit any resulting changes.
+- Base PRs on `dev`. Keep the description **short**: a one-line summary plus a terse bullet
+  list of the notable changes.
+
 ## Publishing a release
 
 Publishing is driven by pushing a Git tag matching `v*` — the
