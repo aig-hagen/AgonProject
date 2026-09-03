@@ -286,7 +286,11 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
               v-for="entry in numericalDisplayData"
               :key="entry.id"
               class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm min-w-18 max-w-full"
-              :style="{ backgroundColor: entry.bgColor, borderColor: entry.borderColor, color: entry.textColor }"
+              :style="{
+                backgroundColor: entry.bgColor,
+                borderColor: entry.borderColor,
+                color: entry.textColor,
+              }"
             >
               <span class="font-medium truncate" :title="entry.name">{{ entry.name }}</span>
               <span class="font-mono text-xs tabular-nums opacity-60 shrink-0">{{
