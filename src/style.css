@@ -190,6 +190,8 @@ body {
   text-align: center;
 }
 
+/* Inset ring rather than an outward one: the input sits in a tight SVG
+   foreignObject that would clip an outer box-shadow at the top. */
 .graph-controller__label-input:focus {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--graph-node-stroke-color, #5a87a8) 35%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-focus) 60%, transparent);
 }
