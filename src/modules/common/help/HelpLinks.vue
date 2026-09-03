@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { ArrowUpRightIcon, ShieldCheckIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
-import { computed, type Component } from 'vue'
+import { type Component, computed } from 'vue'
 
 import GithubMarkIcon from '@/modules/common/help/GithubMarkIcon.vue'
 
