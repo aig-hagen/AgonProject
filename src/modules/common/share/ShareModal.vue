@@ -68,7 +68,7 @@ function onClose() {
           class="input input-bordered flex-1 font-mono text-sm"
           @click="($event.target as HTMLInputElement).select()"
         />
-        <button class="btn btn-neutral" @click="onCopy" :title="copied ? 'Copied!' : 'Copy link'">
+        <button class="btn btn-primary" @click="onCopy" :title="copied ? 'Copied!' : 'Copy link'">
           <CheckIcon v-if="copied" class="size-4" />
           <ClipboardIcon v-else class="size-4" />
         </button>

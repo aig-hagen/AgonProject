@@ -99,8 +99,8 @@ onMounted(async () => {
   <div class="h-screen w-screen flex items-center justify-center bg-base-100">
     <div v-if="errorMessage" class="flex flex-col items-center gap-4 text-center max-w-sm">
       <p class="text-error font-medium">{{ errorMessage }}</p>
-      <router-link to="/" class="btn btn-neutral btn-sm">Go to editor</router-link>
+      <router-link to="/" class="btn btn-primary btn-sm">Go to editor</router-link>
     </div>
-    <span v-else class="loading loading-spinner loading-lg text-neutral" />
+    <span v-else class="loading loading-spinner loading-lg text-primary" />
   </div>
 </template>
