@@ -17,6 +17,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { BackspaceIcon } from '@heroicons/vue/24/outline'
+import { ExclamationCircleIcon } from '@heroicons/vue/24/solid'
 import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 
 import type { NodeId } from '@/modules/common/graph-editor/graphEditor'
@@ -53,6 +55,13 @@ const argNameToId = computed(() => {
 })
 const availableArguments = computed(() =>
   [...adf.arguments()].map(([id, data]) => ({ id, name: data.name })),
+)
+
+const argName = computed(() =>
+  argumentId !== null ? (argNameMap.value.get(argumentId) ?? '') : '',
+)
+const sheetTitle = computed(() =>
+  argName.value ? `Acceptance condition of ${argName.value}` : 'Acceptance condition',
 )
 
 const inputRef = useTemplateRef<HTMLInputElement>('input')
@@ -134,62 +143,60 @@ const operatorKeys = [
 </script>
 
 <template>
-  <BottomSheet v-model:open="open" title="Acceptance condition">
-    <div class="flex flex-col gap-4 pb-4">
+  <BottomSheet v-model:open="open" :title="sheetTitle">
+    <div class="flex flex-col gap-4 pt-1.5 pb-4">
+      <!-- Condition input with an attached backspace, like a keyboard -->
       <div class="flex flex-col gap-1.5">
-        <span class="text-xs font-semibold uppercase opacity-60">Condition</span>
-        <div class="relative">
-          <input
-            ref="input"
-            type="text"
-            inputmode="none"
-            class="input input-md font-mono w-full"
-            :class="{ 'input-error pr-8': isInvalid }"
-            v-model="inputText"
-            @input="parseAndEmit"
-          />
-          <span
-            v-if="isInvalid"
-            class="absolute right-3 top-1/2 -translate-y-1/2 text-error font-bold select-none"
-            title="Condition is syntactically incorrect and will not be saved"
-            >!</span
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <input
+              ref="input"
+              type="text"
+              inputmode="none"
+              class="input h-12 w-full rounded-xl border-base-300 bg-base-100 font-mono"
+              :class="{ 'input-error pr-10': isInvalid }"
+              v-model="inputText"
+              @input="parseAndEmit"
+            />
+            <span
+              v-if="isInvalid"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-error select-none"
+              title="Condition is syntactically incorrect and will not be saved"
+            >
+              <ExclamationCircleIcon class="size-5" />
+            </span>
+          </div>
+          <button
+            type="button"
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-base-300 bg-base-200 text-base-content transition-colors hover:bg-base-300"
+            aria-label="Backspace"
+            title="Backspace"
+            @click="deleteAtCursor"
           >
+            <BackspaceIcon class="size-5" />
+          </button>
         </div>
         <p class="text-xs opacity-50">
-          Build the condition with the keys below — the argument chips insert atoms.
+          Tap the operator keys and argument chips to build the condition.
         </p>
       </div>
 
       <!-- Operator keypad -->
-      <div class="grid grid-cols-4 gap-1.5">
-        <button
-          v-for="key in operatorKeys"
-          :key="key.label"
-          type="button"
-          class="btn btn-neutral font-mono text-lg"
-          :title="key.title"
-          :aria-label="key.title"
-          @click="insertAtCursor(key.text, key.cursorOffset)"
-        >
-          {{ key.label }}
-        </button>
-        <button
-          type="button"
-          class="btn btn-neutral"
-          aria-label="Backspace"
-          title="Backspace"
-          @click="deleteAtCursor"
-        >
-          ⌫
-        </button>
-        <button
-          type="button"
-          class="btn btn-ghost text-xs"
-          :disabled="inputText.length === 0"
-          @click="clearFormula"
-        >
-          Clear
-        </button>
+      <div class="flex flex-col gap-1.5">
+        <span class="text-xs font-semibold uppercase opacity-60">Operators</span>
+        <div class="grid grid-cols-3 gap-2">
+          <button
+            v-for="key in operatorKeys"
+            :key="key.label"
+            type="button"
+            class="flex h-12 items-center justify-center rounded-xl border-2 border-base-300 bg-base-100 font-mono text-lg text-base-content transition-colors hover:bg-base-200 active:bg-base-300"
+            :title="key.title"
+            :aria-label="key.title"
+            @click="insertAtCursor(key.text, key.cursorOffset)"
+          >
+            {{ key.label }}
+          </button>
+        </div>
       </div>
 
       <!-- Argument atom chips -->
@@ -200,13 +207,25 @@ const operatorKeys = [
             v-for="arg in availableArguments"
             :key="arg.id"
             type="button"
-            class="btn btn-sm btn-soft font-mono"
+            class="btn btn-sm rounded-lg btn-soft btn-primary font-mono"
             @click="insertAtCursor(arg.name)"
           >
             {{ arg.name }}
           </button>
         </div>
         <p v-else class="text-xs opacity-50">Add arguments to the graph to reference them here.</p>
+      </div>
+
+      <!-- Clear: always present so clearing doesn't shift the sheet -->
+      <div class="flex justify-end">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          :disabled="inputText.length === 0"
+          @click="clearFormula"
+        >
+          Clear all
+        </button>
       </div>
     </div>
   </BottomSheet>

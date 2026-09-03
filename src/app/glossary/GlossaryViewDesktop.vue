@@ -98,7 +98,7 @@ watch(
           </p>
           <template v-for="group in groupedTerms" :key="group.letter">
             <div
-              class="px-4 pt-2 pb-0.5 text-xs font-semibold text-base-content/40 uppercase tracking-wide"
+              class="px-4 pt-2 pb-0.5 text-xs font-semibold text-secondary uppercase tracking-wide"
             >
               {{ group.letter }}
             </div>

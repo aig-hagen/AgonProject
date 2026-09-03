@@ -23,20 +23,64 @@
     dark;
 }
 
-/* Brand primary: aigblue = RGB(0, 76, 151). */
-:root,
-[data-theme='dark'] {
-  --color-primary: #004c97;
-  --color-primary-content: #ffffff;
-}
+/* App colors (base scale, brand, status, selection) are the single source of
+   truth in @/modules/common/theme/palette.ts, injected as --color-* custom
+   properties before mount. Graph colors are handled separately. */
 
-/* Menu entry icons: brand blue, lightened in dark mode so the dark aigblue stays
-   legible on the dark dropdown/sheet surface. */
+/* Menu entry icons use the brand blue; dark mode's primary is already lifted for
+   legibility, so no per-mode override is needed here. */
 .menu-icon {
   color: var(--color-primary);
 }
-[data-theme='dark'] .menu-icon {
-  color: color-mix(in oklab, var(--color-primary), white 55%);
+
+/* One consistent keyboard focus ring app-wide, overriding DaisyUI's per-element
+   focus colors so focus is always the same brand color. */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.btn:focus-visible,
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible,
+.tab:focus-visible,
+.toggle:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Overlay scrim (modal/sheet backdrops) and sticky-footer elevation shadow.
+   The base colors come from the palette; opacity is applied here. */
+.bg-scrim {
+  background-color: color-mix(in srgb, var(--color-scrim) 40%, transparent);
+}
+.shadow-footer {
+  box-shadow: 0 -4px 6px -4px color-mix(in srgb, var(--color-shadow) 15%, transparent);
+}
+
+/* Native <dialog class="modal"> dims via the browser ::backdrop; align it with the
+   palette scrim used by custom sheets (.bg-scrim) so every overlay tints the same. */
+.modal::backdrop {
+  background-color: color-mix(in srgb, var(--color-scrim) 40%, transparent);
+}
+
+/* Elevation shadows tint from the palette shadow token instead of Tailwind's default
+   pure black. Geometry mirrors Tailwind's v4 scale; only the color changes. Overriding
+   --tw-shadow (not box-shadow) keeps ring/inset-shadow composition intact. */
+:root {
+  --app-shadow-color: color-mix(in srgb, var(--color-shadow) 10%, transparent);
+}
+.shadow-sm {
+  --tw-shadow: 0 1px 3px 0 var(--app-shadow-color), 0 1px 2px -1px var(--app-shadow-color);
+}
+.shadow-md {
+  --tw-shadow: 0 4px 6px -1px var(--app-shadow-color), 0 2px 4px -2px var(--app-shadow-color);
+}
+.shadow-lg {
+  --tw-shadow: 0 10px 15px -3px var(--app-shadow-color), 0 4px 6px -4px var(--app-shadow-color);
+}
+.shadow-xl {
+  --tw-shadow: 0 20px 25px -5px var(--app-shadow-color), 0 8px 10px -6px var(--app-shadow-color);
 }
 
 html,
@@ -74,9 +118,11 @@ body {
   --node-charge-glow: rgba(255, 255, 255, 0.5);
 }
 
+/* App-wide scrollbars are chrome, not graph: palette base-300 thumbs that adapt per
+   theme, hover mixed toward base-content for contrast in both modes. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--graph-node-stroke-color, #5a87a8) transparent;
+  scrollbar-color: var(--color-base-300) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -90,12 +136,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #5a87a8;
+  background-color: var(--color-base-300);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #3e6a8a;
+  background-color: color-mix(in srgb, var(--color-base-300) 75%, var(--color-base-content));
 }
 
 .graph-controller__node-label,
@@ -144,6 +190,8 @@ body {
   text-align: center;
 }
 
+/* Inset ring rather than an outward one: the input sits in a tight SVG
+   foreignObject that would clip an outer box-shadow at the top. */
 .graph-controller__label-input:focus {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--graph-node-stroke-color, #5a87a8) 35%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-focus) 60%, transparent);
 }

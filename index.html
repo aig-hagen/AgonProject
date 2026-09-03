@@ -7,10 +7,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AgonProject</title>
-    <meta
-      name="description"
-      content="Explore different approaches to formal argumentation."
-    />
+    <meta name="description" content="Explore different approaches to formal argumentation." />
     <!-- Open Graph / social link previews (WhatsApp, Slack, iMessage, …). Crawlers don't
          run JS, so these must be static in the served HTML. -->
     <meta property="og:type" content="website" />
@@ -42,18 +39,21 @@
       document.documentElement.setAttribute('data-theme', initialTheme)
     </script>
     <style>
+      /* First-paint background only, to avoid a flash before the palette
+         (@/modules/common/theme/palette.ts) is injected. Keep in sync with
+         base-100 there. */
       html {
-        background-color: oklch(100% 0 0);
+        background-color: #ffffff;
       }
       html[data-theme='dark'] {
-        background-color: oklch(25.33% 0.016 252.42);
+        background-color: #1c2833;
       }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
-    <link rel="stylesheet" href="/node_modules/@drgrice1/tikzjax/dist/fonts.css"/>
+    <link rel="stylesheet" href="/node_modules/@drgrice1/tikzjax/dist/fonts.css" />
     <script data-no-bundle src="/node_modules/@drgrice1/tikzjax/dist/tikzjax.js"></script>
     <div id="render-svg-container"></div>
   </body>

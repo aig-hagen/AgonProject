@@ -16,7 +16,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -26,21 +26,22 @@
     <style>
       :root {
         color-scheme: light dark;
-        --bg: #f7f8fa;
+        /* Standalone page: values mirror @/modules/common/theme/palette.ts. */
+        --bg: #eef2f6;
         --card: #ffffff;
-        --fg: #1c2430;
-        --muted: #5b6672;
-        --border: #e2e6eb;
-        --accent: #3b6ea5;
+        --fg: #162536;
+        --muted: #526475;
+        --border: #dce4ec;
+        --accent: #004c97;
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg: #12161c;
-          --card: #1a2029;
-          --fg: #e7ecf2;
-          --muted: #9aa5b1;
-          --border: #2a323d;
-          --accent: #6ea3d8;
+          --bg: #17222c;
+          --card: #1c2833;
+          --fg: #e7eef4;
+          --muted: #9fb0bd;
+          --border: #2a3a48;
+          --accent: #7ea9ce;
         }
       }
       * {
@@ -59,7 +60,12 @@
         background: var(--bg);
         color: var(--fg);
         font-family:
-          system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Helvetica,
+          Arial,
           sans-serif;
         line-height: 1.55;
       }
@@ -96,9 +102,7 @@
       <h1>Temporarily unavailable</h1>
       <p>AgonProject is currently down for maintenance.</p>
       <p>We&rsquo;ll be back shortly &mdash; please check again in a little while.</p>
-      <p class="brand">
-        <strong>AgonProject</strong> &middot; AIG Hagen
-      </p>
+      <p class="brand"><strong>AgonProject</strong> &middot; AIG Hagen</p>
     </main>
   </body>
 </html>

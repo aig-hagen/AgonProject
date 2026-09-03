@@ -199,7 +199,7 @@ function removeChild(index: number) {
 
 .formula-children {
   padding-left: 16px;
-  border-left: 2px solid oklch(var(--b3));
+  border-left: 2px solid var(--color-base-300);
   margin-left: 8px;
   display: flex;
   flex-direction: column;

@@ -269,7 +269,7 @@ function onHandlePointerUp(event: PointerEvent) {
     <Transition name="sheet-fade">
       <div
         v-if="open && modal"
-        class="sheet-backdrop fixed inset-0 z-50 bg-black/40"
+        class="sheet-backdrop fixed inset-0 z-50 bg-scrim"
         @pointerdown="close"
         aria-hidden="true"
       ></div>

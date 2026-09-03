@@ -243,7 +243,7 @@ watch(isOpen, (open) => {
         <template v-for="(group, groupIndex) in groups" :key="group.key">
           <div
             v-if="group.options.length && group.displayName"
-            class="px-3 pt-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-wider text-primary/70"
+            class="px-3 pt-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-wider text-secondary"
             :class="{ 'mt-1 border-t border-base-200': groupIndex > 0 }"
           >
             {{ group.displayName }}

@@ -37,12 +37,19 @@ lint-enforced by `eslint-plugin-no-relative-import-paths`.
 
 ## Git workflow
 
-- New features or major changes go on a **new branch**, unless stated otherwise.
+- New features or major changes go on a **new branch**, unless stated otherwise. Minor fixes/changes can go directly to `dev`.
 - After a batch of changes, give a brief summary and **wait for approval before committing**.
 - Keep commit messages short and focused on the change, prefixed with a
   [Conventional Commits](https://www.conventionalcommits.org/) type (`feat:`, `fix:`,
   `chore:`, `docs:`, `refactor:`, ...).
-- Never add yourself (Claude) to the commit message or as an author/co-author.
+
+## Opening a PR
+
+- **Before pushing, run `npm run lint` and `npm run format`** (CI checks eslint/oxlint,
+  prettier `--check`, and type-check — a stray formatting issue fails the `Lint & type-check`
+  job). Commit any resulting changes.
+- Base PRs on `dev`. Keep the description **short**: a one-line summary plus a terse bullet
+  list of the notable changes.
 
 ## Publishing a release
 

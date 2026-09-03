@@ -29,6 +29,7 @@ import { abstractArgumentationModule } from '@/modules/abstract-argumentation/mo
 import { bipoloarArgumentationModule } from '@/modules/bipolar-argumentation/moduleConfig'
 import { collectiveAttacksArgumentationModule } from '@/modules/collective-attacks-argumentation/moduleConfig'
 import { openDocumentsDB } from '@/modules/common/documents/db'
+import { applyPalette } from '@/modules/common/theme/applyPalette'
 import { dialecticalArgumentationModule } from '@/modules/dialectical-argumentation/moduleConfig'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 import { probabilisticArgumentationModule } from '@/modules/probabilistic-argumentation/moduleConfig'
@@ -60,5 +61,7 @@ const queryClient = new QueryClient({
 
 app.use(VueQueryPlugin, { queryClient })
 app.use(router)
+
+applyPalette()
 
 app.mount('#app')

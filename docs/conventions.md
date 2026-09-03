@@ -26,7 +26,7 @@ This also runs automatically as the first step of `npm run lint`. Don't hand-wri
 ## TypeScript
 
 - Prefer `interface` for object shapes (component props, data records, `TooltipDefinition`, `DocumentState<T>`), and `type` for unions, aliases, and derived types (`GraphStyleName = 'default' | 'high-contrast' | ...`, `type Save = z.infer<typeof SaveSchema>`).
-- Avoid `any`; when working with genuinely untyped input (deserializing untrusted data), type as `unknown` and narrow, or suppress a single line with `// @ts-expect-error <TS code>: <reason>` — never bare `@ts-ignore`. The comment must explain *why* the suppression is safe (e.g. "ignore because we deserialize").
+- Avoid `any`; when working with genuinely untyped input (deserializing untrusted data), type as `unknown` and narrow, or suppress a single line with `// @ts-expect-error <TS code>: <reason>` — never bare `@ts-ignore`. The comment must explain _why_ the suppression is safe (e.g. "ignore because we deserialize").
 - Runtime-validated data (the save-file format) is defined with a [`zod`](https://zod.dev/) schema, with the TypeScript type derived from it via `z.infer<typeof Schema>` rather than declared separately — see [`saveFormat.ts`](/src/modules/abstract-argumentation/save/saveFormat.ts).
 
 ## Vue components
@@ -49,7 +49,7 @@ This also runs automatically as the first step of `npm run lint`. Don't hand-wri
 ## Composables & shared state
 
 - There is no global store library (no Vuex/Pinia). Shared reactive state is a plain `useXxx()` composable returning an object of refs/functions.
-- State that must be a *singleton* across every component instance (settings, theme, notifications registry) wraps the composable in `createSharedComposable` from `@vueuse/shared`:
+- State that must be a _singleton_ across every component instance (settings, theme, notifications registry) wraps the composable in `createSharedComposable` from `@vueuse/shared`:
 
   ```ts
   export const useSettings = createSharedComposable(() => {
@@ -83,9 +83,11 @@ Document models are plain classes marked `[immerable] = true` (from [`immer`](ht
 
 ## Styling & theming
 
+- **The palette is the exclusive source of application colors.** Every color must resolve from [`palette.ts`](/src/modules/common/theme/palette.ts), which defines each token once for light and dark mode and is injected as `--color-*` custom properties before mount. No raw color literals (hex/`rgb`/`hsl`/named) and no Tailwind _primitive_ color utilities (`bg-white`, `text-black`, `bg-red-500`, `text-gray-700`, …) in app code — use DaisyUI semantic classes and tokens (`bg-base-100`, `text-primary`, `btn-secondary`, `alert-error`), the app tokens (`var(--color-focus)`, `var(--color-scrim)`, `var(--color-shadow)`, `.bg-scrim`, `.shadow-footer`), or opacity/`color-mix` on those. Need a new color? Add a token to `palette.ts` — never inline one.
+  - Exceptions: **graph colors** (node/link/highlight; still being migrated and not yet tokenized), **format-owned document colors** (e.g. user-authored LaTeX/TikZ output), and the standalone [`public/maintenance.html`](/public/maintenance.html), which mirrors the palette values by hand because it loads without the app bundle. Keep those in sync with the palette.
 - [Tailwind CSS v4](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/) utility classes are used directly in templates; there are effectively no component `<style>` blocks (only a handful of `.vue` files have one — prefer utility classes over scoped CSS).
 - Global/custom CSS lives in [`src/style.css`](/src/style.css) and is reserved for things utility classes can't express well: the SVG graph canvas (nodes, links, labels) and scrollbar styling.
-- Colors in that custom CSS reference DaisyUI's theme CSS variables (`var(--color-base-100)`, `var(--color-base-content)`) rather than hardcoded hex values, so they follow the active theme automatically. Graph-specific colors that aren't part of the DaisyUI palette are exposed as their own CSS custom properties with a fallback (`var(--graph-node-stroke-color, #5a87a8)`).
+- Colors in that custom CSS reference the theme CSS variables (`var(--color-base-100)`, `var(--color-base-content)`, `var(--color-focus)`) rather than hardcoded hex values, so they follow the active theme automatically. Graph-specific colors that aren't part of the palette are (for now) exposed as their own CSS custom properties with a fallback (`var(--graph-node-stroke-color, #5a87a8)`).
 - Light/dark theme is a single `data-theme` attribute on `<html>`, toggled by [`useTheme()`](/src/modules/common/theme/useTheme.ts) (itself a `createSharedComposable`/`useStorage` pair, following the shared-state convention above).
 - SVG graph elements use BEM-style class names (`graph-controller__node`, `graph-controller__link-label`) since they're targeted by the graph rendering code rather than styled ad hoc.
 

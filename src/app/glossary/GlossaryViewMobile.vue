@@ -89,7 +89,7 @@ const router = useRouter()
         No results
       </p>
       <template v-for="group in groupedTerms" :key="group.letter">
-        <div class="text-xs font-bold text-base-content/40 tracking-wide mt-1.5 px-0.5">
+        <div class="text-xs font-bold text-secondary tracking-wide mt-1.5 px-0.5">
           {{ group.letter }}
         </div>
         <article
