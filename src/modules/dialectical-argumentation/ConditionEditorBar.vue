@@ -17,6 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { ExclamationCircleIcon } from '@heroicons/vue/24/solid'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
 
 import type { NodeId } from '@/modules/common/graph-editor/graphEditor'
@@ -137,66 +138,73 @@ function insertAtCursor(text: string, cursorOffset?: number) {
     @keydown.enter.stop="emit('close')"
   >
     <div class="px-3 py-2 flex flex-col gap-1.5">
-      <!-- Symbol buttons row, above the input -->
-      <div class="flex items-center gap-1 flex-wrap justify-between">
-        <button
-          class="btn btn-xs btn-ghost font-mono"
-          type="button"
-          title="Negation (¬)"
-          @mousedown.prevent
-          @click="insertAtCursor('¬')"
-        >
-          ¬
-        </button>
-        <button
-          class="btn btn-xs btn-ghost font-mono"
-          type="button"
-          title="Conjunction (∧)"
-          @mousedown.prevent
-          @click="insertAtCursor(' ∧ ')"
-        >
-          ∧
-        </button>
-        <button
-          class="btn btn-xs btn-ghost font-mono"
-          type="button"
-          title="Disjunction (∨)"
-          @mousedown.prevent
-          @click="insertAtCursor(' ∨ ')"
-        >
-          ∨
-        </button>
-        <button
-          class="btn btn-xs btn-ghost font-mono"
-          type="button"
-          title="Tautology (⊤)"
-          @mousedown.prevent
-          @click="insertAtCursor('⊤')"
-        >
-          ⊤
-        </button>
-        <button
-          class="btn btn-xs btn-ghost font-mono"
-          type="button"
-          title="Contradiction (⊥)"
-          @mousedown.prevent
-          @click="insertAtCursor('⊥')"
-        >
-          ⊥
-        </button>
-        <button
-          class="btn btn-xs btn-ghost font-mono"
-          type="button"
-          title="Parentheses"
-          @mousedown.prevent
-          @click="insertAtCursor('()', 1)"
-        >
-          ( )
-        </button>
+      <!-- Operator keypad + argument dropdown, above the input -->
+      <div class="flex items-center gap-1.5">
+        <div class="inline-flex h-7 overflow-hidden rounded-lg border border-base-300">
+          <button
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            type="button"
+            title="Negation (¬)"
+            @mousedown.prevent
+            @click="insertAtCursor('¬')"
+          >
+            ¬
+          </button>
+          <button
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            type="button"
+            title="Conjunction (∧)"
+            @mousedown.prevent
+            @click="insertAtCursor(' ∧ ')"
+          >
+            ∧
+          </button>
+          <button
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            type="button"
+            title="Disjunction (∨)"
+            @mousedown.prevent
+            @click="insertAtCursor(' ∨ ')"
+          >
+            ∨
+          </button>
+          <button
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            type="button"
+            title="Tautology (⊤)"
+            @mousedown.prevent
+            @click="insertAtCursor('⊤')"
+          >
+            ⊤
+          </button>
+          <button
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            type="button"
+            title="Contradiction (⊥)"
+            @mousedown.prevent
+            @click="insertAtCursor('⊥')"
+          >
+            ⊥
+          </button>
+          <button
+            class="flex h-full w-8 items-center justify-center font-mono text-sm transition-colors hover:bg-base-200"
+            type="button"
+            title="Parentheses"
+            @mousedown.prevent
+            @click="insertAtCursor('()', 1)"
+          >
+            ( )
+          </button>
+        </div>
 
         <!-- Atom button: expands on hover to show all arguments -->
         <div class="dropdown dropdown-hover dropdown-top">
-          <button tabindex="0" class="btn btn-xs btn-ghost" type="button" @mousedown.prevent>
+          <button
+            tabindex="0"
+            class="flex h-7 items-center rounded-lg border border-base-300 px-2.5 text-sm transition-colors hover:bg-base-200"
+            type="button"
+            @mousedown.prevent
+          >
             Arg ▾
           </button>
           <ul
@@ -221,7 +229,14 @@ function insertAtCursor(text: string, cursorOffset?: number) {
           </ul>
         </div>
 
-        <button class="btn btn-xs btn-ghost ml-auto" type="button" @click="emit('close')">✕</button>
+        <button
+          class="ml-auto flex h-7 w-7 items-center justify-center rounded-lg text-base-content/60 transition-colors hover:bg-base-200 hover:text-base-content"
+          type="button"
+          aria-label="Close"
+          @click="emit('close')"
+        >
+          ✕
+        </button>
       </div>
 
       <div class="relative">
@@ -229,7 +244,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
           ref="input"
           type="text"
           class="input input-sm input-bordered font-mono w-full"
-          :class="{ 'input-error': isInvalid, 'pr-7': isInvalid }"
+          :class="{ 'input-error': isInvalid, 'pr-8': isInvalid }"
           v-model="inputText"
           @input="parseAndEmit"
           @keydown="onKeydown"
@@ -238,10 +253,11 @@ function insertAtCursor(text: string, cursorOffset?: number) {
         />
         <span
           v-if="isInvalid"
-          class="tooltip tooltip-left absolute right-2 top-1/2 -translate-y-1/2 text-error text-sm font-bold select-none cursor-default"
+          class="tooltip tooltip-left absolute right-2 top-1/2 -translate-y-1/2 text-error select-none cursor-default"
           data-tip="Acceptance condition is syntactically incorrect and will not be saved"
-          >!</span
         >
+          <ExclamationCircleIcon class="size-5" />
+        </span>
       </div>
     </div>
   </div>
