@@ -18,7 +18,25 @@
  */
 @import 'tailwindcss';
 @plugin "daisyui" {
-  themes: light --default, dark;
+  themes:
+    light --default,
+    dark;
+}
+
+/* Brand primary: aigblue = RGB(0, 76, 151). */
+:root,
+[data-theme='dark'] {
+  --color-primary: #004c97;
+  --color-primary-content: #ffffff;
+}
+
+/* Menu entry icons: brand blue, lightened in dark mode so the dark aigblue stays
+   legible on the dark dropdown/sheet surface. */
+.menu-icon {
+  color: var(--color-primary);
+}
+[data-theme='dark'] .menu-icon {
+  color: color-mix(in oklab, var(--color-primary), white 55%);
 }
 
 html,
@@ -33,7 +51,6 @@ body {
 .graph-controller__grid-line {
   stroke: var(--color-base-300, #ddd);
 }
-
 
 .graph-controller__link,
 .graph-controller__hyperlink-source-path,
@@ -50,6 +67,11 @@ body {
 .graph-controller__node {
   stroke: var(--graph-node-stroke-color, #5a87a8);
   stroke-width: var(--graph-node-stroke-width, 1.5px);
+}
+
+/* Node hold-to-move charge glow: dark halo on the light canvas, light halo on the dark one. */
+[data-theme='dark'] {
+  --node-charge-glow: rgba(255, 255, 255, 0.5);
 }
 
 * {
@@ -125,4 +147,3 @@ body {
 .graph-controller__label-input:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--graph-node-stroke-color, #5a87a8) 35%, transparent);
 }
-

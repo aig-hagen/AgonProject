@@ -118,12 +118,12 @@ function removeChild(index: number) {
         :value="formula.type"
         @change="onTypeChange(($event.target as HTMLSelectElement).value)"
       >
-        <option value="tautology">⊤  Tautology</option>
-        <option value="contradiction">⊥  Contradiction</option>
+        <option value="tautology">⊤ Tautology</option>
+        <option value="contradiction">⊥ Contradiction</option>
         <option value="atom">Atom</option>
-        <option value="negation">¬  Negation</option>
-        <option value="conjunction">∧  All of</option>
-        <option value="disjunction">∨  Any of</option>
+        <option value="negation">¬ Negation</option>
+        <option value="conjunction">∧ All of</option>
+        <option value="disjunction">∨ Any of</option>
       </select>
 
       <!-- Atom: argument selector -->

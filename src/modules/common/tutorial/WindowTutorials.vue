@@ -18,11 +18,11 @@
 -->
 <script setup lang="ts">
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 
 import type { Tutorial, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const { tutorials, context } = defineProps<{
   tutorials: Tutorial[]
@@ -34,7 +34,11 @@ const open = defineModel('open', { required: true })
 const emit = defineEmits<{ close: [] }>()
 
 const instanceId = inject(TUTORIAL_INSTANCE_KEY, '')
-const { isTutorialDone, startTutorial } = useTutorial()
+const { isTouchDevice, isTutorialDone, startTutorial } = useTutorial()
+
+const visibleTutorials = computed(() =>
+  tutorials.filter((tutorial) => !(tutorial.desktopOnly && isTouchDevice.value)),
+)
 
 function launch(tutorial: Tutorial) {
   startTutorial(tutorial, context, instanceId)
@@ -44,7 +48,7 @@ function launch(tutorial: Tutorial) {
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Tutorials"
     :initial-position="{ x: 128, y: 128 }"
@@ -55,7 +59,7 @@ function launch(tutorial: Tutorial) {
         Step-by-step guides to help you learn the key features.
       </p>
       <div
-        v-for="tutorial in tutorials"
+        v-for="tutorial in visibleTutorials"
         :key="tutorial.id"
         class="flex items-start justify-between gap-3 p-3 rounded-lg border border-base-300 bg-base-200/50"
       >
@@ -70,13 +74,10 @@ function launch(tutorial: Tutorial) {
           </div>
           <p class="text-xs text-base-content/50 mt-0.5">{{ tutorial.description }}</p>
         </div>
-        <button
-          class="btn btn-primary btn-xs shrink-0"
-          @click="launch(tutorial)"
-        >
+        <button class="btn btn-primary btn-xs shrink-0" @click="launch(tutorial)">
           {{ isTutorialDone(tutorial.id) ? '↺ Restart' : '▶ Start' }}
         </button>
       </div>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

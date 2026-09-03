@@ -50,7 +50,10 @@ export const ExampleSaveSchema = SaveSchema.extend(ExampleSaveExtension)
 
 export type Save = z.infer<typeof SaveSchema>
 
-export function saveAsString(argumentation: BipoloarArgumentation<ArgumentData>): string {
+export function saveAsString(
+  argumentation: BipoloarArgumentation<ArgumentData>,
+  name: string,
+): string {
   const argumentsSave = Object.create(null)
   for (const [argumentId, argumentData] of argumentation.arguments()) {
     argumentsSave[argumentId] = {
@@ -67,8 +70,9 @@ export function saveAsString(argumentation: BipoloarArgumentation<ArgumentData>)
   for (const [supporterId, supportedId] of argumentation.supports()) {
     supportsSave.push([supporterId, supportedId])
   }
-  const save: Save = {
+  const save: z.infer<typeof ExampleSaveSchema> = {
     apiVersion: API_VERSION,
+    name,
     arguments: argumentsSave,
     attacks: attacksSave,
     supports: supportsSave,
@@ -81,7 +85,7 @@ export function loadFromString(
   dataString: string,
   fileName: string,
 ): DeserializationResult<BipoloarArgumentation<ArgumentData>> {
-  return loadFromStringWithSchema(SaveSchema, dataString, fileName, (data) => {
+  return loadFromStringWithSchema(ExampleSaveSchema, dataString, fileName, (data) => {
     const argumentation = new BipoloarArgumentation<ArgumentData>()
     for (const [id, argumentData] of Object.entries(data.arguments)) {
       const numericId = parseInt(id, 10)

@@ -4,7 +4,7 @@
 % agoneditorial.sty; the previous boxed tikzposter version is in
 % main_blocks.tex.bak.
 
-\documentclass[25pt,a0paper,portrait,margin=0mm,innermargin=45mm,blockverticalspace=18mm,colspace=18mm,subcolspace=10mm]{tikzposter}
+\documentclass[25pt,a0paper,portrait,margin=0mm,innermargin=45mm,blockverticalspace=10mm,colspace=18mm,subcolspace=10mm]{tikzposter}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -28,7 +28,17 @@
 \useblockstyle{flat}
 
 \title{AgonProject}
-\subtitle{An online platform for exploring approaches to formal argumentation}
+\subtitle{The online platform for exploring approaches to formal argumentation}
+
+% Masthead title: EB Garamond bold small caps. Family selected directly so the
+% .fd auto-loads without \usepackage{ebgaramond} — body fonts stay Source Serif/Sans.
+\renewcommand{\agonTitleFont}{\fontfamily{EBGaramond-TLF}\fontseries{b}\scshape}
+% Other options (uncomment one):
+% \renewcommand{\agonTitleFont}{\sffamily\bfseries}           % Source Sans (no small caps)
+% \renewcommand{\agonTitleFont}{\rmfamily\bfseries}          % Source Serif
+% \renewcommand{\agonTitleFont}{\rmfamily\bfseries\scshape} % Serif small caps
+% \renewcommand{\agonTitleFont}{\sffamily\bfseries\itshape} % Sans italic
+ \renewcommand{\agonSubtitleFont}{\sffamily\itshape}        % Subtitle in sans italic
 
 \begin{document}
 \maketitle
@@ -39,138 +49,127 @@
 \begin{columns}
 \column{0.56}
 \block{}{
+    \vspace{1.5em}
+    \begin{minipage}[c][0.6\linewidth][c]{\linewidth}
     \eyebrow{Web platform \textbullet\ open source}
     \vspace{0.5em}
 
     {\sffamily\bfseries\color{ink}\fontsize{66}{70}\selectfont
-        The whole \textcolor{aigblue}{zoo} of formal argumentation, in one browser tab.\par}
+        The zoo of \textcolor{aigblue}{formal argumentation}, in one browser tab.\par}
     \vspace{0.7em}
 
     {\color{inksoft}\fontsize{27}{35}\selectfont
-        Formal argumentation is a rich but fragmented field. \agon gives students,
-        researchers and practitioners a single, \textbf{visual} interface to
-        construct, evaluate and compare its many formalisms --- powered by the
-        \emph{\tweety} reasoning libraries.\par}
-    \vspace{1.0em}
+        {\sc\agon} is an easy-to-use, \textbf{visual} web interface for building,
+        evaluating, and comparing argumentation frameworks. It supports \stat{6}
+        different argumentation formalisms and \stat{more than 25} semantics, powered by the\,
+        \raisebox{-0.12\height}{\includegraphics[height=0.95cm]{figures/tweety-logo.png}}%
+        {\sc\,TweetyProject} argumentation libraries. Curated examples, formal definitions, and
+        literature references support both students and researchers working with
+        formal argumentation.\par}
+    \vspace{1.3em}
 
-    \noindent\begin{tcolorbox}[hbox, colback=aigyellow, colframe=aigyellow, boxrule=0pt, arc=14pt,
-        left=26pt, right=34pt, top=22pt, bottom=22pt, boxsep=0pt]
-        \begin{minipage}[c]{4.3cm}
+    \begin{center}
+    \begin{tcolorbox}[hbox, colback=aigyellow, colframe=aigyellow, boxrule=0pt, arc=14pt,
+        left=18pt, right=22pt, top=16pt, bottom=16pt, boxsep=0pt]
+        \begin{minipage}[c]{3.9cm}
             \centering
-            \setlength{\fboxsep}{9pt}\colorbox{white}{\qrcode[height=3.6cm]{http://agon.tweetyproject.org}}
+            \tikz\node[fill=white, rounded corners=7pt, inner sep=8pt]
+                {\qrcode[height=3.4cm]{http://agon.tweetyproject.org}};
         \end{minipage}\hspace{22pt}%
-        \begin{varwidth}[c]{0.55\linewidth}
-            {\sffamily\bfseries\color{aigbluedeep}\fontsize{24}{28}\selectfont\textls[150]{TRY IT LIVE}\par}
-            \vspace{0.35em}
-            {\sffamily\bfseries\color{aigbluedeep}\fontsize{40}{46}\selectfont agon.tweetyproject.org\par}
-            \vspace{0.25em}
-            {\color{ink}\fontsize{20}{25}\selectfont github.com/aig-hagen/AgonProject \textbullet\ GPL-3.0\par}
-        \end{varwidth}
+        \begin{tabular}[c]{@{}l@{}}
+            {\sffamily\bfseries\color{white}\fontsize{24}{28}\selectfont\textls[150]{SCAN TO TRY IT LIVE}}\\[0.35em]
+            {\ttfamily\bfseries\color{aigbluedeep}\fontsize{38}{46}\selectfont agon.tweetyproject.org}
+        \end{tabular}%
     \end{tcolorbox}
+    \end{center}
+
+    \end{minipage}
 }
+
 \column{0.44}
 \block{}{
     \vspace{2.4em}
-    \screenshot[\linewidth]{figures/screenshot-landing.png}
+    \centering\screenshot[0.86\linewidth]{figures/screenshot-landing.png}\par
     \vspace{0.6em}
-    {\color{muted}\itshape\fontsize{20}{25}\selectfont One landing page --- pick a formalism
-     and start modelling, with curated examples and one-click random generation.\par}
-}
-\end{columns}
-
-%======================================================================
-% Formalism strip
-%======================================================================
-\begin{columns}
-\column{1}
-\block{}{
-    \sectionrule
-    \vspace{0.6em}
-    \eyebrow{Six argumentation formalisms --- one interface}
-    \vspace{0.9em}
-
-    \noindent\begin{minipage}[t]{0.32\linewidth}
-        \formalism{AF}{Abstract --- arguments \& attacks}\vspace{0.7em}
-        \formalism{iAF}{Incomplete --- uncertain elements}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.32\linewidth}
-        \formalism{BAF}{Bipolar --- attacks and support}\vspace{0.7em}
-        \formalism{PAF}{Probabilistic --- weighted graph}
-    \end{minipage}\hfill
-    \begin{minipage}[t]{0.32\linewidth}
-        \formalism{ADF}{Dialectical --- acceptance conditions}\vspace{0.7em}
-        \formalism{SetAF}{Collective attacks by sets}
-    \end{minipage}
+    {\color{muted}\itshape\fontsize{20}{25}\selectfont Landing page --- 6 different formalisms, with curated examples and random generation.\par}
 }
 \end{columns}
 
 %======================================================================
 % Capabilities
 %======================================================================
-\begin{columns}\column{1}\block{}{\eyebrow{What you can do}}\end{columns}
+\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{Features}}\end{columns}
 \begin{columns}
-\column{0.18}\block{}{\featureitem{Build}{\faPenNib}{Interactive graph editor with automatic layouts and a physics simulation.}}
-\column{0.18}\block{}{\featureitem{Evaluate}{\faBalanceScale}{Extension- and ranking-based semantics; enumeration, credulous / skeptical acceptance.}}
-\column{0.18}\block{}{\featureitem{Export \& share}{\faShareSquare}{\LaTeX, SVG, TGF and ICCMA AF-format, plus share-URLs.}}
-\column{0.18}\block{}{\featureitem{Generate}{\faRandom}{Random frameworks from eight configurable networkX generators.}}
-\column{0.18}\block{}{\featureitem{Learn}{\faGraduationCap}{10+ tutorials and a glossary with literature references.}}
+\column{0.2}\block{}{\featureitem{Construct}{\faProjectDiagram}{Interactive graph editor with automatic layouts and physics simulation.}}
+\column{0.2}\block{}{\featureitem{Evaluate}{\faBalanceScale}{Extension- and ranking-based semantics, with enumeration and credulous / skeptical acceptance.}}
+\column{0.2}\block{}{\featureitem{Export \& share}{\faShareSquare}{Export to \LaTeX, SVG, TGF, and the ICCMA AF format, or share by URL.}}
+\column{0.2}\block{}{\featureitem{Generate}{\faDice}{Random frameworks from \stat{8} configurable graph generators.}}
+\column{0.2}\block{}{\featureitem{Learn}{\faGraduationCap}{\stat{10+} tutorials and a glossary with definitions and literature references.}}
 \end{columns}
 
 %======================================================================
 % In action — three screenshot panels
 %======================================================================
-\begin{columns}\column{1}\block{}{\vspace{0.4em}\eyebrow{In action}}\end{columns}
+\begin{columns}\column{1}\block{}{\sectionrule\vspace{0.6em}\eyebrow{In action}}\end{columns}
 \begin{columns}
-\column{0.32}\block{}{\shotpanel{Evaluate \& rank}{figures/screenshot-af.png}{Preferred extensions enumerated, with the categoriser ranking annotated on each argument.}}
-\column{0.32}\block{}{\shotpanel{Acceptance conditions}{figures/screenshot-adf.png}{ADFs attach propositional conditions to arguments; a stable model is highlighted in the graph.}}
-\column{0.32}\block{}{\shotpanel{Collective attacks \& export}{figures/screenshot-setaf.png}{Set-attacks drawn as hyperedges; the export panel emits ready-to-use \LaTeX{} with an SVG preview.}}
+\column{0.5}\block{}{\shotpanel[0.9\linewidth]{Extension \& Ranking Semantics}{figures/screenshot-af.png}{Preferred extensions enumerated; the categoriser ranking annotated on each argument.}}
+\column{0.5}\block{}{\shotpanel[0.9\linewidth]{ADFs \& Highlighting}{figures/screenshot-adf.png}{ADFs attach propositional conditions to arguments; a stable model is highlighted in the graph.}}
+\end{columns}
+\begin{columns}
+\column{0.5}\block{}{\shotpanel[0.9\linewidth]{Collective attacks \& Exporting}{figures/screenshot-setaf.png}{Set-attacks drawn as hyperedges; the export panel emits ready-to-use \LaTeX{} with an SVG preview.}}
+\column{0.5}\block{}{\phonepanel{Dedicated mobile UI}%
+    {figures/screenshot-mobile-eval.png}%
+    {figures/screenshot-mobile-generate.png}%
+    {figures/screenshot-mobile-glossary.png}%
+    {figures/screenshot-mobile-tutorial.png}%
+    {Fully responsive: evaluation sheet, random generation, glossary, and guided tutorials.}}
 \end{columns}
 
 %======================================================================
 % Semantics + Outlook
 %======================================================================
 \begin{columns}
-\column{0.58}
+\column{0.52}
 \block{}{
     \sectionrule\vspace{0.6em}
     \eyebrow{Supported semantics}
     \semrow{Classical}{conflict-free, admissible, complete, grounded, preferred, stable}
-    \semrow{Admissibility-based}{ideal, semi-stable, eager, strong admissibility, initial sets, unchallenged}
+    \semrow{Admissibility-based}{ideal, semi-stable, eager, strong admissibility, initial sets, \dots}
     \semrow{Non-admissible}{naive, CF2, SCF2, stage, stage2, (strongly) undisputed}
-    \semrow{Rankings}{burden, categoriser, counting, discussion, iterated graded defense, serialisability, \dots}
+    \semrow{Meta-families}{weak admissibility, (semi-)qualified, vacuous-reduct, serialisable}
+    \semrow{Argument-rankings}{burden, categoriser, counting, discussion, iterated graded defense, probabilistic, propagation, serialisability, strategy-based, \dots}
 }
+\column{0.06}
 \column{0.42}
 \block{}{
     \sectionrule\vspace{0.6em}
     \eyebrow{Outlook}
     \vspace{0.7em}
-    {\color{inksoft}\fontsize{23}{30}\selectfont
+    {\color{inksoft}\fontsize{25}{33}\selectfont
     \begin{itemize}\setlength{\itemsep}{0.4em}
-        \item more formalisms --- ABA, weighted AFs, BSAFs, claim-augmented AFs
+        \item more formalisms, e.\,g., \textbf{ABA}, \textbf{weighted AFs}, \textbf{BSAFs}, \textbf{claim-augmented AFs}
         \item benchmark generators from the ICCMA ecosystem
-        \item explanation-based reasoning: \emph{why} is an argument accepted?
+        \item other reasoning approaches, e.\,g., acceptance explanations
     \end{itemize}}
     \vspace{0.4em}
-    \callout{\agon is backend-agnostic and open to new formalisms and solvers.}
+    \callout{{\sc\agon} is backend-agnostic and open to new formalisms and solvers.}
+    \vspace{1.2em}
+    \par\hfill\includegraphics[width=0.5\linewidth]{figures/logoaig.png}
 }
 \end{columns}
 
 %======================================================================
-% Footer band
+% Footer band — full-bleed, pinned to the bottom edge of the page
 %======================================================================
-\useblockstyle{bandblue}
-\begin{columns}\column{1}
-\block{}{
-    \centering
+\footerband{%
     {\ttfamily\bfseries\color{white}\fontsize{26}{30}\selectfont
-     agon.tweetyproject.org \quad\textbullet\quad github.com/aig-hagen/AgonProject
-     \quad\textbullet\quad GPL-3.0\par}
+     agon.tweetyproject.org \quad\textbullet\quad \faGithub\ github.com/aig-hagen/AgonProject
+     \quad\textbullet\quad GPL-3.0 \quad\textbullet\quad powered by\ }%
+    \raisebox{-0.12\height}{\includegraphics[height=0.95cm]{figures/tweety-logo.png}}%
+    {\ttfamily\bfseries\color{white}\fontsize{26}{30}\selectfont \,TweetyProject\par}
     \vspace{0.4em}
-    {\ttfamily\color{bluetint}\fontsize{18}{23}\selectfont Lars Bengel \textbullet\ Matti Berthold
-     \textbullet\ Oleksandr Dzhychko \textbullet\ Matthias Thimm --- supported by DFG
-     project ARNS (grant 550735820)\par}
+    {\ttfamily\color{bluetint}\fontsize{22}{27}\selectfont Lars Bengel \textbullet\ Matti Berthold
+     \textbullet\ Oleksandr Dzhychko \textbullet\ Matthias Thimm \par}%--- supported by DFG project ARNS (grant 550735820)\par}
 }
-\end{columns}
-\useblockstyle{flat}
 
 \end{document}

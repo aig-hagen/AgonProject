@@ -18,19 +18,23 @@
 -->
 <script setup lang="ts">
 import { autoUpdate, offset, useFloating } from '@floating-ui/vue'
-import { computed, inject, nextTick, onMounted, onUnmounted, useTemplateRef, watchEffect } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import type { Tutorial, TutorialBodyPart, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 
-const {
-  tutorials,
-  defaultTutorialId,
-  refs,
-  context,
-  isTouchDevice,
-} = defineProps<{
+const { tutorials, defaultTutorialId, refs, context, isTouchDevice } = defineProps<{
   tutorials: Tutorial[]
   defaultTutorialId?: string
   refs: Record<string, HTMLElement | null>
@@ -61,7 +65,11 @@ const instanceId = inject(TUTORIAL_INSTANCE_KEY, '')
 const isOwner = computed(() => !isActive.value || activeOwnerId.value === instanceId)
 
 onMounted(() => {
-  if (defaultTutorialId && !autoStartedTutorials.value.includes(defaultTutorialId) && !isTutorialDone(defaultTutorialId)) {
+  if (
+    defaultTutorialId &&
+    !autoStartedTutorials.value.includes(defaultTutorialId) &&
+    !isTutorialDone(defaultTutorialId)
+  ) {
     const tutorial = tutorials.find((t) => t.id === defaultTutorialId)
     if (tutorial) {
       nextTick(() => {
@@ -78,9 +86,10 @@ onUnmounted(() => {
   }
 })
 
+// Auto-advance whenever a step declares an advanceCondition — including `advanceOn: 'button'`
+// steps, which then offer a manual Next *and* advance when the user does the action.
 watchEffect(() => {
   if (!isOwner.value || !isActive.value || !currentStep.value) return
-  if (resolvedAdvanceOn.value !== 'action') return
   if (!currentStep.value.advanceCondition) return
   if (!baselineContext.value) return
   if (currentStep.value.advanceCondition(context, baselineContext.value)) {
@@ -94,6 +103,58 @@ const anchorRef = computed<HTMLElement | null>(() => {
 })
 
 const isAnchored = computed(() => anchorRef.value !== null)
+
+const highlightRef = computed<HTMLElement | null>(() => {
+  if (!currentStep.value) return null
+  const h = currentStep.value.highlight
+  if (!h) return null
+  const key = typeof h === 'function' ? h(isTouchDevice) : h
+  if (!key) return null
+  return refs[key] ?? null
+})
+// The highlighted element may live inside a draggable evaluation window that moves via JS
+// transforms (no scroll/resize event), so measure its rect directly each frame while a spotlight
+// is shown — keeping the ring glued to it from the first frame and as the window moves.
+const hlX = ref(0)
+const hlY = ref(0)
+const hlW = ref(0)
+const hlH = ref(0)
+const hasHighlight = computed(() => hlW.value > 0)
+let highlightRaf: number | null = null
+function trackHighlight() {
+  const el = highlightRef.value
+  if (el) {
+    const r = el.getBoundingClientRect()
+    hlX.value = r.x
+    hlY.value = r.y
+    hlW.value = r.width
+    hlH.value = r.height
+  } else {
+    hlW.value = 0
+  }
+  highlightRaf = requestAnimationFrame(trackHighlight)
+}
+watch(
+  () => highlightRef.value !== null,
+  (present) => {
+    if (present && highlightRaf === null) trackHighlight()
+    else if (!present && highlightRaf !== null) {
+      cancelAnimationFrame(highlightRaf)
+      highlightRaf = null
+      hlW.value = 0
+    }
+  },
+  { immediate: true },
+)
+onUnmounted(() => {
+  if (highlightRaf !== null) cancelAnimationFrame(highlightRaf)
+})
+const highlightStyle = computed(() => ({
+  left: `${hlX.value}px`,
+  top: `${hlY.value}px`,
+  width: `${hlW.value}px`,
+  height: `${hlH.value}px`,
+}))
 
 const resolvedAdvanceOn = computed<'button' | 'action'>(() => {
   const a = currentStep.value?.advanceOn
@@ -144,6 +205,13 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
 
 <template>
   <template v-if="isOwner && isActive && currentStep">
+    <!-- Spotlight ring over a highlighted element (no card movement). -->
+    <div
+      v-if="hasHighlight"
+      class="fixed z-1100 pointer-events-none rounded-2xl ring-4 ring-primary/40 shadow-[0_0_0_9999px_rgba(0,0,0,0.04)] spotlight-pulse"
+      :style="highlightStyle"
+    ></div>
+
     <!-- Anchored step: floats next to a UI element -->
     <div v-if="isAnchored" ref="floating" :style="floatingStyles" class="z-50 pointer-events-auto">
       <div class="card bg-base-100 shadow-xl w-72 border border-base-300">
@@ -161,23 +229,25 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
           <h3 class="card-title text-sm">{{ currentStep.title }}</h3>
           <div class="text-sm text-base-content/80 leading-relaxed">
             <template v-for="(part, i) in bodyParts" :key="i">
-              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
+              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{
+                part.text
+              }}</TermTooltip>
               <span v-else class="contents" v-html="part"></span>
             </template>
           </div>
           <div class="flex items-center justify-between gap-2 pt-1">
-            <button
-              v-if="activeStepIndex > 0"
-              class="btn btn-ghost btn-xs"
-              @click="handlePrev"
-            >← Back</button>
+            <button v-if="activeStepIndex > 0" class="btn btn-ghost btn-xs" @click="handlePrev">
+              ← Back
+            </button>
             <div v-else class="flex-0"></div>
             <div class="flex items-center gap-2">
               <button
                 v-if="!isLastStep"
                 class="btn btn-ghost btn-xs text-base-content/50"
                 @click="skipTutorial"
-              >Skip</button>
+              >
+                Skip
+              </button>
               <template v-if="isLastStep">
                 <button v-if="nextTutorial" class="btn btn-info btn-xs" @click="handleStartNext">
                   ▶ {{ nextTutorial.name }}
@@ -188,7 +258,9 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
                 v-else-if="resolvedAdvanceOn === 'button'"
                 class="btn btn-primary btn-xs"
                 @click="handleNext"
-              >Next →</button>
+              >
+                Next →
+              </button>
               <span v-else class="text-xs text-base-content/40 italic">Waiting…</span>
             </div>
           </div>
@@ -197,10 +269,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
     </div>
 
     <!-- Unanchored step: fixed to top-right of editor container -->
-    <div
-      v-else
-      class="absolute top-4 right-4 z-50 pointer-events-auto"
-    >
+    <div v-else class="absolute top-4 right-4 z-50 pointer-events-auto">
       <div class="card bg-base-100 shadow-xl w-80 border border-base-300">
         <div class="card-body p-4 gap-3">
           <div class="flex items-center justify-between gap-2">
@@ -216,23 +285,25 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
           <h3 class="card-title text-sm">{{ currentStep.title }}</h3>
           <div class="text-sm text-base-content/80 leading-relaxed">
             <template v-for="(part, i) in bodyParts" :key="i">
-              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{ part.text }}</TermTooltip>
+              <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{
+                part.text
+              }}</TermTooltip>
               <span v-else class="contents" v-html="part"></span>
             </template>
           </div>
           <div class="flex items-center justify-between gap-2 pt-1">
-            <button
-              v-if="activeStepIndex > 0"
-              class="btn btn-ghost btn-xs"
-              @click="handlePrev"
-            >← Back</button>
+            <button v-if="activeStepIndex > 0" class="btn btn-ghost btn-xs" @click="handlePrev">
+              ← Back
+            </button>
             <div v-else class="flex-0"></div>
             <div class="flex items-center gap-2">
               <button
                 v-if="!isLastStep"
                 class="btn btn-ghost btn-xs text-base-content/50"
                 @click="skipTutorial"
-              >Skip tutorial</button>
+              >
+                Skip tutorial
+              </button>
               <template v-if="isLastStep">
                 <button v-if="nextTutorial" class="btn btn-info btn-xs" @click="handleStartNext">
                   ▶ {{ nextTutorial.name }}
@@ -243,7 +314,9 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
                 v-else-if="resolvedAdvanceOn === 'button'"
                 class="btn btn-primary btn-xs"
                 @click="handleNext"
-              >Next →</button>
+              >
+                Next →
+              </button>
               <span v-else class="text-xs text-base-content/40 italic">Waiting…</span>
             </div>
           </div>
@@ -252,3 +325,21 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
     </div>
   </template>
 </template>
+
+<style>
+.spotlight-pulse {
+  animation: spotlight-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spotlight-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.06);
+  }
+}
+</style>

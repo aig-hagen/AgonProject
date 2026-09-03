@@ -37,14 +37,45 @@ function tokenize(text: string): Token[] {
   let i = 0
   while (i < text.length) {
     const ch = text[i]!
-    if (/\s/.test(ch)) { i++; continue }
-    if (ch === '⊤') { tokens.push({ kind: 'taut' }); i++; continue }
-    if (ch === '⊥') { tokens.push({ kind: 'cont' }); i++; continue }
-    if (ch === '¬') { tokens.push({ kind: 'not' }); i++; continue }
-    if (ch === '∧') { tokens.push({ kind: 'and' }); i++; continue }
-    if (ch === '∨') { tokens.push({ kind: 'or' }); i++; continue }
-    if (ch === '(') { tokens.push({ kind: 'lparen' }); i++; continue }
-    if (ch === ')') { tokens.push({ kind: 'rparen' }); i++; continue }
+    if (/\s/.test(ch)) {
+      i++
+      continue
+    }
+    if (ch === '⊤') {
+      tokens.push({ kind: 'taut' })
+      i++
+      continue
+    }
+    if (ch === '⊥') {
+      tokens.push({ kind: 'cont' })
+      i++
+      continue
+    }
+    if (ch === '¬') {
+      tokens.push({ kind: 'not' })
+      i++
+      continue
+    }
+    if (ch === '∧') {
+      tokens.push({ kind: 'and' })
+      i++
+      continue
+    }
+    if (ch === '∨') {
+      tokens.push({ kind: 'or' })
+      i++
+      continue
+    }
+    if (ch === '(') {
+      tokens.push({ kind: 'lparen' })
+      i++
+      continue
+    }
+    if (ch === ')') {
+      tokens.push({ kind: 'rparen' })
+      i++
+      continue
+    }
     let j = i
     while (j < text.length && !/\s/.test(text[j]!) && !SPECIAL.has(text[j]!)) j++
     if (j > i) {
@@ -66,8 +97,12 @@ class Parser {
     private readonly argNameToId: Map<string, number>,
   ) {}
 
-  private peek(): Token { return this.tokens[this.pos]! }
-  private consume(): Token { return this.tokens[this.pos++]! }
+  private peek(): Token {
+    return this.tokens[this.pos]!
+  }
+  private consume(): Token {
+    return this.tokens[this.pos++]!
+  }
 
   parseRoot(): FormulaNode {
     const node = this.parseOr()
@@ -103,8 +138,14 @@ class Parser {
 
   private parsePrimary(): FormulaNode {
     const tok = this.peek()
-    if (tok.kind === 'taut') { this.consume(); return { type: 'tautology' } }
-    if (tok.kind === 'cont') { this.consume(); return { type: 'contradiction' } }
+    if (tok.kind === 'taut') {
+      this.consume()
+      return { type: 'tautology' }
+    }
+    if (tok.kind === 'cont') {
+      this.consume()
+      return { type: 'contradiction' }
+    }
     if (tok.kind === 'name') {
       this.consume()
       const id = this.argNameToId.get(tok.value)
@@ -122,10 +163,7 @@ class Parser {
   }
 }
 
-export function parseFormula(
-  text: string,
-  argNameToId: Map<string, number>,
-): FormulaNode | null {
+export function parseFormula(text: string, argNameToId: Map<string, number>): FormulaNode | null {
   const trimmed = text.trim()
   if (trimmed.length === 0) return null
   try {

@@ -36,7 +36,14 @@ import { probabilisticArgumentationModule } from '@/modules/probabilistic-argume
 const PRODUCTION_DATABASE_DOCUMENTS_NAME = 'documents'
 const db = await openDocumentsDB(PRODUCTION_DATABASE_DOCUMENTS_NAME)
 
-const modules = [abstractArgumentationModule, bipoloarArgumentationModule, dialecticalArgumentationModule, incompleteArgumentationModule, probabilisticArgumentationModule, collectiveAttacksArgumentationModule] as const
+const modules = [
+  abstractArgumentationModule,
+  bipoloarArgumentationModule,
+  dialecticalArgumentationModule,
+  incompleteArgumentationModule,
+  probabilisticArgumentationModule,
+  collectiveAttacksArgumentationModule,
+] as const
 
 const app = createApp(App, {
   db: markRaw(db),

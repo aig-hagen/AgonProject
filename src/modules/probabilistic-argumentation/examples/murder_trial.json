@@ -4,10 +4,10 @@
   "description": "Probabilistic version of the murder trial example where argument and attack probabilities reflect uncertainty about guilt, an alibi, and physical evidence.",
   "layoutType": "Circular",
   "arguments": {
-    "0": { "name": "Guilty",   "x": 200, "y": 0,   "probability": 0.4 },
+    "0": { "name": "Guilty", "x": 200, "y": 0, "probability": 0.4 },
     "1": { "name": "Innocent", "x": 400, "y": 200, "probability": 0.7 },
-    "2": { "name": "Motive",   "x": 0,   "y": 200, "probability": 0.9 },
-    "3": { "name": "Alibi",    "x": 300, "y": 400, "probability": 0.5 },
+    "2": { "name": "Motive", "x": 0, "y": 200, "probability": 0.9 },
+    "3": { "name": "Alibi", "x": 300, "y": 400, "probability": 0.5 },
     "4": { "name": "Evidence", "x": 100, "y": 400, "probability": 0.6 }
   },
   "attacks": [

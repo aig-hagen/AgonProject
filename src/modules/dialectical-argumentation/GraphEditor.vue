@@ -18,13 +18,15 @@
 -->
 <script setup lang="ts">
 import type { AnnotationPosition } from '@aig-hagen/graph-component/lib'
+import { VariableIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
+import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
-import WindowExport from '@/modules/common/export/WindowExport.vue'
+import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
@@ -32,8 +34,10 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
@@ -42,6 +46,7 @@ import {
   formulaToString,
 } from '@/modules/dialectical-argumentation/condition/formula'
 import ConditionEditorBar from '@/modules/dialectical-argumentation/ConditionEditorBar.vue'
+import ConditionSheet from '@/modules/dialectical-argumentation/ConditionSheet.vue'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
@@ -170,6 +175,11 @@ function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
 
 // Condition editor
 const selectedNodeId = ref<NodeId | null>(null)
+// Compact renders a bottom sheet instead of the anchored bar.
+const isConditionSheetOpen = ref(false)
+watch(isConditionSheetOpen, (isOpen) => {
+  if (!isOpen) selectedNodeId.value = null
+})
 const editorAnchor = ref<{ x: number; y: number }>({ x: 0, y: 0 })
 const conditionEditCount = ref(0)
 const conditionEditorOpenCount = ref(0)
@@ -203,12 +213,33 @@ const conditionAnnotations = computed(() => {
 function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
   selectedNodeId.value = nodeId
   conditionEditorOpenCount.value++
+  if (layoutMode.value === 'compact') {
+    isConditionSheetOpen.value = true
+    return
+  }
   const svgEl = (event.currentTarget as SVGElement).ownerSVGElement!
   const rect = svgEl.getBoundingClientRect()
   editorAnchor.value = {
     x: event.clientX - rect.left,
     y: event.clientY - rect.top,
   }
+}
+
+/** Action-bar button (compact only): open the acceptance-condition sheet for a node. */
+function adfNodeSelectionActions(id: NodeId): SelectionAction[] {
+  if (layoutMode.value !== 'compact') return []
+  return [
+    {
+      key: 'condition',
+      label: 'Edit condition',
+      icon: VariableIcon,
+      run: () => {
+        selectedNodeId.value = id
+        conditionEditorOpenCount.value++
+        isConditionSheetOpen.value = true
+      },
+    },
+  ]
 }
 
 function onAnnotationClicked(data: { id: NodeId; content: string }, event: PointerEvent) {
@@ -255,12 +286,33 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   )
 }
 
+// --- Compact evaluation host (mobile) ---
+
+const { layoutMode } = useLayoutMode()
+const evaluationHostOpen = ref(false)
+const activeExtensionId = ref<string | undefined>(undefined)
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
+const extensionChips = computed<EvaluationChip[]>(() =>
+  extensionInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension',
+  })),
+)
+
 provide(TOOLTIP_REGISTRY_KEY, dialecticalArgumentationGlossary)
 
 const adfTutorials = [adfBasicsTutorial, adfEvaluationTutorial, ...commonTutorials]
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
   conditionEditCount: conditionEditCount.value,
   conditionEditorOpenCount: conditionEditorOpenCount.value,
   evaluationCount: evaluationCount.value,
@@ -283,6 +335,8 @@ const tutorialContextExtra = computed(() => ({
     :link-configs="linkConfig"
     :allow-link-creation="false"
     :allow-link-deletion="false"
+    node-tap-action="Open its acceptance condition"
+    :node-selection-actions="adfNodeSelectionActions"
     :state="editorState"
     :node-annotations="conditionAnnotations"
     :history-state="historyState"
@@ -293,11 +347,47 @@ const tutorialContextExtra = computed(() => ({
     @redo="emit('redo')"
     @save="emit('save')"
     @share="emit('share')"
+    v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance()"
   >
     <template #evaluationExtensions="{ onHighlight }">
+      <!-- Compact: one host sheet with a chip switcher over all saved configs. -->
+      <EvaluationHost
+        v-if="layoutMode === 'compact'"
+        v-model:open="evaluationHostOpen"
+        v-model:active-id="activeExtensionId"
+        :chips="extensionChips"
+        @add="addExtensionInstance()"
+        @remove="removeExtensionInstance($event, onHighlight)"
+      >
+        <template #default="{ activeId }">
+          <WindowInterpretations
+            v-for="instance in extensionInstances"
+            v-show="instance.id === activeId"
+            :key="instance.id"
+            hosted
+            :input="evaluationInput"
+            :instance-state="instance"
+            :document-id="documentId"
+            :state-key="`${instance.id}:window`"
+            :suppressed="instance.id !== activeId"
+            @update:instance-state="updateExtensionInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
+            @highlight="
+              (h) => {
+                onHighlight(h)
+                if (h) highlightCount++
+              }
+            "
+            @evaluate="evaluationCount++"
+          />
+        </template>
+      </EvaluationHost>
+
+      <!-- Regular: one floating window per saved config. -->
       <WindowInterpretations
         v-for="(instance, index) in extensionInstances"
+        v-else
         :key="instance.id"
         :input="evaluationInput"
         :instance-state="instance"
@@ -314,25 +404,35 @@ const tutorialContextExtra = computed(() => ({
         @evaluate="evaluationCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
-      <Teleport to="body">
-        <div
+      <template v-if="layoutMode === 'regular'">
+        <Teleport to="body">
+          <div
+            v-if="selectedNodeId !== null"
+            class="fixed inset-0 z-40"
+            @click="selectedNodeId = null"
+          />
+        </Teleport>
+        <ConditionEditorBar
           v-if="selectedNodeId !== null"
-          class="fixed inset-0 z-40"
-          @click="selectedNodeId = null"
+          :argument-id="selectedNodeId"
+          :adf="renderedState.current.content"
+          :x="editorAnchor.x"
+          :y="editorAnchor.y"
+          @update:formula="onConditionChanged"
+          @close="selectedNodeId = null"
         />
-      </Teleport>
-      <ConditionEditorBar
-        v-if="selectedNodeId !== null"
+      </template>
+      <ConditionSheet
+        v-else
+        v-model:open="isConditionSheetOpen"
         :argument-id="selectedNodeId"
         :adf="renderedState.current.content"
-        :x="editorAnchor.x"
-        :y="editorAnchor.y"
         @update:formula="onConditionChanged"
-        @close="selectedNodeId = null"
       />
     </template>
-    <template #export="{ isOpen, onIsOpen }">
+    <template #export="{ isOpen, onIsOpen, hasBeenOpened }">
       <WindowExport
+        v-if="hasBeenOpened"
         :input="state.current.content"
         :open="isOpen"
         @update:open="onIsOpen"

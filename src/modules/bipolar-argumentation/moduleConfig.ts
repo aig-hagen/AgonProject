@@ -30,11 +30,7 @@ import {
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { DirectedGraph } from '@/modules/common/graph/graph'
 import { TAG_ABSTRACT, TAG_ATTACK, TAG_SUPPORT } from '@/modules/common/tags'
-import {
-  CCL21,
-  CL05,
-  CL10,
-} from '@/modules/common/tooltip/publications'
+import { CCL21, CL05, CL10 } from '@/modules/common/tooltip/publications'
 
 const BIPOLAR_ARGUMENTATION_V1_TYPE = 'bipolar-argumentation-v1'
 const TYPE_KEY = 'type'
@@ -93,14 +89,15 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   examples: datasets,
   initialCotent: initialBipolarArgumentation,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document, _name) {
-    return saveAsString(document)
+  getSaveString(document, name) {
+    return saveAsString(document, name)
   },
   generateHref: '/generate?type=bipolar',
   description: 'Relations between arguments can be either attacking or supporting.',

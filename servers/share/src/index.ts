@@ -8,6 +8,8 @@ import cors from 'cors'
 import express, { type Request, type Response } from 'express'
 import rateLimit from 'express-rate-limit'
 
+import { registerAnalytics } from './analytics.ts'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const PORT = parseInt(process.env.PORT ?? '8001', 10)
@@ -118,6 +120,8 @@ app.get('/shares/:id', (req: Request, res: Response) => {
   stmtTouch.run(Date.now(), id)
   res.json({ content: row.content })
 })
+
+registerAnalytics(app, path.dirname(DB_PATH))
 
 app.listen(PORT, () => {
   console.log(`Share server running on http://localhost:${PORT}`)

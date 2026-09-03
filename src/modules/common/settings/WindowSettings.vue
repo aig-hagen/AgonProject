@@ -20,14 +20,9 @@
 import { XMarkIcon } from '@heroicons/vue/24/outline'
 import { useTemplateRef } from 'vue'
 
-import { useSettings } from '@/modules/common/settings/useSettings'
-import { useTheme } from '@/modules/common/theme/useTheme'
-import { useTutorial } from '@/modules/common/tutorial/useTutorial'
+import SettingsContent from '@/modules/common/settings/SettingsContent.vue'
 
 const dialog = useTemplateRef('dialog')
-const { isDark } = useTheme()
-const { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints } = useSettings()
-const { resetAllTutorials } = useTutorial()
 
 function open() {
   dialog.value?.showModal()
@@ -46,82 +41,7 @@ defineExpose({ open })
       </form>
       <h3 class="text-lg font-bold mb-5">Settings</h3>
 
-      <div class="flex flex-col gap-6">
-        <!-- Appearance -->
-        <section>
-          <h4 class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3">Appearance</h4>
-          <div class="flex flex-col gap-3">
-            <label class="flex items-center justify-between gap-4">
-              <span class="text-sm">Dark mode</span>
-              <input type="checkbox" class="toggle toggle-sm" v-model="isDark" />
-            </label>
-            <div class="flex items-center justify-between gap-4">
-              <span class="text-sm">Graph style</span>
-              <select class="select select-sm select-bordered w-36" v-model="graphStyle">
-                <option value="default">Default</option>
-                <option value="high-contrast">High contrast</option>
-                <option value="minimal">Minimal</option>
-                <option value="library">Library</option>
-              </select>
-            </div>
-          </div>
-        </section>
-
-        <!-- Graph defaults -->
-        <section>
-          <h4 class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3">Graph defaults</h4>
-          <div class="flex flex-col gap-3">
-            <div class="flex items-center justify-between gap-4">
-              <span class="text-sm">Physics mode</span>
-              <div class="join">
-                <input class="join-item btn btn-sm" type="radio" name="physics-mode" aria-label="Off" value="off" v-model="defaultPhysicsMode" />
-                <input class="join-item btn btn-sm" type="radio" name="physics-mode" aria-label="On" value="on" v-model="defaultPhysicsMode" />
-              </div>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <span class="text-sm">Show grid</span>
-              <div class="join">
-                <input class="join-item btn btn-sm" type="radio" name="grid-visibility" aria-label="Off" value="off" v-model="defaultShowGrid" />
-                <input class="join-item btn btn-sm" type="radio" name="grid-visibility" aria-label="On drag" value="auto" v-model="defaultShowGrid" />
-                <input class="join-item btn btn-sm" type="radio" name="grid-visibility" aria-label="On" value="on" v-model="defaultShowGrid" />
-              </div>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <span class="text-sm">Grid type</span>
-              <div class="join">
-                <input class="join-item btn btn-sm" type="radio" name="grid-type" aria-label="Square" value="square" v-model="defaultGridType" />
-                <input class="join-item btn btn-sm" type="radio" name="grid-type" aria-label="Rhombus" value="rhombus" v-model="defaultGridType" />
-              </div>
-            </div>
-            <div class="flex items-center justify-between gap-4">
-              <span class="text-sm">Grid cell size</span>
-              <div class="flex items-center gap-2">
-                <input type="range" class="range range-sm w-28" min="2" max="6" step="0.5" v-model.number="gridCellScale" />
-                <span class="text-sm w-6 text-right opacity-60">{{ gridCellScale }}×</span>
-              </div>
-            </div>
-            <label class="flex items-center justify-between gap-4">
-              <span class="text-sm">Snap to grid</span>
-              <input type="checkbox" class="toggle toggle-sm" v-model="snapMode" />
-            </label>
-          </div>
-        </section>
-
-        <!-- Tutorials -->
-        <section>
-          <h4 class="text-xs font-semibold uppercase tracking-wider opacity-50 mb-3">Tutorials</h4>
-          <div class="flex flex-col gap-3">
-            <label class="flex items-center justify-between gap-4">
-              <span class="text-sm">Show tutorials</span>
-              <input type="checkbox" class="toggle toggle-sm" v-model="showHints" />
-            </label>
-            <div class="flex items-center justify-between gap-4">
-              <span class="text-sm">Tutorial progress</span>
-              <button class="btn btn-ghost btn-xs" @click="resetAllTutorials">Reset</button>
-            </div>
-          </div>
-        </section>
-      </div>
+      <SettingsContent />
     </div>
     <form method="dialog" class="modal-backdrop">
       <button>Close</button>

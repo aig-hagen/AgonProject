@@ -17,15 +17,29 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
+import {
+  computed,
+  inject,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  toRef,
+  useTemplateRef,
+  watch,
+  watchEffect,
+} from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
+import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
+import { TUTORIAL_REF_REGISTRY_KEY } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -47,17 +61,22 @@ const {
   instanceOffset = 0,
   documentId,
   stateKey,
+  suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<ProbabilisticArgumentation<PafArgumentData>>
   instanceState: PafWindowInstanceState
   instanceOffset?: number
   documentId?: DocumentId
   stateKey?: string
+  suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:instanceState': [state: PafWindowInstanceState]
   setWeights: [weights: Array<{ id: ArgumentId; weight: number }>]
+  title: [title: string]
   evaluate: []
   close: []
 }>()
@@ -106,23 +125,50 @@ const query = usePafEvaluationQuery(
 
 const { data } = query
 
-watch(data, (d) => {
-  emit(
-    'setWeights',
-    d === undefined ? [] : d.entries.map((e) => ({ id: e.id, weight: e.probability })),
-  )
+// Register the semantics selector and the results panel as tutorial-spotlight targets while this
+// window is the active one, so the evaluation tutorial can highlight them.
+const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
+const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect')
+const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
+watchEffect(() => {
+  if (!registerTutorialRef || suppressed) return
+  registerTutorialRef('semanticsSelector', semanticsSelectRef.value?.$el ?? null)
 })
+watch(
+  [resultsAreaRef, () => data.value?.entries.length, () => suppressed],
+  () => {
+    if (!registerTutorialRef) return
+    registerTutorialRef('resultArea', suppressed ? null : (resultsAreaRef.value ?? null))
+  },
+  { flush: 'post', immediate: true },
+)
+onUnmounted(() => {
+  registerTutorialRef?.('semanticsSelector', null)
+  registerTutorialRef?.('resultArea', null)
+})
+
+// Suppressed instances (all but the active one in the compact host) own no node weights.
+const emittedWeights = computed(() =>
+  suppressed || data.value === undefined
+    ? []
+    : data.value.entries.map((e) => ({ id: e.id, weight: e.probability })),
+)
+watch(emittedWeights, (w) => emit('setWeights', w))
 
 const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'skeptical' ? 'Skeptical' : 'Credulous'
   const solverLabel = isApproximate.value ? ' · Approx.' : ''
   return `${selectedSemantic.value.displayName} · ${modeLabel}${solverLabel}`
 })
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 </script>
 
 <template>
   <BaseEvaluationWindow
     :title="windowTitle"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-position-base="{ x: 192, y: 96 }"
     :initial-size="{ width: 400, height: 420 }"
@@ -134,13 +180,21 @@ const windowTitle = computed(() => {
   >
     <template #parameters>
       <ParameterField label="Semantics" min-width="10rem">
-        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+        <GroupedSelect
+          ref="semanticsSelect"
+          v-model="selectedSemantic"
+          :groups="semanticsSelectGroups"
+          full-width
+        />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
-        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
-          <option value="credulous">Credulous</option>
-          <option value="skeptical">Skeptical</option>
-        </select>
+        <PickerSelect
+          v-model="selectedMode"
+          :options="[
+            { value: 'credulous', label: 'Credulous' },
+            { value: 'skeptical', label: 'Skeptical' },
+          ]"
+        />
       </ParameterField>
       <ParameterField label="Inference" min-width="100%" max-width="100%">
         <div class="flex items-center gap-1.5 text-sm h-8">
@@ -159,7 +213,7 @@ const windowTitle = computed(() => {
     </template>
     <template #results>
       <template v-if="data !== undefined">
-        <div class="flex flex-wrap gap-2">
+        <div ref="resultsArea" data-evaluation-results class="flex flex-wrap gap-2">
           <span
             v-for="entry in data.entries"
             :key="entry.id"
@@ -168,7 +222,7 @@ const windowTitle = computed(() => {
             {{ entry.name }}: {{ entry.probability.toFixed(3) }}
           </span>
         </div>
-        <p class="label">{{ data.evaluationDurationInMs }}ms</p>
+        <EvaluationStatusFooter :status-line="`${data.evaluationDurationInMs}ms`" />
       </template>
     </template>
   </BaseEvaluationWindow>

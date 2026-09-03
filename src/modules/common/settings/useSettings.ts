@@ -27,7 +27,12 @@ export type GridType = 'square' | 'rhombus'
 
 export const useSettings = createSharedComposable(() => {
   const options = { onError: notifyStorageFailureOnce }
-  const graphStyle = useStorage<GraphStyleName>('settings:graphStyle', 'default', undefined, options)
+  const graphStyle = useStorage<GraphStyleName>(
+    'settings:graphStyle',
+    'default',
+    undefined,
+    options,
+  )
   const defaultPhysicsMode = useStorage<PhysicsMode>(
     'settings:defaultPhysicsMode',
     'off',
@@ -41,10 +46,23 @@ export const useSettings = createSharedComposable(() => {
     undefined,
     options,
   )
-  const defaultGridType = useStorage<GridType>('settings:defaultGridType', 'rhombus', undefined, options)
+  const defaultGridType = useStorage<GridType>(
+    'settings:defaultGridType',
+    'rhombus',
+    undefined,
+    options,
+  )
   const gridCellScale = useStorage<number>('settings:gridCellScale', 3, undefined, options)
   const snapMode = useStorage<boolean>('settings:snapMode', false, undefined, options)
   const showHints = useStorage<boolean>('settings:showHints', true, undefined, options)
 
-  return { graphStyle, defaultPhysicsMode, defaultShowGrid, defaultGridType, gridCellScale, snapMode, showHints }
+  return {
+    graphStyle,
+    defaultPhysicsMode,
+    defaultShowGrid,
+    defaultGridType,
+    gridCellScale,
+    snapMode,
+    showHints,
+  }
 })

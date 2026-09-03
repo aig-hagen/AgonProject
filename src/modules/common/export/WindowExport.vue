@@ -19,16 +19,23 @@
 <script setup lang="ts" generic="DocumentT">
 import { EditorState, type Extension } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import { ArrowTopRightOnSquareIcon, ClipboardDocumentCheckIcon, ClipboardDocumentIcon } from '@heroicons/vue/24/outline'
+import {
+  ArrowTopRightOnSquareIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentIcon,
+} from '@heroicons/vue/24/outline'
 import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
-import { computed, ref, shallowRef, useTemplateRef, watchEffect } from 'vue'
+import { computed, inject, ref, shallowRef, useTemplateRef, watch, watchEffect } from 'vue'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
+import ExportSheet from '@/modules/common/export/ExportSheet.vue'
+import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useSettings } from '@/modules/common/settings/useSettings'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 import type { ExportConfig, ExportFileData } from '.'
 
@@ -46,8 +53,21 @@ const soureViewRef = useTemplateRef('soureView')
 const editorView = shallowRef<EditorView | undefined>(undefined)
 
 const { gridCellScale } = useSettings()
+const { layoutMode } = useLayoutMode()
 
-const selectedExportConfig = shallowRef<ExportConfig<DocumentT> | undefined>(exportConfigs[0])
+// A device-agnostic SVG export that serializes the live graph canvas (see renderGraphSvg). It
+// sits alongside the real ExportConfigs in the format picker but has no model-based export()
+// and no code/style options, so it's tracked by a sentinel key rather than a config object.
+const WYSIWYG_SVG_KEY = '__wysiwyg_svg__'
+const graphSvgRenderer = inject(GRAPH_SVG_RENDERER_KEY, undefined)
+
+const selectedFormatKey = shallowRef<string>(exportConfigs[0]?.name ?? WYSIWYG_SVG_KEY)
+const isWysiwygSvg = computed(() => selectedFormatKey.value === WYSIWYG_SVG_KEY)
+const selectedExportConfig = computed<ExportConfig<DocumentT> | undefined>(() =>
+  isWysiwygSvg.value
+    ? undefined
+    : exportConfigs.find((config) => config.name === selectedFormatKey.value),
+)
 const selectedArgumentStyle = shallowRef<string>('standard')
 const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
@@ -62,9 +82,13 @@ const isBipolarDocument = computed(() => {
 const usePackageLine = computed(() => {
   if (selectedExportConfig.value?.name !== 'LaTeX (argumentation)') return undefined
   const opts = [
-    ...(selectedArgumentStyle.value !== 'standard' ? [`argumentstyle=${selectedArgumentStyle.value}`] : []),
+    ...(selectedArgumentStyle.value !== 'standard'
+      ? [`argumentstyle=${selectedArgumentStyle.value}`]
+      : []),
     `namestyle=${selectedNameStyle.value}`,
-    ...(selectedAttackStyle.value !== 'standard' ? [`attackstyle=${selectedAttackStyle.value}`] : []),
+    ...(selectedAttackStyle.value !== 'standard'
+      ? [`attackstyle=${selectedAttackStyle.value}`]
+      : []),
   ]
   if (isBipolarDocument.value) opts.push(`supportstyle=${selectedSupportStyle.value}`)
   return `\\usepackage[${opts.join(',')}]{argumentation}`
@@ -82,6 +106,10 @@ function copyPackageLine() {
 
 const exportResult = computed(() => {
   if (!open.value) {
+    return undefined
+  }
+  // The compact layout renders ExportSheet, which owns its own export computation.
+  if (layoutMode.value === 'compact') {
     return undefined
   }
   if (selectedExportConfig.value === undefined) {
@@ -111,11 +139,11 @@ const saveFiledataText = computed(() => {
 const svgTextEvaluating = shallowRef(false)
 const svgTextMaybeLoading = computedAsync(
   async () => {
-    const svgPromise = exportResult.value?.svg
-    if (svgPromise === undefined) {
+    const svgFactory = exportResult.value?.svg
+    if (svgFactory === undefined) {
       return null
     }
-    return await svgPromise
+    return await svgFactory()
   },
   null,
   svgTextEvaluating,
@@ -138,30 +166,56 @@ const saveFiledataSvg = computed(() => {
   }
 })
 
-watchEffect(() => {
-  if (soureViewRef.value === null) {
-    return
-  }
-  editorView.value?.destroy()
-  if (selectedExportConfig.value === undefined) {
-    return
-  }
-  const codemirrorOptions = selectedExportConfig.value.codemirrorOptions
+// Re-serialized whenever the SVG format is selected and the document changes, so the preview
+// tracks the live graph — including moved nodes. `flush: 'post'` runs after the graph canvas has
+// re-rendered the edit, so we serialize the updated DOM rather than the pre-move positions.
+const wysiwygSvgText = shallowRef<string | undefined>(undefined)
+watch(
+  [open, isWysiwygSvg, () => input],
+  ([isOpen, isWysiwyg]) => {
+    wysiwygSvgText.value = isOpen && isWysiwyg ? (graphSvgRenderer?.() ?? undefined) : undefined
+  },
+  { immediate: true, flush: 'post' },
+)
+const saveFiledataWysiwygSvg = computed(() =>
+  wysiwygSvgText.value === undefined ? undefined : { content: wysiwygSvgText.value, ending: 'svg' },
+)
 
-  const additionalExtensions: Extension[] = codemirrorOptions?.extensions ?? []
-  editorView.value = new EditorView({
-    doc: undefined,
-    parent: soureViewRef.value!,
-    // See https://codemirror.net/examples/readonly/
-    extensions: [
-      basicSetup,
-      EditorState.readOnly.of(true),
-      EditorView.editable.of(false),
-      EditorView.contentAttributes.of({ tabindex: '0' }),
-      ...additionalExtensions,
-    ],
-  })
-})
+// An explicit `watch` (not `watchEffect`) so assigning `editorView` below doesn't feed back
+// as a dependency — with the async body that would re-trigger endlessly and thrash the editor.
+watch(
+  [soureViewRef, selectedExportConfig],
+  async ([sourceView, config], _prev, onCleanup) => {
+    editorView.value?.destroy()
+    editorView.value = undefined
+    if (sourceView == null || config === undefined) {
+      return
+    }
+    // The loader awaits a dynamic import; bail if the watch re-ran (format switched) meanwhile.
+    let stale = false
+    onCleanup(() => {
+      stale = true
+    })
+    const additionalExtensions: Extension[] =
+      (await config.codemirrorOptions?.loadExtensions()) ?? []
+    if (stale) {
+      return
+    }
+    editorView.value = new EditorView({
+      doc: undefined,
+      parent: sourceView,
+      // See https://codemirror.net/examples/readonly/
+      extensions: [
+        basicSetup,
+        EditorState.readOnly.of(true),
+        EditorView.editable.of(false),
+        EditorView.contentAttributes.of({ tabindex: '0' }),
+        ...additionalExtensions,
+      ],
+    })
+  },
+  { immediate: true },
+)
 
 watchEffect(() => {
   if (editorView.value === undefined) {
@@ -180,25 +234,33 @@ watchEffect(() => {
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
     title="Export"
     :initial-position="{ x: 64, y: 128 }"
     :intitalSize="{ width: 700, height: 480 }"
   >
-    <div class="p-4">
+    <ExportSheet
+      v-if="layoutMode === 'compact'"
+      :input="input"
+      :export-configs="exportConfigs"
+      @export="emit('export', $event)"
+      @close="open = false"
+    />
+    <div v-else class="p-4">
       <fieldset class="fieldset">
         <div class="flex gap-2 flex-wrap">
           <label class="select select-sm w-66">
             <span class="label">Format</span>
-            <select v-model="selectedExportConfig">
+            <select v-model="selectedFormatKey">
               <option
                 v-for="exportConfig in exportConfigs"
                 :key="exportConfig.name"
-                :value="exportConfig"
+                :value="exportConfig.name"
               >
                 {{ exportConfig.name }}
               </option>
+              <option v-if="graphSvgRenderer" :value="WYSIWYG_SVG_KEY">SVG (image)</option>
             </select>
           </label>
           <a
@@ -258,7 +320,14 @@ watchEffect(() => {
             <div class="mt-4 flex flex-wrap gap-4 items-center">
               <label class="label gap-2">
                 <span>Node Distance</span>
-                <input type="range" class="range range-sm w-28" min="0.5" max="4" step="0.25" v-model.number="selectedNodeDistance" />
+                <input
+                  type="range"
+                  class="range range-sm w-28"
+                  min="0.5"
+                  max="4"
+                  step="0.25"
+                  v-model.number="selectedNodeDistance"
+                />
                 <span class="text-sm w-6 text-right opacity-60">{{ selectedNodeDistance }}</span>
               </label>
             </div>
@@ -281,7 +350,29 @@ watchEffect(() => {
           </button>
         </div>
       </fieldset>
-      <div class="flex gap-2 flex-wrap">
+      <div v-if="isWysiwygSvg" class="flex flex-col gap-2">
+        <div class="flex gap-2 flex-wrap">
+          <ButtonSave
+            class="btn btn-sm btn-soft w-28 justify-start"
+            :filedata="saveFiledataWysiwygSvg"
+            @export="emit('export', $event)"
+          >
+            SVG
+          </ButtonSave>
+          <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="wysiwygSvgText">
+            SVG
+          </ButtonCopy>
+        </div>
+        <div
+          v-if="wysiwygSvgText"
+          v-html="wysiwygSvgText"
+          class="wysiwyg-svg-preview w-fit max-w-full overflow-auto rounded border border-base-300 p-1"
+        ></div>
+        <div v-else role="alert" class="alert alert-warning alert-soft">
+          <span>No graph to export.</span>
+        </div>
+      </div>
+      <div v-else class="flex gap-2 flex-wrap">
         <div class="grow max-w-80">
           <fieldset class="fieldset">
             <div class="flex gap-2 flex-wrap mb-2">
@@ -292,10 +383,7 @@ watchEffect(() => {
               >
                 text
               </ButtonSave>
-              <ButtonCopy
-                class="btn btn-sm btn-soft w-28 justify-start"
-                :text="exportResult?.text"
-              >
+              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="exportResult?.text">
                 text
               </ButtonCopy>
             </div>
@@ -312,10 +400,7 @@ watchEffect(() => {
               >
                 SVG
               </ButtonSave>
-              <ButtonCopy
-                class="btn btn-sm btn-soft w-28 justify-start"
-                :text="svgText"
-              >
+              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="svgText">
                 SVG
               </ButtonCopy>
             </div>
@@ -329,7 +414,7 @@ watchEffect(() => {
         </div>
       </div>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>
 <style scoped>
 :deep(.cm-editor) {
@@ -344,5 +429,14 @@ watchEffect(() => {
 }
 :deep(.cm-tooltip) {
   display: none;
+}
+
+/* Cap the WYSIWYG SVG preview: the serialized svg has intrinsic px dimensions that grow with
+   the graph, so clamp it (its viewBox keeps the aspect ratio) instead of letting it scale up. */
+.wysiwyg-svg-preview :deep(svg) {
+  max-width: 100%;
+  max-height: 60vh;
+  width: auto;
+  height: auto;
 }
 </style>

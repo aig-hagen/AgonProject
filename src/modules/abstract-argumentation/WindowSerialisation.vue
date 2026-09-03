@@ -17,7 +17,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline'
+import { AdjustmentsHorizontalIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline'
+import { createReusableTemplate } from '@vueuse/core'
 import { computed, onMounted, provide, ref, shallowRef, toRef, watch } from 'vue'
 
 import type { SerialisationWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/serialisationWindowState'
@@ -40,7 +41,7 @@ import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import { IdMapping } from '@/modules/common/ids'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const {
   input,
@@ -49,6 +50,7 @@ const {
   documentId,
   stateKey,
   suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<AbstractArgumentation<ArgumentData>>
   instanceState: SerialisationWindowInstanceState
@@ -56,11 +58,17 @@ const {
   documentId?: DocumentId
   stateKey?: string
   suppressed?: boolean
+  hosted?: boolean
 }>()
+
+// Body defined once, rendered either inside WindowShell (desktop) or bare in the
+// compact evaluation host.
+const [DefineBody, ReuseBody] = createReusableTemplate()
 
 const emit = defineEmits<{
   'update:instanceState': [state: SerialisationWindowInstanceState]
   highlight: [highlight?: Highlight]
+  title: [title: string]
   close: []
   focus: []
 }>()
@@ -95,7 +103,8 @@ const isOpen = ref(true)
 watch(isOpen, (v) => {
   if (!v) emit('close')
 })
-const paramsOpen = ref(true)
+// In the compact host the sheet is short, so params start collapsed to a summary header.
+const paramsOpen = ref(!hosted)
 
 const windowTitle = computed(() => {
   const sel = selectedSelectionFunction.value.displayName
@@ -103,6 +112,9 @@ const windowTitle = computed(() => {
   const modeLabel = selectedMode.value === 'interactive' ? 'Interactive' : 'Sequences'
   return `${sel} · ${term} · ${modeLabel}`
 })
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 
 // ──────────────────────────────────────────────────────────────
 // SEQUENCES MODE
@@ -297,22 +309,21 @@ function onWindowFocus() {
 </script>
 
 <template>
-  <FloatingWindow
-    v-model:open="isOpen"
-    v-model:params-open="paramsOpen"
-    card
-    :title="windowTitle"
-    :loading="selectedMode === 'sequences' ? isLoading : interactiveIsLoading"
-    :initial-position="{ x: 256 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
-    :intital-size="{ width: 576, height: 480 }"
-    :instance-offset="instanceOffset"
-    :document-id="documentId"
-    :state-key="stateKey"
-    :active="isActive"
-    :minimizable="false"
-    @focus="onWindowFocus"
-  >
+  <DefineBody>
     <div class="px-3 pb-3 pt-1 flex flex-col gap-2.5 text-xs">
+      <!-- Compact host: a summary header so the config stays visible while params collapse. -->
+      <button
+        v-if="hosted"
+        type="button"
+        class="flex items-center gap-2 rounded-field bg-base-200/60 border border-base-300 px-2.5 py-2 text-left"
+        :aria-expanded="paramsOpen"
+        @click="paramsOpen = !paramsOpen"
+      >
+        <AdjustmentsHorizontalIcon class="size-4 shrink-0 opacity-70" />
+        <span class="flex-1 min-w-0 truncate font-medium">{{ windowTitle }}</span>
+        <span class="text-[0.65rem] opacity-60">{{ paramsOpen ? 'Hide' : 'Edit' }}</span>
+      </button>
+
       <div
         v-show="paramsOpen"
         class="rounded-field bg-base-200/60 border border-base-300 p-2.5 flex flex-col gap-2"
@@ -412,7 +423,10 @@ function onWindowFocus() {
           </div>
 
           <!-- Step selection -->
-          <div v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading" class="text-sm opacity-60">
+          <div
+            v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading"
+            class="text-sm opacity-60"
+          >
             No initial sets available.
           </div>
           <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">
@@ -437,5 +451,25 @@ function onWindowFocus() {
         </div>
       </template>
     </div>
-  </FloatingWindow>
+  </DefineBody>
+
+  <ReuseBody v-if="hosted" />
+  <WindowShell
+    v-else
+    v-model:open="isOpen"
+    v-model:params-open="paramsOpen"
+    card
+    :title="windowTitle"
+    :loading="selectedMode === 'sequences' ? isLoading : interactiveIsLoading"
+    :initial-position="{ x: 256 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
+    :intital-size="{ width: 576, height: 480 }"
+    :instance-offset="instanceOffset"
+    :document-id="documentId"
+    :state-key="stateKey"
+    :active="isActive"
+    :minimizable="false"
+    @focus="onWindowFocus"
+  >
+    <ReuseBody />
+  </WindowShell>
 </template>

@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import multiFactorAccessJson from '@/modules/collective-attacks-argumentation/examples/multi_factor_access.json'
 import tandemTripJson from '@/modules/collective-attacks-argumentation/examples/tandem_trip.json'
 import type { SetAF, SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import { loadExampleFromJson } from '@/modules/collective-attacks-argumentation/save/saveFormat'
 import type { Example } from '@/modules/common/examples'
 
-const exampleJsons: unknown[] = [tandemTripJson]
+const exampleJsons: unknown[] = [tandemTripJson, multiFactorAccessJson]
 
 export const datasets: Example<SetAF<SetAfArgumentData>>[] = exampleJsons.map((json) => {
   const { name, description } = loadExampleFromJson(json)

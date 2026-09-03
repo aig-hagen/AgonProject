@@ -8,22 +8,33 @@
 \RequirePackage{tcolorbox}
 \RequirePackage{varwidth}
 \RequirePackage{letterspace}
+\RequirePackage{calc}
 \usetikzlibrary{shadows.blur}
+
+% Scratch length: width of the "TweetyProject" wordmark, used to scale its
+% subtitle so both share the same right edge under the logo.
+\newlength{\tpwidth}
 
 % ---------------------------------------------------------------------------
 % Palette
 % ---------------------------------------------------------------------------
+% Two brand colours carry every accent; the rest are neutrals.
 \definecolor{aigblue}{RGB}{0,76,151}
-\definecolor{aigbluedeep}{RGB}{1,58,115}
-\definecolor{ochre}{RGB}{192,129,58}
-\definecolor{ochrelt}{RGB}{234,191,135}
 \definecolor{aigyellow}{RGB}{210,149,81}
+% Accent variants folded onto the two brand colours (kept as aliases so the
+% call sites need not change): the ochre family becomes aigyellow, the blue
+% variants become aigblue — bluetint a light tint of it so it stays legible
+% as light text on the blue bands.
+\colorlet{ochre}{aigyellow}
+\colorlet{ochrelt}{aigyellow}
+\colorlet{aigbluedeep}{aigblue}
+\colorlet{bluetint}{aigblue!30!white}
+% Neutrals (text, background, rules).
 \definecolor{ink}{RGB}{23,35,59}
 \definecolor{inksoft}{RGB}{58,69,95}
 \definecolor{muted}{RGB}{87,97,122}
 \definecolor{offwhite}{RGB}{246,243,238}
 \definecolor{cream}{RGB}{239,228,209}
-\definecolor{bluetint}{RGB}{207,224,241}
 \definecolor{rulegrey}{RGB}{224,217,205}
 
 % ---------------------------------------------------------------------------
@@ -53,46 +64,54 @@
 % ---------------------------------------------------------------------------
 \definetitlestyle{editorialtitle}{
     width=\paperwidth, roundedcorners=0, linewidth=0pt, innersep=0pt,
-    titletotopverticalspace=0mm, titletoblockverticalspace=26mm
+    titletotopverticalspace=0mm,
+    % Vertical gap between the masthead and the first content row.
+    titletoblockverticalspace=6mm
 }{
     \begin{scope}
         \draw[draw=aigblue, fill=aigblue]
             (\titleposleft,\titleposbottom) rectangle (\titleposright,\titlepostop);
-        % ochre accent rule along the bottom edge of the masthead
-        \draw[draw=ochre, fill=ochre]
+        % accent rule along the bottom edge of the masthead
+        \draw[draw=aigyellow, fill=aigyellow]
             (\titleposleft,\titleposbottom) rectangle (\titleposright,\titleposbottom+0.7);
     \end{scope}
 }
 
-\newcommand{\mastheadlogo}{figures/logoaig.png}
-\newcommand{\tweetylogo}{figures/tweety-logo.png}
-
 \makeatletter
+% Title font hooks (override in main.tex via \renewcommand).
+\newcommand{\agonTitleFont}{\sffamily\bfseries\scshape}
+\newcommand{\agonSubtitleFont}{\itshape}
 \settitle{%
     \hspace*{40mm}%
-    \begin{minipage}[c]{0.62\linewidth}
+    \begin{minipage}[c]{0.56\linewidth}
         \vspace{2.2em}
-        {\sffamily\bfseries\color{ochrelt}\fontsize{24}{28}\selectfont
+        {\sffamily\bfseries\color{white}\fontsize{24}{28}\selectfont
             \textls[150]{ARTIFICIAL INTELLIGENCE GROUP \textbullet\ UNIVERSITY OF HAGEN}\par}
-        \vspace{0.55em}
-        {\sffamily\bfseries\scshape\color{white}\fontsize{150}{150}\selectfont \@title\par}
+        \vspace{-0.6em}
+        {{\agonTitleFont\color{aigyellow}\fontsize{150}{150}\selectfont \@title\par}}
         \vspace{0.7em}
-        {\color{bluetint}\itshape\fontsize{40}{46}\selectfont \@subtitle\par}
+        {{\color{bluetint}\agonSubtitleFont\fontsize{40}{46}\selectfont \@subtitle\par}}
         \vspace{2.2em}
     \end{minipage}%
     \hfill
-    \begin{minipage}[c]{0.22\linewidth}
-        \centering
-        \begin{tcolorbox}[colback=white, colframe=white, boxrule=0pt, arc=8pt,
-            left=22pt, right=22pt, top=18pt, bottom=16pt, boxsep=0pt, halign=center]
-            \centering
-            \includegraphics[width=0.82\linewidth]{\mastheadlogo}\\[14pt]
-            {\color{rulegrey}\rule{0.92\linewidth}{1.5pt}}\\[12pt]
-            \raisebox{-0.30\height}{\includegraphics[height=1.15cm]{\tweetylogo}}\hspace{9pt}%
-            {\sffamily\bfseries\color{aigblue}\fontsize{23}{25}\selectfont TweetyProject}
-        \end{tcolorbox}
+    \begin{minipage}[c]{0.32\linewidth}
+        \raggedleft%
+        % Powered-by lockup, flush right so its edge mirrors the title's left margin.
+    \makebox[\linewidth][r]{%
+      \scalebox{1.2}{%
+        \raisebox{-0.42\height}{\includegraphics[height=2.8cm]{figures/tweety-logo.png}}\hspace{16pt}%
+        \begin{tabular}[c]{@{}l@{}}
+            {\sffamily\bfseries\color{white}\fontsize{20}{22}\selectfont\textls[150]{POWERED BY}}\\[3pt]
+            {\sffamily\bfseries\color{aigyellow}\fontsize{38}{42}\selectfont TweetyProject}\\[-6pt]
+            {\settowidth{\tpwidth}{\sffamily\bfseries\fontsize{38}{42}\selectfont TweetyProject}%
+             \color{bluetint}\resizebox{\tpwidth}{!}{%
+               \itshape\fontsize{21}{25}\selectfont knowledge representation \& reasoning}}
+        \end{tabular}%
+      }%
+    }%
+        
     \end{minipage}%
-    \hspace*{35mm}
+    \hspace*{40mm}
 }
 % subtitle plumbing
 \providecommand{\@subtitle}{}
@@ -108,13 +127,19 @@
     linewidth=0pt, titleinnersep=0mm, bodyinnersep=0mm
 }{}
 
-% Blue "band" block for the footer (filled, borderless).
-\defineblockstyle{bandblue}{
-    titlewidthscale=1, bodywidthscale=1, titleleft, titleoffsetx=0pt, titleoffsety=0pt,
-    bodyoffsetx=0mm, bodyoffsety=0mm, bodyverticalshift=0mm, roundedcorners=6,
-    linewidth=0pt, titleinnersep=0mm, bodyinnersep=1.1cm
-}{
-    \draw[draw=aigblue, fill=aigblue] (blockbody.south west) rectangle (blockbody.north east);
+% Full-bleed footer band, pinned to the bottom edge of the page. Mirrors the
+% masthead: an aigblue ground spanning the paper width with an aigyellow
+% accent rule along its top edge. Drawn straight into tikzposter's master picture
+% (whose bottomleft/topright coordinates and page clip are already in scope),
+% as an overlay so it sits flush at the bottom without affecting the layout.
+\newcommand{\footerband}[1]{%
+    \begin{scope}[overlay]
+        \node[anchor=south, minimum width=\textwidth, inner xsep=0pt,
+              inner ysep=13mm, fill=aigblue, text=white] (fb)
+            at (0,-0.5\textheight)
+            {\begin{minipage}{0.9\textwidth}\centering #1\end{minipage}};
+        \fill[aigyellow] (fb.north west) rectangle ([yshift=-6mm]fb.north east);
+    \end{scope}%
 }
 
 % ---------------------------------------------------------------------------
@@ -132,6 +157,9 @@
 \newcommand{\dsp}{\sffamily}
 \newcommand{\heading}[1]{{\sffamily\bfseries\color{ink}#1}}
 
+% Highlight for scannable stats (counts, quantities) — bold ochre.
+\newcommand{\stat}[1]{{\sffamily\bfseries\color{ochre}#1}}
+
 % Framed screenshot: thin border + soft drop shadow.
 \newcommand{\screenshot}[2][\linewidth]{%
     \tikz\node[inner sep=0pt, draw=rulegrey, line width=1.5pt,
@@ -141,16 +169,50 @@
 }
 
 % A titled screenshot panel: blue lead-in title, framed shot, muted caption.
-\newcommand{\shotpanel}[3]{%
-    {\sffamily\bfseries\color{aigblue}\fontsize{30}{34}\selectfont #1\par}
-    \vspace{0.5em}\screenshot[\linewidth]{#2}\par
-    \vspace{0.5em}{\color{muted}\fontsize{20}{25}\selectfont #3\par}}
+\newcommand{\shotpanel}[4][\linewidth]{%
+    {\centering
+        {\sffamily\bfseries\color{aigblue}\fontsize{33}{37}\selectfont #2\par}
+        \vspace{0.5em}\screenshot[#1]{#3}\par
+        \vspace{0.5em}{\color{muted}\fontsize{23}{28}\selectfont #4\par}}}
+
+% Placeholder for a not-yet-captured screenshot: a framed grey panel of the
+% same footprint as \shotpanel, so the layout can be finalised ahead of time.
+\newcommand{\shotplaceholder}[2]{%
+    {\sffamily\bfseries\color{aigblue}\fontsize{33}{37}\selectfont #1\par}
+    \vspace{0.5em}%
+    \tikz\node[inner sep=0pt, draw=rulegrey, line width=1.5pt, fill=cream,
+        minimum width=0.9\linewidth, minimum height=0.458\linewidth,
+        blur shadow={shadow blur steps=12, shadow xshift=0pt,
+            shadow yshift=-7pt, shadow blur radius=12pt, shadow opacity=32}]
+        {\sffamily\bfseries\color{muted}\fontsize{28}{32}\selectfont
+         \faImage\ \ screenshot to come};%
+    \par\vspace{0.5em}{\color{muted}\fontsize{23}{28}\selectfont #2\par}}
+
+% One framed portrait phone screenshot, sized by height. Same border + shadow
+% treatment as \screenshot.
+\newcommand{\phoneshot}[2]{%
+    \tikz\node[inner sep=0pt, draw=rulegrey, line width=1.2pt,
+        blur shadow={shadow blur steps=12, shadow xshift=0pt,
+            shadow yshift=-5pt, shadow blur radius=9pt, shadow opacity=28}]
+        {\includegraphics[height=#1]{#2}};}
+
+% A titled panel holding a row of four mobile screenshots. The row occupies the
+% same footprint as a \shotpanel screenshot: 0.9\linewidth wide, and phones
+% sized to the landscape shot height (0.9 * 0.509 aspect). \hfill spreads them.
+\newcommand{\phonepanel}[6]{%
+    {\centering
+        {\sffamily\bfseries\color{aigblue}\fontsize{33}{37}\selectfont #1\par}
+        \vspace{0.7em}%
+        \makebox[0.9\linewidth][s]{%
+            \phoneshot{0.4585\linewidth}{#2}\hfill\phoneshot{0.4585\linewidth}{#3}%
+            \hfill\phoneshot{0.4585\linewidth}{#4}\hfill\phoneshot{0.4585\linewidth}{#5}}\par
+        \vspace{0.6em}{\color{muted}\fontsize{23}{28}\selectfont #6\par}}}
 
 % One capability: title on the left, FontAwesome icon pushed to the right.
 \newcommand{\featureitem}[3]{%
-    \noindent{\sffamily\bfseries\color{ink}\fontsize{30}{34}\selectfont #1}%
-    \hfill{\color{ochre}\fontsize{34}{34}\selectfont #2}\par
-    \vspace{0.6em}{\color{muted}\fontsize{20}{25}\selectfont #3\par}}
+    \noindent{\sffamily\bfseries\color{ink}\fontsize{33}{37}\selectfont #1}%
+    \hfill{\color{ochre}\fontsize{37}{37}\selectfont #2}\par
+    \vspace{0.6em}{\color{muted}\fontsize{23}{28}\selectfont #3\par}}
 
 % One formalism entry for the strip: bold blue abbreviation + description.
 \newcommand{\formalism}[2]{%
@@ -161,13 +223,13 @@
 \newcommand{\callout}[1]{%
     \noindent\begin{tcolorbox}[colback=cream, colframe=ochre, boxrule=0pt,
         leftrule=6pt, arc=0pt, left=16pt, right=16pt, top=12pt, bottom=12pt,
-        boxsep=0pt]{\color{inksoft}\fontsize{22}{28}\selectfont #1}\end{tcolorbox}}
+        boxsep=0pt]{\color{inksoft}\fontsize{24}{30}\selectfont #1}\end{tcolorbox}}
 
 % One row of the supported-semantics list: group label + description, ruled.
 \newcommand{\semrow}[2]{%
-    \par\vspace{0.35em}{\color{rulegrey}\rule{\linewidth}{1pt}}\par\vspace{0.35em}%
-    \noindent\begin{minipage}[t]{0.34\linewidth}%
-        {\sffamily\bfseries\color{ink}\fontsize{23}{27}\selectfont #1}%
-    \end{minipage}\hfill\begin{minipage}[t]{0.63\linewidth}%
-        {\color{inksoft}\fontsize{23}{28}\selectfont #2}%
+    \par\vspace{0.12em}{\color{rulegrey}\rule{\linewidth}{1pt}}\par\vspace{0.12em}%
+    \noindent\begin{minipage}[t]{0.29\linewidth}%
+        {\sffamily\bfseries\color{ink}\fontsize{25}{30}\selectfont #1}%
+    \end{minipage}\hfill\begin{minipage}[t]{0.7\linewidth}%
+        {\color{inksoft}\fontsize{25}{30}\selectfont #2}%
     \end{minipage}\par}

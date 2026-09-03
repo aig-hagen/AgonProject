@@ -81,7 +81,10 @@ function openClearAllModal() {
         </button>
       </div>
     </div>
-    <div v-if="data.length > 0" class="flex items-center px-1 gap-0.5 shrink-0 border-b border-base-300">
+    <div
+      v-if="data.length > 0"
+      class="flex items-center px-1 gap-0.5 shrink-0 border-b border-base-300"
+    >
       <button
         class="btn btn-square btn-xs btn-ghost"
         :disabled="sharing"
@@ -108,14 +111,23 @@ function openClearAllModal() {
           <XMarkIcon class="size-4" />
         </button>
       </form>
-      <h3 class="text-lg font-bold">Delete all documents</h3>
+      <h3 class="text-lg font-bold">Delete all frameworks</h3>
       <p class="py-4">
         All unsaved data will be <span class="font-bold">permanently deleted</span>.
         <br />
         Save your data before closing if you want to keep it.
       </p>
       <div class="modal-action">
-        <button ref="clearAllButton" class="btn btn-error btn-sm" @click="clearAllModal?.close(); emit('clearAll')">
+        <button
+          ref="clearAllButton"
+          class="btn btn-error btn-sm"
+          @click="
+            () => {
+              clearAllModal?.close()
+              emit('clearAll')
+            }
+          "
+        >
           <TrashIcon class="size-4" />Delete all
         </button>
       </div>

@@ -24,7 +24,8 @@ export default defineConfig({
   },
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  retries: 0,
+  /* Retry on CI: browser e2e (esp. WebKit sheet open/close animations) can flake. */
+  retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -37,42 +38,54 @@ export default defineConfig({
     baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173',
     trace: 'retain-on-failure',
     headless: true,
+    /* Disable animations (the app honours prefers-reduced-motion, so BottomSheet
+       transitions become instant) — avoids clicking a sheet control mid open/close
+       animation, which flaked on slower WebKit runners. */
+    contextOptions: { reducedMotion: 'reduce' },
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects for major browsers.
+   * Desktop projects run the regular-shell specs and skip the mobile ones; the mobile
+   * projects run only `*.mobile.spec.ts` (compact-shell acceptance). Shell selection is
+   * viewport-driven (see useLayoutMode), so the device viewports pick the compact shell. */
   projects: [
     {
       name: 'chromium',
+      testIgnore: /.*\.mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
     {
       name: 'firefox',
+      testIgnore: /.*\.mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Firefox'],
       },
     },
     {
       name: 'webkit',
+      testIgnore: /.*\.mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Safari'],
       },
     },
 
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: {
-    //     ...devices['Pixel 5'],
-    //   },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: {
-    //     ...devices['iPhone 12'],
-    //   },
-    // },
+    /* Test against mobile viewports (compact shell). */
+    {
+      name: 'Mobile Chrome',
+      testMatch: /.*\.mobile\.spec\.ts/,
+      use: {
+        ...devices['Pixel 5'],
+      },
+    },
+    {
+      name: 'Mobile Safari',
+      testMatch: /.*\.mobile\.spec\.ts/,
+      use: {
+        ...devices['iPhone 12'],
+      },
+    },
 
     /* Test against branded browsers. */
     // {
@@ -99,7 +112,7 @@ export default defineConfig({
      * Use the preview server on CI for more realistic testing.
      * Playwright will re-use the local server if there is already a dev-server running.
      */
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
+    command: process.env.CI ? 'npm run preview' : 'E2E=1 npm run dev',
     port: process.env.CI ? 4173 : 5173,
     reuseExistingServer: !process.env.CI,
   },

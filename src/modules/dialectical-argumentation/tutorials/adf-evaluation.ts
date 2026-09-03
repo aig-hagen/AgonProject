@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const adfEvaluationTutorial: Tutorial = {
@@ -35,17 +36,18 @@ export const adfEvaluationTutorial: Tutorial = {
     },
     {
       id: 'open-eval',
-      title: 'Open the evaluation panel',
-      body: 'Click the <strong>Extension Semantics</strong> button (the variable icon) to open an evaluation window.',
-      anchor: 'evaluationButtons',
-      placement: 'right-start',
-      offsetPx: 64,
+      title: 'Open the evaluation',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} the <strong>Evaluate</strong> button to open the evaluation.`
+          : `${action('Click')} the ${barAction('extension', 'Extension Semantics')} button to open the evaluation window.`,
+      highlight: 'openEvalButton',
       advanceOn: 'action',
       advanceCondition: (ctx) => ctx.isExtensionWindowOpen,
     },
     {
       id: 'pick-semantics',
-      title: 'Pick a semantics and evaluate',
+      title: 'Pick a semantics',
       body: [
         'Select a <strong>semantics</strong> (e.g. ',
         { text: 'Complete', tooltipId: 'adfCO' },
@@ -55,31 +57,50 @@ export const adfEvaluationTutorial: Tutorial = {
         { text: 'Credulous', tooltipId: 'credulousAcceptance' },
         ' and ',
         { text: 'Skeptical', tooltipId: 'skepticalAcceptance' },
-        ' show accepted arguments. Then press <strong>Evaluate</strong>.',
+        ' show accepted arguments.',
       ],
+      highlight: 'semanticsSelector',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.evaluationCount > baseline.evaluationCount,
     },
     {
       id: 'compact-window',
-      title: 'Window management',
-      body:
-        'Use the <span class="inline-flex items-center justify-center align-middle size-5 rounded bg-base-200 mx-0.5">' +
-        '<svg viewBox="0 0 24 24" fill="currentColor" class="size-4"><path d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" /></svg>' +
-        '</span> <strong>Hide parameters</strong> button in the window header to collapse the controls and show only the results. You can also open <strong>multiple evaluation windows</strong> simultaneously — useful for comparing different semantics side by side.',
-      advanceOn: 'button',
+      title: 'Focus on the results',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Drag')} the sheet down to snap it smaller, or tap ${barAction('collapse', 'Collapse')}, to fold the parameters away and focus on the results.`
+          : `${action('Click')} the window header to hide the parameters and show only the results.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalCollapse' : 'evalHeader'),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) => ctx.paramsCollapseCount > baseline.paramsCollapseCount,
+      firstEvalOnlyDesktop: true,
     },
     {
       id: 'read-results',
       title: 'Reading the results',
       body: 'Click one of the computed <strong>results</strong> to highlight it on the canvas. Arguments are coloured by their label:<ul class="list-disc list-inside mt-1 space-y-0.5"><li><span class="text-success font-medium">Green</span> — in (accepted)</li><li><span class="text-info font-medium">Blue</span> — undec (undecided)</li><li><span class="text-error font-medium">Red</span> — out (rejected)</li></ul>',
+      highlight: 'resultArea',
+      refitOnEnter: true,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.highlightCount > baseline.highlightCount,
     },
     {
+      id: 'multiple-evals',
+      title: 'Open multiple evaluations',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `You can run several evaluations at once. ${action('Tap')} the <strong>switcher</strong> at the top of the sheet, then <strong>Add evaluation</strong> to open another — for example to compare two semantics.`
+          : `You can run several evaluations at once. ${action('Click')} the ${barAction('extension', 'Extension Semantics')} button again to open another evaluation window — for example to compare two semantics.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'evalSwitcher' : 'openEvalButton'),
+      advanceOn: 'button',
+      advanceCondition: (ctx, baseline) =>
+        ctx.evaluationWindowCount > baseline.evaluationWindowCount,
+      firstEvalOnly: true,
+    },
+    {
       id: 'done',
       title: 'Great work!',
-      body: 'You\'ve completed the ADF Evaluation Tutorial. Explore more features like export and sharing from the menu.',
+      body: "You've completed the ADF Evaluation Tutorial. Explore more features like export and sharing from the menu.",
       advanceOn: 'button',
     },
   ],

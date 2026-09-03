@@ -17,22 +17,70 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { XMarkIcon } from '@heroicons/vue/24/outline'
+import { CheckIcon, ExclamationTriangleIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 import {
   type Notification,
   NotificationType,
 } from '@/modules/common/notifications/useNotifications'
-const { notifications } = defineProps<{
+const { notifications, placement = 'end' } = defineProps<{
   notifications: Notification[]
+  /** Horizontal placement of the toast stack. Mobile uses `center` to clear the command bar. */
+  placement?: 'end' | 'center'
 }>()
 </script>
 
 <template>
-  <div class="toast toast-top toast-end">
+  <!-- Mobile: compact dark pills docked top-center; the wrapper ignores pointers so the
+       canvas stays reachable underneath, and only a dismiss button re-enables them. -->
+  <div
+    v-if="placement === 'center'"
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+    class="toast toast-top toast-center pointer-events-none w-full max-w-96 px-3"
+    style="top: calc(env(safe-area-inset-top, 0px) + 4rem)"
+  >
     <div
       v-for="notification of notifications"
       :key="notification.key"
+      :role="notification.type === NotificationType.ERROR ? 'alert' : undefined"
+      class="pointer-events-auto flex items-center gap-2.5 rounded-full bg-neutral px-4 py-2.5 text-neutral-content shadow-lg"
+    >
+      <CheckIcon
+        v-if="notification.type === NotificationType.SUCCESS"
+        class="size-4 shrink-0 text-success"
+      />
+      <ExclamationTriangleIcon v-else class="size-4 shrink-0 text-error" />
+      <div class="min-w-0 text-sm font-medium leading-tight">
+        <span class="block truncate">{{ notification.title }}</span>
+        <span v-if="notification.description" class="block truncate text-xs font-normal opacity-70">
+          {{ notification.description }}
+        </span>
+      </div>
+      <button
+        v-if="notification.type === NotificationType.ERROR"
+        class="btn btn-square btn-xs btn-ghost -mr-1"
+        @click="notification.remove()"
+        title="Dismiss"
+      >
+        <XMarkIcon class="size-4" />
+      </button>
+    </div>
+  </div>
+
+  <!-- Desktop: full alert cards. -->
+  <div
+    v-else
+    role="status"
+    aria-live="polite"
+    aria-atomic="false"
+    class="toast toast-top toast-end"
+  >
+    <div
+      v-for="notification of notifications"
+      :key="notification.key"
+      :role="notification.type === NotificationType.ERROR ? 'alert' : undefined"
       class="alert max-w-92"
       :class="{
         'alert-success': notification.type === NotificationType.SUCCESS,

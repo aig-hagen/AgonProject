@@ -69,9 +69,7 @@ const exportICCMA: ExportConfig<SetAF<SetAfArgumentData>> = {
 
 const exportTGFSetAF: ExportConfig<SetAF<SetAfArgumentData>> = {
   name: 'Trivial Graph Format (TGF)',
-  references: [
-    { label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' },
-  ],
+  references: [{ label: 'TGF Format', url: 'https://en.wikipedia.org/wiki/Trivial_Graph_Format' }],
   extension: 'tgf',
   export(document) {
     let numberOfArguments = 0

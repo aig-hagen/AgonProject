@@ -34,11 +34,11 @@ export const datasets: Example<BipoloarArgumentation<ArgumentData>>[] = exampleJ
     name: name ?? 'unknown',
     description,
     load: () => loadExampleFromJson(json).framework,
-    applyLayout: (af) => {
+    applyLayout: async (af) => {
       const layout = layoutType ?? Layout.Circular
       const nodes = [...af.arguments()].map(([id]) => id)
       const links = [...af.attacks(), ...af.supports()]
-      const positions = getNodePositions(nodes, links, layout)
+      const positions = await getNodePositions(nodes, links, layout)
       for (const [id, data] of af.arguments()) {
         const pos = positions.get(id)!
         data.x = pos.x

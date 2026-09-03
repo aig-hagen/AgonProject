@@ -43,7 +43,9 @@ function onCopy() {
   if (!url) return
   copy(url)
   copied.value = true
-  setTimeout(() => { copied.value = false }, 2000)
+  setTimeout(() => {
+    copied.value = false
+  }, 2000)
 }
 
 function onClose() {

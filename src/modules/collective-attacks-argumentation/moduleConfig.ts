@@ -59,7 +59,11 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
       af.addArgument(parseInt(id, 10), data)
     }
     // @ts-expect-error TS7053: ignore because we deserialize
-    const attacks = modelSerialized['attacks'] as Array<{ id: number; attackers: number[]; target: number }>
+    const attacks = modelSerialized['attacks'] as Array<{
+      id: number
+      attackers: number[]
+      target: number
+    }>
     for (const { attackers, target } of attacks) {
       af.addCollectiveAttack(attackers, target)
     }
@@ -80,17 +84,19 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   examples: datasets,
   initialCotent: initialSetAF,
   editorComponent: GraphEditor,
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
-  getSaveString(document, _name) {
-    return saveAsString(document)
+  getSaveString(document, name) {
+    return saveAsString(document, name)
   },
   generateHref: '/generate?type=setaf',
-  description: 'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
+  description:
+    'Extends abstract argumentation by allowing sets of arguments to collectively attack a target argument.',
   publications: [NP06, BCDFP21],
   tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_COLLECTIVE_RELATIONS],
 }

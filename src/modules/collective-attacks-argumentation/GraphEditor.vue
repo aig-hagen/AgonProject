@@ -35,9 +35,10 @@ import { setafEvaluationTutorial } from '@/modules/collective-attacks-argumentat
 import WindowExtensions from '@/modules/collective-attacks-argumentation/WindowExtensions.vue'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
+import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
-import WindowExport from '@/modules/common/export/WindowExport.vue'
+import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import {
   type GraphEditorStateHyperLink,
   type GraphEditorStateLink,
@@ -48,6 +49,7 @@ import {
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
@@ -217,6 +219,26 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   )
 }
 
+// --- Compact evaluation host (mobile) ---
+
+const { layoutMode } = useLayoutMode()
+const evaluationHostOpen = ref(false)
+const activeExtensionId = ref<string | undefined>(undefined)
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
+const extensionChips = computed<EvaluationChip[]>(() =>
+  extensionInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension',
+  })),
+)
+
 provide(TOOLTIP_REGISTRY_KEY, {
   ...abstractArgumentationGlossary,
   ...collectiveAttacksArgumentationGlossary,
@@ -229,6 +251,7 @@ const highlightCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
 }))
@@ -260,10 +283,12 @@ const tutorialContextExtra = computed(() => ({
     :tutorials="setafTutorials"
     default-tutorial-id="setaf-basics"
     :tutorial-context-extra="tutorialContextExtra"
+    v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance"
   >
-    <template #export="{ isOpen, onIsOpen }">
+    <template #export="{ isOpen, onIsOpen, hasBeenOpened }">
       <WindowExport
+        v-if="hasBeenOpened"
         :input="state.current.content"
         :open="isOpen"
         @update:open="onIsOpen"
@@ -272,8 +297,43 @@ const tutorialContextExtra = computed(() => ({
       />
     </template>
     <template #evaluationExtensions="{ onHighlight }">
+      <!-- Compact: one host sheet with a chip switcher over all saved configs. -->
+      <EvaluationHost
+        v-if="layoutMode === 'compact'"
+        v-model:open="evaluationHostOpen"
+        v-model:active-id="activeExtensionId"
+        :chips="extensionChips"
+        @add="addExtensionInstance()"
+        @remove="removeExtensionInstance($event, onHighlight)"
+      >
+        <template #default="{ activeId }">
+          <WindowExtensions
+            v-for="instance in extensionInstances"
+            v-show="instance.id === activeId"
+            :key="instance.id"
+            hosted
+            :input="evaluationInput"
+            :instance-state="instance"
+            :document-id="documentId"
+            :state-key="`${instance.id}:window`"
+            :suppressed="instance.id !== activeId"
+            @update:instance-state="updateExtensionInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
+            @highlight="
+              (h) => {
+                onHighlight(h)
+                if (h) highlightCount++
+              }
+            "
+            @evaluate="evaluationCount++"
+          />
+        </template>
+      </EvaluationHost>
+
+      <!-- Regular: one floating window per saved config. -->
       <WindowExtensions
         v-for="(instance, index) in extensionInstances"
+        v-else
         :key="instance.id"
         :input="evaluationInput"
         :instance-state="instance"

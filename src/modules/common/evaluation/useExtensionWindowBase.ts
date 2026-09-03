@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { computed, type Ref,ref } from 'vue'
+import { computed, type Ref, ref } from 'vue'
 
 import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import { escapeTexText } from '@/modules/common/export/texEscape'
@@ -51,7 +51,10 @@ export function useExtensionWindowBase(
   )
 
   function formatExtension(extension: EvaluationArgument[]) {
-    return extension.map((e) => e.name).sort().join(', ')
+    return extension
+      .map((e) => e.name)
+      .sort()
+      .join(', ')
   }
 
   const dataExtensionsFormatedAndSorted = computed(() => {

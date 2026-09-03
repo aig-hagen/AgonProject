@@ -16,27 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { useStorage } from '@vueuse/core'
+import { usePreferredDark, useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
 import { computed, watchEffect } from 'vue'
 
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 
+export type ThemePreference = 'system' | 'light' | 'dark'
+
 export const useTheme = createSharedComposable(() => {
-  const theme = useStorage('vueuse-color-scheme', 'light', undefined, {
+  const themePreference = useStorage<ThemePreference>('vueuse-color-scheme', 'system', undefined, {
     onError: notifyStorageFailureOnce,
   })
+  const prefersDark = usePreferredDark()
+
+  const isDark = computed(
+    () =>
+      themePreference.value === 'dark' || (themePreference.value === 'system' && prefersDark.value),
+  )
 
   watchEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme.value)
+    document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
   })
 
-  const isDark = computed({
-    get: () => theme.value === 'dark',
-    set: (value: boolean) => {
-      theme.value = value ? 'dark' : 'light'
-    },
-  })
-
-  return { isDark }
+  return { themePreference, isDark }
 })

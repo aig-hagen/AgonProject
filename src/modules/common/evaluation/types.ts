@@ -22,3 +22,8 @@ export interface Input<DocumentT> {
   stateId: UUID
   content: DocumentT
 }
+
+// The evaluation windows a module offers on the graph editor. A shell reads this to
+// know which evaluation entry points to render, instead of inferring it from which
+// slots the module's editor happens to fill.
+export type EvaluationKind = 'extension' | 'ranking' | 'serialisation'

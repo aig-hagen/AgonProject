@@ -22,6 +22,7 @@ interface ViteTypeOptions {
 
 interface ImportMetaEnv {
   readonly VITE_APP_SOURCE_TREE: string
+  readonly VITE_ANALYTICS_ENABLED?: string
 }
 
 interface ImportMeta {

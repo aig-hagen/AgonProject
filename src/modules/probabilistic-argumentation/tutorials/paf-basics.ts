@@ -16,19 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const pafBasicsTutorial: Tutorial = {
   id: 'paf-basics',
   name: 'Basic PAF Tutorial',
-  description: 'Learn how to create arguments and attacks, and how to assign probabilities to them.',
+  description:
+    'Learn how to create arguments and attacks, and how to assign probabilities to them.',
   steps: [
     {
       id: 'welcome',
       title: 'Welcome to Probabilistic Argumentation!',
       body: [
         { text: 'Probabilistic argumentation frameworks (PAFs)', tooltipId: 'PAF' },
-        ' extend abstract argumentation by assigning probabilities to arguments and attacks. These probabilities model uncertainty about whether each argument or attack is actually present. This tutorial walks you through building a PAF. You can skip it at any time and restart it from the <strong>Tutorials</strong> menu.',
+        ' extend abstract argumentation by assigning probabilities to arguments and attacks. These probabilities model uncertainty about whether each argument or attack is actually present. This tutorial walks you through building a PAF.',
       ],
       advanceOn: 'button',
     },
@@ -37,8 +39,8 @@ export const pafBasicsTutorial: Tutorial = {
       title: 'Create an argument',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Double-tap</strong> on an empty area of the canvas to create a new argument.'
-          : '<strong>Double-click</strong> on an empty area of the canvas to create a new argument.',
+          ? `${action('Double-tap')} on an empty area of the canvas to create a new argument.`
+          : `${action('Double-click')} on an empty area of the canvas to create a new argument.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.nodeCount > baseline.nodeCount,
     },
@@ -47,20 +49,48 @@ export const pafBasicsTutorial: Tutorial = {
       title: 'Draw an attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Hold and drag</strong> from one argument towards another to create an attack between them.'
-          : '<strong>Right-click</strong> on an argument, hold, and drag towards another argument to create an attack between them.',
+          ? `${action('Hold and drag')} from one argument towards another to create an attack between them.`
+          : `${action('Right-click')} on an argument, hold, and drag towards another argument to create an attack between them.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
     },
     {
+      id: 'delete',
+      title: 'Delete an argument or attack',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} an argument or attack to select it, then tap ${barAction('delete', 'Delete')} in the action bar.`
+          : `${action('Right-click and hold')} on an argument or attack to delete it.`,
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.nodeCount < baseline.nodeCount || ctx.linkCount < baseline.linkCount,
+      firstBasicOnly: true,
+    },
+    {
+      id: 'undo',
+      title: 'Undo & Redo',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `Made a mistake? ${action('Tap')} the <strong>Undo</strong> button to step backward through your changes. Try it now to undo the deletion.`
+          : `Made a mistake? Press <kbd class="kbd kbd-sm">Ctrl Z</kbd> to undo and <kbd class="kbd kbd-sm">Ctrl Shift Z</kbd> to redo. Try it now to undo the deletion.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'undoButton' : undefined),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.nodeCount > baseline.nodeCount || ctx.linkCount > baseline.linkCount,
+      firstBasicOnly: true,
+    },
+    {
       id: 'probabilities',
       title: 'Argument and attack probabilities',
-      body: [
+      body: (isTouchDevice) => [
         'Every argument shows its ',
         { text: 'probability', tooltipId: 'argumentProbability' },
-        ' below it, and every attack shows its ',
+        ' next to it, and every attack shows its ',
         { text: 'probability', tooltipId: 'attackProbability' },
-        ' at the midpoint of the arrow. <strong>Click any probability label</strong> to edit it with a slider or number input.',
+        ' at the midpoint of the arrow. ',
+        isTouchDevice
+          ? `${action('Tap')} a probability label — or select an argument or attack and choose ${barAction('probability', 'Edit probability')} in the action bar — then change the value.`
+          : `${action('Click')} any probability label to edit it with a slider or number input.`,
       ],
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.probabilityEditCount > baseline.probabilityEditCount,
@@ -69,13 +99,13 @@ export const pafBasicsTutorial: Tutorial = {
       id: 'probability-editor',
       title: 'The Probability Editor',
       body: 'Use the <strong>Probabilities</strong> button to open a panel that lists all argument and attack probabilities in one place — useful when you have many elements to configure.',
-      anchor: 'probabilityButton',
-      placement: 'right-start',
+      highlight: 'probabilityButton',
       advanceOn: 'button',
+      desktopOnly: true,
     },
     {
       id: 'done',
-      title: 'You\'re all set!',
+      title: "You're all set!",
       body: 'You can now build probabilistic argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to compute acceptance probabilities under various semantics.',
       advanceOn: 'button',
       nextTutorialId: 'paf-evaluation',

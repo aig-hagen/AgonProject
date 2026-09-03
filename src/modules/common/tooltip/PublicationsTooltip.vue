@@ -47,12 +47,17 @@ function onMouseEnter() {
 }
 
 function onMouseLeave() {
-  closeTimer = setTimeout(() => { open.value = false }, 100)
+  closeTimer = setTimeout(() => {
+    open.value = false
+  }, 100)
 }
 </script>
 <template>
   <div class="shrink-0" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-    <button ref="buttonEl" class="btn btn-ghost btn-xs btn-circle text-base-content/40 hover:text-base-content/70">
+    <button
+      ref="buttonEl"
+      class="btn btn-ghost btn-xs btn-circle text-base-content/40 hover:text-base-content/70"
+    >
       <BookOpenIcon class="w-4 h-4" />
     </button>
     <Teleport to="body">
@@ -63,7 +68,9 @@ function onMouseLeave() {
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"
       >
-        <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1">Publications</p>
+        <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1">
+          Publications
+        </p>
         <a
           v-for="(pub, i) in publications"
           :key="i"

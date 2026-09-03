@@ -22,11 +22,20 @@ import { computed, type MaybeRef, unref } from 'vue'
 import type { ArgumentId } from '@/modules/common/argumentation/model'
 import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import {
+  fetchTyped,
+  TWEETY_TIMEOUT_IN_MS,
+  TWEETY_TIMEOUT_UNIT_MS,
+  TweetyResponseSchema,
+  USER_ID,
+} from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserListOfSets, parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { Input } from '@/modules/common/evaluation/types'
 import { type UUID } from '@/modules/common/ids'
-import type { IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import type {
+  IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 
 export {
   KEY_DEFAULT_SEMANTIC,
@@ -89,7 +98,14 @@ async function fetchModels(
   uncertainAttacks: number[][],
   semantics: string,
 ): Promise<{ evaluationDurationInMs: number; extensions: number[][] }> {
-  const body = buildRequestBody(`get_models_${type}`, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+  const body = buildRequestBody(
+    `get_models_${type}`,
+    numberOfArguments,
+    uncertainArgumentIds,
+    definiteAttacks,
+    uncertainAttacks,
+    semantics,
+  )
   const response = await fetchTyped(ENDPOINT_IAF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
   return { evaluationDurationInMs: response.time, extensions: parserListOfSets(response.answer!) }
@@ -104,7 +120,14 @@ async function fetchAcceptability(
   uncertainAttacks: number[][],
   semantics: string,
 ): Promise<{ evaluationDurationInMs: number; arguments: number[] }> {
-  const body = buildRequestBody(`get_${mode}_${type}`, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+  const body = buildRequestBody(
+    `get_${mode}_${type}`,
+    numberOfArguments,
+    uncertainArgumentIds,
+    definiteAttacks,
+    uncertainAttacks,
+    semantics,
+  )
   const response = await fetchTyped(ENDPOINT_IAF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
   return { evaluationDurationInMs: response.time, arguments: parserSet(response.answer!) }
@@ -150,8 +173,7 @@ export function useExtensionEvaluationQuery(
 
   const isModelResult = (
     result: EvaluationQueryResult,
-  ): result is { evaluationDurationInMs: number; extensions: number[][] } =>
-    'extensions' in result
+  ): result is { evaluationDurationInMs: number; extensions: number[][] } => 'extensions' in result
 
   const queryKey = computed(() => {
     const mode = unref(modeRef)
@@ -159,16 +181,48 @@ export function useExtensionEvaluationQuery(
     return [`iaf_${mode}_${type}`, semanticsRef, typeRef, modeRef, argumentData] as const
   })
 
-  type QueryKey = [string, string, IafType, IafMode, { numberOfArguments: number; uncertainArgumentIds: number[]; definiteAttacks: number[][]; uncertainAttacks: number[][] }]
+  type QueryKey = [
+    string,
+    string,
+    IafType,
+    IafMode,
+    {
+      numberOfArguments: number
+      uncertainArgumentIds: number[]
+      definiteAttacks: number[][]
+      uncertainAttacks: number[][]
+    },
+  ]
 
   const queryResult = useQuery<EvaluationQueryResult>({
     queryKey,
     queryFn: ({ queryKey }) => {
-      const [, semantics, type, mode, { numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks }] = queryKey as QueryKey
+      const [
+        ,
+        semantics,
+        type,
+        mode,
+        { numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks },
+      ] = queryKey as QueryKey
       if (mode === 'credulous' || mode === 'skeptical') {
-        return fetchAcceptability(mode, type, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+        return fetchAcceptability(
+          mode,
+          type,
+          numberOfArguments,
+          uncertainArgumentIds,
+          definiteAttacks,
+          uncertainAttacks,
+          semantics,
+        )
       }
-      return fetchModels(type, numberOfArguments, uncertainArgumentIds, definiteAttacks, uncertainAttacks, semantics)
+      return fetchModels(
+        type,
+        numberOfArguments,
+        uncertainArgumentIds,
+        definiteAttacks,
+        uncertainAttacks,
+        semantics,
+      )
     },
     enabled,
   })

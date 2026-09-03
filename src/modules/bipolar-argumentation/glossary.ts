@@ -23,43 +23,66 @@ export const bipolarArgumentationGlossary: TooltipRegistry = {
   BAF: {
     label: 'BAF',
     title: 'Bipolar Argumentation Framework (BAF)',
-    content: ['A bipolar argumentation framework $B = (A, R, S)$ extends the classical ', { ref: 'AF' }, ' with a support relation $S \\subseteq A \\times A$.'],
+    content: [
+      'A bipolar argumentation framework $B = (A, R, S)$ extends the classical ',
+      { ref: 'AF' },
+      ' with a support relation $S \\subseteq A \\times A$.',
+    ],
     reference: CL05,
   },
 
   deductiveSupport: {
     label: 'deductive support',
     title: 'Deductive Support',
-    content: ['Under the deductive support interpretation, an argument $a$ supports an argument $b$ if the acceptance of $a$ logically implies the acceptance of $b$.'],
+    content: [
+      'Under the deductive support interpretation, an argument $a$ supports an argument $b$ if the acceptance of $a$ logically implies the acceptance of $b$.',
+    ],
     reference: BGTV10,
   },
 
   necessarySupport: {
     label: 'necessary support',
     title: 'Necessary Support',
-    content: ['Under the necessary support interpretation, an argument $a$ supports an argument $b$ if the acceptance of $a$ is a necessary condition for the acceptance of $b$.'],
+    content: [
+      'Under the necessary support interpretation, an argument $a$ supports an argument $b$ if the acceptance of $a$ is a necessary condition for the acceptance of $b$.',
+    ],
     reference: NR10,
   },
 
   coalition: {
     label: 'coalition',
     title: 'Coalition of Arguments',
-    content: ['A coalition of arguments $S$ is a ', { ref: 'CF' }, ' set of arguments, connected via the support relation and $\\subseteq$-maximal with this property.'],
+    content: [
+      'A coalition of arguments $S$ is a ',
+      { ref: 'CF' },
+      ' set of arguments, connected via the support relation and $\\subseteq$-maximal with this property.',
+    ],
     reference: CL10,
   },
 
   coalitionGraph: {
     label: 'coalition graph',
     title: 'Coalition Graph',
-    content: ['The coalition graph $F_B^{\\mathsf{Coal}}$ for some ', { ref: 'BAF' }, ' B is defined as the ', { ref: 'AF'}, ' $F^{\\mathsf{Coal}}_B = (\\mathsf{Coal}(B), R\')$, where $\\mathsf{Coal}(B)$ is the ', { ref: 'coalition', label: 'set of coalitions'},' of $B$ and we have $(S_1, S_2) \\in R\'$ iff there are $a \\in S_1$ and $b\\in S_2$ with $(a,b)\\in R$, for all $S_1,S_2 \\in \\mathsf{Coal}(B)$.'],
+    content: [
+      'The coalition graph $F_B^{\\mathsf{Coal}}$ for some ',
+      { ref: 'BAF' },
+      ' B is defined as the ',
+      { ref: 'AF' },
+      " $F^{\\mathsf{Coal}}_B = (\\mathsf{Coal}(B), R')$, where $\\mathsf{Coal}(B)$ is the ",
+      { ref: 'coalition', label: 'set of coalitions' },
+      " of $B$ and we have $(S_1, S_2) \\in R'$ iff there are $a \\in S_1$ and $b\\in S_2$ with $(a,b)\\in R$, for all $S_1,S_2 \\in \\mathsf{Coal}(B)$.",
+    ],
     reference: CL10,
   },
 
-  'coalitionSemantics': {
+  coalitionSemantics: {
     label: 'coalition-based semantics',
     title: 'Coalition-based Semantics',
-    content: ['A set of arguments $E$ is a coalition-$\\sigma$-extension in $B$ iff there is a $\\sigma$-extension $S$ of the ', { ref: 'coalitionGraph' } ,' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.'],
+    content: [
+      'A set of arguments $E$ is a coalition-$\\sigma$-extension in $B$ iff there is a $\\sigma$-extension $S$ of the ',
+      { ref: 'coalitionGraph' },
+      ' $F_B^{\\mathsf{Coal}}$ with $E = \\bigcup S$.',
+    ],
     reference: CL10,
   },
-
 }

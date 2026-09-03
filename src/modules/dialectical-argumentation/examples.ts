@@ -21,7 +21,10 @@ import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import mealWineJson from '@/modules/dialectical-argumentation/examples/meal_wine.json'
 import murderTrialJson from '@/modules/dialectical-argumentation/examples/murder_trial.json'
-import { type AdfArgumentData, DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import {
+  type AdfArgumentData,
+  DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 import { loadExampleFromJson } from '@/modules/dialectical-argumentation/save/saveFormat'
 
 const exampleJsons: unknown[] = [mealWineJson, murderTrialJson]
@@ -33,11 +36,11 @@ export const datasets: Example<DialecticalArgumentation<AdfArgumentData>>[] = ex
       name: name ?? 'unknown',
       description,
       load: () => loadExampleFromJson(json).framework,
-      applyLayout: (adf) => {
+      applyLayout: async (adf) => {
         const layout = layoutType ?? Layout.Circular
         const nodes = [...adf.arguments()].map(([id]) => id)
         const links = [...adf.links()]
-        const positions = getNodePositions(nodes, links, layout)
+        const positions = await getNodePositions(nodes, links, layout)
         for (const [id, data] of adf.arguments()) {
           const pos = positions.get(id)!
           data.x = pos.x

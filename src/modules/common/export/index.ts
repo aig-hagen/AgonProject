@@ -36,9 +36,13 @@ export interface ExportReference {
 
 export interface ExportConfig<DocumentT> {
   name: string
+  /** Short one-line subtitle shown under the name in the compact export picker. */
+  description?: string
   export(document: DocumentT, styleOptions?: ExportStyleOptions): ExportResult
   codemirrorOptions?: {
-    extensions: Extension[]
+    // A loader rather than concrete extensions so the codemirror language package
+    // (~100 kB) only downloads once the export window actually mounts the editor.
+    loadExtensions: () => Promise<Extension[]>
   }
   references?: ExportReference[]
   /** File extension (without dot) to use when saving this export's output. */
@@ -47,7 +51,9 @@ export interface ExportConfig<DocumentT> {
 
 export interface ExportResult {
   text: string
-  svg?: Promise<string>
+  // A factory rather than an eager promise: rendering the TikZ SVG spins up a heavy WebAssembly
+  // TeX engine, so it must only run when a preview actually asks for it (never on mobile).
+  svg?: () => Promise<string>
 }
 
 export interface ExportFileData {

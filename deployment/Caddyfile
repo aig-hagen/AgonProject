@@ -39,7 +39,7 @@ http://:8080 {
 		rate_limit {
 			zone tweety {
 				key {remote_host}
-				events 30
+				events 60
 				window 1m
 			}
 		}
@@ -62,6 +62,26 @@ http://:8080 {
 
 	@shares path /shares /shares/*
 	handle @shares {
+		reverse_proxy http://localhost:8001
+	}
+
+	# Usage analytics ingest. Rate limited per-IP; the limit is generous because
+	# eval windows auto-request and a shared campus IP may carry many users.
+	@events path /events
+	handle @events {
+		rate_limit {
+			zone analytics {
+				key {remote_host}
+				events 300
+				window 1m
+			}
+		}
+		reverse_proxy http://localhost:8001
+	}
+
+	# Aggregated analytics readout — token-guarded by the share server itself.
+	@stats path /stats
+	handle @stats {
 		reverse_proxy http://localhost:8001
 	}
 

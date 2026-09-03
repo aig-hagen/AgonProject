@@ -34,7 +34,47 @@ function findNodeLabelDiv(
   const nodeEl = graphEl?.querySelector(`#${CSS.escape(`${graphComponentId}-node-${internalId}`)}`)
   return nodeEl
     ?.closest('.graph-controller__node-container')
-    ?.querySelector<HTMLElement>('.graph-controller__node-label, .graph-controller__node-label-placeholder')
+    ?.querySelector<HTMLElement>(
+      '.graph-controller__node-label, .graph-controller__node-label-placeholder',
+    )
+}
+
+/**
+ * Node labels are HTML divs whose text color follows the theme (white in dark
+ * mode). When a highlight paints the node a light pastel, white text becomes
+ * unreadable — so we override the label color to contrast with the given
+ * background. Pass an empty string to clear the override and fall back to the
+ * theme color.
+ */
+export function setNodeLabelColor(
+  graphEl: Element | null | undefined,
+  graphComponentId: string,
+  internalId: number,
+  color: string,
+): void {
+  const labelDiv = findNodeLabelDiv(graphEl, graphComponentId, internalId)
+  if (labelDiv) {
+    labelDiv.style.color = color
+  }
+}
+
+/** Returns near-black or white — whichever reads better on `background` (hex only). */
+export function getContrastingLabelColor(background: string): string {
+  const hex = background.trim().replace('#', '')
+  const full =
+    hex.length === 3
+      ? hex
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : hex
+  if (full.length !== 6 || /[^0-9a-fA-F]/.test(full)) return ''
+  const channels = [0, 2, 4].map((i) => {
+    const s = parseInt(full.slice(i, i + 2), 16) / 255
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }) as [number, number, number]
+  const luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+  return luminance > 0.4 ? '#1a1a1a' : '#ffffff'
 }
 
 export function adjustNodeLabelFontSize(

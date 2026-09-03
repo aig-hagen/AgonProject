@@ -24,7 +24,10 @@ import { TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY } from '@/modules/common/tags
 import { BJNNR21, CDKLM07 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/incomplete-argumentation/examples'
 import GraphEditor from '@/modules/incomplete-argumentation/GraphEditor.vue'
-import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import {
+  type IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 import {
   canLoadFromObject,
   loadFromString,
@@ -70,17 +73,19 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
     examples: datasets,
     initialCotent: initialIncompleteArgumentation,
     editorComponent: GraphEditor,
+    evaluationKinds: ['extension'],
     canLoadFromObject(dataObject: Record<string, unknown>): boolean {
       return canLoadFromObject(dataObject)
     },
     load(dataString, fileName) {
       return loadFromString(dataString, fileName)
     },
-    getSaveString(document, _name) {
-      return saveAsString(document)
+    getSaveString(document, name) {
+      return saveAsString(document, name)
     },
     generateHref: '/generate?type=incomplete',
-  description: 'Distinguish between certain and uncertain arguments and attacks to represent incomplete information.',
-  publications: [CDKLM07, BJNNR21],
-  tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY],
+    description:
+      'Distinguish between certain and uncertain arguments and attacks to represent incomplete information.',
+    publications: [CDKLM07, BJNNR21],
+    tags: [TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY],
   }

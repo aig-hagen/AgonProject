@@ -1,16 +1,20 @@
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
-test('rename tab', async ({ context }) => {
+test('rename tab syncs across open pages', async ({ context }) => {
   const page1 = await context.newPage()
   const page2 = await context.newPage()
   await page1.goto('/')
   await page2.goto('/')
 
-  await page1.getByRole('button', { name: 'Create' }).click()
-  await expect(page1.getByRole('tab').getByPlaceholder('new argumentation')).toBeVisible()
-  await expect(page2.getByRole('tab').getByPlaceholder('new argumentation')).toBeVisible()
+  // Create a document from the desktop landing (first module card).
+  await page1.getByRole('button', { name: 'Create new' }).first().click()
 
-  await page1.getByRole('tab').getByPlaceholder('new argumentation').fill("argumentation1")
-  await expect(page1.getByRole('tab', { name: 'argumentation1' })).toBeVisible()
-  await expect(page2.getByRole('tab', { name: 'argumentation1' })).toBeVisible()
+  const tab1 = page1.getByRole('tab').getByRole('textbox')
+  const tab2 = page2.getByRole('tab').getByRole('textbox')
+  await expect(tab1).toBeVisible()
+  await expect(tab2).toBeVisible()
+
+  await tab1.fill('argumentation1')
+  await expect(tab1).toHaveValue('argumentation1')
+  await expect(tab2).toHaveValue('argumentation1')
 })

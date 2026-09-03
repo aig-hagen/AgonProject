@@ -18,14 +18,16 @@
 -->
 <script setup lang="ts">
 import { NodeOutline } from '@aig-hagen/graph-component/lib'
+import { ArrowsRightLeftIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
+import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
-import WindowExport from '@/modules/common/export/WindowExport.vue'
+import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import ArrowLongRightDashedIcon from '@/modules/common/graph-editor/ArrowLongRightDashedIcon.vue'
 import {
   type GraphEditorStateLink,
@@ -34,8 +36,10 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
@@ -166,6 +170,28 @@ function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   })
 }
 
+function toggleArgumentCertainty(id: NodeId) {
+  createNewState((draft) => {
+    const argument = draft.getArgument(id)
+    argument.uncertain = !argument.uncertain
+  })
+}
+
+/** Action-bar button: flip a selected argument between definite and uncertain. */
+function iafNodeSelectionActions(id: NodeId): SelectionAction[] {
+  const uncertain = renderedState.value.current.content.getArgument(id).uncertain
+  return [
+    {
+      key: 'certainty',
+      label: uncertain ? 'Mark definite' : 'Mark uncertain',
+      icon: ArrowsRightLeftIcon,
+      // In-place switcher: stay open so the user can toggle certainty across taps.
+      keepOpen: true,
+      run: () => toggleArgumentCertainty(id),
+    },
+  ]
+}
+
 function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
   createNewState((draft) => {
     data.forEach((node) => {
@@ -220,6 +246,26 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   )
 }
 
+// --- Compact evaluation host (mobile) ---
+
+const { layoutMode } = useLayoutMode()
+const evaluationHostOpen = ref(false)
+const activeExtensionId = ref<string | undefined>(undefined)
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
+const extensionChips = computed<EvaluationChip[]>(() =>
+  extensionInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension',
+  })),
+)
+
 provide(TOOLTIP_REGISTRY_KEY, {
   ...abstractArgumentationGlossary,
   ...incompleteArgumentationGlossary,
@@ -232,15 +278,19 @@ const highlightCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   uncertainNodeCount: [...renderedState.value.current.content.uncertainArguments()].length,
+  uncertainLinkCount: [...renderedState.value.current.content.uncertainAttacks()].length,
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
 }))
 
 const argumentModeButtonRef = useTemplateRef<HTMLElement>('argumentModeButton')
+const mobileArgumentModeButtonRef = useTemplateRef<HTMLElement>('mobileArgumentModeButton')
 
 const tutorialRefs = computed(() => ({
-  argumentModeButton: argumentModeButtonRef.value ?? null,
+  // Only one of the two layouts is mounted at a time; pick whichever is live.
+  argumentModeButton: argumentModeButtonRef.value ?? mobileArgumentModeButtonRef.value ?? null,
 }))
 </script>
 
@@ -259,6 +309,7 @@ const tutorialRefs = computed(() => ({
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
     :node-outlines="argumentOutlines"
+    :node-selection-actions="iafNodeSelectionActions"
     :state="editorState"
     :history-state="historyState"
     :tutorials="iafTutorials"
@@ -269,8 +320,51 @@ const tutorialRefs = computed(() => ({
     @redo="emit('redo')"
     @save="emit('save')"
     @share="emit('share')"
+    v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance()"
   >
+    <template #canvasSelector>
+      <!-- Compact twin of the desktop argument-type toolbar (horizontal). -->
+      <div ref="mobileArgumentModeButton" class="join shadow-md" title="Argument type">
+        <button
+          class="join-item btn btn-sm btn-square"
+          :class="isDefiniteArgumentMode ? 'btn-primary' : 'btn-neutral'"
+          :aria-pressed="isDefiniteArgumentMode"
+          aria-label="Definite argument"
+          @click="isDefiniteArgumentMode = true"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="size-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+        </button>
+        <button
+          class="join-item btn btn-sm btn-square"
+          :class="!isDefiniteArgumentMode ? 'btn-primary' : 'btn-neutral'"
+          :aria-pressed="!isDefiniteArgumentMode"
+          aria-label="Uncertain argument"
+          @click="isDefiniteArgumentMode = false"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="size-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-dasharray="3 2"
+          >
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+        </button>
+      </div>
+    </template>
     <template #toolbar>
       <div ref="argumentModeButton" class="join join-vertical mb-2" title="Argument type">
         <button
@@ -311,8 +405,43 @@ const tutorialRefs = computed(() => ({
       </div>
     </template>
     <template #evaluationExtensions="{ onHighlight }">
+      <!-- Compact: one host sheet with a chip switcher over all saved configs. -->
+      <EvaluationHost
+        v-if="layoutMode === 'compact'"
+        v-model:open="evaluationHostOpen"
+        v-model:active-id="activeExtensionId"
+        :chips="extensionChips"
+        @add="addExtensionInstance()"
+        @remove="removeExtensionInstance($event, onHighlight)"
+      >
+        <template #default="{ activeId }">
+          <WindowExtensions
+            v-for="instance in extensionInstances"
+            v-show="instance.id === activeId"
+            :key="instance.id"
+            hosted
+            :input="evaluationInput"
+            :instance-state="instance"
+            :document-id="documentId"
+            :state-key="`${instance.id}:window`"
+            :suppressed="instance.id !== activeId"
+            @update:instance-state="updateExtensionInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
+            @highlight="
+              (h) => {
+                onHighlight(h)
+                if (h) highlightCount++
+              }
+            "
+            @evaluate="evaluationCount++"
+          />
+        </template>
+      </EvaluationHost>
+
+      <!-- Regular: one floating window per saved config. -->
       <WindowExtensions
         v-for="(instance, index) in extensionInstances"
+        v-else
         :key="instance.id"
         :input="evaluationInput"
         :instance-state="instance"
@@ -330,8 +459,9 @@ const tutorialRefs = computed(() => ({
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>
-    <template #export="{ isOpen, onIsOpen }">
+    <template #export="{ isOpen, onIsOpen, hasBeenOpened }">
       <WindowExport
+        v-if="hasBeenOpened"
         :input="state.current.content"
         :open="isOpen"
         @update:open="onIsOpen"

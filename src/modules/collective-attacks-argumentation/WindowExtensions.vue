@@ -38,6 +38,7 @@ import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -48,17 +49,22 @@ const {
   instanceOffset = 0,
   documentId,
   stateKey,
+  suppressed = false,
+  hosted = false,
 } = defineProps<{
   input: Input<SetAF<SetAfArgumentData>>
   instanceState: ExtensionWindowInstanceState
   instanceOffset?: number
   documentId?: DocumentId
   stateKey?: string
+  suppressed?: boolean
+  hosted?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
+  title: [title: string]
   close: []
   evaluate: []
 }>()
@@ -107,9 +113,11 @@ const {
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query)
 
-watch(currentHighlight, (h) => emit('highlight', h))
+// Suppressed instances (all but the active one in the compact host) emit no highlight.
+const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
+watch(emittedHighlight, (h) => emit('highlight', h))
 function onWindowFocus() {
-  emit('highlight', currentHighlight.value)
+  emit('highlight', emittedHighlight.value)
 }
 
 const windowTitle = computed(() => {
@@ -121,11 +129,15 @@ const windowTitle = computed(() => {
         : 'Skeptical'
   return `${selectedSemantic.value.displayName} · ${modeLabel}`
 })
+
+// The compact host labels its switcher pill with this title (not the raw key).
+watch(windowTitle, (t) => emit('title', t), { immediate: true })
 </script>
 
 <template>
   <BaseEvaluationWindow
     :title="windowTitle"
+    :hosted="hosted"
     :instance-offset="instanceOffset"
     :initial-size="{ width: 400, height: 360 }"
     :query="query"
@@ -140,11 +152,14 @@ const windowTitle = computed(() => {
         <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
       </ParameterField>
       <ParameterField label="Mode" max-width="8rem">
-        <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
-          <option value="enumerate">Enumerate</option>
-          <option value="credulous">Credulous</option>
-          <option value="skeptical">Skeptical</option>
-        </select>
+        <PickerSelect
+          v-model="selectedMode"
+          :options="[
+            { value: 'enumerate', label: 'Enumerate' },
+            { value: 'credulous', label: 'Credulous' },
+            { value: 'skeptical', label: 'Skeptical' },
+          ]"
+        />
       </ParameterField>
     </template>
     <template #parameters-footer>
@@ -154,6 +169,7 @@ const windowTitle = computed(() => {
       <template v-if="dataExtensionsFormatedAndSorted !== undefined">
         <EvaluationResultGrid
           v-model:selected="selectedExtension"
+          result-noun="extensions"
           :items="resultItems"
           :empty-message="emptyMessage"
           :selection-hint="selectionHint"

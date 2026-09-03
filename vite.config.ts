@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
@@ -60,7 +61,9 @@ export default defineConfig({
       ],
     }),
     gzipFixPlugin(),
-    vueDevTools(),
+    // The devtools overlay intercepts pointer events (disabled under e2e) and shows
+    // a floating icon (set NO_DEVTOOLS=1 for clean screenshots).
+    ...(process.env.E2E || process.env.NO_DEVTOOLS ? [] : [vueDevTools()]),
   ],
   resolve: {
     alias: {
@@ -82,6 +85,8 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/graph-gen/, ''),
       },
       '/shares': 'http://localhost:8001',
+      '/events': 'http://localhost:8001',
+      '/stats': 'http://localhost:8001',
     },
   },
 })

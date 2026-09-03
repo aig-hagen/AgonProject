@@ -21,13 +21,22 @@ import { computed, type MaybeRef, unref } from 'vue'
 
 import { buildArgumentIdMapping } from '@/modules/common/evaluation/tweety-project/argumentMapping'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
-import { fetchTyped, TWEETY_TIMEOUT_IN_MS, TWEETY_TIMEOUT_UNIT_MS, TweetyResponseSchema, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
+import {
+  fetchTyped,
+  TWEETY_TIMEOUT_IN_MS,
+  TWEETY_TIMEOUT_UNIT_MS,
+  TweetyResponseSchema,
+  USER_ID,
+} from '@/modules/common/evaluation/tweety-project/fetch'
 import { parserSet } from '@/modules/common/evaluation/tweety-project/listOfSets'
 import type { SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
 import { type IdMapping, type UUID } from '@/modules/common/ids'
 import { type FormulaNode } from '@/modules/dialectical-argumentation/condition/formula'
-import { type AdfArgumentData, type DialecticalArgumentation } from '@/modules/dialectical-argumentation/model'
+import {
+  type AdfArgumentData,
+  type DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 
 const ENDPOINT_ADF = '/adf'
 
@@ -51,7 +60,10 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   },
 ]
 
-export { type Semantics, type SemanticsFamily } from '@/modules/common/evaluation/tweety-project/semantics'
+export {
+  type Semantics,
+  type SemanticsFamily,
+} from '@/modules/common/evaluation/tweety-project/semantics'
 
 // ── Formula serialization ─────────────────────────────────────────────────────
 // Produces the KPP-style condition string expected by the /adf endpoint,
@@ -143,7 +155,10 @@ async function fetchModels(
   }
   const response = await fetchTyped(ENDPOINT_ADF, body, TweetyResponseSchema)
   throwIfTimeout(response.answer, response.status)
-  return { evaluationDurationInMs: response.time, interpretations: parseInterpretations(response.answer!) }
+  return {
+    evaluationDurationInMs: response.time,
+    interpretations: parseInterpretations(response.answer!),
+  }
 }
 
 interface GetCredulousRequestBody {
@@ -255,8 +270,10 @@ export function useInterpretationEvaluationQuery(
 
   const queryKey = computed(() => {
     const mode = unref(modeRef)
-    if (mode === 'credulous') return ['adf_get_credulous', semanticsRef, modeRef, argumentData] as const
-    if (mode === 'skeptical') return ['adf_get_skeptical', semanticsRef, modeRef, argumentData] as const
+    if (mode === 'credulous')
+      return ['adf_get_credulous', semanticsRef, modeRef, argumentData] as const
+    if (mode === 'skeptical')
+      return ['adf_get_skeptical', semanticsRef, modeRef, argumentData] as const
     return ['adf_get_models', semanticsRef, modeRef, argumentData] as const
   })
 

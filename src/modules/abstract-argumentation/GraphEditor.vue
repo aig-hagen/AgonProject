@@ -42,9 +42,10 @@ import WindowSerialisation from '@/modules/abstract-argumentation/WindowSerialis
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
-import type { Input } from '@/modules/common/evaluation/types'
+import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
+import type { EvaluationKind, Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
-import WindowExport from '@/modules/common/export/WindowExport.vue'
+import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
@@ -54,6 +55,7 @@ import {
   type NodeId,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
@@ -242,6 +244,83 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
   )
 }
 
+// --- Compact evaluation host (mobile) ---
+
+const { layoutMode } = useLayoutMode()
+const evaluationHostOpen = ref(false)
+
+// Each hosted window reports its formatted title (semantics name + mode); the switcher
+// pill shows that instead of the raw key. Falls back to the key until the first report.
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
+// One chip row over all three evaluation kinds; the icon disambiguates the kind.
+const evaluationChips = computed<EvaluationChip[]>(() => [
+  ...extensionInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension' as const,
+  })),
+  ...rankingInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'ranking' as const,
+  })),
+  ...serialisationInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.selectionFunctionKey,
+    kind: 'serialisation' as const,
+  })),
+])
+
+const addableKinds: EvaluationKind[] = ['extension', 'ranking', 'serialisation']
+
+// The host's active chip is the highlighted window; only it highlights the canvas.
+// A single active id spans all kinds, mapping back to the right highlight source.
+const activeEvaluationId = computed<string | undefined>({
+  get: () => activeWindow.value?.id,
+  set: (id) => {
+    if (id === undefined) {
+      activeWindow.value = undefined
+      return
+    }
+    const source: HighlightSource | undefined = extensionInstances.value.some((i) => i.id === id)
+      ? 'extension'
+      : rankingInstances.value.some((i) => i.id === id)
+        ? 'ranking'
+        : serialisationInstances.value.some((i) => i.id === id)
+          ? 'serialisation'
+          : undefined
+    activeWindow.value = source ? { source, id } : undefined
+  },
+})
+
+function lastId<T extends { id: string }>(items: T[]): string | undefined {
+  return items.length > 0 ? items[items.length - 1]!.id : undefined
+}
+
+function addEvaluation(kind: EvaluationKind) {
+  if (kind === 'ranking') {
+    addRankingInstance()
+    activeEvaluationId.value = lastId(rankingInstances.value)
+  } else if (kind === 'serialisation') {
+    addSerialisationInstance()
+    activeEvaluationId.value = lastId(serialisationInstances.value)
+  } else {
+    addExtensionInstance()
+    activeEvaluationId.value = lastId(extensionInstances.value)
+  }
+}
+
+function removeEvaluation(id: string, onHighlight: (h?: Highlight) => void) {
+  if (rankingInstances.value.some((i) => i.id === id)) removeRankingInstance(id)
+  else if (serialisationInstances.value.some((i) => i.id === id))
+    removeSerialisationInstance(id, onHighlight)
+  else removeExtensionInstance(id, onHighlight)
+}
+
 function addRankingInstance() {
   rankingInstances.value = [...rankingInstances.value, createDefaultRankingWindowInstance()]
 }
@@ -292,11 +371,19 @@ const afTutorials = [afBasicsTutorial, afEvaluationTutorial, ...commonTutorials]
 
 const evaluationCount = ref(0)
 const highlightCount = ref(0)
+const semanticsInteractCount = ref(0)
+const modeInteractCount = ref(0)
 
 const tutorialContextExtra = computed(() => ({
   isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount:
+    extensionInstances.value.length +
+    rankingInstances.value.length +
+    serialisationInstances.value.length,
   evaluationCount: evaluationCount.value,
   highlightCount: highlightCount.value,
+  semanticsInteractCount: semanticsInteractCount.value,
+  modeInteractCount: modeInteractCount.value,
 }))
 </script>
 <template>
@@ -322,13 +409,85 @@ const tutorialContextExtra = computed(() => ({
     :tutorials="afTutorials"
     default-tutorial-id="af-basics"
     :tutorial-context-extra="tutorialContextExtra"
+    v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance()"
     @open-ranking-window="addRankingInstance()"
     @open-serialisation-window="addSerialisationInstance()"
   >
     <template #evaluationExtensions="{ onHighlight }">
+      <!-- Compact: one host sheet with a chip switcher over all saved configs of every kind. -->
+      <EvaluationHost
+        v-if="layoutMode === 'compact'"
+        v-model:open="evaluationHostOpen"
+        v-model:active-id="activeEvaluationId"
+        :chips="evaluationChips"
+        :add-kinds="addableKinds"
+        @add="addEvaluation($event)"
+        @remove="removeEvaluation($event, onHighlight)"
+      >
+        <template #default="{ activeId }">
+          <WindowExtensions
+            v-for="instance in extensionInstances"
+            v-show="instance.id === activeId"
+            :key="instance.id"
+            hosted
+            :input="evaluationInput"
+            :instance-state="instance"
+            :document-id="documentId"
+            :state-key="`${instance.id}:window`"
+            :suppressed="instance.id !== activeId"
+            @update:instance-state="updateExtensionInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
+            @highlight="
+              (h) => {
+                onHighlight(h)
+                if (h) highlightCount++
+              }
+            "
+            @evaluate="evaluationCount++"
+            @semantics-interact="semanticsInteractCount++"
+            @mode-interact="modeInteractCount++"
+          />
+          <WindowRanking
+            v-for="instance in rankingInstances"
+            v-show="instance.id === activeId"
+            :key="instance.id"
+            hosted
+            :input="evaluationInput"
+            :instance-state="instance"
+            :document-id="documentId"
+            :state-key="`${instance.id}:window`"
+            :suppressed="instance.id !== activeId"
+            @update:instance-state="updateRankingInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
+            @set-weights="(w) => instance.id === activeId && onSetWeights(w)"
+          />
+          <!-- Wrapper element carries v-show: WindowSerialisation has a multi-root
+               template (reusable body), so v-show can't attach directly to it. -->
+          <div
+            v-for="instance in serialisationInstances"
+            v-show="instance.id === activeId"
+            :key="instance.id"
+          >
+            <WindowSerialisation
+              hosted
+              :input="evaluationInput"
+              :instance-state="instance"
+              :document-id="documentId"
+              :state-key="`${instance.id}:window`"
+              :suppressed="instance.id !== activeId"
+              @update:instance-state="updateSerialisationInstance($event)"
+              @title="setEvaluationTitle(instance.id, $event)"
+              @highlight="onHighlight"
+            />
+          </div>
+        </template>
+      </EvaluationHost>
+
+      <!-- Regular: one floating window per saved config. -->
       <WindowExtensions
         v-for="(instance, index) in extensionInstances"
+        v-else
         :key="instance.id"
         :input="evaluationInput"
         :instance-state="instance"
@@ -345,11 +504,14 @@ const tutorialContextExtra = computed(() => ({
         "
         @focus="activeWindow = { source: 'extension', id: instance.id }"
         @evaluate="evaluationCount++"
+        @semantics-interact="semanticsInteractCount++"
+        @mode-interact="modeInteractCount++"
         @close="removeExtensionInstance(instance.id, onHighlight)"
       />
     </template>
-    <template #export="{ isOpen, onIsOpen }">
+    <template #export="{ isOpen, onIsOpen, hasBeenOpened }">
       <WindowExport
+        v-if="hasBeenOpened"
         :input="state.current.content"
         :open="isOpen"
         @update:open="onIsOpen"
@@ -357,9 +519,11 @@ const tutorialContextExtra = computed(() => ({
         @export="emit('export', $event)"
       />
     </template>
+    <!-- Compact renders ranking/serialisation inside the host above; these desktop
+         floating windows are regular-layout only. -->
     <template #evaluationRanking>
       <WindowRanking
-        v-for="(instance, index) in rankingInstances"
+        v-for="(instance, index) in layoutMode === 'regular' ? rankingInstances : []"
         :key="instance.id"
         :input="evaluationInput"
         :instance-state="instance"
@@ -368,14 +532,18 @@ const tutorialContextExtra = computed(() => ({
         :state-key="`${instance.id}:window`"
         :suppressed="isSuppressed('ranking', instance.id)"
         @update:instance-state="updateRankingInstance($event)"
-        @set-weights="(w) => { if (!isSuppressed('ranking', instance.id)) onSetWeights(w) }"
+        @set-weights="
+          (w) => {
+            if (!isSuppressed('ranking', instance.id)) onSetWeights(w)
+          }
+        "
         @focus="activeWindow = { source: 'ranking', id: instance.id }"
         @close="removeRankingInstance(instance.id)"
       />
     </template>
     <template #evaluationSerialisation="{ onHighlight }">
       <WindowSerialisation
-        v-for="(instance, index) in serialisationInstances"
+        v-for="(instance, index) in layoutMode === 'regular' ? serialisationInstances : []"
         :key="instance.id"
         :input="evaluationInput"
         :instance-state="instance"

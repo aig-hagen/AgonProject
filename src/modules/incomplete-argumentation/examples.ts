@@ -18,12 +18,15 @@
  */
 import type { Example } from '@/modules/common/examples'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
-import { Layout } from '@/modules/common/main-menu/layouting'
 import murderTrialJson from '@/modules/incomplete-argumentation/examples/murder_trial.json'
-import { type IafArgumentData, IncompleteArgumentation } from '@/modules/incomplete-argumentation/model'
+import treatmentChoiceJson from '@/modules/incomplete-argumentation/examples/treatment_choice.json'
+import {
+  type IafArgumentData,
+  IncompleteArgumentation,
+} from '@/modules/incomplete-argumentation/model'
 import { loadExampleFromJson } from '@/modules/incomplete-argumentation/save/saveFormat'
 
-const exampleJsons: unknown[] = [murderTrialJson]
+const exampleJsons: unknown[] = [murderTrialJson, treatmentChoiceJson]
 
 export const datasets: Example<IncompleteArgumentation<IafArgumentData>>[] = exampleJsons.map(
   (json) => {
@@ -32,17 +35,19 @@ export const datasets: Example<IncompleteArgumentation<IafArgumentData>>[] = exa
       name: name ?? 'unknown',
       description,
       load: () => loadExampleFromJson(json).framework,
-      applyLayout: (af) => {
-        const layout = layoutType ?? Layout.Circular
-        const nodes = [...af.arguments()].map(([id]) => id)
-        const links = [...af.definiteAttacks(), ...af.uncertainAttacks()]
-        const positions = getNodePositions(nodes, links, layout)
-        for (const [id, data] of af.arguments()) {
-          const pos = positions.get(id)!
-          data.x = pos.x
-          data.y = pos.y
-        }
-      },
+      applyLayout: layoutType
+        ? async (af) => {
+            const layout = layoutType
+            const nodes = [...af.arguments()].map(([id]) => id)
+            const links = [...af.definiteAttacks(), ...af.uncertainAttacks()]
+            const positions = await getNodePositions(nodes, links, layout)
+            for (const [id, data] of af.arguments()) {
+              const pos = positions.get(id)!
+              data.x = pos.x
+              data.y = pos.y
+            }
+          }
+        : undefined,
     }
   },
 )

@@ -18,27 +18,45 @@
 -->
 <script setup lang="ts">
 import HelpControls from '@/modules/common/help/HelpControls.vue'
+import HelpGestures from '@/modules/common/help/HelpGestures.vue'
 import HelpLinks from '@/modules/common/help/HelpLinks.vue'
-import FloatingWindow from '@/modules/common/window/FloatingWindow.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
+import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const props = defineProps<{
   linkNames: string[]
   allowHyperLinkCreation?: boolean
+  nodeTapAction?: string
 }>()
 
 const open = defineModel('open', { required: true })
+
+const { layoutMode } = useLayoutMode()
 </script>
 
 <template>
-  <FloatingWindow
+  <WindowShell
     v-model:open="open"
-    title="Help"
+    :title="layoutMode === 'compact' ? 'How to edit' : 'Help'"
     :initial-position="{ x: 256, y: 256 }"
     :intitalSize="{ width: 576, height: 448 }"
   >
     <div class="p-4">
-      <HelpLinks />
-      <HelpControls :link-names="props.linkNames" :allow-hyper-link-creation="props.allowHyperLinkCreation" />
+      <template v-if="layoutMode === 'compact'">
+        <HelpGestures
+          :link-names="props.linkNames"
+          :allow-hyper-link-creation="props.allowHyperLinkCreation"
+          :node-tap-action="props.nodeTapAction"
+        />
+        <HelpLinks legal-only />
+      </template>
+      <template v-else>
+        <HelpLinks legal-only />
+        <HelpControls
+          :link-names="props.linkNames"
+          :allow-hyper-link-creation="props.allowHyperLinkCreation"
+        />
+      </template>
     </div>
-  </FloatingWindow>
+  </WindowShell>
 </template>

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { action, barAction } from '@/modules/common/tutorial/hints'
 import type { Tutorial } from '@/modules/common/tutorial/types'
 
 export const iafBasicsTutorial: Tutorial = {
@@ -28,7 +29,7 @@ export const iafBasicsTutorial: Tutorial = {
       title: 'Welcome to Incomplete Argumentation Frameworks!',
       body: [
         { text: 'Incomplete Argumentation Frameworks (iAFs)', tooltipId: 'IAF' },
-        ' extend abstract argumentation with <strong>uncertainty</strong>: arguments and attacks can be either <em>certain</em> (always present) or <em>uncertain</em> (possibly present). You can skip this tutorial at any time and restart it from the <strong>Tutorials</strong> menu.',
+        ' extend abstract argumentation with <strong>uncertainty</strong>: arguments and attacks can be either <em>certain</em> (always present) or <em>uncertain</em> (possibly present).',
       ],
       advanceOn: 'button',
     },
@@ -37,11 +38,9 @@ export const iafBasicsTutorial: Tutorial = {
       title: 'Create a certain argument',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? 'Make sure the <strong>solid circle</strong> button is active in the toolbar, then <strong>double-tap</strong> on the canvas to create a certain argument.'
-          : 'Make sure the <strong>solid circle</strong> button is active in the toolbar, then <strong>double-click</strong> on the canvas to create a certain argument.',
-      anchor: 'argumentModeButton',
-      placement: 'right-start',
-      offsetPx: 64,
+          ? `Make sure the <strong>solid circle</strong> mode is active, then ${action('double-tap')} on the canvas to create a certain argument.`
+          : `Make sure the <strong>solid circle</strong> mode is active, then ${action('double-click')} on the canvas to create a certain argument.`,
+      highlight: 'argumentModeButton',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.nodeCount > baseline.nodeCount,
     },
@@ -50,49 +49,64 @@ export const iafBasicsTutorial: Tutorial = {
       title: 'Create an uncertain argument',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? 'Click the <strong>dashed circle</strong> button in the toolbar to switch to uncertain argument mode, then <strong>double-tap</strong> on the canvas to create an uncertain argument. It will appear with a dashed border.'
-          : 'Click the <strong>dashed circle</strong> button in the toolbar to switch to uncertain argument mode, then <strong>double-click</strong> on the canvas. It will appear with a dashed border.',
-      anchor: 'argumentModeButton',
-      placement: 'right-start',
-      offsetPx: 64,
+          ? `Switch to the <strong>dashed circle</strong> mode, then ${action('double-tap')} on the canvas to create an uncertain argument. It appears with a dashed border.`
+          : `Switch to the <strong>dashed circle</strong> mode, then ${action('double-click')} on the canvas to create an uncertain argument. It appears with a dashed border.`,
+      highlight: 'argumentModeButton',
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.uncertainNodeCount > baseline.uncertainNodeCount,
-    },
-    {
-      id: 'create-certain-attack',
-      title: 'Draw a certain attack',
-      body: (isTouchDevice) =>
-        isTouchDevice
-          ? 'Select <strong>Definite Attack</strong> in the link toolbar, then <strong>hold and drag</strong> from one argument to another.'
-          : 'Select <strong>Definite Attack</strong> in the link toolbar, then <strong>right-click</strong> on an argument, hold, and drag towards another argument.',
-      advanceOn: 'action',
-      advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
     },
     {
       id: 'create-uncertain-attack',
       title: 'Draw an uncertain attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? 'Switch to <strong>Uncertain Attack</strong> in the link toolbar, then <strong>hold and drag</strong> from one argument to another. Uncertain attacks appear as dashed arrows.'
-          : 'Switch to <strong>Uncertain Attack</strong> in the link toolbar, then <strong>right-click</strong> and drag to another argument. Uncertain attacks appear as dashed arrows.',
+          ? `Set the link type to <strong>Uncertain Attack</strong> using the highlighted buttons, then ${action('hold and drag')} from one argument to another. Uncertain attacks appear as dashed arrows.`
+          : `Set the link type to <strong>Uncertain Attack</strong> using the highlighted buttons, then ${action('right-click')} and drag to another argument. Uncertain attacks appear as dashed arrows.`,
+      highlight: 'linkSwitchButton',
       advanceOn: 'action',
-      advanceCondition: (ctx, baseline) => ctx.linkCount > baseline.linkCount,
+      advanceCondition: (ctx, baseline) => ctx.uncertainLinkCount > baseline.uncertainLinkCount,
+    },
+    {
+      id: 'switch-type',
+      title: 'Flip between certain and uncertain',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `${action('Tap')} an argument or attack, then tap ${barAction('switch', 'Switch')} in the action bar to flip it between certain and uncertain.`
+          : `${action('Left-click')} an argument or attack, then use the ${barAction('switch', 'Switch')} action to flip it between certain and uncertain.`,
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.linkTypeSwitchCount > baseline.linkTypeSwitchCount ||
+        ctx.uncertainNodeCount !== baseline.uncertainNodeCount,
     },
     {
       id: 'delete',
       title: 'Delete an argument or attack',
       body: (isTouchDevice) =>
         isTouchDevice
-          ? '<strong>Long-press</strong> on an argument or attack to delete it.'
-          : '<strong>Right-click and hold</strong> on an argument or attack to delete it.',
+          ? `${action('Tap')} an argument or attack to select it, then tap ${barAction('delete', 'Delete')} in the action bar.`
+          : `${action('Right-click and hold')} on an argument or attack to delete it.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) =>
         ctx.nodeCount < baseline.nodeCount || ctx.linkCount < baseline.linkCount,
+      firstBasicOnly: true,
+    },
+    {
+      id: 'undo',
+      title: 'Undo & Redo',
+      body: (isTouchDevice) =>
+        isTouchDevice
+          ? `Made a mistake? ${action('Tap')} the <strong>Undo</strong> button to step backward through your changes. Try it now to undo the deletion.`
+          : `Made a mistake? Press <kbd class="kbd kbd-sm">Ctrl Z</kbd> to undo and <kbd class="kbd kbd-sm">Ctrl Shift Z</kbd> to redo. Try it now to undo the deletion.`,
+      highlight: (isTouchDevice) => (isTouchDevice ? 'undoButton' : undefined),
+      advanceOn: 'action',
+      advanceCondition: (ctx, baseline) =>
+        ctx.nodeCount > baseline.nodeCount || ctx.linkCount > baseline.linkCount,
+      firstBasicOnly: true,
     },
     {
       id: 'done',
-      title: 'You\'re all set!',
-      body: 'You\'ve learned the basics of incomplete argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how uncertainty affects which arguments are accepted.',
+      title: "You're all set!",
+      body: "You've learned the basics of incomplete argumentation frameworks. Next, try the <strong>Evaluation Tutorial</strong> to see how uncertainty affects which arguments are accepted.",
       advanceOn: 'button',
       nextTutorialId: 'iaf-evaluation',
     },

@@ -175,12 +175,15 @@ export function useSerialisationEvaluationQuery(
     return { numberOfArguments, attacks, idMapping }
   })
 
-  const queryKey = computed(() => [
-    'serialisation_get_sequences',
-    selectionFunctionRef,
-    terminationFunctionRef,
-    argumentData,
-  ] as const)
+  const queryKey = computed(
+    () =>
+      [
+        'serialisation_get_sequences',
+        selectionFunctionRef,
+        terminationFunctionRef,
+        argumentData,
+      ] as const,
+  )
 
   type RawResult = { evaluationDurationInMs: number; rawSequences: number[][][] }
 

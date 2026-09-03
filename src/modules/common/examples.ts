@@ -20,5 +20,5 @@ export interface Example<DocumentT> {
   name: string
   description?: string
   load(): DocumentT
-  applyLayout?(content: DocumentT): void
+  applyLayout?(content: DocumentT): void | Promise<void>
 }

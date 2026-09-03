@@ -27,14 +27,13 @@ import {
   BookOpenIcon,
   ChevronRightIcon,
   Cog6ToothIcon,
+  DocumentPlusIcon,
   FolderOpenIcon,
   PhotoIcon,
-  PlusCircleIcon,
   QuestionMarkCircleIcon,
   ShareIcon,
   SparklesIcon,
   Squares2X2Icon,
-  VariableIcon,
 } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
@@ -49,7 +48,6 @@ const {
   showRedo = EntryState.HIDE,
   showExport = EntryState.HIDE,
   showShare = EntryState.HIDE,
-  showEvaluate = EntryState.HIDE,
   layoutsToShow = [],
 } = defineProps<{
   showSave?: EntryState
@@ -57,7 +55,6 @@ const {
   showRedo?: EntryState
   showExport?: EntryState
   showShare?: EntryState
-  showEvaluate?: EntryState
   layoutsToShow?: Layout[]
 }>()
 
@@ -70,7 +67,6 @@ const emit = defineEmits<{
   redo: []
   export: []
   share: []
-  evaluate: []
   generate: []
   help: []
   settings: []
@@ -109,7 +105,6 @@ const otherLayoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
 })
 
 const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.value).length > 0)
-
 </script>
 <template>
   <div class="dropdown pointer-events-auto">
@@ -118,13 +113,10 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
     </div>
     <ul tabindex="-1" class="dropdown-content w-max menu bg-base-100 rounded-box z-1 shadow-md/30">
       <li>
-        <a @click="emit('new')"><PlusCircleIcon class="size-5 opacity-70" />New</a>
+        <a @click="emit('new')"><DocumentPlusIcon class="size-5 menu-icon" />New</a>
       </li>
       <li>
-        <a @click="emit('load')"><FolderOpenIcon class="size-5 opacity-70" />Open...</a>
-      </li>
-      <li>
-        <a @click="emit('generate')"><Squares2X2Icon class="size-5 opacity-70" />Generate</a>
+        <a @click="emit('load')"><FolderOpenIcon class="size-5 menu-icon" />Open</a>
       </li>
       <li v-if="showSave !== EntryState.HIDE">
         <a
@@ -132,56 +124,12 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
             'opacity-50 pointer-events-none': showSave === EntryState.DISABLE,
           }"
           @click="emit('save')"
-          ><ArrowDownTrayIcon class="size-5 opacity-70" />Save</a
+          ><ArrowDownTrayIcon class="size-5 menu-icon" />Save</a
         >
       </li>
-      <template v-if="layoutsToShow.length > 0">
-        <li class="disabled"><hr class="mt-2 border-base-300" /></li>
-        <li>
-          <div class="dropdown dropdown-hover dropdown-right">
-            <a class="flex flex-row justify-between">
-              <div>
-                <SparklesIcon class="inline size-5 opacity-70 mr-2" />
-                <span>Relayout</span>
-              </div>
-              <ChevronRightIcon class="size-5 opacity-40" />
-            </a>
-            <div tabindex="-1" class="dropdown-content p-0">
-              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
-                <li v-if="hasDirectedLayouts">
-                  <div class="dropdown dropdown-hover dropdown-right">
-                    <a class="flex flex-row justify-between">
-                      <div>
-                        <ArrowsUpDownIcon class="inline size-5 opacity-70 mr-2" />
-                        <span>Directed</span>
-                      </div>
-                      <ChevronRightIcon class="size-5 opacity-40" />
-                    </a>
-                    <div tabindex="-1" class="dropdown-content p-0">
-                      <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
-                        <li v-for="(layoutData, layoutType) in directedLayoutDatasToShow" :key="layoutType">
-                          <a @click="onClickLayout(layoutType)"
-                            ><component :is="layoutData.icon" class="size-5 opacity-70" />{{
-                              layoutData.name
-                            }}</a
-                          >
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </li>
-                <li v-for="(layoutData, layoutType) in otherLayoutDatasToShow" :key="layoutType">
-                  <a @click="onClickLayout(layoutType)"
-                    ><component :is="layoutData.icon" class="size-5 opacity-70" />{{
-                      layoutData.name
-                    }}</a
-                  >
-                </li>
-              </ul>
-            </div>
-          </div>
-        </li>
-      </template>
+      <li>
+        <a @click="emit('generate')"><Squares2X2Icon class="size-5 menu-icon" />Generate</a>
+      </li>
       <template v-if="showUndo !== EntryState.HIDE || showRedo !== EntryState.HIDE">
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
         <li v-if="showUndo !== EntryState.HIDE">
@@ -193,7 +141,7 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
             class="flex justify-between gap-8"
           >
             <span class="flex items-center gap-2">
-              <ArrowUturnLeftIcon class="size-5 opacity-70" />Undo
+              <ArrowUturnLeftIcon class="size-5 menu-icon" />Undo
             </span>
             <span class="flex gap-1 items-center">
               <kbd class="text-xs opacity-40 font-mono" v-if="UNDO_SHORTCUT.modifiers.ctrl"
@@ -217,7 +165,7 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
             class="flex justify-between gap-8"
           >
             <span class="flex items-center gap-2">
-              <ArrowUturnRightIcon class="size-5 opacity-70" />Redo
+              <ArrowUturnRightIcon class="size-5 menu-icon" />Redo
             </span>
             <span class="flex gap-1 items-center">
               <kbd class="text-xs opacity-40 font-mono" v-if="REDO_SHORTCUT.modifiers.ctrl"
@@ -232,24 +180,65 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
           </a>
         </li>
       </template>
-      <template v-if="showEvaluate !== EntryState.HIDE || showExport !== EntryState.HIDE">
+      <template v-if="layoutsToShow.length > 0">
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
         <li>
-          <a
-            :class="{
-              'opacity-50 pointer-events-none': showEvaluate === EntryState.DISABLE,
-            }"
-            @click="emit('evaluate')"
-            ><VariableIcon class="size-5 opacity-70" />Evaluate</a
-          >
+          <div class="dropdown dropdown-hover dropdown-right">
+            <a class="flex flex-row justify-between">
+              <div>
+                <SparklesIcon class="inline size-5 menu-icon mr-2" />
+                <span>Relayout</span>
+              </div>
+              <ChevronRightIcon class="size-5 opacity-40" />
+            </a>
+            <div tabindex="-1" class="dropdown-content p-0">
+              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
+                <li v-if="hasDirectedLayouts">
+                  <div class="dropdown dropdown-hover dropdown-right">
+                    <a class="flex flex-row justify-between">
+                      <div>
+                        <ArrowsUpDownIcon class="inline size-5 menu-icon mr-2" />
+                        <span>Directed</span>
+                      </div>
+                      <ChevronRightIcon class="size-5 opacity-40" />
+                    </a>
+                    <div tabindex="-1" class="dropdown-content p-0">
+                      <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
+                        <li
+                          v-for="(layoutData, layoutType) in directedLayoutDatasToShow"
+                          :key="layoutType"
+                        >
+                          <a @click="onClickLayout(layoutType)"
+                            ><component :is="layoutData.icon" class="size-5 menu-icon" />{{
+                              layoutData.name
+                            }}</a
+                          >
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+                <li v-for="(layoutData, layoutType) in otherLayoutDatasToShow" :key="layoutType">
+                  <a @click="onClickLayout(layoutType)"
+                    ><component :is="layoutData.icon" class="size-5 menu-icon" />{{
+                      layoutData.name
+                    }}</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
         </li>
+      </template>
+      <template v-if="showExport !== EntryState.HIDE">
+        <li class="disabled"><hr class="mt-2 border-base-300" /></li>
         <li>
           <a
             :class="{
               'opacity-50 pointer-events-none': showExport === EntryState.DISABLE,
             }"
             @click="emit('export')"
-            ><PhotoIcon class="size-5 opacity-70" />Export...</a
+            ><PhotoIcon class="size-5 menu-icon" />Export</a
           >
         </li>
         <li v-if="showShare !== EntryState.HIDE">
@@ -258,22 +247,22 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
               'opacity-50 pointer-events-none': showShare === EntryState.DISABLE,
             }"
             @click="emit('share')"
-            ><ShareIcon class="size-5 opacity-70" />Share link...</a
+            ><ShareIcon class="size-5 menu-icon" />Share link</a
           >
         </li>
       </template>
       <li class="disabled"><hr class="mt-2 border-base-300" /></li>
       <li>
-        <a @click="emit('settings')"><Cog6ToothIcon class="size-5 opacity-70" />Settings...</a>
+        <a @click="emit('settings')"><Cog6ToothIcon class="size-5 menu-icon" />Settings</a>
       </li>
       <li>
-        <a @click="emit('tutorial')"><AcademicCapIcon class="size-5 opacity-70" />Tutorials</a>
+        <a @click="emit('tutorial')"><AcademicCapIcon class="size-5 menu-icon" />Tutorials</a>
       </li>
       <li>
-        <RouterLink to="/glossary"><BookOpenIcon class="size-5 opacity-70" />Glossary</RouterLink>
+        <RouterLink to="/glossary"><BookOpenIcon class="size-5 menu-icon" />Glossary</RouterLink>
       </li>
       <li>
-        <a @click="emit('help')"><QuestionMarkCircleIcon class="size-5 opacity-70" />Help</a>
+        <a @click="emit('help')"><QuestionMarkCircleIcon class="size-5 menu-icon" />Help</a>
       </li>
     </ul>
   </div>

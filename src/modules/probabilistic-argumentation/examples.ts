@@ -20,10 +20,14 @@ import type { Example } from '@/modules/common/examples'
 import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import murderTrialJson from '@/modules/probabilistic-argumentation/examples/murder_trial.json'
-import { type PafArgumentData, ProbabilisticArgumentation } from '@/modules/probabilistic-argumentation/model'
+import softwareReleaseJson from '@/modules/probabilistic-argumentation/examples/software_release.json'
+import {
+  type PafArgumentData,
+  ProbabilisticArgumentation,
+} from '@/modules/probabilistic-argumentation/model'
 import { loadExampleFromJson } from '@/modules/probabilistic-argumentation/save/saveFormat'
 
-const exampleJsons: unknown[] = [murderTrialJson]
+const exampleJsons: unknown[] = [murderTrialJson, softwareReleaseJson]
 
 export const datasets: Example<ProbabilisticArgumentation<PafArgumentData>>[] = exampleJsons.map(
   (json) => {
@@ -32,11 +36,11 @@ export const datasets: Example<ProbabilisticArgumentation<PafArgumentData>>[] = 
       name: name ?? 'unknown',
       description,
       load: () => loadExampleFromJson(json).framework,
-      applyLayout: (af) => {
+      applyLayout: async (af) => {
         const layout = layoutType ?? Layout.Circular
         const nodes = [...af.arguments()].map(([id]) => id)
         const links = [...af.attacks()].map(([src, tgt]) => [src, tgt] as [number, number])
-        const positions = getNodePositions(nodes, links, layout)
+        const positions = await getNodePositions(nodes, links, layout)
         for (const [id, data] of af.arguments()) {
           const pos = positions.get(id)!
           data.x = pos.x
