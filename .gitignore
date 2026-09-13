@@ -17,6 +17,9 @@ coverage
 # Local env (keep .env.example tracked)
 .env
 
+# Generated from CHANGELOG.md by the publish workflow
+/RELEASE_NOTES.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

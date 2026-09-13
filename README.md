@@ -11,7 +11,7 @@ The platform to explore different approaches to formal argumentation.
 
 - **Abstract Argumentation (AF)** — the foundational model, with arguments and directed attacks
 - **Bipolar Argumentation (BAF)** — extends AF with support relations between arguments
-- **Dialectical Argumentation (ADF)** — argument acceptance governed by propositional acceptance conditions
+- **Abstract Dialectical Frameworks (ADF)** — argument acceptance governed by propositional acceptance conditions
 - **Incomplete Argumentation (iAF)** — distinguishes certain and uncertain arguments and attacks
 - **Probabilistic Argumentation (PAF)** — assigns probability values to arguments and attacks
 - **Argumentation with Collective Attacks (SetAF)** — extends AF with attacks originating from sets of arguments
@@ -24,7 +24,7 @@ The platform to explore different approaches to formal argumentation.
 - **Serialisation sequences** — step through how admissible sets are built up incrementally via Serialisability
 - **Step-by-step tutorials** — guided, per-framework tutorials for both editing and evaluation
 - **Glossary with inline tooltips** — hover key terms for formal definitions, linked to their publications
-- **Export** — LaTeX (TikZ), ICCMA, and TGF formats, alongside native save files
+- **Export** — direct SVG, LaTeX/TikZ, ICCMA, and TGF formats, alongside native save files
 - **Sharing** — generate a link to share a framework instance with others
 - **Touch & mobile support** — full editing and evaluation on phones and tablets, with a tap-select action bar for per-argument actions
 
@@ -58,7 +58,11 @@ It is developed by the Artificial Intelligence Group of the University of Hagen 
 
 ## Development
 
-Checkout the [development documentation](/docs/DEVELOPMENT.md) for working on this project.
+Start with the [documentation index](/docs/README.md) for user, architecture, contributor,
+reference, and operations documentation. If you want to contribute, see
+[CONTRIBUTING.md](/CONTRIBUTING.md).
+
+See [CHANGELOG.md](/CHANGELOG.md) for the release history and changes planned for the next version.
 
 ## License
 

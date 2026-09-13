@@ -37,7 +37,7 @@ export default {
       'Arguments and attacks can be assigned a probability value between 0 and 1 to quantify uncertainty.',
   },
   dialectical: {
-    name: 'Dialectical Argumentation',
+    name: 'Abstract Dialectical Frameworks',
     description:
       'Relations between arguments are modelled via propositional acceptance conditions.',
   },

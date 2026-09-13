@@ -1,12 +1,17 @@
-# Development Documentation
+# Development Setup
 
-See [structure.md](./structure.md) for an overview of how the repository is structured.
+This page covers local setup. See [CONTRIBUTING.md](/CONTRIBUTING.md) for the contribution
+workflow, [Testing](./testing.md) for the test matrix, and
+[Project structure](../architecture/structure.md) for the repository layout.
 
 ## Required Tools
 
-- [Node.js](https://nodejs.org/en)
-  - Tested with v24
-  - But other versions should also work fine
+- [Node.js](https://nodejs.org/en) 24 recommended; the supported range is declared in
+  [`package.json`](/package.json) (`^20.19.0 || >=22.12.0`)
+- npm (included with Node.js)
+- Git, including Git submodule support
+- Python 3 with `venv` support for the graph-generation service
+- A JDK and Maven when running TweetyProject from source
 - Optionally [Docker](https://www.docker.com/)
   - can be used for building container images locally
   - can be used for running TweetyProject Web Server
@@ -84,7 +89,7 @@ docker run -p 8080:8080 ghcr.io/aig-hagen/AgonProject:latest
 ```
 
 Else you have to build and run the [TweetyProject](https://github.com/TweetyProjectTeam/TweetyProject) from source.
-You can check out their [Developer Guide](https://tweetyproject.org/doc/dev-guide.html) and our [Dockerfile](/Dockerfile) on how to achieve this. For example, you can achieve this by running the following commands inside the TweetyProject: 
+You can check out their [Developer Guide](https://tweetyproject.org/doc/dev-guide.html) and our [Dockerfile](/Dockerfile) on how to achieve this. For example, you can achieve this by running the following commands inside the TweetyProject:
 
 ```sh
 mvn install -Dgpg.skip=true
@@ -122,9 +127,8 @@ npm run dev
 
 This tool was built with the mind of being [extended](./extending.md) in the future.
 
-## Example Requests
-
-You can open the [example requests](./requests/) in [Bruno](https://www.usebruno.com/) to try out requests to the server without interacting with the frontend.
+The agent-facing MCP server is independent of the browser development stack and is not started by
+`scripts/dev.sh`. See [its README](/servers/argumentation-mcp/README.md) for setup and tests.
 
 ## Recommended IDE Setup
 

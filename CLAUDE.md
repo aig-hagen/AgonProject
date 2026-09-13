@@ -8,10 +8,12 @@ only points there plus a few Claude-facing rules.
 
 Before non-trivial work, read the relevant doc rather than re-deriving conventions:
 
-- [`docs/structure.md`](docs/structure.md) — repository layout
-- [`docs/conventions.md`](docs/conventions.md) — coding patterns (Vue, TS, state, styling, testing)
-- [`docs/extending.md`](docs/extending.md) — how to add argumentation modules
-- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — dev environment setup
+- [`docs/architecture/structure.md`](docs/architecture/structure.md) — repository layout
+- [`docs/architecture/overview.md`](docs/architecture/overview.md) — system boundaries and data flows
+- [`docs/contributing/conventions.md`](docs/contributing/conventions.md) — coding patterns (Vue, TS, state, styling, testing)
+- [`docs/contributing/extending.md`](docs/contributing/extending.md) — how to add argumentation modules
+- [`docs/contributing/development.md`](docs/contributing/development.md) — dev environment setup
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and review workflow
 
 ## Do not run the app
 
@@ -28,7 +30,7 @@ Never start the app, dev server, or backend services to verify changes (`npm run
 ## Keep comments terse
 
 Don't add long, multi-line explanatory comments to changes. At most a single short
-comment for a non-obvious *why*, matching the surrounding code's sparse comment density.
+comment for a non-obvious _why_, matching the surrounding code's sparse comment density.
 
 ## No relative imports in `src/`
 
@@ -54,39 +56,21 @@ lint-enforced by `eslint-plugin-no-relative-import-paths`.
 
 ## Publishing a release
 
-Publishing is driven by pushing a Git tag matching `v*` — the
-[`Publish` workflow](.github/workflows/publish.yml) then builds the frontend, builds and
-pushes the Docker image to `ghcr.io/aig-hagen/AgonProject:<version>`, and creates a GitHub
-Release using `RELEASE_NOTES.md` as the body.
-
-To cut a new version (e.g. `v0.8.1`):
-
-1. Rewrite [`RELEASE_NOTES.md`](RELEASE_NOTES.md) to describe **this** version — it is copied
-   verbatim into the GitHub Release, so stale notes ship as-is. Base it on the commits since
-   the previous tag (`git log <prev-tag>..HEAD`).
-2. Commit the notes (`docs: release notes for v0.8.1`) and push.
-3. Tag and push the tag — **this is what triggers publishing**:
-   ```sh
-   git tag v0.8.1
-   git push origin v0.8.1
-   ```
-4. Watch the run to completion and report the result:
-   ```sh
-   gh run watch <run-id> --exit-status
-   ```
+Follow [`docs/contributing/releases.md`](docs/contributing/releases.md). Publishing is triggered by
+a `v*` tag; watch the resulting workflow through completion and report its result.
 
 ## Adding features: follow the module shape
 
 Every argumentation type under `src/modules/<type>/` follows the same internal file layout
 (`moduleConfig.ts`, `model.ts`, `GraphEditor.vue`, `glossary.ts`, `tutorials/`, `evaluation/`,
 `examples.ts`, `export.ts`, `save/`, `Window*.vue`). When adding or changing a module,
-pattern-match an existing one — see [`docs/extending.md`](docs/extending.md).
+pattern-match an existing one — see [`docs/contributing/extending.md`](docs/contributing/extending.md).
 
 ## Implementation workflow
+
 - When working on a multi-phase implementation plan, track progress directly in the plan document.
 - When working on an implementation phase which involves multiple steps, write yourself a TODO list of the necessary steps to track the progress
 - When running a prettier or formatting command, be careful, it might affect other files in the project
-
 
 ## Voicing & Responses
 

@@ -2,7 +2,7 @@
 
 A small Express service that lets a framework instance be shared via a short link: the frontend POSTs the serialized document and gets back an id, and anyone with that id's link can fetch the content back.
 
-For how to run this locally alongside the rest of the app, see [../../docs/DEVELOPMENT.md](../../docs/DEVELOPMENT.md#running-the-share-server).
+For how to run this locally alongside the rest of the app, see the [development setup](../../docs/contributing/development.md#running-the-share-server).
 
 ## API
 
@@ -20,7 +20,7 @@ Returns `{ "content": string }` for a known id (`200`), or `{ "error": "Share no
 
 ### `POST /events`
 
-Records an anonymous, aggregated usage event; see [../../docs/analytics/analytics.md](../../docs/analytics/analytics.md).
+Records an anonymous, aggregated usage event; see [Usage analytics](../../docs/operations/analytics/README.md).
 
 Body: `{ "type": string, "name"?: string, "props"?: unknown }`
 

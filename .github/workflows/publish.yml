@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: 24
 
+      - name: Generate release notes from changelog
+        run: node scripts/extract-release-notes.mjs "${GITHUB_REF_NAME}" RELEASE_NOTES.md
+
       - name: Install dependencies
         run: npm install-clean
 

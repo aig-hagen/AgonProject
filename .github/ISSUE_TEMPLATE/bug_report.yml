@@ -39,7 +39,7 @@ body:
       options:
         - Abstract Argumentation (AF)
         - Bipolar Argumentation (BAF)
-        - Dialectical Argumentation (ADF)
+        - Abstract Dialectical Frameworks (ADF)
         - Incomplete Argumentation (iAF)
         - Probabilistic Argumentation (PAF)
         - Collective Attacks (SetAF)
