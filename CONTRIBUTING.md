@@ -32,6 +32,7 @@ npm run format:check
 npm run type-check
 npm run test:unit -- --run
 npm run build
+npm run docs:check
 ```
 
 Run Playwright and service-specific tests when those areas are affected. Note that `npm run lint` and `npm run format` modify files; review the resulting diff.

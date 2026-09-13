@@ -12,7 +12,7 @@ Lists all registered generation algorithms, each with its id, description, param
 
 ### `GET /framework-types`
 
-Lists the supported framework types (currently `abstract`, `bipolar`, `incomplete`, `probabilistic`, `adf`) and their type-specific parameters (e.g. `supportPerc` for bipolar, `uncertainArgPerc`/`uncertainAttackPerc` for incomplete).
+Lists the supported framework types (currently `abstract`, `bipolar`, `incomplete`, `probabilistic`, `adf`, and `setaf`) and their type-specific parameters (for example, `supportPerc` for bipolar, `uncertainArgPerc`/`uncertainAttackPerc` for incomplete, and `groupingProb` for SetAFs). Every framework type also accepts `selfLoopProb`.
 
 ### `POST /generate`
 
@@ -27,7 +27,7 @@ Body:
 }
 ```
 
-Returns the generated framework's structure (`nr_of_arguments`, `attacks`, plus `supports`/`uncertain_arguments`/`uncertain_attacks`/probabilities/`conditions` depending on `framework_type`) and the generation `time` in seconds.
+Returns the generated framework's structure and the generation `time` in seconds. Every response contains `framework_type`, `nr_of_arguments`, and `attacks`; type-specific results use `supports`, `uncertain_arguments`, `uncertain_attacks`, `argument_probabilities`, `attack_probabilities`, `conditions`, or `collective_attacks` as applicable.
 
 ## Adding a new algorithm
 

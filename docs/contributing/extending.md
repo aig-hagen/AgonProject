@@ -17,7 +17,7 @@ A module config connects the application shell to the module's domain model. It 
 
 To register a module:
 
-1. Create its directory under `src/modules/` with a model, `moduleConfig.ts`, and editor component. Follow the common module shape described in [Project structure](../architecture/structure.md#src-modules--one-folder-per-argumentation-type).
+1. Create its directory under `src/modules/` with a model, `moduleConfig.ts`, and editor component. Follow the common module shape described in [Project structure](../architecture/structure.md#srcmodules--one-folder-per-argumentation-type).
 2. Implement every required `ModuleConfig` field. The existing interface currently spells the initial-document field `initialCotent`; implementations must use that exact name.
 3. Add the module's name and description under its stable ID in both locale catalogs at `src/localization/locales/{en,de}/messages/modules.ts`. Add localized tag metadata when introducing new tags.
 4. Import the config and add it to the `modules` array in [`src/main.ts`](/src/main.ts). Array order is presentation order.

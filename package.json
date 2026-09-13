@@ -18,6 +18,12 @@
     "lint:eslint": "eslint . --fix --cache",
     "format": "prettier --write --experimental-cli src/",
     "format:check": "prettier --check --experimental-cli src/",
+    "docs:format": "prettier --write \"*.md\" \"docs/**/*.md\" \"servers/*/README.md\" \"!docs/ideas/**\"",
+    "docs:format:check": "prettier --check \"*.md\" \"docs/**/*.md\" \"servers/*/README.md\" \"!docs/ideas/**\"",
+    "docs:lint": "markdownlint-cli2",
+    "docs:links": "node scripts/check-doc-links.mjs",
+    "docs:changelog": "node scripts/check-changelog.mjs",
+    "docs:check": "run-s docs:format:check docs:lint docs:links docs:changelog",
     "generate-attributions": "node ./scripts/generate-attributions.ts"
   },
   "dependencies": {
@@ -82,6 +88,7 @@
     "jsdom": "^28.1.0",
     "license-check-and-add": "^4.0.5",
     "license-checker": "^25.0.1",
+    "markdownlint-cli2": "^0.23.2",
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.47.0",
     "playwright": "1.59.1",

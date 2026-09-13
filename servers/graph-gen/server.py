@@ -5,7 +5,7 @@ Accepts POST /generate with a JSON body:
   {
     "algorithm":      str,            # identifier from GET /algorithms
     "params":         { ... },        # algorithm-specific and type-specific key-value parameters
-    "framework_type": str,            # "abstract" | "bipolar" | "incomplete"  (default: "abstract")
+    "framework_type": str,            # identifier from GET /framework-types (default: "abstract")
     "timeout":        int             # seconds (default: 30)
   }
 
@@ -18,6 +18,9 @@ Returns:
     "supports":             [[int, int], ...],     # bipolar only
     "uncertain_arguments":  [int, ...],            # incomplete only
     "uncertain_attacks":    [[int, int], ...],     # incomplete only
+    "argument_probabilities": [float, ...],         # probabilistic only
+    "attack_probabilities": [float, ...],           # probabilistic only
+    "conditions":           [{...}, ...],           # adf only
     "collective_attacks":   [{"attackers": [int, ...], "target": int}, ...]  # setaf only
   }
 
@@ -30,6 +33,11 @@ Type-specific params (passed in the flat "params" dict):
   setaf:
     groupingProb    float [0, 1]  probability each additional attacker of a target joins the
                                   current set instead of forming its own attack (default 0.3)
+  probabilistic:
+    certainArgFrac     float [0, 1]  fraction of arguments assigned probability 1 (default 0.5)
+    certainAttackFrac  float [0, 1]  fraction of attacks assigned probability 1 (default 0.5)
+  adf:
+    negationProb       float [0, 1]  probability of negating an atom in a condition (default 0.3)
 
   All framework types additionally accept (applied after the algorithm runs,
   regardless of which algorithm was used):

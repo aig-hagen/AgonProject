@@ -1,0 +1,35 @@
+name: Documentation links
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 1'
+
+jobs:
+  external-links:
+    name: External links
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --include-fragments
+            README.md CONTRIBUTING.md CHANGELOG.md
+            docs/README.md docs/user-guide.md
+            docs/architecture/*.md
+            docs/contributing/*.md
+            docs/formats/*.md
+            docs/operations/*.md
+            docs/operations/**/*.md
+            servers/argumentation-mcp/README.md
+            servers/graph-gen/README.md
+            servers/share/README.md
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

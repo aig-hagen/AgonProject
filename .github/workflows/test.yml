@@ -31,6 +31,9 @@ jobs:
       - name: Prettier
         run: npx prettier --check --experimental-cli src/
 
+      - name: Documentation
+        run: npm run docs:check
+
       - name: oxlint
         run: npx oxlint .
 

@@ -45,11 +45,13 @@ Environment variables (see [`.env.example`](./.env.example)):
 | `PORT`              | `8001`                       | Port to listen on                                                       |
 | `FRONTEND_URL`      | `http://localhost:5173`      | Used to build the `url` returned by `POST /shares`                      |
 | `ALLOWED_ORIGIN`    | `*`                          | CORS origin allowed to call this server                                 |
-| `DB_PATH`           | `./data/shares.db`           | Path to the SQLite database file                                        |
+| `DB_PATH`           | `../data/shares.db`          | Path to the SQLite database file, relative to this server directory     |
 | `ANALYTICS_DB_PATH` | `<DB_PATH dir>/analytics.db` | Path to the analytics SQLite database file                              |
 | `STATS_TOKEN`       | _(unset)_                    | Bearer token guarding `GET /stats`; while unset, `/stats` returns `503` |
 
 If `FRONTEND_URL`/`ALLOWED_ORIGIN` are left at their defaults, the server logs a startup warning, since that means share URLs will point at localhost and/or CORS is wide open.
+
+The built-in database default resolves to `servers/data/shares.db`. The paths in `.env.example` are relative to `servers/share`, where the service commands are normally run.
 
 ## Running
 

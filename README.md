@@ -32,7 +32,7 @@ The platform to explore different approaches to formal argumentation.
 
 ### Public Deployment
 
-Try it out at https://agonproject.aig.fernuni-hagen.de/
+Try the [public AgonProject deployment](https://agonproject.aig.fernuni-hagen.de/).
 
 ### OCI Image
 

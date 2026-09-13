@@ -9,6 +9,7 @@ Run the smallest relevant suite while developing, then the full applicable set b
 | License headers and lint fixes | `npm run lint`                             | Root TypeScript/Vue and configuration      | Yes, in check-only form            |
 | Formatting                     | `npm run format:check`                     | `src/`                                     | Yes                                |
 | Type checking                  | `npm run type-check`                       | Vue and TypeScript                         | Yes                                |
+| Documentation                  | `npm run docs:check`                       | Formatting, Markdown, links, and changelog | Yes                                |
 | Frontend unit tests            | `npm run test:unit -- --run`               | Colocated `src/**/*.test.ts`               | No                                 |
 | Production build               | `npm run build`                            | Type check and frontend bundle             | Indirectly in E2E and publish jobs |
 | Browser E2E                    | `npm run test:e2e`                         | Playwright tests under `e2e/`              | Yes                                |
@@ -29,6 +30,12 @@ npm run test:e2e
 ```
 
 E2E configuration starts the appropriate Vite server; it does not start TweetyProject, graph-gen, or the share server unless a test explicitly arranges that dependency.
+
+## Documentation checks
+
+`npm run docs:check` checks Markdown formatting and structure, local file and heading links, and the changelog/release-note contract. Working notes under `docs/ideas/` and vendored documentation are excluded.
+
+External URLs are checked by the scheduled **Documentation links** workflow and can also be checked through its manual workflow dispatch. Keeping the network-dependent check separate prevents temporary external failures from blocking every pull request.
 
 ## Service tests
 

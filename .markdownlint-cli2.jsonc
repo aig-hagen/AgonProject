@@ -1,0 +1,10 @@
+{
+  "globs": ["*.md", "docs/**/*.md", "servers/*/README.md"],
+  "ignores": ["**/node_modules/**", "**/.pytest_cache/**", "docs/ideas/**", "third-party/**"],
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD024": { "siblings_only": true },
+    "MD033": { "allowed_elements": ["img"] },
+  },
+}
