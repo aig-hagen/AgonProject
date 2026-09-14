@@ -33,6 +33,20 @@ export default {
   formats: 'Formate',
   noGraph: 'Kein Graph zum Exportieren.',
   renderingSvg: 'SVG wird gerendert',
+  preamble: 'Präambel',
+  resetToGraph: 'Auf Graph zurücksetzen',
+  resetConfirm: 'Änderungen verwerfen und den Code neu aus dem Graphen erzeugen?',
+  badge: {
+    synced: 'Mit Graph synchronisiert',
+    detached: 'Bearbeitet · abgekoppelt',
+  },
+  validation: {
+    missing:
+      'Keine \\begin{af}-Umgebung gefunden — vor dem Anwenden von Stiloptionen auf den Graphen zurücksetzen.',
+    ambiguous:
+      'Mehrere \\begin{af}-Umgebungen gefunden — vor dem Anwenden von Stiloptionen auf den Graphen zurücksetzen.',
+  },
+  previewError: 'Vorschau konnte nicht gerendert werden.',
   style: {
     parameters: 'Darstellung',
     options: 'Darstellung',

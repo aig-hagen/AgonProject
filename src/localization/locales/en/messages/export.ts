@@ -33,6 +33,19 @@ export default {
   formats: 'Formats',
   noGraph: 'No graph to export.',
   renderingSvg: 'Rendering SVG',
+  preamble: 'Preamble',
+  resetToGraph: 'Reset to graph',
+  resetConfirm: 'Discard your edits and regenerate the code from the graph?',
+  badge: {
+    synced: 'Synced with graph',
+    detached: 'Edited · detached',
+  },
+  validation: {
+    missing: 'No \\begin{af} environment found — reset to graph before applying style options.',
+    ambiguous:
+      'Multiple \\begin{af} environments found — reset to graph before applying style options.',
+  },
+  previewError: 'Preview failed to render.',
   style: {
     parameters: 'Style Parameters',
     options: 'Style options',

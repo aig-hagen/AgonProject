@@ -80,8 +80,8 @@ Design mockups & rationale: <https://claude.ai/code/artifact/85633ddd-a7c3-41c6-
 
 ### Phase 3 — Two-layer model: editable code, live preview, SYNCED/DETACHED
 
-- [ ] Make the CodeMirror editor editable (drop `EditorState.readOnly` / `editable(false)`).
-- [ ] Buffer state machine:
+- [x] Make the CodeMirror editor editable (drop `EditorState.readOnly` / `editable(false)`).
+- [x] Buffer state machine:
   - `mode: 'synced' | 'detached'`; start `synced`.
   - Define one custom CodeMirror annotation for internal changes. Any `docChanged` update without
     that annotation is a user edit (including typing, deletion, paste, drop, undo, and redo) and
@@ -96,41 +96,42 @@ Design mockups & rationale: <https://claude.ai/code/artifact/85633ddd-a7c3-41c6-
   - Treat the first `\begin{af}` as the canonical options marker. If a detached edit removes it
     or creates an ambiguous structure, leave the buffer untouched, show an inline validation
     message, and require Reset to graph before appearance knobs can be applied again.
-- [ ] **Reset to graph** button (shown in DETACHED): regenerate `f(graph)` + options → `synced`; confirm only if the buffer differs from generated.
-- [ ] Status badge: "Synced with graph" / "Edited · detached".
-- [ ] Close/reopen lifecycle: on close cancel queued preview work and discard the buffer/mode;
+- [x] **Reset to graph** button (shown in DETACHED): regenerate `f(graph)` + options → `synced`; confirm only if the buffer differs from generated.
+- [x] Status badge: "Synced with graph" / "Edited · detached".
+- [x] Close/reopen lifecycle: on close cancel queued preview work and discard the buffer/mode;
   on reopen regenerate from the then-current graph and start SYNCED. This must be explicit because
   `WindowExport` stays mounted after its first open.
-- [ ] Preview: render `renderSvg(currentBuffer)`; debounce (~500 ms) on typing, immediate on knob
+- [x] Preview: render `renderSvg(currentBuffer)`; debounce (~500 ms) on typing, immediate on knob
   change. Track a monotonically increasing render generation so older async results are ignored.
   Keep the loading state, add an inline error state, and clear both when a newer render begins.
-- [ ] Harden `renderSvg`: reject on script/render/post-processing failure, clean up its temporary
+- [x] Harden `renderSvg`: reject on script/render/post-processing failure, clean up its temporary
   wrapper on success or failure, and use a bounded timeout so malformed editable LaTeX cannot
   leave the studio rendering forever.
 
 ### Phase 4 — Options on environment + preamble hint
 
-- [ ] Studio splices appearance options into `\begin{af}[…]` for the **copyable/saveable** text
+- [x] Studio splices appearance options into `\begin{af}[…]` for the **copyable/saveable** text
   (not just SVG). Export a shared, tested helper from `common/argumentation/export.ts`; do not
   duplicate the current inline `afOptions` construction. Omit `supportstyle` when the document
   has no supports.
-- [ ] Replace the separate `\usepackage[…]` line with a constant **preamble hint** `\usepackage{argumentation}` + its own copy button.
-- [ ] Copy/Save export the full buffer (options + body). Save extension stays `tex`.
+- [x] Replace the separate `\usepackage[…]` line with a constant **preamble hint** `\usepackage{argumentation}` + its own copy button.
+- [x] Copy/Save export the full buffer (options + body). Save extension stays `tex`.
 
 ### Phase 5 — i18n, cleanup, checks
 
-- [ ] Add/rename i18n keys in `src/localization/locales/{en,de}/messages/export.ts` (studio title, badges, "Reset to graph", "Export image", preamble hint, menu labels). German terms → hold for user review per project convention.
-- [ ] Update `src/modules/common/tutorial/editor-export.ts`: remove the obsolete format-dropdown,
+- [x] Add/rename i18n keys in `src/localization/locales/{en,de}/messages/export.ts` (studio title, badges, "Reset to graph", "Export image", preamble hint, menu labels). German terms → hold for user review per project convention.
+- [x] Update `src/modules/common/tutorial/editor-export.ts`: remove the obsolete format-dropdown,
   collapsed-style-panel, and remembered-format instructions; explain the Export submenu and
   LaTeX studio instead.
-- [ ] Remove now-dead code: `__wysiwyg_svg__` handling, the old package-line-with-options path if unused, unused imports.
-- [ ] `npm run license-headers` for any new files; `npm run lint`, `npm run format`, `npm run format:check`, type-check.
+- [x] Remove now-dead code: `__wysiwyg_svg__` handling, the old package-line-with-options path if unused, unused imports. (A few now-unused `export.*` i18n keys, e.g. `format`/`svgImage`/`noGraph`/`formatLabels.text`, are left in place — harmless, parity-checked.)
+- [x] `npm run license-headers` for any new files; `npm run lint`, `npm run format`, `npm run format:check`, type-check.
 - [ ] Automated tests:
-  - option helper: insert/replace options, conditional `supportstyle`, missing/ambiguous `af` marker;
-  - state machine: graph regeneration while SYNCED, detachment on any non-internal document change,
+  - [x] option helper: insert/replace options, conditional `supportstyle`, missing/ambiguous `af` marker;
+  - [ ] state machine: graph regeneration while SYNCED, detachment on any non-internal document change,
     ignored graph changes while DETACHED, appearance-option edits preserving the detached body,
-    disabled node distance, Reset, and close/reopen;
-  - preview scheduling: debounce, latest-render-wins, timeout/error, and temporary-wrapper cleanup.
+    disabled node distance, Reset, and close/reopen; **(deferred — logic is embedded in the SFC;
+    would need a composable extraction or a mounted-component test with CodeMirror + `renderSvg` mocks)**
+  - [ ] preview scheduling: debounce, latest-render-wins, timeout/error, and temporary-wrapper cleanup. **(deferred, same reason)**
 - [ ] Manual verification (user checks visually — do **not** run the app):
   - Each module: studio opens from toolbar + menu; style row reflows (3 vs 4 knobs); Support only where applicable.
   - SYNCED: move a node → body + preview update. Change a knob → options + preview update.
@@ -143,4 +144,6 @@ Design mockups & rationale: <https://claude.ai/code/artifact/85633ddd-a7c3-41c6-
 ## Open / watch out
 
 - `QUICK_EXPORT_KEY` generic typing across modules — keep it loose (`unknown` document) and cast in the menu, matching how `WindowExport` is already generic.
-- Confirm the toolbar icon choice with the user (LaTeX vs. generic code/export glyph).
+- ~~Confirm the toolbar icon choice with the user~~ → **`CodeBracketIcon`** (confirmed).
+- German UI strings (`LaTeX-Studio`, `Bild exportieren`, badges, validation, `Präambel`, reset) were translated directly (UI, not domain terms) — flag if you want them held/adjusted.
+- State-machine + preview-scheduling logic lives inside `WindowExport.vue`. If we want it unit-tested, extract it into a `useLatexStudio` composable first.

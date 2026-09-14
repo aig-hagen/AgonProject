@@ -17,19 +17,22 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="DocumentT">
-import { EditorState, type Extension } from '@codemirror/state'
+import { Annotation, type Extension, Transaction } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import {
+  ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
+  CheckCircleIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
+  PencilSquareIcon,
 } from '@heroicons/vue/24/outline'
-import { computedAsync } from '@vueuse/core'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
-import { computed, ref, shallowRef, useTemplateRef, watch, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { buildAfOptionList, spliceAfOptions } from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ExportSheet from '@/modules/common/export/ExportSheet.vue'
@@ -39,6 +42,12 @@ import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 import type { ExportConfig, ExportFileData } from '.'
 import { ExportFormatId } from '.'
+
+// Marks CodeMirror transactions the studio dispatches itself (graph/style regeneration). Any
+// doc change WITHOUT this annotation is a user edit and detaches the buffer from the graph.
+const internalChange = Annotation.define<boolean>()
+
+const PREAMBLE_HINT = '\\usepackage{argumentation}'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -74,92 +83,146 @@ const isBipolarDocument = computed(() => {
   return typeof maybeSupports === 'function'
 })
 
-const usePackageLine = computed(() => {
-  const opts = [
-    ...(selectedArgumentStyle.value !== 'standard'
-      ? [`argumentstyle=${selectedArgumentStyle.value}`]
-      : []),
-    `namestyle=${selectedNameStyle.value}`,
-    ...(selectedAttackStyle.value !== 'standard'
-      ? [`attackstyle=${selectedAttackStyle.value}`]
-      : []),
-  ]
-  if (isBipolarDocument.value) opts.push(`supportstyle=${selectedSupportStyle.value}`)
-  return `\\usepackage[${opts.join(',')}]{argumentation}`
-})
+// 'synced': the buffer is a pure function of the graph. 'detached': the user has edited the code,
+// so graph edits no longer touch it. A detached buffer with a broken \begin{af} marker sets
+// `validation`, blocking style-option splicing until Reset to graph.
+const mode = shallowRef<'synced' | 'detached'>('synced')
+const validation = shallowRef<'missing' | 'ambiguous' | undefined>(undefined)
+const bufferText = shallowRef('')
 
-const packageLineCopied = ref(false)
-let packageLineCopyTimeout: ReturnType<typeof setTimeout>
-function copyPackageLine() {
-  copy(usePackageLine.value)
-  packageLineCopied.value = true
-  clearTimeout(packageLineCopyTimeout)
-  packageLineCopyTimeout = setTimeout(() => (packageLineCopied.value = false), 500)
+function currentOptionList(): string {
+  return buildAfOptionList(
+    {
+      argumentStyle: selectedArgumentStyle.value,
+      nameStyle: selectedNameStyle.value,
+      attackStyle: selectedAttackStyle.value,
+      supportStyle: selectedSupportStyle.value,
+    },
+    isBipolarDocument.value,
+  )
 }
 
-const exportResult = computed(() => {
-  if (!open.value) {
-    return undefined
-  }
-  // The compact layout renders ExportSheet, which owns its own export computation.
-  if (layoutMode.value === 'compact') {
-    return undefined
-  }
-  if (latexConfig.value === undefined) {
-    return undefined
-  }
-  return latexConfig.value.export(input, {
+function generateSyncedBuffer(): string {
+  const config = latexConfig.value
+  if (config === undefined) return ''
+  const body = config.export(input, {
     argumentStyle: selectedArgumentStyle.value,
     nameStyle: selectedNameStyle.value,
     attackStyle: selectedAttackStyle.value,
     supportStyle: selectedSupportStyle.value,
     nodeDistance: selectedNodeDistance.value,
     gridCellScale: gridCellScale.value,
-  })
-})
+  }).text
+  return spliceAfOptions(body, currentOptionList()).text
+}
 
-const saveFiledataText = computed(() => {
-  if (exportResult.value === undefined) {
+// Replaces the whole document with our own transaction, kept out of undo history so
+// regeneration never pollutes the user's undo stack.
+function setBuffer(text: string) {
+  const view = editorView.value
+  if (view === undefined) return
+  view.dispatch({
+    changes: { from: 0, to: view.state.doc.length, insert: text },
+    annotations: [internalChange.of(true), Transaction.addToHistory.of(false)],
+  })
+}
+
+function applySynced() {
+  mode.value = 'synced'
+  validation.value = undefined
+  setBuffer(generateSyncedBuffer())
+}
+
+function resetToGraph() {
+  const fresh = generateSyncedBuffer()
+  if (bufferText.value !== fresh && !window.confirm(t('export.resetConfirm'))) {
     return
   }
-  return {
-    content: exportResult.value.text,
-    ending: latexConfig.value?.extension ?? 'tex',
+  applySynced()
+}
+
+// SYNCED: graph, node distance and grid scale regenerate the whole body.
+watch([() => input, selectedNodeDistance, () => gridCellScale.value], () => {
+  if (!open.value || editorView.value === undefined) return
+  if (mode.value === 'synced') setBuffer(generateSyncedBuffer())
+})
+
+// Appearance knobs re-splice the \begin{af}[…] options in both states (body preserved when detached).
+watch([selectedArgumentStyle, selectedNameStyle, selectedAttackStyle, selectedSupportStyle], () => {
+  if (!open.value || editorView.value === undefined) return
+  if (mode.value === 'synced') {
+    setBuffer(generateSyncedBuffer())
+    return
+  }
+  const result = spliceAfOptions(bufferText.value, currentOptionList())
+  if (result.ok) {
+    validation.value = undefined
+    setBuffer(result.text)
+  } else {
+    validation.value = result.reason
   }
 })
 
-const svgTextEvaluating = shallowRef(false)
-const svgTextMaybeLoading = computedAsync(
-  async () => {
-    const svgFactory = exportResult.value?.svg
-    if (svgFactory === undefined) {
-      return null
-    }
-    return await svgFactory()
-  },
-  null,
-  svgTextEvaluating,
+// ── Live preview ────────────────────────────────────────────────────────────
+const previewSvg = shallowRef<string | undefined>(undefined)
+const previewLoading = shallowRef(false)
+const previewError = shallowRef<string | undefined>(undefined)
+// Monotonic generation so a slow render can never overwrite a newer one's result.
+let renderGeneration = 0
+let debounceTimer: ReturnType<typeof setTimeout> | undefined
+
+async function runRender() {
+  const generation = ++renderGeneration
+  const text = bufferText.value
+  if (!text) {
+    previewSvg.value = undefined
+    previewLoading.value = false
+    return
+  }
+  previewLoading.value = true
+  previewError.value = undefined
+  try {
+    const { renderSvg } = await import('@/modules/common/export/renderSvg')
+    const svg = await renderSvg(text)
+    if (generation !== renderGeneration) return
+    previewSvg.value = svg
+  } catch (error) {
+    if (generation !== renderGeneration) return
+    previewSvg.value = undefined
+    previewError.value = error instanceof Error ? error.message : String(error)
+  } finally {
+    if (generation === renderGeneration) previewLoading.value = false
+  }
+}
+
+function scheduleRender(immediate: boolean) {
+  clearTimeout(debounceTimer)
+  if (immediate) {
+    void runRender()
+  } else {
+    debounceTimer = setTimeout(() => void runRender(), 500)
+  }
+}
+
+const saveFiledataText = computed(() =>
+  bufferText.value
+    ? { content: bufferText.value, ending: latexConfig.value?.extension ?? 'tex' }
+    : undefined,
+)
+const saveFiledataSvg = computed(() =>
+  previewSvg.value ? { content: previewSvg.value, ending: 'svg' } : undefined,
 )
 
-const svgText = computed(() => {
-  if (svgTextEvaluating.value || svgTextMaybeLoading.value === null) {
-    return undefined
-  }
-  return svgTextMaybeLoading.value
-})
+const preambleCopied = ref(false)
+let preambleCopyTimeout: ReturnType<typeof setTimeout>
+function copyPreamble() {
+  copy(PREAMBLE_HINT)
+  preambleCopied.value = true
+  clearTimeout(preambleCopyTimeout)
+  preambleCopyTimeout = setTimeout(() => (preambleCopied.value = false), 500)
+}
 
-const saveFiledataSvg = computed(() => {
-  if (svgText.value === undefined) {
-    return
-  }
-  return {
-    content: svgText.value,
-    ending: 'svg',
-  }
-})
-
-// An explicit `watch` (not `watchEffect`) so assigning `editorView` below doesn't feed back
-// as a dependency — with the async body that would re-trigger endlessly and thrash the editor.
+// ── Editor lifecycle ──────────────────────────────────────────────────────────
 watch(
   [soureViewRef, latexConfig],
   async ([sourceView, config], _prev, onCleanup) => {
@@ -168,7 +231,6 @@ watch(
     if (sourceView == null || config === undefined) {
       return
     }
-    // The loader awaits a dynamic import; bail if the watch re-ran meanwhile.
     let stale = false
     onCleanup(() => {
       stale = true
@@ -179,31 +241,52 @@ watch(
       return
     }
     editorView.value = new EditorView({
-      doc: undefined,
       parent: sourceView,
-      // See https://codemirror.net/examples/readonly/
       extensions: [
         basicSetup,
-        EditorState.readOnly.of(true),
-        EditorView.editable.of(false),
-        EditorView.contentAttributes.of({ tabindex: '0' }),
+        EditorView.lineWrapping,
+        EditorView.updateListener.of((update) => {
+          if (!update.docChanged) return
+          bufferText.value = update.state.doc.toString()
+          const isInternal = update.transactions.some((tr) => tr.annotation(internalChange))
+          if (isInternal) {
+            scheduleRender(true)
+            return
+          }
+          // A user edit detaches the buffer from the graph.
+          if (mode.value === 'synced') mode.value = 'detached'
+          const result = spliceAfOptions(bufferText.value, currentOptionList())
+          validation.value = result.ok ? undefined : result.reason
+          scheduleRender(false)
+        }),
         ...additionalExtensions,
       ],
     })
+    if (open.value) applySynced()
   },
   { immediate: true },
 )
 
-watchEffect(() => {
-  if (editorView.value === undefined) {
-    return
+// WindowExport stays mounted after its first open, so the lifecycle is explicit: a fresh SYNCED
+// export on open, and cancelled preview work + discarded buffer state on close.
+watch(open, (isOpen) => {
+  if (isOpen) {
+    if (layoutMode.value !== 'compact') applySynced()
+  } else {
+    clearTimeout(debounceTimer)
+    renderGeneration++
+    previewLoading.value = false
+    previewError.value = undefined
+    previewSvg.value = undefined
+    mode.value = 'synced'
+    validation.value = undefined
   }
-  if (exportResult.value === undefined) {
-    return
-  }
-  editorView.value.dispatch({
-    changes: { from: 0, insert: exportResult.value.text, to: editorView.value.state.doc.length },
-  })
+})
+
+onBeforeUnmount(() => {
+  clearTimeout(debounceTimer)
+  clearTimeout(preambleCopyTimeout)
+  editorView.value?.destroy()
 })
 </script>
 
@@ -212,7 +295,7 @@ watchEffect(() => {
     v-model:open="open"
     :title="t('menu.latexStudio')"
     :initial-position="{ x: 64, y: 128 }"
-    :intitalSize="{ width: 700, height: 480 }"
+    :intitalSize="{ width: 760, height: 520 }"
   >
     <ExportSheet
       v-if="layoutMode === 'compact'"
@@ -235,6 +318,22 @@ watchEffect(() => {
           >
             <ArrowTopRightOnSquareIcon class="size-4" />
           </a>
+          <span class="grow"></span>
+          <span
+            v-if="mode === 'synced'"
+            class="badge badge-sm badge-ghost gap-1 text-success"
+            :title="t('export.badge.synced')"
+          >
+            <CheckCircleIcon class="size-4" />{{ t('export.badge.synced') }}
+          </span>
+          <template v-else>
+            <span class="badge badge-sm badge-ghost gap-1 text-warning">
+              <PencilSquareIcon class="size-4" />{{ t('export.badge.detached') }}
+            </span>
+            <button class="btn btn-xs btn-soft gap-1" @click="resetToGraph">
+              <ArrowPathIcon class="size-4" />{{ t('export.resetToGraph') }}
+            </button>
+          </template>
         </div>
         <div class="style-grid">
           <label class="select select-sm">
@@ -275,7 +374,7 @@ watchEffect(() => {
           </label>
         </div>
         <div class="mt-3 flex flex-wrap items-center gap-4">
-          <label class="label gap-2">
+          <label class="label gap-2" :class="{ 'opacity-50': mode === 'detached' }">
             <span>{{ t('export.style.nodeDistance') }}</span>
             <input
               type="range"
@@ -283,23 +382,28 @@ watchEffect(() => {
               min="0.5"
               max="4"
               step="0.25"
+              :disabled="mode === 'detached'"
               v-model.number="selectedNodeDistance"
             />
             <span class="text-sm w-6 text-right opacity-60">{{ selectedNodeDistance }}</span>
           </label>
         </div>
+        <div v-if="validation" role="alert" class="alert alert-warning alert-soft mt-2 py-2">
+          <span>{{ t(`export.validation.${validation}`) }}</span>
+        </div>
         <div class="relative mt-2 w-fit max-w-md">
+          <span class="label text-xs">{{ t('export.preamble') }}</span>
           <input
             type="text"
             class="input input-xs font-mono max-w-md pr-8 field-sizing-content"
             readonly
-            :value="usePackageLine"
+            :value="PREAMBLE_HINT"
           />
           <button
-            class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-xs btn-ghost btn-square"
-            @click="copyPackageLine"
+            class="absolute right-1 bottom-0 btn btn-xs btn-ghost btn-square"
+            @click="copyPreamble"
           >
-            <ClipboardDocumentCheckIcon v-if="packageLineCopied" class="size-3.5" />
+            <ClipboardDocumentCheckIcon v-if="preambleCopied" class="size-3.5" />
             <ClipboardDocumentIcon v-else class="size-3.5" />
           </button>
         </div>
@@ -315,14 +419,14 @@ watchEffect(() => {
               >
                 {{ t('export.formatLabels.code') }}
               </ButtonSave>
-              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="exportResult?.text">
+              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="bufferText">
                 {{ t('export.formatLabels.code') }}
               </ButtonCopy>
             </div>
             <div class="min-w-58 bg-base-100 rounded" ref="soureView"></div>
           </fieldset>
         </div>
-        <div v-if="exportResult?.svg !== undefined">
+        <div class="grow">
           <fieldset class="fieldset">
             <div class="flex gap-2 flex-wrap mb-2">
               <ButtonSave
@@ -332,16 +436,26 @@ watchEffect(() => {
               >
                 SVG
               </ButtonSave>
-              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="svgText">
+              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="previewSvg">
                 SVG
               </ButtonCopy>
             </div>
-            <div>
-              <div v-if="svgText === undefined" role="alert" class="alert alert-info alert-soft">
-                <span>{{ t('export.renderingSvg') }}</span>
-              </div>
-              <div v-else v-html="svgText" class="w-fit bg-base-100 rounded p-1"></div>
+            <div
+              v-if="previewError"
+              role="alert"
+              class="alert alert-error alert-soft"
+              :title="previewError"
+            >
+              <span>{{ t('export.previewError') }}</span>
             </div>
+            <div v-else-if="previewLoading" role="alert" class="alert alert-info alert-soft">
+              <span>{{ t('export.renderingSvg') }}</span>
+            </div>
+            <div
+              v-else-if="previewSvg"
+              v-html="previewSvg"
+              class="svg-preview w-fit max-w-full overflow-auto bg-base-100 rounded p-1"
+            ></div>
           </fieldset>
         </div>
       </div>
@@ -353,6 +467,12 @@ watchEffect(() => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.25rem, 1fr));
   gap: 0.5rem;
+}
+.svg-preview :deep(svg) {
+  max-width: 100%;
+  max-height: 50vh;
+  width: auto;
+  height: auto;
 }
 :deep(.cm-editor) {
   background-color: var(--color-base-100);
