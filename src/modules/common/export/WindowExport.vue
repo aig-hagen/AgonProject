@@ -21,7 +21,6 @@ import { Annotation, type Extension, Transaction } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import {
   ArrowPathIcon,
-  ArrowTopRightOnSquareIcon,
   CheckCircleIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
@@ -402,16 +401,6 @@ onBeforeUnmount(() => {
       <div class="preamble-bar">
         <span class="preamble-tag">{{ t('export.preamble') }}</span>
         <code class="grow truncate font-mono text-xs">{{ PREAMBLE_HINT }}</code>
-        <a
-          v-if="latexConfig.references?.[0]"
-          :href="latexConfig.references[0].url"
-          :title="latexConfig.references[0].label"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-xs btn-ghost btn-square"
-        >
-          <ArrowTopRightOnSquareIcon class="size-4" />
-        </a>
         <button
           class="btn btn-xs btn-ghost btn-square"
           :title="t('export.button.copyBare')"
@@ -421,7 +410,25 @@ onBeforeUnmount(() => {
           <ClipboardDocumentIcon v-else class="size-4" />
         </button>
       </div>
-      <p class="-mt-1.5 text-xs text-base-content/50">{{ t('export.packageNote') }}</p>
+      <i18n-t
+        keypath="export.packageNote"
+        tag="p"
+        scope="global"
+        class="-mt-1.5 text-xs text-base-content/50"
+      >
+        <template #package>
+          <a
+            v-if="latexConfig.references?.[0]"
+            :href="latexConfig.references[0].url"
+            :title="latexConfig.references[0].label"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link link-primary"
+            >argumentation</a
+          >
+          <template v-else>argumentation</template>
+        </template>
+      </i18n-t>
 
       <!-- Actions -->
       <div class="flex flex-wrap items-center justify-between gap-3">

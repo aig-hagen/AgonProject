@@ -37,7 +37,7 @@ export default {
   preview: 'Vorschau',
   resetToGraph: 'Auf Graph zurücksetzen',
   packageNote:
-    'Die Abbildung wird mit dem LaTeX-Paket argumentation gezeichnet — füge die obige Zeile deiner Präambel hinzu.',
+    'Die Abbildung wird mit dem LaTeX-Paket {package} gezeichnet — füge die obige Zeile deiner Präambel hinzu.',
   badge: {
     synced: 'Synchron',
     detached: 'Bearbeitet',

@@ -37,7 +37,7 @@ export default {
   preview: 'Preview',
   resetToGraph: 'Reset to graph',
   packageNote:
-    'The figure is drawn with the argumentation LaTeX package — add the line above to your preamble.',
+    'The figure is drawn with the {package} LaTeX package — add the line above to your preamble.',
   badge: {
     synced: 'Synced',
     detached: 'Edited',
