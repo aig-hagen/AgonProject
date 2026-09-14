@@ -34,6 +34,8 @@ export interface GlossaryModule {
   prefix: string
   label: string
   glossary: TooltipRegistry
+  // Key of the "main" entry (the framework itself), pinned to the top of the list.
+  mainKey: string
 }
 
 export const glossaryModules: GlossaryModule[] = [
@@ -41,15 +43,32 @@ export const glossaryModules: GlossaryModule[] = [
     prefix: 'AF',
     label: 'Abstract AF',
     glossary: { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary },
+    mainKey: 'AF',
   },
-  { prefix: 'BAF', label: 'Bipolar AF', glossary: bipolarArgumentationGlossary },
-  { prefix: 'ADF', label: 'Dialectical AF', glossary: dialecticalArgumentationGlossary },
-  { prefix: 'iAF', label: 'Incomplete AF', glossary: incompleteArgumentationGlossary },
-  { prefix: 'PAF', label: 'Probabilistic AF', glossary: probabilisticArgumentationGlossary },
+  { prefix: 'BAF', label: 'Bipolar AF', glossary: bipolarArgumentationGlossary, mainKey: 'BAF' },
+  {
+    prefix: 'ADF',
+    label: 'Dialectical AF',
+    glossary: dialecticalArgumentationGlossary,
+    mainKey: 'ADF',
+  },
+  {
+    prefix: 'iAF',
+    label: 'Incomplete AF',
+    glossary: incompleteArgumentationGlossary,
+    mainKey: 'IAF',
+  },
+  {
+    prefix: 'PAF',
+    label: 'Probabilistic AF',
+    glossary: probabilisticArgumentationGlossary,
+    mainKey: 'PAF',
+  },
   {
     prefix: 'SetAF',
     label: 'Collective Attacks',
     glossary: collectiveAttacksArgumentationGlossary,
+    mainKey: 'SetAF',
   },
 ]
 
@@ -89,19 +108,32 @@ export function useGlossary() {
     searchQuery.value = ''
   })
 
+  function matchesQuery([key, def]: [string, TooltipDefinition], q: string) {
+    return (
+      (def.title ?? def.label ?? key).toLowerCase().includes(q) || key.toLowerCase().includes(q)
+    )
+  }
+
+  // The framework entry, pinned above the alphabetical list (hidden when it fails the search).
+  const pinnedTerm = computed<[string, TooltipDefinition] | null>(() => {
+    const { mainKey, glossary } = activeModule.value
+    const def = glossary[mainKey]
+    if (!def) return null
+    const q = searchQuery.value.toLowerCase().trim()
+    if (q && !matchesQuery([mainKey, def], q)) return null
+    return [mainKey, def]
+  })
+
   const sortedTerms = computed(() =>
-    Object.entries(activeModule.value.glossary).sort(([, a], [, b]) =>
-      (a.title ?? a.label).localeCompare(b.title ?? b.label),
-    ),
+    Object.entries(activeModule.value.glossary)
+      .filter(([key]) => key !== activeModule.value.mainKey)
+      .sort(([, a], [, b]) => (a.title ?? a.label).localeCompare(b.title ?? b.label)),
   )
 
   const filteredTerms = computed(() => {
     const q = searchQuery.value.toLowerCase().trim()
     if (!q) return sortedTerms.value
-    return sortedTerms.value.filter(
-      ([key, def]) =>
-        (def.title ?? def.label ?? key).toLowerCase().includes(q) || key.toLowerCase().includes(q),
-    )
+    return sortedTerms.value.filter((entry) => matchesQuery(entry, q))
   })
 
   const groupedTerms = computed(() => {
@@ -141,6 +173,7 @@ export function useGlossary() {
     activeTermKey,
     activeModule,
     searchQuery,
+    pinnedTerm,
     groupedTerms,
     activeDefinition,
     navigate,

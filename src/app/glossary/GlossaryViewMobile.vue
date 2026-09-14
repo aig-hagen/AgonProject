@@ -17,7 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { BookOpenIcon, ChevronLeftIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
+import {
+  BookOpenIcon,
+  ChevronLeftIcon,
+  MagnifyingGlassIcon,
+  MapPinIcon,
+} from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
@@ -26,8 +31,15 @@ import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
-const { allEntries, activeModulePrefix, searchQuery, groupedTerms, selectModule, followRef } =
-  useGlossary()
+const {
+  allEntries,
+  activeModulePrefix,
+  searchQuery,
+  pinnedTerm,
+  groupedTerms,
+  selectModule,
+  followRef,
+} = useGlossary()
 
 const router = useRouter()
 </script>
@@ -88,9 +100,49 @@ const router = useRouter()
       class="flex-1 overflow-y-auto px-4 pt-2 flex flex-col gap-2.5"
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
-      <p v-if="groupedTerms.length === 0" class="text-sm text-base-content/40 px-1 py-4">
+      <p
+        v-if="groupedTerms.length === 0 && !pinnedTerm"
+        class="text-sm text-base-content/40 px-1 py-4"
+      >
         {{ t('glossary.noResults') }}
       </p>
+      <article v-if="pinnedTerm" class="rounded-2xl border border-primary/40 bg-primary/5 p-3.5">
+        <div class="flex items-start gap-2.5">
+          <div class="flex-1 min-w-0">
+            <h3 class="flex items-center gap-1.5 text-[15px] font-semibold leading-snug">
+              <MapPinIcon class="size-4 text-primary shrink-0" />
+              <KatexInlineElement :text="pinnedTerm[1].title ?? pinnedTerm[1].label" />
+            </h3>
+            <p class="mt-1.5 text-[13px] leading-relaxed text-base-content/70">
+              <template v-for="(part, i) in pinnedTerm[1].content" :key="i">
+                <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
+                <button
+                  v-else-if="allEntries[part.ref]"
+                  class="text-primary underline underline-offset-2"
+                  @click="followRef(part.ref)"
+                >
+                  <KatexInlineElement
+                    :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
+                  />
+                </button>
+                <span v-else class="text-base-content/60">
+                  <KatexInlineElement :text="part.label ?? part.ref" />
+                </span>
+              </template>
+            </p>
+          </div>
+          <a
+            v-if="pinnedTerm[1].reference"
+            :href="pinnedTerm[1].reference.href"
+            :title="pinnedTerm[1].reference.label"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="grid place-items-center size-7 rounded-lg bg-base-200 text-primary shrink-0"
+          >
+            <BookOpenIcon class="size-4" />
+          </a>
+        </div>
+      </article>
       <template v-for="group in groupedTerms" :key="group.letter">
         <div class="text-xs font-bold text-secondary tracking-wide mt-1.5 px-0.5">
           {{ group.letter }}

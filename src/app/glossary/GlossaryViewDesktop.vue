@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowLeftIcon, BookOpenIcon } from '@heroicons/vue/24/outline'
+import { ArrowLeftIcon, BookOpenIcon, MapPinIcon } from '@heroicons/vue/24/outline'
 import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
@@ -32,22 +32,27 @@ const {
   activeModulePrefix,
   activeTermKey,
   searchQuery,
+  pinnedTerm,
   groupedTerms,
   activeDefinition,
   navigate,
   followRef,
 } = useGlossary()
 
-// Auto-select the first term when the module changes or no valid term is in the URL.
+// Auto-select the framework (main) entry when the module changes or no valid term is in the URL.
 watch(
   activeModulePrefix,
   (prefix) => {
-    const glossary = glossaryModules.find((m) => m.prefix === prefix)?.glossary ?? {}
+    const module = glossaryModules.find((m) => m.prefix === prefix)
+    const glossary = module?.glossary ?? {}
     if (!activeTermKey.value || !glossary[activeTermKey.value]) {
-      const first = Object.entries(glossary).sort(([, a], [, b]) =>
-        (a.title ?? a.label).localeCompare(b.title ?? b.label),
-      )[0]
-      if (first) navigate(prefix, first[0])
+      const first =
+        module && glossary[module.mainKey]
+          ? [module.mainKey]
+          : Object.entries(glossary).sort(([, a], [, b]) =>
+              (a.title ?? a.label).localeCompare(b.title ?? b.label),
+            )[0]
+      if (first) navigate(prefix, first[0]!)
     }
   },
   { immediate: true },
@@ -96,9 +101,23 @@ watch(
           />
         </div>
         <div class="overflow-y-auto flex-1 py-2">
-          <p v-if="groupedTerms.length === 0" class="text-sm text-base-content/40 px-4 py-2">
+          <p
+            v-if="groupedTerms.length === 0 && !pinnedTerm"
+            class="text-sm text-base-content/40 px-4 py-2"
+          >
             {{ t('glossary.noResults') }}
           </p>
+          <button
+            v-if="pinnedTerm"
+            class="w-full flex items-center gap-1.5 text-left px-4 py-1.5 text-sm hover:bg-base-200 border-b border-base-300 mb-1"
+            :class="{ 'bg-base-200 font-medium': pinnedTerm[0] === activeTermKey }"
+            @click="navigate(activeModulePrefix, pinnedTerm[0])"
+          >
+            <MapPinIcon class="size-3.5 text-primary shrink-0" />
+            <span class="truncate">
+              <KatexInlineElement :text="pinnedTerm[1].title ?? pinnedTerm[1].label" />
+            </span>
+          </button>
           <template v-for="group in groupedTerms" :key="group.letter">
             <div
               class="px-4 pt-2 pb-0.5 text-xs font-semibold text-secondary uppercase tracking-wide"
