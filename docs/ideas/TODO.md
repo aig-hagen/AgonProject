@@ -1,11 +1,9 @@
 ## Features
 - Rework fonts to be consistent across browsers
 - Localization of definitions, semantics, etc
-- Pin the main glossary entry of each module at the top
-- tooltips could use a bit better border/shadow (esp on dark mode)
 - the export window could use a redesign
 
-- tweetyproject webserivice is actually exposed publically. handle that
+- tweetyproject webservice is actually exposed publically. handle that
 - in general, trying to open a non existing URL route shows an empty screen, handle that. using eg /dung show a generic error page, handle that
 - what about the other services? are they publically open?
 
