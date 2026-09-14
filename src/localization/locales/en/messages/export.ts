@@ -34,11 +34,13 @@ export default {
   noGraph: 'No graph to export.',
   renderingSvg: 'Rendering SVG',
   preamble: 'Preamble',
+  preview: 'Preview',
   resetToGraph: 'Reset to graph',
   resetConfirm: 'Discard your edits and regenerate the code from the graph?',
   badge: {
     synced: 'Synced with graph',
     detached: 'Edited · detached',
+    live: 'live',
   },
   validation: {
     missing: 'No \\begin{af} environment found — reset to graph before applying style options.',

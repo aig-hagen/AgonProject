@@ -34,11 +34,13 @@ export default {
   noGraph: 'Kein Graph zum Exportieren.',
   renderingSvg: 'SVG wird gerendert',
   preamble: 'Präambel',
+  preview: 'Vorschau',
   resetToGraph: 'Auf Graph zurücksetzen',
   resetConfirm: 'Änderungen verwerfen und den Code neu aus dem Graphen erzeugen?',
   badge: {
     synced: 'Mit Graph synchronisiert',
     detached: 'Bearbeitet · abgekoppelt',
+    live: 'live',
   },
   validation: {
     missing:

@@ -209,10 +209,6 @@ const saveFiledataText = computed(() =>
     ? { content: bufferText.value, ending: latexConfig.value?.extension ?? 'tex' }
     : undefined,
 )
-const saveFiledataSvg = computed(() =>
-  previewSvg.value ? { content: previewSvg.value, ending: 'svg' } : undefined,
-)
-
 const preambleCopied = ref(false)
 let preambleCopyTimeout: ReturnType<typeof setTimeout>
 function copyPreamble() {
@@ -295,7 +291,7 @@ onBeforeUnmount(() => {
     v-model:open="open"
     :title="t('menu.latexStudio')"
     :initial-position="{ x: 64, y: 128 }"
-    :intitalSize="{ width: 760, height: 520 }"
+    :intitalSize="{ width: 720, height: 560 }"
   >
     <ExportSheet
       v-if="layoutMode === 'compact'"
@@ -304,10 +300,12 @@ onBeforeUnmount(() => {
       @export="emit('export', $event)"
       @close="open = false"
     />
-    <div v-else-if="latexConfig" class="p-4">
-      <fieldset class="fieldset">
+    <div v-else-if="latexConfig" class="flex flex-col gap-4 p-4">
+      <!-- Style -->
+      <section class="flex flex-col gap-2.5">
         <div class="flex items-center gap-2">
-          <span class="fieldset-legend ps-0">{{ t('export.style.parameters') }}</span>
+          <span class="section-cap">{{ t('export.style.parameters') }}</span>
+          <span class="hairline"></span>
           <a
             v-if="latexConfig.references?.[0]"
             :href="latexConfig.references[0].url"
@@ -318,27 +316,11 @@ onBeforeUnmount(() => {
           >
             <ArrowTopRightOnSquareIcon class="size-4" />
           </a>
-          <span class="grow"></span>
-          <span
-            v-if="mode === 'synced'"
-            class="badge badge-sm badge-ghost gap-1 text-success"
-            :title="t('export.badge.synced')"
-          >
-            <CheckCircleIcon class="size-4" />{{ t('export.badge.synced') }}
-          </span>
-          <template v-else>
-            <span class="badge badge-sm badge-ghost gap-1 text-warning">
-              <PencilSquareIcon class="size-4" />{{ t('export.badge.detached') }}
-            </span>
-            <button class="btn btn-xs btn-soft gap-1" @click="resetToGraph">
-              <ArrowPathIcon class="size-4" />{{ t('export.resetToGraph') }}
-            </button>
-          </template>
         </div>
         <div class="style-grid">
-          <label class="select select-sm">
-            <span class="label">{{ t('export.style.argumentStyle') }}</span>
-            <select v-model="selectedArgumentStyle">
+          <label class="style-field">
+            <span>{{ t('export.style.argumentStyle') }}</span>
+            <select v-model="selectedArgumentStyle" class="select select-sm w-full">
               <option value="standard">standard</option>
               <option value="large">large</option>
               <option value="thick">thick</option>
@@ -346,9 +328,9 @@ onBeforeUnmount(() => {
               <option value="colored">colored</option>
             </select>
           </label>
-          <label class="select select-sm">
-            <span class="label">{{ t('export.style.nameStyle') }}</span>
-            <select v-model="selectedNameStyle">
+          <label class="style-field">
+            <span>{{ t('export.style.nameStyle') }}</span>
+            <select v-model="selectedNameStyle" class="select select-sm w-full">
               <option value="math">math</option>
               <option value="bold">bold</option>
               <option value="monospace">monospace</option>
@@ -356,135 +338,220 @@ onBeforeUnmount(() => {
               <option value="none">none</option>
             </select>
           </label>
-          <label class="select select-sm">
-            <span class="label">{{ t('export.style.attackStyle') }}</span>
-            <select v-model="selectedAttackStyle">
+          <label class="style-field">
+            <span>{{ t('export.style.attackStyle') }}</span>
+            <select v-model="selectedAttackStyle" class="select select-sm w-full">
               <option value="standard">standard</option>
               <option value="large">large</option>
               <option value="modern">modern</option>
             </select>
           </label>
-          <label v-if="isBipolarDocument" class="select select-sm">
-            <span class="label">{{ t('export.style.supportStyle') }}</span>
-            <select v-model="selectedSupportStyle">
+          <label v-if="isBipolarDocument" class="style-field">
+            <span>{{ t('export.style.supportStyle') }}</span>
+            <select v-model="selectedSupportStyle" class="select select-sm w-full">
               <option value="standard">standard</option>
               <option value="dashed">dashed</option>
               <option value="double">double</option>
             </select>
           </label>
         </div>
-        <div class="mt-3 flex flex-wrap items-center gap-4">
-          <label class="label gap-2" :class="{ 'opacity-50': mode === 'detached' }">
-            <span>{{ t('export.style.nodeDistance') }}</span>
-            <input
-              type="range"
-              class="range range-sm w-28"
-              min="0.5"
-              max="4"
-              step="0.25"
-              :disabled="mode === 'detached'"
-              v-model.number="selectedNodeDistance"
-            />
-            <span class="text-sm w-6 text-right opacity-60">{{ selectedNodeDistance }}</span>
-          </label>
-        </div>
-        <div v-if="validation" role="alert" class="alert alert-warning alert-soft mt-2 py-2">
-          <span>{{ t(`export.validation.${validation}`) }}</span>
-        </div>
-        <div class="relative mt-2 w-fit max-w-md">
-          <span class="label text-xs">{{ t('export.preamble') }}</span>
+        <div class="flex items-center gap-3 text-sm" :class="{ 'opacity-40': mode === 'detached' }">
+          <span class="text-base-content/70">{{ t('export.style.nodeDistance') }}</span>
           <input
-            type="text"
-            class="input input-xs font-mono max-w-md pr-8 field-sizing-content"
-            readonly
-            :value="PREAMBLE_HINT"
+            type="range"
+            class="range range-xs range-primary grow max-w-xs"
+            min="0.5"
+            max="4"
+            step="0.25"
+            :disabled="mode === 'detached'"
+            v-model.number="selectedNodeDistance"
           />
-          <button
-            class="absolute right-1 bottom-0 btn btn-xs btn-ghost btn-square"
-            @click="copyPreamble"
-          >
-            <ClipboardDocumentCheckIcon v-if="preambleCopied" class="size-3.5" />
-            <ClipboardDocumentIcon v-else class="size-3.5" />
-          </button>
+          <span class="w-8 text-right font-mono text-xs opacity-70">{{
+            selectedNodeDistance
+          }}</span>
         </div>
-      </fieldset>
-      <div class="flex gap-2 flex-wrap">
-        <div class="grow max-w-80">
-          <fieldset class="fieldset">
-            <div class="flex gap-2 flex-wrap mb-2">
-              <ButtonSave
-                class="btn btn-sm btn-soft w-28 justify-start"
-                :filedata="saveFiledataText"
-                @export="emit('export', $event)"
-              >
-                {{ t('export.formatLabels.code') }}
-              </ButtonSave>
-              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="bufferText">
-                {{ t('export.formatLabels.code') }}
-              </ButtonCopy>
-            </div>
-            <div class="min-w-58 bg-base-100 rounded" ref="soureView"></div>
-          </fieldset>
-        </div>
-        <div class="grow">
-          <fieldset class="fieldset">
-            <div class="flex gap-2 flex-wrap mb-2">
-              <ButtonSave
-                class="btn btn-sm btn-soft w-28 justify-start"
-                :filedata="saveFiledataSvg"
-                @export="emit('export', $event)"
-              >
-                SVG
-              </ButtonSave>
-              <ButtonCopy class="btn btn-sm btn-soft w-28 justify-start" :text="previewSvg">
-                SVG
-              </ButtonCopy>
-            </div>
+      </section>
+
+      <!-- Code + live preview -->
+      <div class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
+        <section class="flex min-w-0 flex-col gap-1.5">
+          <div class="flex items-center gap-2">
+            <span class="section-cap">{{ t('export.formatLabels.code') }}</span>
+            <span class="hairline"></span>
+            <span v-if="mode === 'synced'" class="badge badge-xs badge-ghost gap-1 text-success">
+              <CheckCircleIcon class="size-3.5" />{{ t('export.badge.synced') }}
+            </span>
+            <span v-else class="badge badge-xs badge-warning badge-soft gap-1">
+              <PencilSquareIcon class="size-3.5" />{{ t('export.badge.detached') }}
+            </span>
+          </div>
+          <div
+            ref="soureView"
+            class="cm-host overflow-hidden rounded-box border border-base-300 bg-base-100"
+          ></div>
+        </section>
+        <section class="flex min-w-0 flex-col gap-1.5">
+          <div class="flex items-center gap-2">
+            <span class="section-cap">{{ t('export.preview') }}</span>
+            <span class="hairline"></span>
+            <span class="badge badge-xs badge-primary badge-soft gap-1">
+              <ArrowPathIcon class="size-3.5" />{{ t('export.badge.live') }}
+            </span>
+          </div>
+          <div class="preview-host rounded-box border border-base-300 bg-base-200">
             <div
               v-if="previewError"
-              role="alert"
-              class="alert alert-error alert-soft"
+              class="px-3 text-center text-sm text-error"
               :title="previewError"
             >
-              <span>{{ t('export.previewError') }}</span>
+              {{ t('export.previewError') }}
             </div>
-            <div v-else-if="previewLoading" role="alert" class="alert alert-info alert-soft">
-              <span>{{ t('export.renderingSvg') }}</span>
-            </div>
-            <div
-              v-else-if="previewSvg"
-              v-html="previewSvg"
-              class="svg-preview w-fit max-w-full overflow-auto bg-base-100 rounded p-1"
-            ></div>
-          </fieldset>
+            <span
+              v-else-if="previewLoading"
+              class="loading loading-spinner loading-sm text-base-content/50"
+            ></span>
+            <div v-else-if="previewSvg" v-html="previewSvg" class="svg-preview"></div>
+            <span v-else class="text-sm text-base-content/40">{{ t('export.noGraph') }}</span>
+          </div>
+        </section>
+      </div>
+
+      <div v-if="validation" role="alert" class="alert alert-warning alert-soft py-2 text-sm">
+        <span>{{ t(`export.validation.${validation}`) }}</span>
+      </div>
+
+      <!-- Preamble hint -->
+      <div class="preamble-bar">
+        <span class="preamble-tag">{{ t('export.preamble') }}</span>
+        <code class="grow truncate font-mono text-xs">{{ PREAMBLE_HINT }}</code>
+        <button
+          class="btn btn-xs btn-ghost btn-square"
+          :title="t('export.button.copyBare')"
+          @click="copyPreamble"
+        >
+          <ClipboardDocumentCheckIcon v-if="preambleCopied" class="size-4" />
+          <ClipboardDocumentIcon v-else class="size-4" />
+        </button>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <button
+          v-if="mode === 'detached'"
+          class="btn btn-sm btn-ghost gap-1.5"
+          @click="resetToGraph"
+        >
+          <ArrowPathIcon class="size-4" />{{ t('export.resetToGraph') }}
+        </button>
+        <span v-else></span>
+        <div class="flex gap-2">
+          <ButtonCopy tex class="btn btn-sm btn-soft" :text="bufferText || undefined">
+            {{ t('export.formatLabels.code') }}
+          </ButtonCopy>
+          <ButtonSave
+            class="btn btn-sm btn-primary"
+            :filedata="saveFiledataText"
+            @export="emit('export', $event)"
+          >
+            .tex
+          </ButtonSave>
         </div>
       </div>
     </div>
   </WindowShell>
 </template>
 <style scoped>
+/* Small uppercase section cap with a hairline rule filling the rest of the row. */
+.section-cap {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-base-content);
+  opacity: 0.55;
+  white-space: nowrap;
+}
+.hairline {
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--color-base-300);
+}
+
 .style-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8.25rem, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.625rem;
+}
+.style-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.style-field > span {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: color-mix(in oklch, var(--color-base-content) 72%, transparent);
+}
+
+/* Code editor and preview share one fixed height so the two columns line up. */
+.cm-host {
+  height: 12.5rem;
+}
+.cm-host :deep(.cm-editor) {
+  height: 100%;
+  background-color: var(--color-base-100);
+  color: var(--color-base-content);
+}
+.cm-host :deep(.cm-scroller) {
+  overflow: auto;
+}
+.cm-host :deep(.cm-content) {
+  color: var(--color-base-content);
+}
+.cm-host :deep(.cm-gutters) {
+  background-color: var(--color-base-100);
+}
+.cm-host :deep(.cm-tooltip) {
+  display: none;
+}
+
+.preview-host {
+  height: 12.5rem;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 0.5rem;
+}
+.svg-preview {
+  display: grid;
+  place-items: center;
 }
 .svg-preview :deep(svg) {
   max-width: 100%;
-  max-height: 50vh;
+  max-height: 11.5rem;
   width: auto;
   height: auto;
 }
-:deep(.cm-editor) {
-  background-color: var(--color-base-100);
-  color: var(--color-base-content);
+
+.preamble-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.375rem 0.375rem 0.625rem;
+  background: var(--color-base-200);
+  border: 1px solid var(--color-base-300);
+  border-radius: var(--radius-field);
 }
-:deep(.cm-content) {
-  color: var(--color-base-content);
-}
-:deep(.cm-gutters) {
-  background-color: var(--color-base-100);
-}
-:deep(.cm-tooltip) {
-  display: none;
+.preamble-tag {
+  flex-shrink: 0;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--color-base-content) 55%, transparent);
+  background: var(--color-base-100);
+  border: 1px solid var(--color-base-300);
+  padding: 0.05rem 0.375rem;
+  border-radius: var(--radius-selector);
 }
 </style>
