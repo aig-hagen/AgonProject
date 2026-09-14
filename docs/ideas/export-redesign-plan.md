@@ -73,10 +73,10 @@ Design mockups & rationale: <https://claude.ai/code/artifact/85633ddd-a7c3-41c6-
 
 ### Phase 2 — Slim `WindowExport.vue` to the LaTeX studio
 
-- [ ] Remove the format `<select>`, the `__wysiwyg_svg__` sentinel + all its branches, and the ICCMA/TGF text/code panels.
-- [ ] Resolve the single LaTeX config from `exportConfigs` (find `codemirrorOptions !== undefined` / `id === Latex`); render nothing if none.
-- [ ] Keep the compact branch (`layoutMode === 'compact'` → `ExportSheet`) untouched.
-- [ ] Style controls out of the collapsed `<details>` → always-visible auto-fit grid (`repeat(auto-fit, minmax(~132px, 1fr))`); Support select still gated on `isBipolarDocument`; node-distance slider on its own row.
+- [x] Remove the format `<select>`, the `__wysiwyg_svg__` sentinel + all its branches, and the ICCMA/TGF text/code panels.
+- [x] Resolve the single LaTeX config from `exportConfigs` (find `codemirrorOptions !== undefined` / `id === Latex`); render nothing if none.
+- [x] Keep the compact branch (`layoutMode === 'compact'` → `ExportSheet`) untouched.
+- [x] Style controls out of the collapsed `<details>` → always-visible auto-fit grid (`repeat(auto-fit, minmax(~132px, 1fr))`); Support select still gated on `isBipolarDocument`; node-distance slider on its own row.
 
 ### Phase 3 — Two-layer model: editable code, live preview, SYNCED/DETACHED
 
