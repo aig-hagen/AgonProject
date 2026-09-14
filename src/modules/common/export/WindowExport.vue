@@ -414,9 +414,9 @@ onBeforeUnmount(() => {
             ></div>
             <span
               v-else-if="previewLoading"
-              class="loading loading-spinner loading-sm text-base-content/40"
+              class="loading loading-spinner loading-sm text-black/40"
             ></span>
-            <span v-else class="text-sm text-base-content/40">{{ t('export.noGraph') }}</span>
+            <span v-else class="text-sm text-black/40">{{ t('export.noGraph') }}</span>
           </div>
         </section>
       </div>
@@ -523,22 +523,19 @@ onBeforeUnmount(() => {
   display: none;
 }
 
+/* The TikZ figure is black-on-transparent (as it prints), so the whole preview pane stays a
+   fixed light "paper" surface in both themes and the figure sits transparently on top of it. */
 .preview-host {
   height: 12.5rem;
   display: grid;
   place-items: center;
   overflow: auto;
   padding: 0.5rem;
-  background: var(--color-base-200);
+  background: #ffffff;
 }
-/* The TikZ figure is black-on-transparent (as it prints), so it sits on its own light "paper"
-   chip — otherwise it would be invisible on a dark pane. */
 .svg-preview {
   display: grid;
   place-items: center;
-  background: #ffffff;
-  border-radius: var(--radius-field);
-  padding: 0.5rem;
 }
 .svg-preview :deep(svg) {
   max-width: 100%;
