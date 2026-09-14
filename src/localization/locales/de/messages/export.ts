@@ -36,10 +36,13 @@ export default {
   preamble: 'Präambel',
   preview: 'Vorschau',
   resetToGraph: 'Auf Graph zurücksetzen',
+  packageNote:
+    'Die Abbildung wird mit dem LaTeX-Paket argumentation gezeichnet — füge die obige Zeile deiner Präambel hinzu.',
   badge: {
     synced: 'Mit Graph synchronisiert',
     detached: 'Bearbeitet · abgekoppelt',
     live: 'live',
+    rendering: 'rendert',
   },
   validation: {
     missing:

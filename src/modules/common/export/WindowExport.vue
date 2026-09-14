@@ -78,7 +78,7 @@ const selectedArgumentStyle = shallowRef<string>('standard')
 const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
 const selectedSupportStyle = shallowRef<string>('double')
-const selectedNodeDistance = shallowRef<number>(1.5)
+const selectedNodeDistance = shallowRef<number>(2)
 
 // The style values are the package's own (untranslated) keywords, so label == value.
 const toOptions = (values: string[]): PickerOption[] => values.map((v) => ({ value: v, label: v }))
@@ -296,7 +296,7 @@ onBeforeUnmount(() => {
     v-model:open="open"
     :title="t('menu.latexStudio')"
     :initial-position="{ x: 64, y: 128 }"
-    :intitalSize="{ width: 720, height: 560 }"
+    :intitalSize="{ width: 720, height: 500 }"
   >
     <ExportSheet
       v-if="layoutMode === 'compact'"
@@ -366,7 +366,9 @@ onBeforeUnmount(() => {
             <span class="section-cap">{{ t('export.preview') }}</span>
             <span class="hairline"></span>
             <span class="badge badge-xs badge-primary badge-soft gap-1">
-              <ArrowPathIcon class="size-3.5" />{{ t('export.badge.live') }}
+              <ArrowPathIcon class="size-3.5" :class="{ 'animate-spin': previewLoading }" />{{
+                previewLoading ? t('export.badge.rendering') : t('export.badge.live')
+              }}
             </span>
           </div>
           <div class="preview-host rounded-box border border-base-300 bg-base-200">
@@ -377,11 +379,16 @@ onBeforeUnmount(() => {
             >
               {{ t('export.previewError') }}
             </div>
+            <div
+              v-else-if="previewSvg"
+              v-html="previewSvg"
+              class="svg-preview transition-opacity"
+              :class="{ 'opacity-40': previewLoading }"
+            ></div>
             <span
               v-else-if="previewLoading"
               class="loading loading-spinner loading-sm text-base-content/50"
             ></span>
-            <div v-else-if="previewSvg" v-html="previewSvg" class="svg-preview"></div>
             <span v-else class="text-sm text-base-content/40">{{ t('export.noGraph') }}</span>
           </div>
         </section>
@@ -414,6 +421,7 @@ onBeforeUnmount(() => {
           <ClipboardDocumentIcon v-else class="size-4" />
         </button>
       </div>
+      <p class="-mt-1.5 text-xs text-base-content/50">{{ t('export.packageNote') }}</p>
 
       <!-- Actions -->
       <div class="flex flex-wrap items-center justify-between gap-3">

@@ -36,10 +36,13 @@ export default {
   preamble: 'Preamble',
   preview: 'Preview',
   resetToGraph: 'Reset to graph',
+  packageNote:
+    'The figure is drawn with the argumentation LaTeX package — add the line above to your preamble.',
   badge: {
     synced: 'Synced with graph',
     detached: 'Edited · detached',
     live: 'live',
+    rendering: 'rendering',
   },
   validation: {
     missing: 'No \\begin{af} environment found — reset to graph before applying style options.',
