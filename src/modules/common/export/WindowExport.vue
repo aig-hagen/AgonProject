@@ -295,7 +295,7 @@ onBeforeUnmount(() => {
     v-model:open="open"
     :title="t('menu.latexStudio')"
     :initial-position="{ x: 64, y: 128 }"
-    :intitalSize="{ width: 720, height: 500 }"
+    :intitalSize="{ width: 720, height: 540 }"
   >
     <ExportSheet
       v-if="layoutMode === 'compact'"
