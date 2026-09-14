@@ -27,6 +27,7 @@ import help from '@/localization/locales/de/messages/help'
 import home from '@/localization/locales/de/messages/home'
 import menu from '@/localization/locales/de/messages/menu'
 import modules from '@/localization/locales/de/messages/modules'
+import notFound from '@/localization/locales/de/messages/notFound'
 import privacy from '@/localization/locales/de/messages/privacy'
 import settings from '@/localization/locales/de/messages/settings'
 import share from '@/localization/locales/de/messages/share'
@@ -47,6 +48,7 @@ const messages: LocaleMessageSchema = {
   home,
   menu,
   modules,
+  notFound,
   privacy,
   settings,
   share,

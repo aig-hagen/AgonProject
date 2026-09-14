@@ -27,6 +27,7 @@ import help from '@/localization/locales/en/messages/help'
 import home from '@/localization/locales/en/messages/home'
 import menu from '@/localization/locales/en/messages/menu'
 import modules from '@/localization/locales/en/messages/modules'
+import notFound from '@/localization/locales/en/messages/notFound'
 import privacy from '@/localization/locales/en/messages/privacy'
 import settings from '@/localization/locales/en/messages/settings'
 import share from '@/localization/locales/en/messages/share'
@@ -46,6 +47,7 @@ export default {
   home,
   menu,
   modules,
+  notFound,
   privacy,
   settings,
   share,
