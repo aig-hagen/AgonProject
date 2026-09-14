@@ -96,7 +96,7 @@ Design mockups & rationale: <https://claude.ai/code/artifact/85633ddd-a7c3-41c6-
   - Treat the first `\begin{af}` as the canonical options marker. If a detached edit removes it
     or creates an ambiguous structure, leave the buffer untouched, show an inline validation
     message, and require Reset to graph before appearance knobs can be applied again.
-- [x] **Reset to graph** button (shown in DETACHED): regenerate `f(graph)` + options → `synced`; confirm only if the buffer differs from generated.
+- [x] **Reset to graph** button (shown in DETACHED): regenerate `f(graph)` + options → `synced`. (Confirmation popup removed per user request — reset is immediate.)
 - [x] Status badge: "Synced with graph" / "Edited · detached".
 - [x] Close/reopen lifecycle: on close cancel queued preview work and discard the buffer/mode;
   on reopen regenerate from the then-current graph and start SYNCED. This must be explicit because

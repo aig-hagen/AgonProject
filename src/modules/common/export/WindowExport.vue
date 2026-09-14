@@ -36,6 +36,8 @@ import { buildAfOptionList, spliceAfOptions } from '@/modules/common/argumentati
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ExportSheet from '@/modules/common/export/ExportSheet.vue'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
@@ -77,6 +79,13 @@ const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
 const selectedSupportStyle = shallowRef<string>('double')
 const selectedNodeDistance = shallowRef<number>(1.5)
+
+// The style values are the package's own (untranslated) keywords, so label == value.
+const toOptions = (values: string[]): PickerOption[] => values.map((v) => ({ value: v, label: v }))
+const argumentStyleOptions = toOptions(['standard', 'large', 'thick', 'gray', 'colored'])
+const nameStyleOptions = toOptions(['math', 'bold', 'monospace', 'monoemph', 'none'])
+const attackStyleOptions = toOptions(['standard', 'large', 'modern'])
+const supportStyleOptions = toOptions(['standard', 'dashed', 'double'])
 
 const isBipolarDocument = computed(() => {
   const maybeSupports = (input as unknown as { supports?: unknown }).supports
@@ -134,10 +143,6 @@ function applySynced() {
 }
 
 function resetToGraph() {
-  const fresh = generateSyncedBuffer()
-  if (bufferText.value !== fresh && !window.confirm(t('export.resetConfirm'))) {
-    return
-  }
   applySynced()
 }
 
@@ -302,58 +307,24 @@ onBeforeUnmount(() => {
     />
     <div v-else-if="latexConfig" class="flex flex-col gap-4 p-4">
       <!-- Style -->
-      <section class="flex flex-col gap-2.5">
-        <div class="flex items-center gap-2">
-          <span class="section-cap">{{ t('export.style.parameters') }}</span>
-          <span class="hairline"></span>
-          <a
-            v-if="latexConfig.references?.[0]"
-            :href="latexConfig.references[0].url"
-            :title="latexConfig.references[0].label"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn-xs btn-ghost btn-square"
+      <section class="flex flex-col gap-3">
+        <div class="flex flex-wrap gap-3">
+          <ParameterField :label="t('export.style.argumentStyle')" min-width="8.5rem">
+            <PickerSelect v-model="selectedArgumentStyle" :options="argumentStyleOptions" />
+          </ParameterField>
+          <ParameterField :label="t('export.style.nameStyle')" min-width="8.5rem">
+            <PickerSelect v-model="selectedNameStyle" :options="nameStyleOptions" />
+          </ParameterField>
+          <ParameterField :label="t('export.style.attackStyle')" min-width="8.5rem">
+            <PickerSelect v-model="selectedAttackStyle" :options="attackStyleOptions" />
+          </ParameterField>
+          <ParameterField
+            v-if="isBipolarDocument"
+            :label="t('export.style.supportStyle')"
+            min-width="8.5rem"
           >
-            <ArrowTopRightOnSquareIcon class="size-4" />
-          </a>
-        </div>
-        <div class="style-grid">
-          <label class="style-field">
-            <span>{{ t('export.style.argumentStyle') }}</span>
-            <select v-model="selectedArgumentStyle" class="select select-sm w-full">
-              <option value="standard">standard</option>
-              <option value="large">large</option>
-              <option value="thick">thick</option>
-              <option value="gray">gray</option>
-              <option value="colored">colored</option>
-            </select>
-          </label>
-          <label class="style-field">
-            <span>{{ t('export.style.nameStyle') }}</span>
-            <select v-model="selectedNameStyle" class="select select-sm w-full">
-              <option value="math">math</option>
-              <option value="bold">bold</option>
-              <option value="monospace">monospace</option>
-              <option value="monoemph">monoemph</option>
-              <option value="none">none</option>
-            </select>
-          </label>
-          <label class="style-field">
-            <span>{{ t('export.style.attackStyle') }}</span>
-            <select v-model="selectedAttackStyle" class="select select-sm w-full">
-              <option value="standard">standard</option>
-              <option value="large">large</option>
-              <option value="modern">modern</option>
-            </select>
-          </label>
-          <label v-if="isBipolarDocument" class="style-field">
-            <span>{{ t('export.style.supportStyle') }}</span>
-            <select v-model="selectedSupportStyle" class="select select-sm w-full">
-              <option value="standard">standard</option>
-              <option value="dashed">dashed</option>
-              <option value="double">double</option>
-            </select>
-          </label>
+            <PickerSelect v-model="selectedSupportStyle" :options="supportStyleOptions" />
+          </ParameterField>
         </div>
         <div class="flex items-center gap-3 text-sm" :class="{ 'opacity-40': mode === 'detached' }">
           <span class="text-base-content/70">{{ t('export.style.nodeDistance') }}</span>
@@ -424,6 +395,16 @@ onBeforeUnmount(() => {
       <div class="preamble-bar">
         <span class="preamble-tag">{{ t('export.preamble') }}</span>
         <code class="grow truncate font-mono text-xs">{{ PREAMBLE_HINT }}</code>
+        <a
+          v-if="latexConfig.references?.[0]"
+          :href="latexConfig.references[0].url"
+          :title="latexConfig.references[0].label"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-xs btn-ghost btn-square"
+        >
+          <ArrowTopRightOnSquareIcon class="size-4" />
+        </a>
         <button
           class="btn btn-xs btn-ghost btn-square"
           :title="t('export.button.copyBare')"
@@ -475,22 +456,6 @@ onBeforeUnmount(() => {
   flex: 1 1 auto;
   height: 1px;
   background: var(--color-base-300);
-}
-
-.style-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
-  gap: 0.625rem;
-}
-.style-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.style-field > span {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: color-mix(in oklch, var(--color-base-content) 72%, transparent);
 }
 
 /* Code editor and preview share one fixed height so the two columns line up. */

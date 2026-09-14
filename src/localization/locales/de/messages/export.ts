@@ -36,7 +36,6 @@ export default {
   preamble: 'Präambel',
   preview: 'Vorschau',
   resetToGraph: 'Auf Graph zurücksetzen',
-  resetConfirm: 'Änderungen verwerfen und den Code neu aus dem Graphen erzeugen?',
   badge: {
     synced: 'Mit Graph synchronisiert',
     detached: 'Bearbeitet · abgekoppelt',

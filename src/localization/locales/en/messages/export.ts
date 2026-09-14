@@ -36,7 +36,6 @@ export default {
   preamble: 'Preamble',
   preview: 'Preview',
   resetToGraph: 'Reset to graph',
-  resetConfirm: 'Discard your edits and regenerate the code from the graph?',
   badge: {
     synced: 'Synced with graph',
     detached: 'Edited · detached',
