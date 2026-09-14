@@ -385,7 +385,7 @@ onBeforeUnmount(() => {
           </div>
           <div
             ref="soureView"
-            class="cm-host overflow-hidden rounded-box border border-base-300 bg-base-100"
+            class="cm-host overflow-hidden rounded-box border border-base-300 bg-base-200"
           ></div>
         </section>
         <section class="flex min-w-0 flex-col gap-1.5">
@@ -414,9 +414,9 @@ onBeforeUnmount(() => {
             ></div>
             <span
               v-else-if="previewLoading"
-              class="loading loading-spinner loading-sm text-black/40"
+              class="loading loading-spinner loading-sm text-base-content/40"
             ></span>
-            <span v-else class="text-sm text-black/40">{{ t('export.noGraph') }}</span>
+            <span v-else class="text-sm text-base-content/40">{{ t('export.noGraph') }}</span>
           </div>
         </section>
       </div>
@@ -507,7 +507,7 @@ onBeforeUnmount(() => {
 }
 .cm-host :deep(.cm-editor) {
   height: 100%;
-  background-color: var(--color-base-100);
+  background-color: var(--color-base-200);
   color: var(--color-base-content);
 }
 .cm-host :deep(.cm-scroller) {
@@ -517,7 +517,7 @@ onBeforeUnmount(() => {
   color: var(--color-base-content);
 }
 .cm-host :deep(.cm-gutters) {
-  background-color: var(--color-base-100);
+  background-color: var(--color-base-200);
 }
 .cm-host :deep(.cm-tooltip) {
   display: none;
@@ -529,13 +529,16 @@ onBeforeUnmount(() => {
   place-items: center;
   overflow: auto;
   padding: 0.5rem;
-  /* The TikZ figure is black-on-transparent (as it prints), so keep a fixed light "paper"
-     surface in both themes — otherwise the figure is invisible on a dark background. */
-  background: #ffffff;
+  background: var(--color-base-200);
 }
+/* The TikZ figure is black-on-transparent (as it prints), so it sits on its own light "paper"
+   chip — otherwise it would be invisible on a dark pane. */
 .svg-preview {
   display: grid;
   place-items: center;
+  background: #ffffff;
+  border-radius: var(--radius-field);
+  padding: 0.5rem;
 }
 .svg-preview :deep(svg) {
   max-width: 100%;
