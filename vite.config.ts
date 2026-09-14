@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -15,6 +16,33 @@ import backendRoutes from './config/backend-routes.json'
 
 const solverTarget = 'http://localhost:8080/'
 const solverProxy = Object.fromEntries(backendRoutes.solverPaths.map((p) => [p, solverTarget]))
+
+// The solver endpoints are POST-only. Mirror the prod (Caddyfile) behaviour in
+// dev/preview: a browser GET/HEAD to one of them gets the friendly notice page
+// instead of the backend's raw error. Runs before the proxy so POST still flows.
+function solverBrowseNoticePlugin(): Plugin {
+  const notice = readFileSync(
+    fileURLToPath(new URL('./public/api-endpoint.html', import.meta.url)),
+    'utf8',
+  )
+  const solverPaths = new Set<string>(backendRoutes.solverPaths)
+  const install = (server: ViteDevServer | PreviewServer) => {
+    server.middlewares.use((req, res, next) => {
+      const method = req.method?.toUpperCase()
+      if (method !== 'GET' && method !== 'HEAD') return next()
+      if (!solverPaths.has((req.url ?? '').split('?')[0]!)) return next()
+      res.statusCode = 405
+      res.setHeader('Allow', 'POST')
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      res.end(method === 'HEAD' ? undefined : notice)
+    })
+  }
+  return {
+    name: 'solver-browse-notice',
+    configureServer: install,
+    configurePreviewServer: install,
+  }
+}
 
 // Solves with vite compression when serving `*.sty.gz` files:
 // See https://github.com/vitejs/vite/issues/12266#issuecomment-2131263039
@@ -69,6 +97,7 @@ export default defineConfig({
       ],
     }),
     gzipFixPlugin(),
+    solverBrowseNoticePlugin(),
     // The devtools overlay intercepts pointer events (disabled under e2e) and shows
     // a floating icon (set NO_DEVTOOLS=1 for clean screenshots).
     ...(process.env.E2E || process.env.NO_DEVTOOLS ? [] : [vueDevTools()]),

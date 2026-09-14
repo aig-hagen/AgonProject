@@ -1,0 +1,178 @@
+<!--
+  AgonProject - The platform to explore different approaches to formal argumentation.
+
+  Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>API endpoint &middot; AgonProject</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        /* Standalone page: values mirror @/modules/common/theme/palette.ts. */
+        --bg: #eef2f6;
+        --card: #ffffff;
+        --fg: #162536;
+        --muted: #526475;
+        --border: #dce4ec;
+        --accent: #004c97;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #17222c;
+          --card: #1c2833;
+          --fg: #e7eef4;
+          --muted: #9fb0bd;
+          --border: #2a3a48;
+          --accent: #7ea9ce;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        line-height: 1.55;
+      }
+      .card {
+        width: 100%;
+        max-width: 30rem;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0.35rem 0;
+        color: var(--muted);
+      }
+      code {
+        font-size: 0.9em;
+        padding: 0.1em 0.35em;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+      }
+      .cta {
+        display: inline-block;
+        margin-top: 1.5rem;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px;
+        background: var(--accent);
+        color: var(--card);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .brand {
+        margin-top: 1.75rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .brand strong {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1 data-i18n="heading">This is an API endpoint</h1>
+      <p data-i18n="body1">
+        This URL is a <code>POST</code>-only endpoint of the AgonProject argumentation solver, not a
+        page you open in a browser.
+      </p>
+      <a class="cta" href="/" data-i18n="cta">Open the app</a>
+      <p class="brand"><strong>AgonProject</strong> &middot; AIG Hagen</p>
+    </main>
+    <!--
+      Self-contained localization: this page is served for browser (GET) visits to the
+      POST-only solver endpoints, outside the Vue app, so it cannot use vue-i18n. It mirrors
+      the app's locale selection: the persisted `settings:locale` preference first, then the
+      browser languages, then English.
+    -->
+    <script>
+      ;(function () {
+        var messages = {
+          en: {
+            title: 'API endpoint · AgonProject',
+            heading: 'This is an API endpoint',
+            body1:
+              'This URL is a POST-only endpoint of the AgonProject argumentation solver, not a page you open in a browser.',
+            cta: 'Open the app',
+          },
+          de: {
+            title: 'API-Endpunkt · AgonProject',
+            heading: 'Dies ist ein API-Endpunkt',
+            body1:
+              'Diese URL ist ein POST-Endpunkt des AgonProject-Argumentationslösers, keine Seite, die du im Browser öffnest.',
+            cta: 'App öffnen',
+          },
+        }
+
+        function resolveLocale() {
+          try {
+            var stored = localStorage.getItem('settings:locale')
+            if (stored === 'de' || stored === 'en') return stored
+          } catch (e) {
+            /* storage blocked (private mode etc.) — fall through to browser detection */
+          }
+          var langs = navigator.languages || [navigator.language || 'en']
+          for (var i = 0; i < langs.length; i++) {
+            var base = String(langs[i]).toLowerCase().split('-')[0]
+            if (base === 'de') return 'de'
+            if (base === 'en') return 'en'
+          }
+          return 'en'
+        }
+
+        var locale = resolveLocale()
+        var t = messages[locale]
+        document.documentElement.lang = locale
+        document.title = t.title
+        var nodes = document.querySelectorAll('[data-i18n]')
+        for (var j = 0; j < nodes.length; j++) {
+          nodes[j].textContent = t[nodes[j].getAttribute('data-i18n')]
+        }
+      })()
+    </script>
+  </body>
+</html>

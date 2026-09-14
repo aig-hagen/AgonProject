@@ -38,15 +38,30 @@ http://:8080 {
 	# Vite dev proxy). Caddy can't read it, so keep this line in sync by hand.
 	@backend path /dung /setaf /bipolar /rankings /adf /serialisation /paf /iaf
 	handle @backend {
-		rate_limit {
-			zone tweety {
-				key {remote_host}
-				events 60
-				window 1m
+		# The solver endpoints are POST-only. A browser GET/HEAD (someone opening
+		# the URL) would otherwise hit the backend's raw error page, so answer it
+		# with a friendly 405 that points back to the app instead.
+		@browse method GET HEAD
+		handle @browse {
+			header Allow "POST"
+			rewrite * /api-endpoint.html
+			file_server {
+				status 405
 			}
 		}
-		# log_append proxy_target http://localhost:8081
-		reverse_proxy http://localhost:8081
+
+		# Real (POST) solver calls: rate-limited, then proxied to the backend.
+		handle {
+			rate_limit {
+				zone tweety {
+					key {remote_host}
+					events 60
+					window 1m
+				}
+			}
+			# log_append proxy_target http://localhost:8081
+			reverse_proxy http://localhost:8081
+		}
 	}
 
 	@graph-gen path /graph-gen/*
