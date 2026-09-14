@@ -89,7 +89,7 @@ docker run -p 8080:8080 ghcr.io/aig-hagen/AgonProject:latest
 ```
 
 Else you have to build and run the [TweetyProject](https://github.com/TweetyProjectTeam/TweetyProject) from source.
-You can check out their [Developer Guide](https://tweetyproject.org/doc/dev-guide.html) and our [Dockerfile](/Dockerfile) on how to achieve this. For example, you can achieve this by running the following commands inside the TweetyProject:
+You can check out the [TweetyProject website](https://tweetyproject.org/) and our [Dockerfile](/Dockerfile) on how to achieve this. For example, you can achieve this by running the following commands inside the TweetyProject:
 
 ```sh
 mvn install -Dgpg.skip=true
