@@ -17,7 +17,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts" generic="DocumentT">
-import { Annotation, type Extension, Transaction } from '@codemirror/state'
+import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { Annotation, type Extension, Prec, Transaction } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import {
   ArrowPathIcon,
@@ -26,6 +27,7 @@ import {
   ClipboardDocumentIcon,
   PencilSquareIcon,
 } from '@heroicons/vue/24/outline'
+import { tags } from '@lezer/highlight'
 import { basicSetup } from 'codemirror'
 import copy from 'copy-to-clipboard'
 import { computed, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from 'vue'
@@ -49,6 +51,31 @@ import { ExportFormatId } from '.'
 const internalChange = Annotation.define<boolean>()
 
 const PREAMBLE_HINT = '\\usepackage{argumentation}'
+
+// Palette-driven syntax colours so the code reads correctly in both light and dark: the values
+// resolve from the active daisyUI theme, unlike basicSetup's light-tuned default highlight style.
+const studioHighlightStyle = HighlightStyle.define([
+  {
+    tag: [tags.controlKeyword, tags.keyword, tags.moduleKeyword],
+    color: 'var(--color-primary)',
+    fontWeight: '600',
+  },
+  {
+    tag: [tags.tagName, tags.name, tags.labelName, tags.className, tags.typeName],
+    color: 'var(--color-accent)',
+  },
+  { tag: [tags.string, tags.special(tags.string)], color: 'var(--color-success)' },
+  { tag: [tags.number, tags.literal, tags.unit], color: 'var(--color-info)' },
+  {
+    tag: [tags.comment, tags.lineComment, tags.blockComment],
+    color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+    fontStyle: 'italic',
+  },
+  {
+    tag: [tags.variableName, tags.propertyName, tags.attributeName],
+    color: 'var(--color-base-content)',
+  },
+])
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -244,6 +271,7 @@ watch(
       parent: sourceView,
       extensions: [
         basicSetup,
+        Prec.high(syntaxHighlighting(studioHighlightStyle)),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (!update.docChanged) return
@@ -370,7 +398,7 @@ onBeforeUnmount(() => {
               }}
             </span>
           </div>
-          <div class="preview-host rounded-box border border-base-300 bg-base-200">
+          <div class="preview-host rounded-box border border-base-300">
             <div
               v-if="previewError"
               class="px-3 text-center text-sm text-error"
@@ -386,9 +414,9 @@ onBeforeUnmount(() => {
             ></div>
             <span
               v-else-if="previewLoading"
-              class="loading loading-spinner loading-sm text-base-content/50"
+              class="loading loading-spinner loading-sm text-black/40"
             ></span>
-            <span v-else class="text-sm text-base-content/40">{{ t('export.noGraph') }}</span>
+            <span v-else class="text-sm text-black/40">{{ t('export.noGraph') }}</span>
           </div>
         </section>
       </div>
@@ -501,6 +529,9 @@ onBeforeUnmount(() => {
   place-items: center;
   overflow: auto;
   padding: 0.5rem;
+  /* The TikZ figure is black-on-transparent (as it prints), so keep a fixed light "paper"
+     surface in both themes — otherwise the figure is invisible on a dark background. */
+  background: #ffffff;
 }
 .svg-preview {
   display: grid;
