@@ -61,8 +61,9 @@ Track and Global Privacy Control. See the in-app Privacy page or the
   AgonProject extensions; see [ICCMA-style formats](./formats/iccma-format.md).
 - [TGF](./formats/tgf-format.md) is intended for graph interchange and uses project-specific
   annotations for BAF, IAF, PAF, and SetAF.
-- [LaTeX](./formats/latex-format.md) export produces TikZ source and, on desktop, a rendered SVG
-  preview.
+- [LaTeX](./formats/latex-format.md) export opens the LaTeX studio on desktop: editable TikZ source
+  beside a live rendered preview. ICCMA and TGF are one-click copy/download actions in the Export
+  menu.
 - [Graph SVG](./formats/svg-format.md) directly captures the live editor canvas on desktop and
   compact layouts, independently of the LaTeX preview.
 

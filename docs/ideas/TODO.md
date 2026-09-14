@@ -1,7 +1,6 @@
 ## Features
 - Rework fonts to be consistent across browsers
 - Localization of definitions, semantics, etc
-- the export window could use a redesign
 
 ## Bugs and Issues
 
