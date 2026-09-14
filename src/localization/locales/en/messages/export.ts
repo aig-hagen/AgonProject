@@ -39,8 +39,8 @@ export default {
   packageNote:
     'The figure is drawn with the argumentation LaTeX package — add the line above to your preamble.',
   badge: {
-    synced: 'Synced with graph',
-    detached: 'Edited · detached',
+    synced: 'Synced',
+    detached: 'Edited',
     live: 'live',
     rendering: 'rendering',
   },
