@@ -28,7 +28,6 @@ import {
   ChevronRightIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentIcon,
-  CodeBracketIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
   FolderOpenIcon,
@@ -44,6 +43,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import { type ExportConfig, type ExportFileData, ExportFormatId } from '@/modules/common/export'
+import TexIcon from '@/modules/common/export/TexIcon.vue'
 import { GRAPH_SVG_RENDERER_KEY, QUICK_EXPORT_KEY } from '@/modules/common/graph-editor/graphEditor'
 import {
   Layout,
@@ -347,7 +347,7 @@ function downloadGraphImage() {
               'opacity-50 pointer-events-none': showExport === EntryState.DISABLE,
             }"
             @click="emit('export')"
-            ><CodeBracketIcon class="size-5 menu-icon" />{{ t('menu.latexStudio') }}</a
+            ><TexIcon class="size-5 menu-icon" />{{ t('menu.latexStudio') }}</a
           >
         </li>
         <li v-if="showShare !== EntryState.HIDE">

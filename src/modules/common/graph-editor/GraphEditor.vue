@@ -42,7 +42,6 @@ import {
   Bars3Icon,
   BookOpenIcon,
   ChevronDownIcon,
-  CodeBracketIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
   FolderOpenIcon,
@@ -80,6 +79,7 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import type { ExportFileData } from '@/modules/common/export'
 import { serializeGraphSvg } from '@/modules/common/export/renderGraphSvg'
+import TexIcon from '@/modules/common/export/TexIcon.vue'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
   GRAPH_EDITOR_LAYOUTS,
@@ -1944,7 +1944,7 @@ defineExpose({
             @click="isExportOpened = !isExportOpened"
             :title="t('menu.latexStudio')"
           >
-            <CodeBracketIcon class="size-6 opacity-70" />
+            <TexIcon class="size-6 opacity-70" />
           </button>
         </div>
       </div>
