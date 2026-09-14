@@ -26,6 +26,9 @@ import {
   Bars3Icon,
   BookOpenIcon,
   ChevronRightIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentIcon,
+  CodeBracketIcon,
   Cog6ToothIcon,
   DocumentPlusIcon,
   FolderOpenIcon,
@@ -35,10 +38,13 @@ import {
   SparklesIcon,
   Squares2X2Icon,
 } from '@heroicons/vue/24/outline'
-import { computed } from 'vue'
+import copy from 'copy-to-clipboard'
+import { computed, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
+import { type ExportConfig, type ExportFileData, ExportFormatId } from '@/modules/common/export'
+import { GRAPH_SVG_RENDERER_KEY, QUICK_EXPORT_KEY } from '@/modules/common/graph-editor/graphEditor'
 import {
   Layout,
   type LayoutData,
@@ -74,6 +80,7 @@ const emit = defineEmits<{
   layout: [layout: Layout]
   redo: []
   export: []
+  exportFile: [filedata: ExportFileData]
   share: []
   generate: []
   help: []
@@ -113,6 +120,43 @@ const otherLayoutDatasToShow = computed<Record<Layout, LayoutData>>(() => {
 })
 
 const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.value).length > 0)
+
+// Provided by the module editor (quick formats) and the common editor (live graph SVG). The menu
+// runs config.export() lazily on click, so nothing serializes until the user actually copies/saves.
+const quickExport = inject(QUICK_EXPORT_KEY, undefined)
+const graphSvgRenderer = inject(GRAPH_SVG_RENDERER_KEY, undefined)
+
+const nonLatexConfigs = computed(() =>
+  (quickExport?.configs ?? []).filter((config) => config.id !== ExportFormatId.Latex),
+)
+const hasLatexExport = computed(() =>
+  (quickExport?.configs ?? []).some((config) => config.id === ExportFormatId.Latex),
+)
+const hasQuickExports = computed(
+  () => nonLatexConfigs.value.length > 0 || graphSvgRenderer !== undefined,
+)
+
+const copiedId = ref<string | undefined>(undefined)
+let copiedTimeout: ReturnType<typeof setTimeout>
+function copyConfig(config: ExportConfig<unknown>) {
+  if (quickExport === undefined) return
+  copy(config.export(quickExport.getInput()).text)
+  copiedId.value = config.id
+  clearTimeout(copiedTimeout)
+  copiedTimeout = setTimeout(() => (copiedId.value = undefined), 800)
+}
+function downloadConfig(config: ExportConfig<unknown>) {
+  if (quickExport === undefined) return
+  emit('exportFile', {
+    content: config.export(quickExport.getInput()).text,
+    ending: config.extension ?? 'txt',
+  })
+}
+function downloadGraphImage() {
+  const svg = graphSvgRenderer?.()
+  if (!svg) return
+  emit('exportFile', { content: svg, ending: 'svg' })
+}
 </script>
 <template>
   <div class="dropdown pointer-events-auto">
@@ -246,13 +290,64 @@ const hasDirectedLayouts = computed(() => Object.keys(directedLayoutDatasToShow.
       </template>
       <template v-if="showExport !== EntryState.HIDE">
         <li class="disabled"><hr class="mt-2 border-base-300" /></li>
-        <li>
+        <li v-if="hasQuickExports">
+          <div class="dropdown dropdown-hover dropdown-right">
+            <a class="flex flex-row justify-between">
+              <div>
+                <ArrowDownTrayIcon class="inline size-5 menu-icon mr-2" />
+                <span>{{ t('menu.export') }}</span>
+              </div>
+              <ChevronRightIcon class="size-5 opacity-40" />
+            </a>
+            <div tabindex="-1" class="dropdown-content p-0">
+              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
+                <li v-for="config in nonLatexConfigs" :key="config.id">
+                  <div class="flex flex-row items-center justify-between gap-6">
+                    <span>{{ config.name }}</span>
+                    <span class="flex gap-1">
+                      <button
+                        class="btn btn-xs btn-ghost btn-square"
+                        :title="t('export.button.copyBare')"
+                        @click.stop="copyConfig(config)"
+                      >
+                        <ClipboardDocumentCheckIcon v-if="copiedId === config.id" class="size-4" />
+                        <ClipboardDocumentIcon v-else class="size-4" />
+                      </button>
+                      <button
+                        class="btn btn-xs btn-ghost btn-square"
+                        :title="t('export.button.saveBare')"
+                        @click.stop="downloadConfig(config)"
+                      >
+                        <ArrowDownTrayIcon class="size-4" />
+                      </button>
+                    </span>
+                  </div>
+                </li>
+                <li v-if="graphSvgRenderer">
+                  <div class="flex flex-row items-center justify-between gap-6">
+                    <span class="flex items-center">
+                      <PhotoIcon class="size-5 menu-icon mr-2" />{{ t('export.exportImage') }}
+                    </span>
+                    <button
+                      class="btn btn-xs btn-ghost btn-square"
+                      :title="t('export.button.saveBare')"
+                      @click.stop="downloadGraphImage"
+                    >
+                      <ArrowDownTrayIcon class="size-4" />
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </li>
+        <li v-if="hasLatexExport">
           <a
             :class="{
               'opacity-50 pointer-events-none': showExport === EntryState.DISABLE,
             }"
             @click="emit('export')"
-            ><PhotoIcon class="size-5 menu-icon" />{{ t('menu.export') }}</a
+            ><CodeBracketIcon class="size-5 menu-icon" />{{ t('menu.latexStudio') }}</a
           >
         </li>
         <li v-if="showShare !== EntryState.HIDE">

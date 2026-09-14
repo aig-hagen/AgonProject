@@ -19,6 +19,7 @@
 export default {
   format: 'Format',
   svgImage: 'SVG (Bild)',
+  exportImage: 'Bild exportieren',
   sections: {
     image: 'Bild',
     text: 'Text',

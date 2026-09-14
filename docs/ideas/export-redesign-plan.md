@@ -55,21 +55,21 @@ Design mockups & rationale: <https://claude.ai/code/artifact/85633ddd-a7c3-41c6-
 
 ### Phase 0 — Prep: shared types & injection key
 
-- [ ] Add a `QUICK_EXPORT_KEY` injection key (alongside `GRAPH_SVG_RENDERER_KEY` in `graphEditor.ts`) carrying `{ configs: ExportConfig<unknown>[]; getInput: () => unknown }` (typed pragmatically; the configs are already generic).
-- [ ] Each module `GraphEditor.vue` `provide(QUICK_EXPORT_KEY, { configs: availableExports, getInput: () => state.current.content })`. (Module editor is the ancestor of common `GraphEditor` → MainMenu can inject.)
+- [x] Add a `QUICK_EXPORT_KEY` injection key (alongside `GRAPH_SVG_RENDERER_KEY` in `graphEditor.ts`) carrying `{ configs: ExportConfig<unknown>[]; getInput: () => unknown }` (typed pragmatically; the configs are already generic).
+- [x] Each module `GraphEditor.vue` `provide(QUICK_EXPORT_KEY, { configs: availableExports, getInput: () => state.current.content })`. (Module editor is the ancestor of common `GraphEditor` → MainMenu can inject.)
 
 ### Phase 1 — Quick-export menu (additive; window still works)
 
-- [ ] New `Export` submenu in `MainMenu.vue` (follow the Layout submenu markup):
+- [x] New `Export` submenu in `MainMenu.vue` (follow the Layout submenu markup):
   - inject `QUICK_EXPORT_KEY` + `GRAPH_SVG_RENDERER_KEY`.
   - list non-LaTeX configs (`id !== ExportFormatId.Latex`): each row = copy + download (icons per mockup).
   - "Export image" row = download only; content from `graphSvgRenderer()` (skip row if renderer/`null`).
   - **copy** → inline `copy-to-clipboard` of `config.export(getInput()).text` (lazy, on click).
   - **download** → emit `ExportFileData { content, ending: config.extension ?? 'txt' }`.
-- [ ] Add a top-level **LaTeX studio** entry in `MainMenu.vue` (LaTeX/code icon) → emits the studio-open event. Keep it visible only when a LaTeX config exists.
-- [ ] Route the menu's download event up: add `export-file: [ExportFileData]` emit on common `GraphEditor.vue`; each module editor forwards it to its existing `export` emit (→ `exportAsFile`).
-- [ ] Rewire the bottom toolbar button (`exportButton`, currently `PhotoIcon`) to open the studio directly; swap the icon to a LaTeX/code glyph.
-- [ ] Rename the MainMenu `export` intent to "open LaTeX studio" (both toolbar + menu entry drive `isExportOpened`).
+- [x] Add a top-level **LaTeX studio** entry in `MainMenu.vue` (LaTeX/code icon) → emits the studio-open event. Keep it visible only when a LaTeX config exists.
+- [x] Route the menu's download event up: add `export-file: [ExportFileData]` emit on common `GraphEditor.vue`; each module editor forwards it to its existing `export` emit (→ `exportAsFile`).
+- [x] Rewire the bottom toolbar button (`exportButton`, currently `PhotoIcon`) to open the studio directly; swap the icon to a LaTeX/code glyph. **Icon: `CodeBracketIcon` (confirmed).**
+- [x] Rename the MainMenu `export` intent to "open LaTeX studio" (both toolbar + menu entry drive `isExportOpened`).
 
 ### Phase 2 — Slim `WindowExport.vue` to the LaTeX studio
 
