@@ -3,10 +3,6 @@
 - Localization of definitions, semantics, etc
 - the export window could use a redesign
 
-- tweetyproject webservice is actually exposed publically. handle that
-- in general, trying to open a non existing URL route shows an empty screen, handle that. using eg /dung show a generic error page, handle that
-- what about the other services? are they publically open?
-
 ## Bugs and Issues
 
 
