@@ -8,6 +8,14 @@ import { defineConfig, Plugin, PreviewServer, ViteDevServer } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
+// Canonical list of solver API paths. The prod reverse proxy in
+// deployment/Caddyfile (@backend) must mirror these by hand — Caddy can't read
+// this file — so keep the two in sync when adding an endpoint.
+import backendRoutes from './config/backend-routes.json'
+
+const solverTarget = 'http://localhost:8080/'
+const solverProxy = Object.fromEntries(backendRoutes.solverPaths.map((p) => [p, solverTarget]))
+
 // Solves with vite compression when serving `*.sty.gz` files:
 // See https://github.com/vitejs/vite/issues/12266#issuecomment-2131263039
 function gzipFixPlugin(): Plugin {
@@ -72,14 +80,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/dung': 'http://localhost:8080/',
-      '/setaf': 'http://localhost:8080/',
-      '/bipolar': 'http://localhost:8080/',
-      '/rankings': 'http://localhost:8080/',
-      '/serialisation': 'http://localhost:8080/',
-      '/paf': 'http://localhost:8080/',
-      '/adf': 'http://localhost:8080/',
-      '/iaf': 'http://localhost:8080/',
+      ...solverProxy,
       '/graph-gen': {
         target: 'http://localhost:8000',
         rewrite: (path) => path.replace(/^\/graph-gen/, ''),

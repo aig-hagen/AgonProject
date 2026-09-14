@@ -34,6 +34,8 @@ http://:8080 {
 		}
 	}
 
+	# Canonical solver path list lives in config/backend-routes.json (used by the
+	# Vite dev proxy). Caddy can't read it, so keep this line in sync by hand.
 	@backend path /dung /setaf /bipolar /rankings /adf /serialisation /paf /iaf
 	handle @backend {
 		rate_limit {

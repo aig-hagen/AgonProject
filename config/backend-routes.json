@@ -1,0 +1,12 @@
+{
+  "solverPaths": [
+    "/dung",
+    "/setaf",
+    "/bipolar",
+    "/rankings",
+    "/serialisation",
+    "/paf",
+    "/adf",
+    "/iaf"
+  ]
+}
