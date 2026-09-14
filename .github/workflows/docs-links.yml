@@ -20,6 +20,7 @@ jobs:
           args: >-
             --no-progress
             --include-fragments
+            --root-dir "${{ github.workspace }}"
             README.md CONTRIBUTING.md CHANGELOG.md
             docs/README.md docs/user-guide.md
             docs/architecture/*.md
