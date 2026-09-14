@@ -9,7 +9,7 @@ const MODULES = [
   'Abstract Argumentation',
   'Bipolar Argumentation',
   'Incomplete Argumentation',
-  'Dialectical Argumentation',
+  'Abstract Dialectical Frameworks',
   'Probabilistic Argumentation',
 ]
 

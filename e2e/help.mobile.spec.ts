@@ -29,7 +29,7 @@ test('AF Help describes tap as rename', async ({ page }) => {
 })
 
 test('ADF Help describes tap as opening the acceptance condition', async ({ page }) => {
-  await openExample(page, 'Dialectical Argumentation')
+  await openExample(page, 'Abstract Dialectical Frameworks')
   const help = await openHelp(page)
   await expect(help.getByText('Open its acceptance condition')).toBeVisible()
   await expect(help.getByText('Rename it')).toHaveCount(0)
