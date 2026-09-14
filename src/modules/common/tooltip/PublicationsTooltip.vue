@@ -64,7 +64,7 @@ function onMouseLeave() {
       <div
         v-show="open"
         :style="tooltipStyle"
-        class="fixed z-9999 w-80 rounded-box bg-base-100 shadow-lg p-3 flex flex-col gap-1"
+        class="fixed z-9999 w-80 rounded-box bg-base-200 border border-base-300 shadow-xl ring-1 ring-base-content/5 p-3 flex flex-col gap-1"
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"
       >
