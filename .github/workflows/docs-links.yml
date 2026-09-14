@@ -20,6 +20,9 @@ jobs:
           args: >-
             --no-progress
             --include-fragments
+            --root-dir "${{ github.workspace }}"
+            --accept 200..=299,429
+            --max-retries 2
             README.md CONTRIBUTING.md CHANGELOG.md
             docs/README.md docs/user-guide.md
             docs/architecture/*.md

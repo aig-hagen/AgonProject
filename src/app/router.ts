@@ -25,6 +25,7 @@ import { trackPageView } from '@/app/usage/report'
 // navigation to keep them off first paint.
 const GenerateView = () => import('@/app/generate/GenerateView.vue')
 const GlossaryView = () => import('@/app/glossary/GlossaryView.vue')
+const NotFoundView = () => import('@/app/notfound/NotFoundView.vue')
 const PrivacyView = () => import('@/app/privacy/PrivacyView.vue')
 const ShareView = () => import('@/app/share/ShareView.vue')
 const ThirdPartyView = () => import('@/app/third-party/ThirdPartyView.vue')
@@ -55,6 +56,11 @@ const router = createRouter({
     {
       path: '/privacy',
       component: PrivacyView,
+    },
+    {
+      // Catch-all: unmatched paths render the 404 view instead of a blank page.
+      path: '/:pathMatch(.*)*',
+      component: NotFoundView,
     },
   ],
 })

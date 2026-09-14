@@ -33,7 +33,7 @@ export function extractReleaseNotes(changelog, versionArgument) {
     throw new Error(`CHANGELOG.md has no dated section for version ${version}.`)
   }
 
-  const nextSectionOffset = lines.slice(start + 1).findIndex((line) => /^## \[/.test(line))
+  const nextSectionOffset = lines.slice(start + 1).findIndex((line) => line.startsWith('## ['))
   const end = nextSectionOffset === -1 ? lines.length : start + 1 + nextSectionOffset
   const releaseNotes = `${lines
     .slice(start + 1, end)

@@ -6,10 +6,10 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AgonProject — Explore Formal Argumentation Online</title>
+    <title>AgonProject — Explore Approaches to Formal Argumentation</title>
     <meta
       name="description"
-      content="AgonProject is a free, interactive web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser."
+      content="AgonProject is a free web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms."
     />
     <link rel="canonical" href="https://agonproject.aig.fernuni-hagen.de/" />
     <!-- Open Graph / social link previews (WhatsApp, Slack, iMessage, …). Crawlers don't
@@ -17,20 +17,20 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="AgonProject" />
     <meta property="og:url" content="https://agonproject.aig.fernuni-hagen.de/" />
-    <meta property="og:title" content="AgonProject — Explore Formal Argumentation Online" />
+    <meta property="og:title" content="AgonProject — Explore Approaches to Formal Argumentation" />
     <meta
       property="og:description"
-      content="A free, interactive web platform to build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser."
+      content="Explore formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms — free, in your browser."
     />
     <meta
       property="og:image"
       content="https://agonproject.aig.fernuni-hagen.de/favicon-192x192.png"
     />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="AgonProject — Explore Formal Argumentation Online" />
+    <meta name="twitter:title" content="AgonProject — Explore Approaches to Formal Argumentation" />
     <meta
       name="twitter:description"
-      content="A free, interactive web platform to build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser."
+      content="Explore formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms — free, in your browser."
     />
     <meta
       name="twitter:image"
@@ -45,7 +45,8 @@
         "url": "https://agonproject.aig.fernuni-hagen.de/",
         "applicationCategory": "EducationalApplication",
         "operatingSystem": "Any (web browser)",
-        "description": "A free, interactive web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser.",
+        "description": "A free web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser.",
+        "keywords": "computational argumentation, formal argumentation, abstract argumentation, argumentation frameworks, Dung frameworks, argumentation semantics, extension-based semantics, defeasible reasoning, bipolar argumentation, probabilistic argumentation, abstract dialectical frameworks",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
         "publisher": {
           "@type": "Organization",
@@ -77,10 +78,51 @@
       html[data-theme='dark'] {
         background-color: #1c2833;
       }
+      /* Static SEO/no-JS fallback (inside #app, replaced by the Vue app on mount).
+         Hidden by default so JS users get a clean load with no text flash; the
+         <noscript> rule below reveals it when JS is off. Non-JS crawlers read it
+         straight from the HTML source regardless of these styles. */
+      .app-fallback {
+        display: none;
+        max-width: 42rem;
+        margin: 12vh auto;
+        padding: 0 1.5rem;
+        font-family: system-ui, sans-serif;
+        line-height: 1.55;
+        color: #162536;
+      }
+      html[data-theme='dark'] .app-fallback {
+        color: #e7eef4;
+      }
     </style>
+    <noscript>
+      <style>
+        .app-fallback {
+          display: block;
+        }
+      </style>
+    </noscript>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Static fallback describing the app for crawlers and no-JS clients. The
+           Vue app clears and replaces #app on mount, so JS users never really see it. -->
+      <main class="app-fallback">
+        <h1>AgonProject</h1>
+        <p>The platform to explore different approaches to formal argumentation.</p>
+        <p>
+          AgonProject is a free, interactive tool for exploring formal argumentation. Build,
+          visualize, and evaluate abstract argumentation frameworks and related formalisms, 
+          including bipolar, probabilistic, incomplete, and abstract dialectical frameworks, as
+          well as argumentation with collective attacks. Model argumentation frameworks, compute
+          their extensions and argument rankings under a wide range of argumentation semantics and
+          export them to various formats, including LaTeX and SVG.
+        </p>
+        <noscript>
+          <p>AgonProject requires JavaScript. Please enable it to build and evaluate argumentation frameworks.</p>
+        </noscript>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
     <!-- tikzjax is loaded on demand (only for SVG export) in
          @/modules/common/export/renderSvg.ts, not eagerly here. -->
