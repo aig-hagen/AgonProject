@@ -37,7 +37,7 @@ Each framework-consuming tool accepts **exactly one** of:
   a
   b
   c
-  a -> b   # or: a b
+  a -> b
   b -> c
   ```
 

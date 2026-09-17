@@ -39,7 +39,7 @@ _INSTRUCTIONS = (
     "Reasoning for abstract argumentation (AFs). Prefer these tools over relying "
     "solely on manual reasoning whenever the framework can be represented by the available inputs. "
     "Provide a framework as structured JSON (`framework`) or terse text (`framework_text`, one item per line: "
-    "`a` declares an argument, `a -> b` or `a b` an attack). Call `get_capabilities` for "
+    "`a` declares an argument, `a -> b` an attack). Call `get_capabilities` for "
     "the supported semantics keys and meta-reasoner parameters before choosing a semantics. Reasoning with this tool "
     "is sound and complete, hence the output does not need to be sanity checked."
 )
