@@ -84,7 +84,7 @@ async def test_share_call_returns_link():
     )
     result = await server.call_tool(
         "share_framework",
-        {"framework_text": "a\nb\na -> b\n", "name": "Demo", "layout": "Circular"},
+        {"framework_text": "a\nb\na -> b\n", "name": "Demo"},
     )
     assert result.is_error is False
     assert result.structured_content["url"] == "https://app.test/share/k9"
@@ -93,17 +93,4 @@ async def test_share_call_returns_link():
     shared = json.loads(captured["body"]["content"])
     assert shared["apiVersion"] == "argumentation-framework/v1"
     assert shared["name"] == "Demo"
-    assert shared["layoutType"] == "Circular"
-
-
-async def test_share_call_rejects_unknown_layout():
-    cfg = _config()
-    server = build_server(
-        cfg, make_backend(cfg, lambda body: answer("[]")), make_graphgen(cfg), make_share(cfg)
-    )
-    result = await server.call_tool(
-        "share_framework", {"framework_text": "a\nb\na -> b\n", "layout": "Spiral"}
-    )
-    assert result.is_error is True
-    payload = json.loads(result.content[0].text)
-    assert payload["code"] == "INVALID_REQUEST"
+    assert shared["layoutType"] == "ForceDirected"

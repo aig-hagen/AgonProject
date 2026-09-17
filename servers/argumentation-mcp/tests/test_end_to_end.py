@@ -39,7 +39,7 @@ async def test_initialize_list_and_call_over_memory_streams():
             async with ClientSession(client_read, client_write) as session:
                 init = await session.initialize()
                 assert init.server_info.name == "argumentation-mcp"
-                assert "Prefer these tools over relying solely on manual reasoning" in init.instructions
+                assert "Use these tools whenever a task involves abstract argumentation frameworks" in init.instructions
 
                 tools = {t.name for t in (await session.list_tools()).tools}
                 assert {"get_capabilities", "enumerate_extensions", "check_acceptance",

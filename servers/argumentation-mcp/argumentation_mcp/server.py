@@ -38,13 +38,16 @@ from argumentation_mcp.share import ShareBackend
 logger = logging.getLogger(__name__)
 
 _INSTRUCTIONS = (
-    "Reasoning for abstract argumentation (AFs). Prefer these tools over relying "
-    "solely on manual reasoning whenever the framework can be represented by the available inputs. "
-    "Provide a framework as structured JSON (`framework`) or terse text (`framework_text`, one item per line: "
-    "`a` declares an argument, `a -> b` an attack). Call `get_capabilities` for "
-    "the supported semantics keys and meta-reasoner parameters before choosing a semantics. Reasoning with this tool "
-    "is sound and complete, hence the output does not need to be sanity checked. "
-    "Use `share_framework` to hand a constructed framework to a human as a link that opens it in the app."
+    # Lead with when-to-use + why-trust: clients may truncate these instructions, so the
+    # trigger for reaching for the tools must survive in the first sentence.
+    "Use these tools whenever a task involves abstract argumentation frameworks (AFs) — computing "
+    "extensions, checking credulous or skeptical acceptance — instead "
+    "of working it out by hand; the solver is sound and complete, so its output is authoritative and "
+    "does not need to be sanity checked. "
+    "Provide a framework as structured JSON (`framework`) or terse text (`framework_text`, one item per "
+    "line: `a` declares an argument, `a -> b` an attack). Call `get_capabilities` for the supported "
+    "semantics keys and meta-reasoner parameters. Use `share_framework` to hand a constructed framework "
+    "to a human as a link that opens it in the app."
 )
 
 _READ_ONLY = ToolAnnotations(read_only_hint=True, idempotent_hint=True, open_world_hint=False)
@@ -55,13 +58,23 @@ _WRITE = ToolAnnotations(read_only_hint=False, idempotent_hint=False, open_world
 
 _FrameworkArg = Annotated[
     FrameworkInput | None,
-    Field(default=None, description="Structured framework. Mutually exclusive with framework_text."),
+    Field(
+        default=None,
+        description="Structured framework: {arguments: [names], attacks: [{source, target}]}. "
+        "Provide exactly one of framework or framework_text.",
+    ),
 ]
 _FrameworkTextArg = Annotated[
     str | None,
-    Field(default=None, description="Terse text framework. Mutually exclusive with framework."),
+    Field(
+        default=None,
+        description="Terse text framework, one item per line: `a` declares an argument, `a -> b` an "
+        "attack. Provide exactly one of framework or framework_text.",
+    ),
 ]
-_SemanticsArg = Annotated[str, Field(description="Semantics/meta-reasoner key, e.g. PR, ST, GR.")]
+_SemanticsArg = Annotated[
+    str, Field(description="Semantics/meta-reasoner key, e.g. PR, ST, GR. Call get_capabilities for the full set.")
+]
 _ArgsArg = Annotated[
     dict[str, str] | None,
     Field(default=None, description="Optional meta-reasoner parameters (see get_capabilities)."),
@@ -277,24 +290,22 @@ def build_server(
 
     @server.tool(annotations=_WRITE, structured_output=True,
                  description="Store a framework and return a public link that opens it in the app "
-                             "editor. Use this to hand a constructed AF to a human. Provide the "
-                             "framework as `framework` or `framework_text` (same forms as the other "
-                             "tools); the app arranges the graph on open via `layout`.")
+                             "editor; use this to hand a constructed framework to a human. Give the "
+                             "returned `url` to the user. The link is public — anyone with it can open "
+                             "the framework — and persistent, and a new link is minted on each call. "
+                             "Abstract frameworks only. Provide the framework as `framework` or "
+                             "`framework_text`, same forms as the other tools.")
     async def share_framework(
         framework: _FrameworkArg = None,
         framework_text: _FrameworkTextArg = None,
         name: Annotated[
             str | None, Field(default=None, description="Optional title shown for the shared framework.")
         ] = None,
-        layout: Annotated[
-            str | None,
-            Field(default=None, description="Optional layout the app applies on open; see get_capabilities. Defaults to a layered layout."),
-        ] = None,
     ) -> ShareResult:  # type: ignore[return-value]
         try:
             result = await service.create_share(
                 config, share,
-                framework=framework, framework_text=framework_text, name=name, layout=layout,
+                framework=framework, framework_text=framework_text, name=name,
             )
             return _ok(result, _format_share(result))  # type: ignore[return-value]
         except ServiceError as exc:

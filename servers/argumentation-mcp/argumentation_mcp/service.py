@@ -33,7 +33,7 @@ from argumentation_mcp.results import (
     SemanticsInfo,
     ShareResult,
 )
-from argumentation_mcp.save_format import DEFAULT_LAYOUT, build_save_string, validate_layout
+from argumentation_mcp.save_format import build_save_string
 from argumentation_mcp.share import ShareBackend
 from argumentation_mcp.text_parser import parse_framework_text
 
@@ -192,11 +192,9 @@ async def create_share(
     framework: FrameworkInput | None,
     framework_text: str | None,
     name: str | None,
-    layout: str | None,
 ) -> ShareResult:
     resolved = resolve_framework(config, framework, framework_text)
-    layout_type = validate_layout(layout) if layout is not None else DEFAULT_LAYOUT
-    content = build_save_string(resolved, (name or "").strip(), layout_type)
+    content = build_save_string(resolved, (name or "").strip())
     _enforce_size(config, content.encode("utf-8"))
     url = await share.create_share(content)
     return ShareResult(
