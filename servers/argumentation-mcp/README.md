@@ -13,10 +13,12 @@ web service — this server is a stateless, transport-independent adapter around
 | `enumerate_extensions` | Every extension under a chosen semantics.                                                                                      |
 | `check_acceptance`     | Credulous or skeptical acceptance, optionally for a queried argument.                                                          |
 | `generate_framework`   | Generate an abstract framework (via graph-gen) in the canonical format.                                                        |
+| `share_framework`      | Store a framework and return a public `/share/<id>` link that opens it in the app editor.                                       |
 
-All tools are read-only. Reasoning/generation tools return validated
-`structuredContent` (see each tool's `outputSchema`) plus a compact text fallback.
-Failures are `isError` results carrying a stable `{ code, message, retryable }` payload.
+Reasoning and generation tools are read-only; `share_framework` writes to the
+share service. Tools return validated `structuredContent` (see each tool's
+`outputSchema`) plus a compact text fallback. Failures are `isError` results
+carrying a stable `{ code, message, retryable }` payload.
 
 The implementation also contains a `render_framework` tool that produces PNG
 output through Graphviz, but it is currently disabled and is not advertised to
@@ -55,6 +57,7 @@ Environment variables (all optional; defaults suit a local backend):
 | --------------------------------------- | ---------------------------- | ------------------------------------------------------- |
 | `ARGUMENTATION_MCP_DUNG_URL`            | `http://localhost:8081/dung` | Reasoning backend URL                                   |
 | `ARGUMENTATION_MCP_GRAPH_GEN_URL`       | `http://localhost:8082`      | Generation backend URL                                  |
+| `ARGUMENTATION_MCP_SHARE_URL`           | `http://localhost:8001`      | Share service URL (`share_framework`)                   |
 | `ARGUMENTATION_MCP_TIMEOUT_SECONDS`     | `30`                         | Reasoning/generation timeout                            |
 | `ARGUMENTATION_MCP_MAX_REQUEST_BYTES`   | `1048576`                    | Max framework input size / HTTP body                    |
 | `ARGUMENTATION_MCP_CALLER_ID`           | `argumentation-mcp`          | Identifier sent to the backend                          |

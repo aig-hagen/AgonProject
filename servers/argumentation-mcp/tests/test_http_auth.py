@@ -4,7 +4,7 @@ from starlette.testclient import TestClient
 
 from argumentation_mcp.config import Config
 from argumentation_mcp.server import build_server
-from tests.conftest import answer, make_backend, make_graphgen
+from tests.conftest import answer, make_backend, make_graphgen, make_share
 
 _RESOURCE = "https://agon.test/mcp"
 
@@ -18,7 +18,7 @@ def _app(static_token="sharedtoken"):
         allowed_hosts=("*",),
     )
     backend = make_backend(cfg, lambda body: answer("[]"))
-    server = build_server(cfg, backend, make_graphgen(cfg))
+    server = build_server(cfg, backend, make_graphgen(cfg), make_share(cfg))
     from argumentation_mcp.http import build_transport_security
 
     return server.streamable_http_app(

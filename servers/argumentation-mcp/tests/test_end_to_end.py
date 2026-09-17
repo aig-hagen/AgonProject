@@ -14,7 +14,7 @@ from mcp.shared.memory import create_client_server_memory_streams
 
 from argumentation_mcp.config import Config
 from argumentation_mcp.server import build_server
-from tests.conftest import answer, make_backend, make_graphgen
+from tests.conftest import answer, make_backend, make_graphgen, make_share
 
 
 def _config() -> Config:
@@ -23,7 +23,7 @@ def _config() -> Config:
 
 async def test_initialize_list_and_call_over_memory_streams():
     cfg = _config()
-    server = build_server(cfg, make_backend(cfg, lambda body: answer("[{1},{2,3}]")), make_graphgen(cfg))
+    server = build_server(cfg, make_backend(cfg, lambda body: answer("[{1},{2,3}]")), make_graphgen(cfg), make_share(cfg))
     low = server._lowlevel_server
 
     async with create_client_server_memory_streams() as (client_streams, server_streams):
@@ -43,7 +43,7 @@ async def test_initialize_list_and_call_over_memory_streams():
 
                 tools = {t.name for t in (await session.list_tools()).tools}
                 assert {"get_capabilities", "enumerate_extensions", "check_acceptance",
-                        "generate_framework"} <= tools
+                        "generate_framework", "share_framework"} <= tools
                 assert "render_framework" not in tools
 
                 result = await session.call_tool(

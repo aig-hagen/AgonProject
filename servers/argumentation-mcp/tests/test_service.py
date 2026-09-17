@@ -6,7 +6,7 @@ from argumentation_mcp import service
 from argumentation_mcp.config import Config
 from argumentation_mcp.contract import AttackInput, FrameworkInput
 from argumentation_mcp.errors import ErrorCode, ServiceError
-from tests.conftest import answer, make_backend, make_graphgen
+from tests.conftest import answer, make_backend, make_graphgen, make_share
 
 
 def _config() -> Config:
@@ -92,9 +92,10 @@ async def test_get_capabilities_reports_backend_up():
 
         return httpx.Response(200, json=algos)
 
-    caps = await service.get_capabilities(_config(), backend, make_graphgen(_config(), gg))
+    caps = await service.get_capabilities(_config(), backend, make_graphgen(_config(), gg), make_share(_config()))
     assert caps.backends.reasoning is True
     assert caps.backends.generation is True
+    assert caps.backends.sharing is True
     assert any(s.key == "PR" for s in caps.semantics)
     assert caps.generation_algorithms[0].id == "erdos-renyi"
     assert caps.limits.timeout_seconds == 5
