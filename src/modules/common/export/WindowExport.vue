@@ -321,7 +321,7 @@ onBeforeUnmount(() => {
 <template>
   <WindowShell
     v-model:open="open"
-    :title="t('menu.latexStudio')"
+    :title="layoutMode === 'compact' ? t('menu.export') : t('menu.latexStudio')"
     :initial-position="{ x: 64, y: 128 }"
     :intitalSize="{ width: 720, height: 520 }"
   >
