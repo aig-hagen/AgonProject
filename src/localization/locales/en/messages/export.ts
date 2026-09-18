@@ -19,6 +19,7 @@
 export default {
   format: 'Format',
   svgImage: 'SVG (image)',
+  exportImage: 'Export image',
   sections: {
     image: 'Image',
     text: 'Text',
@@ -32,6 +33,23 @@ export default {
   formats: 'Formats',
   noGraph: 'No graph to export.',
   renderingSvg: 'Rendering SVG',
+  preamble: 'Preamble',
+  preview: 'Preview',
+  resetToGraph: 'Reset to graph',
+  packageNote:
+    'The figure is drawn with the {package} LaTeX package — add the line above to your preamble.',
+  badge: {
+    synced: 'Synced',
+    detached: 'Edited',
+    live: 'live',
+    rendering: 'rendering',
+  },
+  validation: {
+    missing: 'No \\begin{af} environment found — reset to graph before applying style options.',
+    ambiguous:
+      'Multiple \\begin{af} environments found — reset to graph before applying style options.',
+  },
+  previewError: 'Preview failed to render.',
   style: {
     parameters: 'Style Parameters',
     options: 'Style options',

@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Standardized the English name of ADF as "Abstract Dialectical Frameworks."
 - Made the changelog the source for generated GitHub Release notes.
+- Reworked desktop export into an editable LaTeX studio with live preview; moved ICCMA, TGF, and
+  image export to one-click Export menu actions.
 
 ### Fixed
 

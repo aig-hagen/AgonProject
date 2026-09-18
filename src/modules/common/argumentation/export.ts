@@ -21,6 +21,59 @@ import { type Extension } from '@codemirror/state'
 import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from '@/modules/common/argumentation/model'
 import { ExportFormatId, type ExportResult, type ExportStyleOptions } from '@/modules/common/export'
 
+const AF_ENV_BEGIN = '\\begin{af}'
+
+/**
+ * The appearance options that ride on the `\begin{af}[…]` environment. Node distance is not
+ * here: it changes generated coordinates (the body), not the environment options.
+ */
+export interface AfAppearanceOptions {
+  argumentStyle?: string
+  nameStyle?: string
+  attackStyle?: string
+  supportStyle?: string
+}
+
+/**
+ * Builds the comma-separated option list for `\begin{af}[…]` (without the brackets).
+ * `supportstyle` is only included when the document actually has supports.
+ */
+export function buildAfOptionList(options: AfAppearanceOptions, includeSupport: boolean): string {
+  const parts = [
+    `argumentstyle=${options.argumentStyle ?? 'colored'}`,
+    `namestyle=${options.nameStyle ?? 'math'}`,
+    `attackstyle=${options.attackStyle ?? 'standard'}`,
+  ]
+  if (includeSupport) parts.push(`supportstyle=${options.supportStyle ?? 'double'}`)
+  return parts.join(',')
+}
+
+export interface AfOptionSpliceResult {
+  ok: boolean
+  text: string
+  /** Why the splice failed: no `\begin{af}` marker, or more than one (ambiguous). */
+  reason?: 'missing' | 'ambiguous'
+}
+
+const AF_BEGIN_REGEX = /\\begin\{af\}(\[[^\]]*\])?/g
+
+/**
+ * Replaces (or inserts) the option list of the single `\begin{af}[…]` environment in `latex`.
+ * The first `\begin{af}` is the canonical options marker; if it is missing or appears more than
+ * once, the text is returned untouched with `ok: false` so callers can surface a validation hint
+ * rather than corrupt an edited buffer.
+ */
+export function spliceAfOptions(latex: string, optionList: string): AfOptionSpliceResult {
+  const matches = [...latex.matchAll(AF_BEGIN_REGEX)]
+  if (matches.length === 0) return { ok: false, text: latex, reason: 'missing' }
+  if (matches.length > 1) return { ok: false, text: latex, reason: 'ambiguous' }
+  const match = matches[0]!
+  const replacement = optionList ? `${AF_ENV_BEGIN}[${optionList}]` : AF_ENV_BEGIN
+  const start = match.index
+  const text = latex.slice(0, start) + replacement + latex.slice(start + match[0].length)
+  return { ok: true, text }
+}
+
 export function latexExportCommonConfig(): {
   id: ExportFormatId
   name: string
@@ -169,13 +222,16 @@ export function exportLatexArgumentationCommon(
   text += emitAnnotations(nodeMap.keys(), getLatexId, hooks?.argumentAnnotation)
   text += `\\end{af}`
 
-  const afOptions = `[argumentstyle=${argumentStyle},namestyle=${nameStyle},attackstyle=${attackStyle},supportstyle=${supportStyle}]`
+  const optionList = buildAfOptionList(
+    { argumentStyle, nameStyle, attackStyle, supportStyle },
+    true,
+  )
   return {
     text,
     // Loaded on demand: rendering pulls in opentype.js (~240 kB), only needed for SVG preview.
     svg: async () => {
       const { renderSvg } = await import('@/modules/common/export/renderSvg')
-      return renderSvg(text.replace('\\begin{af}', `\\begin{af}${afOptions}`))
+      return renderSvg(spliceAfOptions(text, optionList).text)
     },
   }
 }

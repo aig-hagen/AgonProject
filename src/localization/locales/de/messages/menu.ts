@@ -32,6 +32,7 @@ export default {
   relayout: 'Neu anordnen',
   directed: 'Gerichtet',
   export: 'Exportieren',
+  latexStudio: 'LaTeX-Studio',
   shareLink: 'Link teilen',
   settings: 'Einstellungen',
   tutorials: 'Tutorials',

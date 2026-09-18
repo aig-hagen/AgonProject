@@ -47,7 +47,6 @@ import {
   FolderOpenIcon,
   MinusCircleIcon,
   PencilSquareIcon,
-  PhotoIcon,
   PlayIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
@@ -78,7 +77,9 @@ import { useI18n } from 'vue-i18n'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
+import type { ExportFileData } from '@/modules/common/export'
 import { serializeGraphSvg } from '@/modules/common/export/renderGraphSvg'
+import TexIcon from '@/modules/common/export/TexIcon.vue'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
   GRAPH_EDITOR_LAYOUTS,
@@ -598,6 +599,7 @@ const emit = defineEmits<{
   redo: []
   save: []
   share: []
+  'export-file': [filedata: ExportFileData]
   home: []
   'open-extension-window': []
   'open-ranking-window': []
@@ -1876,6 +1878,7 @@ defineExpose({
             @save="emit('save')"
             :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
             @export="isExportOpened = !isExportOpened"
+            @export-file="emit('export-file', $event)"
             :show-share="EntryState.ENABLE"
             @share="emit('share')"
             @layout="doLayout($event)"
@@ -1939,9 +1942,9 @@ defineExpose({
             ref="exportButton"
             class="btn btn-square btn-sm"
             @click="isExportOpened = !isExportOpened"
-            :title="t('menu.export')"
+            :title="t('menu.latexStudio')"
           >
-            <PhotoIcon class="size-6 opacity-70" />
+            <TexIcon class="size-6 opacity-70" />
           </button>
         </div>
       </div>
