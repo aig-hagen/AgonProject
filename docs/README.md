@@ -13,6 +13,7 @@ you are trying to do rather than reading the files in repository order.
 
 - [Architecture overview](./architecture/overview.md) — boundaries, runtime services, and data flows
 - [Repository structure](./architecture/structure.md) — where code and supporting files live
+- [Reasoning backend API](./architecture/reasoning-backend-api.md) — TweetyProject HTTP endpoints and payloads
 - [File formats](./formats/README.md) — portable JSON, text, LaTeX/TikZ, and SVG
 
 Architecture documentation describes what the system is and how its parts collaborate. It does

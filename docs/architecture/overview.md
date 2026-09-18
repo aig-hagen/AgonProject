@@ -210,8 +210,10 @@ compatibility boundary for users and share links.
 | argumentation MCP | `/mcp`                                                                               | Typed tools for AF reasoning and generation                                  | None             |
 | Caddy             | all public paths                                                                     | Static SPA, reverse proxy, headers, caching, maintenance mode, rate limiting | None             |
 
-The service READMEs own exact request and response contracts. The production routes and security
-controls are defined in [`deployment/Caddyfile`](/deployment/Caddyfile).
+The service READMEs own exact request and response contracts, except TweetyProject, whose
+contract is documented in the [reasoning backend API reference](./reasoning-backend-api.md) since
+its code is vendored third-party. The production routes and security controls are defined in
+[`deployment/Caddyfile`](/deployment/Caddyfile).
 
 ## Important data flows
 

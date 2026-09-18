@@ -44,6 +44,30 @@ function solverBrowseNoticePlugin(): Plugin {
   }
 }
 
+// The API reference (Swagger UI) is served at the clean path /api in prod
+// (deployment/Caddyfile @apidocs rewrites it to /api.html). Mirror that in
+// dev/preview so the same /api link works; /api.html itself is a static file
+// Vite already serves, but the extension-less /api would otherwise hit the SPA
+// fallback and render the app's 404.
+function apiDocsPlugin(): Plugin {
+  const page = readFileSync(fileURLToPath(new URL('./public/api.html', import.meta.url)), 'utf8')
+  const install = (server: ViteDevServer | PreviewServer) => {
+    server.middlewares.use((req, res, next) => {
+      const method = req.method?.toUpperCase()
+      if (method !== 'GET' && method !== 'HEAD') return next()
+      if ((req.url ?? '').split('?')[0] !== '/api') return next()
+      res.statusCode = 200
+      res.setHeader('Content-Type', 'text/html; charset=utf-8')
+      res.end(method === 'HEAD' ? undefined : page)
+    })
+  }
+  return {
+    name: 'api-docs',
+    configureServer: install,
+    configurePreviewServer: install,
+  }
+}
+
 // Solves with vite compression when serving `*.sty.gz` files:
 // See https://github.com/vitejs/vite/issues/12266#issuecomment-2131263039
 function gzipFixPlugin(): Plugin {
@@ -98,6 +122,7 @@ export default defineConfig({
     }),
     gzipFixPlugin(),
     solverBrowseNoticePlugin(),
+    apiDocsPlugin(),
     // The devtools overlay intercepts pointer events (disabled under e2e) and shows
     // a floating icon (set NO_DEVTOOLS=1 for clean screenshots).
     ...(process.env.E2E || process.env.NO_DEVTOOLS ? [] : [vueDevTools()]),
