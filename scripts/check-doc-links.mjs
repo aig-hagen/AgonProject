@@ -21,6 +21,9 @@ import { dirname, extname, join, relative, resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
 
+// Root-absolute links the app serves at runtime rather than files in the repo.
+const runtimeRoutes = new Set(['/api'])
+
 function markdownFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
@@ -49,6 +52,7 @@ function targetPath(rawTarget, sourceFile) {
   if (!target || /^(?:[a-z][a-z+.-]*:|#)/i.test(target)) return undefined
 
   const [withoutFragment, rawFragment] = target.split('#', 2)
+  if (runtimeRoutes.has(withoutFragment)) return undefined
   let decoded
   let fragment
   try {

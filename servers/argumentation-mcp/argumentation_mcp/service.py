@@ -31,7 +31,10 @@ from argumentation_mcp.results import (
     ReasonerParamInfo,
     RenderResult,
     SemanticsInfo,
+    ShareResult,
 )
+from argumentation_mcp.save_format import build_save_string
+from argumentation_mcp.share import ShareBackend
 from argumentation_mcp.text_parser import parse_framework_text
 
 _VALID_MODES = ("credulous", "skeptical")
@@ -182,10 +185,32 @@ async def generate_framework(
     )
 
 
+async def create_share(
+    config: Config,
+    share: ShareBackend,
+    *,
+    framework: FrameworkInput | None,
+    framework_text: str | None,
+    name: str | None,
+) -> ShareResult:
+    resolved = resolve_framework(config, framework, framework_text)
+    content = build_save_string(resolved, (name or "").strip())
+    _enforce_size(config, content.encode("utf-8"))
+    url = await share.create_share(content)
+    return ShareResult(
+        schema_version=SCHEMA_VERSION,
+        service_version=SERVICE_VERSION,
+        url=url,
+        nr_of_arguments=resolved.nr_of_arguments,
+        nr_of_attacks=len(resolved.attacks),
+    )
+
+
 async def get_capabilities(
-    config: Config, backend: DungBackend, graphgen: GraphGenBackend
+    config: Config, backend: DungBackend, graphgen: GraphGenBackend, share: ShareBackend
 ) -> CapabilitiesResult:
     reasoning_available = await backend.is_available()
+    sharing_available = await share.is_available()
 
     generation_algorithms: list[GenerationAlgorithmInfo] = []
     generation_available = False
@@ -230,12 +255,14 @@ async def get_capabilities(
             "check_acceptance",
             *(["render_framework"] if ENABLE_RENDER_FRAMEWORK else []),
             "generate_framework",
+            "share_framework",
         ],
         generation_algorithms=generation_algorithms,
         backends=BackendStatus(
             reasoning=reasoning_available,
             rendering=render.is_available(config),
             generation=generation_available,
+            sharing=sharing_available,
         ),
         limits=Limits(
             timeout_seconds=config.timeout_seconds,

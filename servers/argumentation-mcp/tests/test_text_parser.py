@@ -6,8 +6,8 @@ from argumentation_mcp.errors import ErrorCode, ServiceError
 from argumentation_mcp.text_parser import parse_framework_text
 
 
-def test_declares_and_attacks_arrow_and_space():
-    fw = parse_framework_text("a\nb\nc\na -> b\nb c\n")
+def test_declares_and_attacks():
+    fw = parse_framework_text("a\nb\nc\na -> b\nb -> c\n")
     assert fw.names == ("a", "b", "c")
     assert fw.attacks == (("a", "b"), ("b", "c"))
 
@@ -45,6 +45,11 @@ def test_undeclared_endpoint_rejected():
 def test_multiple_arrows_rejected():
     with pytest.raises(ServiceError):
         parse_framework_text("a\nb\nc\na -> b -> c\n")
+
+
+def test_bare_two_token_attack_rejected():
+    with pytest.raises(ServiceError):
+        parse_framework_text("a\nb\na b\n")
 
 
 def test_too_many_tokens_rejected():

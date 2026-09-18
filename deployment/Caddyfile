@@ -119,6 +119,14 @@ http://:8080 {
 		reverse_proxy http://localhost:8083
 	}
 
+	# Rendered API reference (Swagger UI over ./dist/openapi.yaml). Served here so
+	# "Try it out" fires same-origin POSTs to the solver paths above without CORS.
+	@apidocs path /api
+	handle @apidocs {
+		rewrite * /api.html
+		file_server
+	}
+
 	# Content-hashed build assets (Vite emits a hash in every filename) never
 	# change once deployed, so they can be cached indefinitely.
 	@assets path /assets/*

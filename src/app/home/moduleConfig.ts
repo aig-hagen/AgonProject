@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { EvaluationKind } from '@/modules/common/evaluation/types'
 import type { Example } from '@/modules/common/examples'
 import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
+import type { Layout } from '@/modules/common/main-menu/layouting'
 import type { DeserializationResult } from '@/modules/common/save/load'
 import type { TagId } from '@/modules/common/tags'
 import type { Publication } from '@/modules/common/tooltip/publications'
@@ -94,6 +95,11 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * @param dataObject
    */
   getSaveString(document: DocumentT, name: string): string
+  /**
+   * Recompute node positions in place for a freshly loaded document, given a layout hint.
+   * Used when a share link carries a `layoutType` instead of meaningful coordinates.
+   */
+  applyLayout?(document: DocumentT, layoutType: Layout): void | Promise<void>
   /**
    * Optional route href shown as a "Generate" link in the welcome screen.
    */

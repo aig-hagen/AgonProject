@@ -4,8 +4,7 @@ Grammar (one item per line):
 
     # a full-line or trailing comment
     a               declares an argument
-    a b             an attack a -> b (whitespace-separated)
-    a -> b          an attack a -> b (arrow form)
+    a -> b          an attack a -> b
 
 Rules: blank lines and comments (``#`` to end of line) are ignored; argument
 names may not contain whitespace, ``#`` or the ``->`` arrow; every attack
@@ -61,10 +60,8 @@ def parse_framework_text(text: str) -> Framework:
                 raise _fail(line_no, f"duplicate argument {name!r}.")
             declared_set.add(name)
             declared.append(name)
-        elif len(tokens) == 2:
-            attacks.append((tokens[0], tokens[1]))
         else:
-            raise _fail(line_no, "expected an argument name, 'a b', or 'a -> b'.")
+            raise _fail(line_no, "expected an argument name or an attack 'a -> b'.")
 
     # Auto-declare nothing: every endpoint must have been declared explicitly.
     for source, target in attacks:

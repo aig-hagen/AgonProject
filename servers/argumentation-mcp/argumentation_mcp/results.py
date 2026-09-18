@@ -61,6 +61,14 @@ class GenerationResult(BaseModel):
     nr_of_attacks: int
 
 
+class ShareResult(BaseModel):
+    schema_version: str
+    service_version: str
+    url: str = Field(description="Public link that opens the framework in the app editor.")
+    nr_of_arguments: int
+    nr_of_attacks: int
+
+
 class SemanticsInfo(BaseModel):
     key: str
     display_name: str
@@ -92,6 +100,7 @@ class BackendStatus(BaseModel):
     reasoning: bool
     rendering: bool
     generation: bool
+    sharing: bool = False
 
 
 class Limits(BaseModel):

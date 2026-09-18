@@ -15,6 +15,7 @@ _ENV_PREFIX = "ARGUMENTATION_MCP_"
 # Kept deliberately small: one timeout and one request-size limit.
 _DEFAULT_DUNG_URL = "http://localhost:8081/dung"
 _DEFAULT_GRAPH_GEN_URL = "http://localhost:8082"
+_DEFAULT_SHARE_URL = "http://localhost:8001"
 _DEFAULT_TIMEOUT_SECONDS = 30
 _DEFAULT_MAX_REQUEST_BYTES = 1_048_576  # 1 MB, mirroring the Caddy limit
 _DEFAULT_CALLER_ID = "argumentation-mcp"
@@ -26,6 +27,8 @@ _DEFAULT_HTTP_PORT = 8083  # behind Caddy, which proxies /mcp
 class Config:
     dung_url: str = _DEFAULT_DUNG_URL
     graph_gen_url: str = _DEFAULT_GRAPH_GEN_URL
+    # Share service that stores a framework and mints a public /share/<id> link.
+    share_url: str = _DEFAULT_SHARE_URL
     timeout_seconds: int = _DEFAULT_TIMEOUT_SECONDS
     max_request_bytes: int = _DEFAULT_MAX_REQUEST_BYTES
     # Identifier sent to the backend as its required caller field.
@@ -91,6 +94,7 @@ def load_config() -> Config:
     return Config(
         dung_url=_env("DUNG_URL", _DEFAULT_DUNG_URL),
         graph_gen_url=_env("GRAPH_GEN_URL", _DEFAULT_GRAPH_GEN_URL),
+        share_url=_env("SHARE_URL", _DEFAULT_SHARE_URL),
         timeout_seconds=_env_int("TIMEOUT_SECONDS", _DEFAULT_TIMEOUT_SECONDS),
         max_request_bytes=_env_int("MAX_REQUEST_BYTES", _DEFAULT_MAX_REQUEST_BYTES),
         caller_id=_env("CALLER_ID", _DEFAULT_CALLER_ID),

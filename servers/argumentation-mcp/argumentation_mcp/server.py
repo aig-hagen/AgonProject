@@ -31,32 +31,50 @@ from argumentation_mcp.results import (
     ExtensionsResult,
     GenerationResult,
     RenderResult,
+    ShareResult,
 )
+from argumentation_mcp.share import ShareBackend
 
 logger = logging.getLogger(__name__)
 
 _INSTRUCTIONS = (
-    "Reasoning for abstract argumentation (AFs). Prefer these tools over relying "
-    "solely on manual reasoning whenever the framework can be represented by the available inputs. "
-    "Provide a framework as structured JSON (`framework`) or terse text (`framework_text`, one item per line: "
-    "`a` declares an argument, `a -> b` or `a b` an attack). Call `get_capabilities` for "
-    "the supported semantics keys and meta-reasoner parameters before choosing a semantics. Reasoning with this tool "
-    "is sound and complete, hence the output does not need to be sanity checked."
+    # Lead with when-to-use + why-trust: clients may truncate these instructions, so the
+    # trigger for reaching for the tools must survive in the first sentence.
+    "Use these tools whenever a task involves abstract argumentation frameworks (AFs) — computing "
+    "extensions, checking credulous or skeptical acceptance — instead "
+    "of working it out by hand; the solver is sound and complete, so its output is authoritative and "
+    "does not need to be sanity checked. "
+    "Provide a framework as structured JSON (`framework`) or terse text (`framework_text`, one item per "
+    "line: `a` declares an argument, `a -> b` an attack). Call `get_capabilities` for the supported "
+    "semantics keys and meta-reasoner parameters. Use `share_framework` to hand a constructed framework "
+    "to a human as a link that opens it in the app."
 )
 
 _READ_ONLY = ToolAnnotations(read_only_hint=True, idempotent_hint=True, open_world_hint=False)
 # Generation is random unless the algorithm is seeded, so it is not idempotent.
 _READ_ONLY_NONIDEMPOTENT = ToolAnnotations(read_only_hint=True, idempotent_hint=False, open_world_hint=False)
+# Sharing writes to an external service, minting a new link each call.
+_WRITE = ToolAnnotations(read_only_hint=False, idempotent_hint=False, open_world_hint=True)
 
 _FrameworkArg = Annotated[
     FrameworkInput | None,
-    Field(default=None, description="Structured framework. Mutually exclusive with framework_text."),
+    Field(
+        default=None,
+        description="Structured framework: {arguments: [names], attacks: [{source, target}]}. "
+        "Provide exactly one of framework or framework_text.",
+    ),
 ]
 _FrameworkTextArg = Annotated[
     str | None,
-    Field(default=None, description="Terse text framework. Mutually exclusive with framework."),
+    Field(
+        default=None,
+        description="Terse text framework, one item per line: `a` declares an argument, `a -> b` an "
+        "attack. Provide exactly one of framework or framework_text.",
+    ),
 ]
-_SemanticsArg = Annotated[str, Field(description="Semantics/meta-reasoner key, e.g. PR, ST, GR.")]
+_SemanticsArg = Annotated[
+    str, Field(description="Semantics/meta-reasoner key, e.g. PR, ST, GR. Call get_capabilities for the full set.")
+]
 _ArgsArg = Annotated[
     dict[str, str] | None,
     Field(default=None, description="Optional meta-reasoner parameters (see get_capabilities)."),
@@ -112,7 +130,7 @@ def _format_capabilities(result: CapabilitiesResult) -> str:
         f"{len(result.meta_reasoners)} meta-reasoners, "
         f"{len(result.generation_algorithms)} generation algorithms; "
         f"backends — reasoning {state(b.reasoning)}, rendering {state(b.rendering)}, "
-        f"generation {state(b.generation)}."
+        f"generation {state(b.generation)}, sharing {state(b.sharing)}."
     )
 
 
@@ -130,7 +148,16 @@ def _format_generation(result: GenerationResult) -> str:
     )
 
 
-def build_server(config: Config, backend: DungBackend, graphgen: GraphGenBackend) -> MCPServer:
+def _format_share(result: ShareResult) -> str:
+    return (
+        f"Shared {result.nr_of_arguments} arguments, {result.nr_of_attacks} attacks. "
+        f"Open in the app: {result.url}"
+    )
+
+
+def build_server(
+    config: Config, backend: DungBackend, graphgen: GraphGenBackend, share: ShareBackend
+) -> MCPServer:
     from argumentation_mcp.auth import build_auth
 
     token_verifier, auth_settings = build_auth(config)
@@ -147,7 +174,7 @@ def build_server(config: Config, backend: DungBackend, graphgen: GraphGenBackend
                              "generation algorithms, backend availability, and configured limits.")
     async def get_capabilities() -> CapabilitiesResult:  # type: ignore[return-value]
         try:
-            result = await service.get_capabilities(config, backend, graphgen)
+            result = await service.get_capabilities(config, backend, graphgen, share)
             return _ok(result, _format_capabilities(result))  # type: ignore[return-value]
         except ServiceError as exc:
             return _error(exc)  # type: ignore[return-value]
@@ -261,6 +288,32 @@ def build_server(config: Config, backend: DungBackend, graphgen: GraphGenBackend
             logger.exception("generate_framework failed")
             return _internal_error()  # type: ignore[return-value]
 
+    @server.tool(annotations=_WRITE, structured_output=True,
+                 description="Store a framework and return a public link that opens it in the app "
+                             "editor; use this to hand a constructed framework to a human. Give the "
+                             "returned `url` to the user. The link is public — anyone with it can open "
+                             "the framework — and persistent, and a new link is minted on each call. "
+                             "Abstract frameworks only. Provide the framework as `framework` or "
+                             "`framework_text`, same forms as the other tools.")
+    async def share_framework(
+        framework: _FrameworkArg = None,
+        framework_text: _FrameworkTextArg = None,
+        name: Annotated[
+            str | None, Field(default=None, description="Optional title shown for the shared framework.")
+        ] = None,
+    ) -> ShareResult:  # type: ignore[return-value]
+        try:
+            result = await service.create_share(
+                config, share,
+                framework=framework, framework_text=framework_text, name=name,
+            )
+            return _ok(result, _format_share(result))  # type: ignore[return-value]
+        except ServiceError as exc:
+            return _error(exc)  # type: ignore[return-value]
+        except Exception:
+            logger.exception("share_framework failed")
+            return _internal_error()  # type: ignore[return-value]
+
     return server
 
 
@@ -268,12 +321,14 @@ async def _run_stdio() -> None:
     config = load_config()
     backend = DungBackend(config)
     graphgen = GraphGenBackend(config)
-    server = build_server(config, backend, graphgen)
+    share = ShareBackend(config)
+    server = build_server(config, backend, graphgen, share)
     try:
         await server.run_stdio_async()
     finally:
         await backend.aclose()
         await graphgen.aclose()
+        await share.aclose()
 
 
 async def _run_http() -> None:
@@ -282,13 +337,15 @@ async def _run_http() -> None:
     config = load_config()
     backend = DungBackend(config)
     graphgen = GraphGenBackend(config)
-    server = build_server(config, backend, graphgen)
+    share = ShareBackend(config)
+    server = build_server(config, backend, graphgen, share)
     register_health_routes(server, backend)
     try:
         await run_streamable_http(config, server)
     finally:
         await backend.aclose()
         await graphgen.aclose()
+        await share.aclose()
 
 
 def _selected_transport() -> str:

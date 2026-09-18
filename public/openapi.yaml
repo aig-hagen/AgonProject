@@ -1,0 +1,576 @@
+# AgonProject - The platform to explore different approaches to formal argumentation.
+#
+# Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+openapi: 3.0.3
+
+info:
+  title: AgonProject reasoning backend (TweetyProject)
+  version: '1.0'
+  description: >
+    HTTP API of the AgonProject argumentation solver — a vendored TweetyProject
+    web service that computes semantics for several kinds of argumentation
+    frameworks. The endpoints are public; per-IP rate limits apply (60
+    requests/minute for the solver paths).
+
+
+    Every reasoning call is a self-contained `POST`. The response `answer` field
+    is a **stringified** result that clients parse themselves: `{ … }` is a set
+    of 1-based argument ids and `[ … ]` wraps a list of sets, e.g. a single
+    extension is `{1,3}` and a list of extensions is `[{1,3},{2}]`.
+
+
+    For further reference (encoding rules, semantics keys, `answer` grammar),
+    see the [reasoning backend API reference](https://github.com/aig-hagen/AgonProject/blob/dev/docs/architecture/reasoning-backend-api.md).
+  license:
+    name: GPL-3.0-or-later
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+
+servers:
+  - url: /
+    description: 
+
+tags:
+  - name: Reasoning
+    description: Semantics computation over a submitted framework.
+  - name: Meta
+    description: Service capabilities and health.
+
+paths:
+  /dung:
+    post:
+      tags: [Reasoning]
+      summary: Abstract argumentation frameworks (Dung AFs)
+      description: Enumerate extensions or check acceptance for a standard Dung AF.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DungRequest'
+            example:
+              email: docs-tryout
+              cmd: get_models
+              nr_of_arguments: 3
+              attacks: [[1, 2], [2, 3]]
+              semantics: ST
+              args: {}
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
+  /setaf:
+    post:
+      tags: [Reasoning]
+      summary: Argumentation frameworks with collective attacks (SETAFs)
+      description: >
+        Like `/dung`, but each `attacks` entry is a collective attack: the
+        leading ids form the attacking set and the last id is the target.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetAfRequest'
+            example:
+              email: docs-tryout
+              cmd: get_models
+              nr_of_arguments: 3
+              attacks: [[1, 2, 3]]
+              semantics: ST
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
+  /bipolar:
+    post:
+      tags: [Reasoning]
+      summary: Bipolar argumentation frameworks (BAFs)
+      description: >
+        Like `/dung`, but with the additional field for supports (same syntax as the attacks) and `support_type` to choose between different interpretation of the support relation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BipolarRequest'
+            example:
+              email: docs-tryout
+              cmd: get_models
+              nr_of_arguments: 3
+              attacks: [[1, 2]]
+              supports: [[3, 1]]
+              support_type: ded
+              semantics: ST
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
+  /adf:
+    post:
+      tags: [Reasoning]
+      summary: Abstract dialectical frameworks (ADFs)
+      description: >
+        Instead of attacks, each argument carries a propositional acceptance
+        condition (in id order). The `answer` encodes three-valued
+        interpretations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdfRequest'
+            example:
+              email: docs-tryout
+              cmd: get_models
+              nr_of_arguments: 2
+              conditions: ['ac(1,neg(2))', 'ac(2,1)']
+              semantics: PR
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
+  /paf:
+    post:
+      tags: [Reasoning]
+      summary: Probabilistic argumentation frameworks (PAFs)
+      description: Argument- and attack-level probabilities; the answer holds per-argument acceptance scores.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PafRequest'
+            example:
+              email: docs-tryout
+              cmd: get_credulous
+              nr_of_arguments: 3
+              attacks: [[1, 2], [2, 3]]
+              argument_probabilities: [1.0, 0.5, 1.0]
+              attack_probabilities: [1.0, 1.0]
+              semantics: ST
+              solver: simple
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
+  /iaf:
+    post:
+      tags: [Reasoning]
+      summary: Incomplete argumentation frameworks (IAFs)
+      description: >
+        Some arguments/attacks are uncertain. The `pos`/`nec` suffix on `cmd`
+        selects possible vs. necessary reasoning.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IafRequest'
+            example:
+              email: docs-tryout
+              cmd: get_models_pos
+              nr_of_arguments: 3
+              uncertainArguments: [3]
+              definiteAttacks: [[1, 2]]
+              uncertainAttacks: [[3, 2]]
+              semantics: ST
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
+  /rankings:
+    post:
+      tags: [Reasoning]
+      summary: Ranking semantics
+      description: Ranks arguments rather than enumerating extensions. The response adds a top-level `rankingType`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RankingRequest'
+            example:
+              email: docs-tryout
+              cmd: get_model
+              nr_of_arguments: 3
+              attacks: [[1, 2], [2, 3]]
+              semantics: CAT
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          description: Reasoner response with an added `rankingType` field.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankingResponse'
+
+  /serialisation:
+    post:
+      tags: [Reasoning]
+      summary: Serialised / step-by-step reasoning
+      description: >
+        Explores serialisation sequences. `cmd` chooses the operation:
+        `get_selection` (needs `selectionFunction`), `is_terminal` (needs
+        `terminationFunction` and `extension`), or `get_sequences` (needs both
+        functions).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SerialisationRequest'
+            example:
+              email: docs-tryout
+              cmd: get_sequences
+              nr_of_arguments: 3
+              attacks: [[1, 2], [2, 3]]
+              selectionFunction: ADM
+              terminationFunction: PR
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
+  /info:
+    post:
+      tags: [Meta]
+      summary: Supported semantics and commands
+      description: Returns the Dung semantics keys, command ids, and the backend timeout cap.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+            example:
+              email: docs-tryout
+      responses:
+        '200':
+          description: Service capabilities.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoResponse'
+
+  /ping:
+    post:
+      tags: [Meta]
+      summary: Health check
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+            example:
+              email: docs-tryout
+      responses:
+        '200':
+          description: Liveness reply.
+
+components:
+  responses:
+    ReasonerResponse:
+      description: >
+        Standard reasoner envelope. `answer` is a stringified result (see the
+        API description for the set/list grammar).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ReasonerResponse'
+          example:
+            time: 0.0123
+            answer: '[{1,3}]'
+            status: SUCCESS
+
+  schemas:
+    Attacks:
+      type: array
+      description: Attack relations as `[source, target]` pairs of 1-based argument ids.
+      items:
+        type: array
+        items:
+          type: integer
+      example: [[1, 2], [2, 3]]
+
+    CommonRequestFields:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Caller identifier (not authentication). Any short label is fine.
+        nr_of_arguments:
+          type: integer
+          description: Number of arguments; ids run 1 … nr_of_arguments.
+        semantics:
+          type: string
+          description: Semantics key (see /info for the full list, e.g. ST, PR, GR, CO).
+        timeout:
+          type: integer
+          description: Requested compute budget; the server clamps it to a per-endpoint cap.
+        unit_timeout:
+          type: string
+          description: Timeout unit; the app always sends "ms".
+          example: ms
+
+    DungRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, nr_of_arguments, attacks, semantics]
+          properties:
+            cmd:
+              type: string
+              enum: [get_models, get_credulous, get_skeptical, info]
+            attacks:
+              $ref: '#/components/schemas/Attacks'
+            args:
+              type: object
+              additionalProperties:
+                type: string
+              description: Meta-reasoner parameters; empty object for plain semantics.
+
+    SetAfRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, nr_of_arguments, attacks, semantics]
+          properties:
+            cmd:
+              type: string
+              enum: [get_models, get_credulous, get_skeptical]
+            attacks:
+              type: array
+              description: Collective attacks; leading ids attack the final id.
+              items:
+                type: array
+                items:
+                  type: integer
+              example: [[1, 2, 3]]
+
+    BipolarRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, nr_of_arguments, attacks, supports, support_type, semantics]
+          properties:
+            cmd:
+              type: string
+              enum: [get_models, get_credulous, get_skeptical]
+            attacks:
+              $ref: '#/components/schemas/Attacks'
+            supports:
+              type: array
+              description: Support relations as `[source, target]` pairs.
+              items:
+                type: array
+                items:
+                  type: integer
+            support_type:
+              type: string
+              description: How supports are interpreted — `ded` (deductive) or `nec` (necessary).
+              enum: [ded, nec]
+
+    AdfRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, nr_of_arguments, conditions, semantics]
+          properties:
+            cmd:
+              type: string
+              enum: [get_models, get_credulous, get_skeptical]
+            conditions:
+              type: array
+              description: >
+                One KPP-style acceptance condition per argument, each wrapped as
+                `ac(id, formula)`. Formula operators: `neg(...)`, `and(a,b)`,
+                `or(a,b)` (binary — nest for >2), `c(v)` true, `c(f)` false; bare
+                integers reference arguments by id. Full grammar in the
+                [API reference](https://github.com/aig-hagen/AgonProject/blob/dev/docs/architecture/reasoning-backend-api.md)
+                (POST /adf).
+              items:
+                type: string
+              example: ['ac(1,neg(2))', 'ac(2,1)']
+
+    PafRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required:
+            [cmd, nr_of_arguments, attacks, argument_probabilities, attack_probabilities, semantics, solver]
+          properties:
+            cmd:
+              type: string
+              enum: [get_credulous, get_skeptical]
+            attacks:
+              $ref: '#/components/schemas/Attacks'
+            argument_probabilities:
+              type: array
+              description: Per-argument probability, in id order.
+              items:
+                type: number
+            attack_probabilities:
+              type: array
+              description: Per-attack probability, aligned with `attacks`.
+              items:
+                type: number
+            solver:
+              type: string
+              description: Which probabilistic solver to run.
+
+    IafRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, nr_of_arguments, definiteAttacks, semantics]
+          properties:
+            cmd:
+              type: string
+              enum:
+                - get_models_pos
+                - get_models_nec
+                - get_credulous_pos
+                - get_credulous_nec
+                - get_skeptical_pos
+                - get_skeptical_nec
+                - info
+            uncertainArguments:
+              type: array
+              description: Ids that may or may not be present.
+              items:
+                type: integer
+            definiteAttacks:
+              type: array
+              description: Attacks that certainly hold, as `[source, target]` pairs.
+              items:
+                type: array
+                items:
+                  type: integer
+            uncertainAttacks:
+              type: array
+              description: Attacks that may hold, as `[source, target]` pairs.
+              items:
+                type: array
+                items:
+                  type: integer
+
+    RankingRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, nr_of_arguments, attacks, semantics]
+          properties:
+            cmd:
+              type: string
+              enum: [get_model]
+            semantics:
+              type: string
+              description: Ranking-semantics key, e.g. CAT, BB, SER, CO, DB, IGD, SAF.
+            attacks:
+              $ref: '#/components/schemas/Attacks'
+            args:
+              type: object
+              additionalProperties:
+                type: string
+
+    SerialisationRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, nr_of_arguments, attacks]
+          properties:
+            cmd:
+              type: string
+              enum: [get_selection, is_terminal, get_sequences]
+            attacks:
+              $ref: '#/components/schemas/Attacks'
+            selectionFunction:
+              type: string
+              description: Required for `get_selection` and `get_sequences`.
+              enum: [ADM, UC, GR]
+            terminationFunction:
+              type: string
+              description: Required for `is_terminal` and `get_sequences`.
+              enum: [ADM, CO, UC, PR, ST]
+            extension:
+              type: array
+              description: Required for `is_terminal` — the candidate set of argument ids.
+              items:
+                type: integer
+
+    ReasonerResponse:
+      type: object
+      properties:
+        time:
+          type: number
+          description: Compute time in seconds.
+        answer:
+          type: string
+          nullable: true
+          description: Stringified result, parsed client-side. May be null on error.
+        status:
+          type: string
+          nullable: true
+          description: e.g. SUCCESS, ERROR, TIMEOUT.
+
+    RankingResponse:
+      allOf:
+        - $ref: '#/components/schemas/ReasonerResponse'
+        - type: object
+          properties:
+            rankingType:
+              type: string
+              enum: [numerical, lattice]
+
+    InfoResponse:
+      type: object
+      properties:
+        reply:
+          type: string
+        email:
+          type: string
+        backend_timeout:
+          type: integer
+        semantics:
+          type: array
+          items:
+            type: string
+        commands:
+          type: array
+          items:
+            type: string

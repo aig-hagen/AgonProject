@@ -29,6 +29,7 @@ import {
   LAST_SELECTED_DOCUMENT_KEY,
   useDocumentMetadata,
 } from '@/modules/common/documents/useDocuments'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 import { fetchShare, ShareError } from '@/modules/common/share/useShare'
 
@@ -83,6 +84,17 @@ onMounted(async () => {
   if (result.data === undefined) {
     errorMessage.value = t('share.load.errors.parseFailed')
     return
+  }
+
+  // A share may carry a `layoutType` instead of meaningful coordinates (e.g. links
+  // built by the MCP server); arrange the graph before storing it.
+  const rawLayout = (parsed as Record<string, unknown>)['layoutType']
+  if (
+    typeof rawLayout === 'string' &&
+    (Object.values(Layout) as string[]).includes(rawLayout) &&
+    importModule.applyLayout !== undefined
+  ) {
+    await importModule.applyLayout(result.data, rawLayout as Layout)
   }
 
   const nameFromJson = (parsed as Record<string, unknown>)['name']

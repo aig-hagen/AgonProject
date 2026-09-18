@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/abstract-argumentation/examples'
 import GraphEditor from '@/modules/abstract-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import {
   canLoadFromObject,
@@ -96,6 +97,9 @@ export const abstractArgumentationModule: ModuleConfig<AbstractArgumentation<Arg
   },
   getSaveString(document, name) {
     return saveAsString(document, name)
+  },
+  applyLayout(document, layoutType) {
+    return layout(document, layoutType)
   },
   generateHref: '/generate?type=abstract',
   publications: [D95, BCG18],
