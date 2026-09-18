@@ -18,7 +18,7 @@
  */
 import type { Component, InjectionKey, Ref } from 'vue'
 
-import type { ExportFileData } from '@/modules/common/export'
+import type { ExportConfig, ExportFileData } from '@/modules/common/export'
 import type { UUID } from '@/modules/common/ids'
 import { Layout } from '@/modules/common/main-menu/layouting'
 import type { GridVisibility, PhysicsMode } from '@/modules/common/main-menu/types'
@@ -115,6 +115,16 @@ export const TUTORIAL_COLLAPSE_KEY: InjectionKey<() => void> = Symbol('tutorial-
 // WYSIWYG SVG export without touching the module-agnostic ExportConfig pipeline.
 export const GRAPH_SVG_RENDERER_KEY: InjectionKey<() => string | null> =
   Symbol('graph-svg-renderer')
+
+// Provided by each module's GraphEditor so the common MainMenu's quick-export submenu can list
+// the fire-and-forget formats (ICCMA/TGF) and run their export() on demand, without threading the
+// module document type through the menu. Document type is erased to `unknown` here and cast at the
+// use site, matching how WindowExport is already generic over the document.
+export interface QuickExport {
+  configs: ExportConfig<unknown>[]
+  getInput: () => unknown
+}
+export const QUICK_EXPORT_KEY: InjectionKey<QuickExport> = Symbol('quick-export')
 
 export type LinkType = (typeof LinkType)[keyof typeof LinkType]
 

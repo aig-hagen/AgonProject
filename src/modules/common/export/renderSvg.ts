@@ -25,6 +25,11 @@ if (RENDER_SVG_CONTAINER === null) {
   throw new Error('Could not find rendering container.')
 }
 const RESOLVE_SVG_FUNCTION_NAME = 'resolveSvg'
+const REJECT_SVG_FUNCTION_NAME = 'rejectSvg'
+
+// Editable LaTeX in the studio can be malformed, so a render must be able to fail instead of
+// hanging the preview forever. Bound every render with this timeout.
+const RENDER_TIMEOUT_MS = 20000
 
 interface Wawoff2Module {
   decompress(x: Uint8Array<ArrayBuffer>): number
@@ -86,22 +91,29 @@ async function queryFontCached(fontFamily: string) {
 RENDER_SVG_CONTAINER.style.display = 'none'
 RENDER_SVG_CONTAINER.addEventListener('tikzjax-load-finished', async (event) => {
   const readySvg = event.target
-  if (readySvg === null) {
-    throw new Error('No event target.')
-  }
-  if (!(readySvg instanceof SVGSVGElement)) {
-    throw new Error('Target not a top-level SVG Element.')
-  }
-  const scriptWrapper = readySvg.parentElement as (HTMLElement & Record<string, unknown>) | null
+  const scriptWrapper =
+    readySvg instanceof Element
+      ? (readySvg.parentElement as (HTMLElement & Record<string, unknown>) | null)
+      : null
+  // The render may have already been settled (e.g. timed out and cleaned up); ignore late events.
   if (scriptWrapper === null) {
-    throw new Error('No script wrapper.')
+    return
   }
-  if (!(typeof scriptWrapper[RESOLVE_SVG_FUNCTION_NAME] === 'function')) {
-    throw new Error('Unexpected script wrapper encountered.')
+  const resolve = scriptWrapper[RESOLVE_SVG_FUNCTION_NAME]
+  const reject = scriptWrapper[REJECT_SVG_FUNCTION_NAME]
+  if (typeof resolve !== 'function' || typeof reject !== 'function') {
+    return
   }
-  const svgText = await processSvg(readySvg)
-  scriptWrapper[RESOLVE_SVG_FUNCTION_NAME](svgText)
-  scriptWrapper.remove()
+  try {
+    if (!(readySvg instanceof SVGSVGElement)) {
+      throw new Error('Target not a top-level SVG Element.')
+    }
+    resolve(await processSvg(readySvg))
+  } catch (error) {
+    reject(error instanceof Error ? error : new Error(String(error)))
+  } finally {
+    scriptWrapper.remove()
+  }
 })
 
 // opentype.js's own Path#toPathData/toDOMElement decide whether to insert a separating
@@ -196,10 +208,28 @@ export async function renderSvg(latex: string): Promise<string> {
   script.dataset.texPackages = JSON.stringify({ argumentation: '' })
   script.text = latex
   scriptWrapper.append(script)
-  const svg = await new Promise<string>((resolve) => {
-    ;(scriptWrapper as unknown as Record<string, unknown>).resolveSvg = resolve
+
+  return await new Promise<string>((resolve, reject) => {
+    let settled = false
+    const wrapperRecord = scriptWrapper as unknown as Record<string, unknown>
+    const timeoutId = setTimeout(() => {
+      if (settled) return
+      settled = true
+      scriptWrapper.remove()
+      reject(new Error('SVG rendering timed out.'))
+    }, RENDER_TIMEOUT_MS)
+    wrapperRecord[RESOLVE_SVG_FUNCTION_NAME] = (svg: string) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeoutId)
+      resolve(svg)
+    }
+    wrapperRecord[REJECT_SVG_FUNCTION_NAME] = (error: Error) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeoutId)
+      reject(error)
+    }
     RENDER_SVG_CONTAINER.append(scriptWrapper)
   })
-
-  return Promise.resolve(svg)
 }

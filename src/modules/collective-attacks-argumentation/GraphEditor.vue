@@ -48,6 +48,8 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  QUICK_EXPORT_KEY,
+  type QuickExport,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -242,6 +244,10 @@ const extensionChips = computed<EvaluationChip[]>(() =>
   })),
 )
 
+provide(QUICK_EXPORT_KEY, {
+  configs: availableExports as unknown as QuickExport['configs'],
+  getInput: () => state.current.content,
+})
 provide(TOOLTIP_REGISTRY_KEY, {
   ...abstractArgumentationGlossary,
   ...collectiveAttacksArgumentationGlossary,
@@ -282,6 +288,7 @@ const tutorialContextExtra = computed(() => ({
     @redo="emit('redo')"
     @save="emit('save')"
     @share="emit('share')"
+    @export-file="emit('export', $event)"
     :history-state="historyState"
     :tutorials="setafTutorials"
     default-tutorial-id="setaf-basics"

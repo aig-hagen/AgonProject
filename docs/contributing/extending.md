@@ -57,7 +57,7 @@ Modules can merge the abstract-argumentation glossary with their own registry. T
 
 ## Add exports
 
-Modules define their available [`ExportConfig`](/src/modules/common/export/index.ts) objects in `export.ts` and pass them to the shared export window or sheet. An export config contains:
+Modules define their available [`ExportConfig`](/src/modules/common/export/index.ts) objects in `export.ts`. They flow to three places: the LaTeX config drives the desktop **LaTeX studio** ([`WindowExport.vue`](/src/modules/common/export/WindowExport.vue)); the trivial formats (ICCMA, TGF) are surfaced as quick copy/download actions in the main menu's **Export** submenu (provided via `QUICK_EXPORT_KEY`); and the compact layout uses the export sheet. An export config contains:
 
 - a stable `ExportFormatId` and technical display name;
 - an `export()` function returning text and, optionally, an asynchronous SVG factory;

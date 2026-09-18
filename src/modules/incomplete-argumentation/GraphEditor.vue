@@ -37,6 +37,8 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  QUICK_EXPORT_KEY,
+  type QuickExport,
   type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
@@ -269,6 +271,10 @@ const extensionChips = computed<EvaluationChip[]>(() =>
   })),
 )
 
+provide(QUICK_EXPORT_KEY, {
+  configs: availableExports as unknown as QuickExport['configs'],
+  getInput: () => state.current.content,
+})
 provide(TOOLTIP_REGISTRY_KEY, {
   ...abstractArgumentationGlossary,
   ...incompleteArgumentationGlossary,
@@ -323,6 +329,7 @@ const tutorialRefs = computed(() => ({
     @redo="emit('redo')"
     @save="emit('save')"
     @share="emit('share')"
+    @export-file="emit('export', $event)"
     v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance()"
   >

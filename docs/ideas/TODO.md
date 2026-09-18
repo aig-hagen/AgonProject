@@ -1,7 +1,9 @@
 ## Features
 - Rework fonts to be consistent across browsers
 - Localization of definitions, semantics, etc
-- the export window could use a redesign
+- graph style colors need update
+- labeling highlight colors - color blind mode
+- export redesign: check if there is anything that should be updated for mobile
 
 ## Bugs and Issues
 

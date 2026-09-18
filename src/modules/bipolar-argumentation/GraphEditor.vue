@@ -45,6 +45,8 @@ import {
   type HistoryState,
   LinkType,
   type NodeId,
+  QUICK_EXPORT_KEY,
+  type QuickExport,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -253,6 +255,10 @@ const extensionChips = computed<EvaluationChip[]>(() =>
 )
 
 // Make the bipolar glossary available to tutorial steps that reference terms (e.g. BAF).
+provide(QUICK_EXPORT_KEY, {
+  configs: availableExports as unknown as QuickExport['configs'],
+  getInput: () => state.current.content,
+})
 provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...bipolarArgumentationGlossary })
 
 const bipolarTutorials = [bipolarBasicsTutorial, bipolarEvaluationTutorial, ...commonTutorials]
@@ -290,6 +296,7 @@ const tutorialContextExtra = computed(() => ({
     @redo="emit('redo')"
     @save="emit('save')"
     @share="emit('share')"
+    @export-file="emit('export', $event)"
     v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance()"
   >

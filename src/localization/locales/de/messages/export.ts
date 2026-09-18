@@ -19,6 +19,7 @@
 export default {
   format: 'Format',
   svgImage: 'SVG (Bild)',
+  exportImage: 'Bild exportieren',
   sections: {
     image: 'Bild',
     text: 'Text',
@@ -32,6 +33,24 @@ export default {
   formats: 'Formate',
   noGraph: 'Kein Graph zum Exportieren.',
   renderingSvg: 'SVG wird gerendert',
+  preamble: 'Präambel',
+  preview: 'Vorschau',
+  resetToGraph: 'Auf Graph zurücksetzen',
+  packageNote:
+    'Die Abbildung wird mit dem LaTeX-Paket {package} gezeichnet — füge die obige Zeile deiner Präambel hinzu.',
+  badge: {
+    synced: 'Synchron',
+    detached: 'Bearbeitet',
+    live: 'live',
+    rendering: 'rendert',
+  },
+  validation: {
+    missing:
+      'Keine \\begin{af}-Umgebung gefunden — vor dem Anwenden von Stiloptionen auf den Graphen zurücksetzen.',
+    ambiguous:
+      'Mehrere \\begin{af}-Umgebungen gefunden — vor dem Anwenden von Stiloptionen auf den Graphen zurücksetzen.',
+  },
+  previewError: 'Vorschau konnte nicht gerendert werden.',
   style: {
     parameters: 'Darstellung',
     options: 'Darstellung',
