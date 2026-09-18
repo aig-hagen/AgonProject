@@ -13,7 +13,7 @@ web service — this server is a stateless, transport-independent adapter around
 | `enumerate_extensions` | Every extension under a chosen semantics.                                                                                      |
 | `check_acceptance`     | Credulous or skeptical acceptance, optionally for a queried argument.                                                          |
 | `generate_framework`   | Generate an abstract framework (via graph-gen) in the canonical format.                                                        |
-| `share_framework`      | Store a framework and return a public `/share/<id>` link that opens it in the app editor.                                       |
+| `share_framework`      | Store a framework and return a public `/share/<id>` link that opens it in the app editor.                                      |
 
 Reasoning and generation tools are read-only; `share_framework` writes to the
 share service. Tools return validated `structuredContent` (see each tool's
