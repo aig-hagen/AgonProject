@@ -58,6 +58,13 @@ There should be a short tutorial, just for the controls, and one more detailed t
 
 ## New Framework Types
 
+### Assumption-based Argumentation (ABA)
+- design notes: [`aba-graph-representation.md`](aba-graph-representation.md) — modeling
+  (atom graph) vs. reasoning (assumptions-only BSAF) split, why a uniform atom-graph semantics
+  is unsound, non-flat/Δ-semantics
+- prototype: **ABA Studio** artifact (flat case only)
+- need TweetyProject endpoint (non-flat ABA and/or BSAF)
+
 ### Extended AFs
 - need to implement extended edges in graph-component
 - extended attacks stored separately

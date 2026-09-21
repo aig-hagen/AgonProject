@@ -13,7 +13,7 @@ The reasoning backend is a vendored TweetyProject web service (Java, Spring, lis
 This service owns no persistent state. Every call is a self-contained `POST`.
 
 An interactive, browsable version of this contract (Swagger UI with "Try it out") is served at
-[`/api`](/api) on the deployment, backed by [`public/openapi.yaml`](/public/openapi.yaml). Keep that
+`/api` on the deployment, backed by [`public/openapi.yaml`](/public/openapi.yaml). Keep that
 spec in sync with this document when endpoints change.
 
 ## Request/response envelope

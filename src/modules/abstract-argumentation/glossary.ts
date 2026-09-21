@@ -136,7 +136,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
       'The ',
       { ref: 'selFn' },
       ' $\\alpha_{\\mathsf{ad}}$ selects any ',
-      { ref: 'IS', label: 'initial set'},
+      { ref: 'IS', label: 'initial set' },
       ' of the current ',
       { ref: 'AF' },
       '.',
