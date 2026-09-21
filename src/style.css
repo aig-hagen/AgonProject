@@ -157,6 +157,11 @@ body {
   );
 }
 
+/* Node names render bold, matching the ABA editor's node labels. */
+.graph-controller__node-label {
+  font-weight: 700;
+}
+
 .graph-controller__badge {
   fill: var(--color-base-100);
   stroke: var(--graph-node-color, #5a87a8);
