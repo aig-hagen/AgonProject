@@ -55,6 +55,7 @@ import {
   type Semantics,
   useExtensionEvaluationQuery,
 } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
+import AcceptanceTypeHint from '@/modules/incomplete-argumentation/AcceptanceTypeHint.vue'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import type {
   IafArgumentData,
@@ -204,6 +205,9 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
   >
     <template #parameters>
       <ParameterField :label="t('evaluation.acceptanceType.label')" max-width="8rem">
+        <template #label-suffix>
+          <AcceptanceTypeHint :type="selectedType" />
+        </template>
         <PickerSelect
           ref="typeSelect"
           v-model="selectedType"

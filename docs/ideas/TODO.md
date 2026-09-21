@@ -4,6 +4,7 @@
 - graph style colors need update
 - labeling highlight colors - color blind mode
 - export redesign: check if there is anything that should be updated for mobile
+- implement node action bar from mobile also for desktop.
 
 ## Bugs and Issues
 

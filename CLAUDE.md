@@ -45,6 +45,11 @@ lint-enforced by `eslint-plugin-no-relative-import-paths`.
   [Conventional Commits](https://www.conventionalcommits.org/) type (`feat:`, `fix:`,
   `chore:`, `docs:`, `refactor:`, ...).
 
+## Changelog
+
+Record user-visible changes in [`CHANGELOG.md`](CHANGELOG.md) under `[Unreleased]`, in the
+appropriate `Added`/`Changed`/`Fixed` section. Keep each entry to one line (two at most).
+
 ## Opening a PR
 
 - **Before pushing, run `npm run lint`, `npm run format`, and `npm run format:check`** (CI
