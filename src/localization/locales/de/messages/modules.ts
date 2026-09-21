@@ -49,6 +49,11 @@ const modules: LocaleMessageSchema['modules'] = {
     description:
       'Erweitert die abstrakte Argumentation, indem Mengen von Argumenten ein Zielargument gemeinsam angreifen können.',
   },
+  assumptionBased: {
+    name: 'Annahmenbasierte Argumentation',
+    description:
+      'Baue eine Theorie aus Regeln über Atomen und widerlegbaren Annahmen auf, bei der Angriffe aus den Kontraren der Annahmen entstehen.',
+  },
   tags: {
     abstract: {
       name: 'Abstrakt',
