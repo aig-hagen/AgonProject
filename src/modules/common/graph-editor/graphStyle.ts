@@ -72,22 +72,13 @@ export const GRAPH_STYLE_LIBRARY: GraphStyle = {
 }
 
 // Amber outline over a faint amber-tinted fill: the ABA assumption-node scheme, with the
-// identity in the border so the fill stays free for evaluation shading. The outline is the
-// live `--color-secondary` token (stroke is CSS-only, so it can reference it); the fill is
-// that token mixed 22% into base-100, precomputed per theme (fill goes through JS setColor).
-// Edges use the brand primary (precomputed per theme, since link color goes through setColor).
+// identity in the border so the fill stays free for evaluation shading. Every color is a live
+// palette token — the graph editor resolves these to concrete colors per theme before use, so a
+// single definition covers light and dark and nothing drifts from the palette.
 export const GRAPH_STYLE_OUTLINE: GraphStyle = {
-  nodeColor: '#f5e8d9',
+  nodeColor: 'color-mix(in srgb, var(--color-secondary) 22%, var(--color-base-100))',
   nodeStrokeColor: 'var(--color-secondary)',
   nodeStrokeWidth: 2,
-  linkColor: '#004c97',
-  linkStrokeWidth: 2.5,
-}
-
-export const GRAPH_STYLE_OUTLINE_DARK: GraphStyle = {
-  nodeColor: '#474745',
-  nodeStrokeColor: 'var(--color-secondary)',
-  nodeStrokeWidth: 2,
-  linkColor: '#91add2',
+  linkColor: 'var(--color-primary)',
   linkStrokeWidth: 2.5,
 }

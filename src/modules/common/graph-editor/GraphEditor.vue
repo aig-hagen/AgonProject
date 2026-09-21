@@ -110,7 +110,6 @@ import {
   GRAPH_STYLE_LIBRARY,
   GRAPH_STYLE_MINIMAL,
   GRAPH_STYLE_OUTLINE,
-  GRAPH_STYLE_OUTLINE_DARK,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
@@ -381,7 +380,7 @@ const {
   snapMode,
   showHints,
 } = useSettings()
-const effectiveStyle = computed<GraphStyle>(() => {
+function pickStyle(): GraphStyle {
   if (graphStyle !== undefined) return graphStyle
   switch (graphStyleSetting.value) {
     case 'high-contrast':
@@ -391,9 +390,36 @@ const effectiveStyle = computed<GraphStyle>(() => {
     case 'library':
       return GRAPH_STYLE_LIBRARY
     case 'outline':
-      return isDark.value ? GRAPH_STYLE_OUTLINE_DARK : GRAPH_STYLE_OUTLINE
+      return GRAPH_STYLE_OUTLINE
     default:
       return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
+  }
+}
+
+// Resolve a CSS color that may reference palette tokens (`var(...)` / `color-mix(...)`) to a
+// concrete color, so it can be handed to the graph library (which can't parse either). Plain
+// hex/named colors pass through untouched.
+function resolveCssColor(value: string): string {
+  if (typeof document === 'undefined') return value
+  if (!value.includes('var(') && !value.includes('color-mix')) return value
+  const probe = document.createElement('span')
+  probe.style.color = value
+  probe.style.position = 'absolute'
+  probe.style.pointerEvents = 'none'
+  document.body.appendChild(probe)
+  const resolved = getComputedStyle(probe).color
+  probe.remove()
+  return resolved || value
+}
+
+const effectiveStyle = computed<GraphStyle>(() => {
+  // Referenced so token-based colors re-resolve when the theme toggles.
+  void isDark.value
+  const base = pickStyle()
+  return {
+    ...base,
+    nodeColor: resolveCssColor(base.nodeColor),
+    linkColor: resolveCssColor(base.linkColor),
   }
 })
 
