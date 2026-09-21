@@ -39,6 +39,7 @@ export default {
     highContrast: 'High contrast',
     minimal: 'Minimal',
     library: 'Library',
+    outline: 'Outline',
   },
   physicsMode: {
     label: 'Physics mode',

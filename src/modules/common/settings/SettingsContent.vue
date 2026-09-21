@@ -117,6 +117,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
             <option value="high-contrast">{{ t('settings.graphStyle.highContrast') }}</option>
             <option value="minimal">{{ t('settings.graphStyle.minimal') }}</option>
             <option value="library">{{ t('settings.graphStyle.library') }}</option>
+            <option value="outline">{{ t('settings.graphStyle.outline') }}</option>
           </select>
         </div>
       </div>

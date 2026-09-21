@@ -39,6 +39,7 @@ export default {
     highContrast: 'Hoher Kontrast',
     minimal: 'Minimal',
     library: 'Bibliothek',
+    outline: 'Umriss',
   },
   physicsMode: {
     label: 'Physikmodus',

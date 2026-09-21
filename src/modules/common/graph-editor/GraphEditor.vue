@@ -109,6 +109,8 @@ import {
   GRAPH_STYLE_HIGH_CONTRAST,
   GRAPH_STYLE_LIBRARY,
   GRAPH_STYLE_MINIMAL,
+  GRAPH_STYLE_OUTLINE,
+  GRAPH_STYLE_OUTLINE_DARK,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
@@ -388,6 +390,8 @@ const effectiveStyle = computed<GraphStyle>(() => {
       return GRAPH_STYLE_MINIMAL
     case 'library':
       return GRAPH_STYLE_LIBRARY
+    case 'outline':
+      return isDark.value ? GRAPH_STYLE_OUTLINE_DARK : GRAPH_STYLE_OUTLINE
     default:
       return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
   }
@@ -1814,6 +1818,7 @@ defineExpose({
       '--graph-node-stroke-color': effectiveStyle.nodeStrokeColor,
       '--graph-node-stroke-width': `${effectiveStyle.nodeStrokeWidth}px`,
       '--graph-link-stroke-width': `${effectiveStyle.linkStrokeWidth}px`,
+      '--graph-node-font-family': effectiveStyle.nodeFont,
     }"
   >
     <GraphComponent

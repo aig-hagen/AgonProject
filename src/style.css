@@ -147,7 +147,14 @@ body {
 .graph-controller__node-label,
 .graph-controller__annotation-label,
 .graph-controller__badge-label {
-  font-family: 'JetBrains Mono', 'Fira Mono', 'Cascadia Code', 'Consolas', monospace;
+  font-family: var(
+    --graph-node-font-family,
+    'JetBrains Mono',
+    'Fira Mono',
+    'Cascadia Code',
+    'Consolas',
+    monospace
+  );
 }
 
 .graph-controller__badge {
