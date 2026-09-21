@@ -20,7 +20,8 @@
 import { computed, onMounted, onUnmounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 
 import { ABAF, type NodeId } from '@/modules/assumption-based-argumentation/model'
-import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
+import type { HistoryState, SelectionAction } from '@/modules/common/graph-editor/graphEditor'
+import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
 const { state, historyState } = defineProps<{
@@ -41,7 +42,35 @@ const emit = defineEmits<{
 
 // Node box half-dimensions used for edge clipping and handle placement.
 const HW = 38
-const HH = 22
+const HH = 28
+// Assumption nodes are circles; this is their radius.
+const AR = 24
+
+// Atom nodes are rounded diamonds (a rhombus with vertices HW/HH out on each axis).
+type Pt = [number, number]
+function roundedDiamond(w: number, h: number, r: number): string {
+  const V: Pt[] = [
+    [0, -h],
+    [w, 0],
+    [0, h],
+    [-w, 0],
+  ]
+  const along = (a: Pt, b: Pt): Pt => {
+    const dx = b[0] - a[0]
+    const dy = b[1] - a[1]
+    const t = r / Math.hypot(dx, dy)
+    return [a[0] + dx * t, a[1] + dy * t]
+  }
+  let d = ''
+  for (let i = 0; i < 4; i++) {
+    const cur = V[i]!
+    const [bx, by] = along(cur, V[(i + 3) % 4]!)
+    const [ax, ay] = along(cur, V[(i + 1) % 4]!)
+    d += `${i === 0 ? 'M' : 'L'}${bx},${by} Q${cur[0]},${cur[1]} ${ax},${ay} `
+  }
+  return d + 'Z'
+}
+const ATOM_PATH = roundedDiamond(HW, HH, 12)
 
 const renderedState = shallowRef(state)
 watch(
@@ -111,13 +140,22 @@ function freshId(): NodeId {
   for (const [id] of content.value.nodeEntries()) max = Math.max(max, id)
   return max + 1
 }
-function clip(cx: number, cy: number, px: number, py: number): { x: number; y: number } {
+function clip(
+  cx: number,
+  cy: number,
+  px: number,
+  py: number,
+  assm = false,
+): { x: number; y: number } {
   const dx = px - cx
   const dy = py - cy
   if (dx === 0 && dy === 0) return { x: cx, y: cy }
-  const sx = dx ? HW / Math.abs(dx) : Infinity
-  const sy = dy ? HH / Math.abs(dy) : Infinity
-  const s = Math.min(sx, sy)
+  if (assm) {
+    const s = AR / Math.hypot(dx, dy)
+    return { x: cx + dx * s, y: cy + dy * s }
+  }
+  // Atom diamond boundary: |x|/HW + |y|/HH = 1.
+  const s = 1 / (Math.abs(dx) / HW + Math.abs(dy) / HH)
   return { x: cx + dx * s, y: cy + dy * s }
 }
 function hubPos(head: NodeId, body: NodeId[]): { x: number; y: number } {
@@ -168,11 +206,11 @@ const ruleGeometry = computed(() => {
     for (const b of r.body) {
       if (!content.value.hasNode(b)) continue
       const B = pos(b)
-      const s = clip(B.x, B.y, h.x, h.y)
+      const s = clip(B.x, B.y, h.x, h.y, isAssm(b))
       bodies.push(`M${s.x},${s.y} L${h.x},${h.y}`)
     }
     const H = pos(r.head)
-    const e = clip(H.x, H.y, h.x, h.y)
+    const e = clip(H.x, H.y, h.x, h.y, isAssm(r.head))
     heads.push(`M${h.x},${h.y} L${e.x},${e.y}`)
     hubs.push({
       id: r.id,
@@ -191,12 +229,12 @@ const contraryPaths = computed(() => {
     const A = pos(k)
     if (t === k) {
       out.push(
-        `M${A.x + HW - 6},${A.y - HH + 2} C${A.x + HW + 40},${A.y - HH - 26} ${A.x + HW + 40},${A.y + HH + 26} ${A.x + HW - 6},${A.y + HH - 2}`,
+        `M${A.x + AR - 4},${A.y - AR + 2} C${A.x + AR + 42},${A.y - AR - 26} ${A.x + AR + 42},${A.y + AR + 26} ${A.x + AR - 4},${A.y + AR - 2}`,
       )
     } else {
       const B = pos(t)
-      const s = clip(A.x, A.y, B.x, B.y)
-      const e = clip(B.x, B.y, A.x, A.y)
+      const s = clip(A.x, A.y, B.x, B.y, true)
+      const e = clip(B.x, B.y, A.x, A.y, isAssm(t))
       out.push(`M${s.x},${s.y} L${e.x},${e.y}`)
     }
   }
@@ -214,7 +252,7 @@ const attackPaths = computed(() => {
     for (const [k, t] of contraries) {
       if (t === r.head && content.value.hasNode(k)) {
         const T = pos(k)
-        const e = clip(T.x, T.y, h.x, h.y)
+        const e = clip(T.x, T.y, h.x, h.y, true)
         out.push(`M${h.x},${h.y} L${e.x},${e.y}`)
       }
     }
@@ -256,18 +294,86 @@ const lints = computed(() => {
   return out
 })
 
-const selectedNode = computed(() =>
-  sel.value?.kind === 'node' && content.value.hasNode(sel.value.id)
-    ? { id: sel.value.id, data: content.value.getNode(sel.value.id) }
-    : null,
-)
-const selectedRule = computed(() =>
-  sel.value?.kind === 'rule'
-    ? (content.value.rules().find((r) => r.id === sel.value!.id) ?? null)
-    : null,
-)
 function nodeName(id: NodeId): string {
   return content.value.hasNode(id) ? content.value.getNode(id).name : '?'
+}
+
+// --- side-panel list data ---
+const statements = computed(() =>
+  [...content.value.nodeEntries()].map(([id, d]) => ({
+    id,
+    name: d.name,
+    kind: d.kind,
+    fact: d.fact,
+    contrary: d.kind === 'assumption' ? content.value.getContrary(id) : undefined,
+    selected: sel.value?.kind === 'node' && sel.value.id === id,
+  })),
+)
+const ruleRows = computed(() =>
+  content.value.rules().map((r) => ({
+    id: r.id,
+    head: nodeName(r.head),
+    body: r.body.length ? r.body.map(nodeName).join(', ') : '⊤',
+    selected: sel.value?.kind === 'rule' && sel.value.id === r.id,
+  })),
+)
+
+// --- new-rule builder ---
+const newHead = ref<NodeId | null>(null)
+const newBody = ref<NodeId[]>([])
+function toggleBodyMember(id: NodeId) {
+  newBody.value = newBody.value.includes(id)
+    ? newBody.value.filter((b) => b !== id)
+    : [...newBody.value, id]
+}
+function commitNewRule() {
+  if (newHead.value === null || !newBody.value.length) return
+  const head = newHead.value
+  const body = [...newBody.value]
+  if (body.includes(head)) toast(`Tautological rule ${nodeName(head)} ← …, ${nodeName(head)}`)
+  commit((d) => {
+    d.addRule(head, body)
+  })
+  newHead.value = null
+  newBody.value = []
+}
+
+// --- floating action bar (replaces the inspector) ---
+function selectNode(id: NodeId) {
+  sel.value = { kind: 'node', id }
+}
+function selectRule(id: number) {
+  sel.value = { kind: 'rule', id }
+}
+const selectionActions = computed<SelectionAction[]>(() => {
+  const s = sel.value
+  if (!s) return []
+  if (s.kind === 'node') {
+    if (!content.value.hasNode(s.id)) return []
+    const d = content.value.getNode(s.id)
+    return [
+      {
+        key: 'kind',
+        label: d.kind === 'assumption' ? '→ atom' : '↑ assumption',
+        keepOpen: true,
+        run: () => toggleKind(s.id),
+      },
+      {
+        key: 'fact',
+        label: d.fact ? 'unset fact' : 'set fact',
+        keepOpen: true,
+        run: () => setFact(s.id, !d.fact),
+      },
+      { key: 'del', label: 'delete', danger: true, run: () => delNode(s.id) },
+    ]
+  }
+  return [{ key: 'del', label: 'delete', danger: true, run: () => delRule(s.id) }]
+})
+function selectionRect(): DOMRect | null {
+  const s = sel.value
+  if (!s || !svgEl.value) return null
+  const q = s.kind === 'node' ? `[data-node="${s.id}"]` : `[data-hub="${s.id}"]`
+  return svgEl.value.querySelector(q)?.getBoundingClientRect() ?? null
 }
 
 // --- model operations ---
@@ -275,6 +381,23 @@ function addAtom(x: number, y: number) {
   const id = freshId()
   commit((d) => d.addNode(id, { name: genName(), kind: 'atom', x, y, fact: false }))
   sel.value = { kind: 'node', id }
+}
+// Add an assumption plus its auto-named contrary atom in a single step.
+function addAssumption(x: number, y: number) {
+  const base = freshId()
+  const name = genName()
+  commit((d) => {
+    d.addNode(base, { name, kind: 'assumption', x, y, fact: false })
+    d.addNode(base + 1, { name: '¬' + name, kind: 'atom', x: x + 150, y: y - 30, fact: false })
+    d.setContrary(base, base + 1)
+  })
+  sel.value = { kind: 'node', id: base }
+}
+function addAtomSpawn() {
+  addAtom(120 + Math.random() * 160, 120 + Math.random() * 160)
+}
+function addAssumptionSpawn() {
+  addAssumption(120 + Math.random() * 160, 120 + Math.random() * 160)
 }
 function toggleKind(id: NodeId) {
   if (isAssm(id)) {
@@ -316,10 +439,9 @@ function rename(id: NodeId, value: string): boolean {
   commit((d) => d.setName(id, val))
   return true
 }
-function onRenameInput(e: Event) {
+function onListRename(id: NodeId, e: Event) {
   const input = e.target as HTMLInputElement
-  if (!selectedNode.value) return
-  if (!rename(selectedNode.value.id, input.value)) input.value = selectedNode.value.data.name
+  if (!rename(id, input.value)) input.value = content.value.getNode(id).name
 }
 function delNode(id: NodeId) {
   commit((d) => d.deleteNode(id))
@@ -382,6 +504,8 @@ function onPointerDown(e: PointerEvent) {
     e.preventDefault()
   } else if (hb) {
     sel.value = { kind: 'rule', id: Number(hb) }
+  } else {
+    sel.value = null
   }
 }
 function onPointerMove(e: PointerEvent) {
@@ -446,21 +570,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
         <button
           class="btn btn-sm"
           type="button"
-          @click="addAtom(120 + Math.random() * 160, 120 + Math.random() * 160)"
-        >
-          ＋ atom
-        </button>
-        <button
-          class="btn btn-sm"
-          :class="{ 'btn-active': showAtt }"
-          type="button"
-          @click="showAtt = !showAtt"
-        >
-          attacks
-        </button>
-        <button
-          class="btn btn-sm"
-          type="button"
           :disabled="!historyState.canUndo"
           @click="emit('undo')"
         >
@@ -476,70 +585,86 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
         </button>
       </div>
 
-      <div class="flat-badge" :class="isFlat ? 'flat' : 'nonflat'">
-        <span class="dot"></span>
-        {{ isFlat ? 'flat theory' : 'non-flat theory' }}
-        <span class="muted">{{
-          isFlat ? 'no assumption is derived' : 'an assumption is a rule head / fact'
-        }}</span>
-      </div>
+      <section class="sect">
+        <div class="sect-head">
+          <h4>Statements</h4>
+          <div class="add-btns">
+            <button class="btn btn-xs" type="button" @click="addAtomSpawn">＋ atom</button>
+            <button class="btn btn-xs" type="button" @click="addAssumptionSpawn">
+              ＋ assumption
+            </button>
+          </div>
+        </div>
+        <div v-if="!statements.length" class="muted empty">No statements yet.</div>
+        <ul v-else class="stmt-list">
+          <li
+            v-for="s in statements"
+            :key="s.id"
+            class="stmt"
+            :class="{ sel: s.selected }"
+            @click="selectNode(s.id)"
+          >
+            <span class="glyph" :class="s.kind === 'assumption' ? 'g-assm' : 'g-atom'"></span>
+            <input
+              class="input input-xs stmt-name"
+              type="text"
+              :value="s.name"
+              @click.stop
+              @change="onListRename(s.id, $event)"
+            />
+            <span v-if="s.fact" class="tagpill" title="fact (empty-body rule)">⊤</span>
+            <span v-if="s.kind === 'assumption'" class="ctr-hint">
+              ¬{{ s.name }}={{ s.contrary !== undefined ? nodeName(s.contrary) : '—' }}
+            </span>
+          </li>
+        </ul>
+      </section>
 
       <section class="sect">
-        <h4>Inspector</h4>
-        <template v-if="selectedNode">
-          <div class="field">
-            <label>name</label>
-            <input
-              class="input input-sm"
-              type="text"
-              :value="selectedNode.data.name"
-              @change="onRenameInput"
-            />
-          </div>
-          <div class="rowbtns">
-            <button class="btn btn-sm" type="button" @click="toggleKind(selectedNode.id)">
-              {{ selectedNode.data.kind === 'assumption' ? '→ make atom' : '↑ make assumption' }}
+        <h4>Rules</h4>
+        <div class="rule-build">
+          <select v-model="newHead" class="select select-xs rb-head">
+            <option :value="null" disabled>head…</option>
+            <option v-for="s in statements" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+          <span class="rb-arrow">←</span>
+          <div class="rb-body">
+            <span v-if="!statements.length" class="muted">add statements first</span>
+            <button
+              v-for="s in statements"
+              :key="s.id"
+              type="button"
+              class="chip"
+              :class="{ on: newBody.includes(s.id) }"
+              @click="toggleBodyMember(s.id)"
+            >
+              {{ s.name }}
             </button>
           </div>
-          <label class="cbrow">
-            <input
-              type="checkbox"
-              class="checkbox checkbox-sm"
-              :checked="selectedNode.data.fact"
-              @change="setFact(selectedNode.id, ($event.target as HTMLInputElement).checked)"
-            />
-            fact (⊤ ← , empty body)
-          </label>
-          <div v-if="selectedNode.data.kind === 'assumption'" class="ctr-info">
-            ¬{{ selectedNode.data.name }} =
-            {{
-              content.getContrary(selectedNode.id) !== undefined
-                ? nodeName(content.getContrary(selectedNode.id)!)
-                : '—'
-            }}
-            <div class="muted">Drag the red handle onto an atom to re-point (single-valued).</div>
-          </div>
-          <div class="rowbtns">
-            <button class="btn btn-sm btn-del" type="button" @click="delNode(selectedNode.id)">
-              delete node
-            </button>
-          </div>
-        </template>
-        <template v-else-if="selectedRule">
-          <div class="rule-str">
-            {{ nodeName(selectedRule.head) }} ←
-            {{ selectedRule.body.length ? selectedRule.body.map(nodeName).join(', ') : '⊤' }}
-          </div>
-          <div class="muted">Drag a node’s blue handle onto this hub to add a body atom.</div>
-          <div class="rowbtns">
-            <button class="btn btn-sm btn-del" type="button" @click="delRule(selectedRule.id)">
-              delete rule
-            </button>
-          </div>
-        </template>
-        <div v-else class="muted empty">
-          Select a node or rule hub. Double-click the canvas to add an atom.
+          <button
+            class="btn btn-xs btn-add"
+            type="button"
+            :disabled="newHead === null || !newBody.length"
+            @click="commitNewRule"
+          >
+            add rule
+          </button>
         </div>
+        <div v-if="!ruleRows.length" class="muted empty">No rules yet.</div>
+        <ul v-else class="rule-list">
+          <li
+            v-for="r in ruleRows"
+            :key="r.id"
+            class="rule-row"
+            :class="{ sel: r.selected }"
+            @click="selectRule(r.id)"
+          >
+            <span class="rule-str">{{ r.head }} ← {{ r.body }}</span>
+            <button class="x" type="button" title="delete rule" @click.stop="delRule(r.id)">
+              ×
+            </button>
+          </li>
+        </ul>
       </section>
 
       <section class="sect">
@@ -554,12 +679,26 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
         Drag the <b>blue</b> handle to another node to add a rule. Drag the <b>red</b> handle
         (assumptions only) onto an atom to set its contrary. Double-click to add an atom.
       </div>
-      <div class="legend">
-        <span><span class="box assm"></span> assumption</span>
-        <span><span class="box atom"></span> atom</span>
-        <span><span class="sw rule"></span> rule</span>
-        <span><span class="sw ctr"></span> contrary</span>
-        <span><span class="sw att"></span> attack (computed)</span>
+      <div class="canvas-controls">
+        <button
+          class="btn btn-xs"
+          :class="{ 'btn-active': showAtt }"
+          type="button"
+          @click="showAtt = !showAtt"
+        >
+          {{ showAtt ? '◉' : '○' }} attacks
+        </button>
+        <div class="legend">
+          <span><span class="box assm"></span> assumption</span>
+          <span><span class="box atom"></span> atom</span>
+          <span><span class="sw rule"></span> rule</span>
+          <span><span class="sw ctr"></span> contrary</span>
+          <span><span class="sw att"></span> attack (computed)</span>
+        </div>
+      </div>
+      <div class="flat-badge" :class="isFlat ? 'flat' : 'nonflat'">
+        <span class="dot"></span>
+        {{ isFlat ? 'flat theory' : 'non-flat theory' }}
       </div>
       <svg
         ref="svg"
@@ -642,23 +781,30 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             :class="{ sel: n.selected }"
             :transform="`translate(${n.x},${n.y})`"
           >
-            <rect
-              :class="n.assm ? 'n-assm' : 'n-atom'"
-              :data-node="n.id"
-              :x="-HW"
-              :y="-HH"
-              :width="HW * 2"
-              :height="HH * 2"
-              :rx="n.assm ? HH : 9"
+            <circle v-if="n.assm" class="n-assm" :data-node="n.id" :r="AR" />
+            <path v-else class="n-atom" :data-node="n.id" :d="ATOM_PATH" />
+            <text class="nlabel" text-anchor="middle" y="0" dominant-baseline="central">
+              {{ n.name }}
+            </text>
+            <text
+              v-if="n.fact"
+              class="factbadge"
+              text-anchor="middle"
+              :y="n.assm ? -AR + 13 : -HH + 12"
+            >
+              ⊤
+            </text>
+            <circle class="handle-hit" :data-rh="n.id" :cx="(n.assm ? AR : HW) + 9" cy="0" r="13" />
+            <circle
+              class="handle rule"
+              :data-rh="n.id"
+              :cx="(n.assm ? AR : HW) + 9"
+              cy="0"
+              r="6.5"
             />
-            <text class="nlabel" text-anchor="middle" y="1">{{ n.name }}</text>
-            <text class="ntag" text-anchor="middle" y="15">{{ n.assm ? 'assm' : 'atom' }}</text>
-            <text v-if="n.fact" class="factbadge" :x="-HW + 6" :y="-HH + 13">⊤</text>
-            <circle class="handle-hit" :data-rh="n.id" :cx="HW + 9" cy="0" r="13" />
-            <circle class="handle rule" :data-rh="n.id" :cx="HW + 9" cy="0" r="6.5" />
             <template v-if="n.assm">
-              <circle class="handle-hit" :data-ch="n.id" cx="0" :cy="HH + 9" r="13" />
-              <circle class="handle ctr" :data-ch="n.id" cx="0" :cy="HH + 9" r="6.5" />
+              <circle class="handle-hit" :data-ch="n.id" cx="0" :cy="AR + 9" r="13" />
+              <circle class="handle ctr" :data-ch="n.id" cx="0" :cy="AR + 9" r="6.5" />
             </template>
           </g>
         </g>
@@ -672,6 +818,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           :y2="templink.y2"
         />
       </svg>
+      <SelectionActionBar
+        v-if="selectionActions.length"
+        :get-reference-rect="selectionRect"
+        :actions="selectionActions"
+        @close="sel = null"
+      />
       <div v-if="toastMsg" class="toast">{{ toastMsg }}</div>
     </div>
   </div>
@@ -700,32 +852,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   padding: 12px;
   border-bottom: 1px solid var(--color-base-300);
 }
-.flat-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--color-base-300);
-}
-.flat-badge .dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-.flat-badge.flat .dot {
-  background: var(--color-success);
-}
-.flat-badge.nonflat .dot {
-  background: var(--color-warning);
-}
-.flat-badge .muted {
-  font-weight: 400;
-}
 .sect {
   padding: 12px;
   border-bottom: 1px solid var(--color-base-300);
+}
+.sect-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 .sect h4 {
   margin: 0 0 8px;
@@ -734,46 +870,146 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   letter-spacing: 0.06em;
   opacity: 0.6;
 }
-.field {
+.sect-head h4 {
+  margin: 0;
+}
+.add-btns {
+  display: flex;
+  gap: 4px;
+}
+
+/* Statements list */
+.stmt-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.stmt {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 7px;
+  padding: 3px 5px;
+  border-radius: 6px;
+  cursor: pointer;
 }
-.field label {
+.stmt:hover {
+  background: var(--color-base-300);
+}
+.stmt.sel {
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+.glyph {
   flex: none;
-  width: 48px;
-  opacity: 0.6;
+  width: 12px;
+  height: 12px;
+  border: 2px solid;
 }
-.field .input {
+.g-assm {
+  border-radius: 50%;
+  border-color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 22%, var(--color-base-100));
+}
+.g-atom {
+  border-radius: 2px;
+  transform: rotate(45deg);
+  border-color: var(--color-neutral);
+  background: var(--color-base-100);
+}
+.stmt-name {
   flex: 1;
   min-width: 0;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
-.rowbtns {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
+.tagpill {
+  flex: none;
+  color: var(--color-primary);
+  font-weight: 700;
 }
-.cbrow {
+.ctr-hint {
+  flex: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--color-error);
+  opacity: 0.85;
+}
+
+/* Rule builder + list */
+.rule-build {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.rb-arrow {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  opacity: 0.6;
+}
+.rb-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1 1 100%;
+}
+.chip {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-base-300);
+  background: var(--color-base-100);
+  cursor: pointer;
+}
+.chip.on {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-base-100));
+  color: var(--color-primary);
+}
+.btn-add {
+  margin-left: auto;
+}
+.rule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.rule-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12.5px;
-  margin-bottom: 8px;
+  padding: 3px 5px;
+  border-radius: 6px;
   cursor: pointer;
 }
-.ctr-info {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  color: var(--color-error);
-  font-size: 13px;
-  margin-bottom: 8px;
+.rule-row:hover {
+  background: var(--color-base-300);
+}
+.rule-row.sel {
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
 }
 .rule-str {
+  flex: 1;
+  min-width: 0;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 13px;
-  margin-bottom: 8px;
+}
+.rule-row .x {
+  flex: none;
+  color: var(--color-error);
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0.7;
+}
+.rule-row .x:hover {
+  opacity: 1;
 }
 .muted {
   font-size: 11.5px;
@@ -782,10 +1018,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 }
 .empty {
   font-style: italic;
-}
-.btn-del {
-  color: var(--color-error);
-  border-color: color-mix(in srgb, var(--color-error) 45%, var(--color-base-300));
 }
 .lint {
   display: flex;
@@ -809,28 +1041,65 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   background-image: radial-gradient(circle at 1px 1px, var(--color-base-300) 1px, transparent 0);
   background-size: 22px 22px;
 }
-.hint,
-.legend {
+.hint {
   position: absolute;
   top: 10px;
+  left: 12px;
   z-index: 5;
   font-size: 11px;
   background: color-mix(in srgb, var(--color-base-100) 85%, transparent);
   border: 1px solid var(--color-base-300);
   border-radius: 8px;
   padding: 6px 9px;
-}
-.hint {
-  left: 12px;
   max-width: min(58%, 400px);
   opacity: 0.75;
   pointer-events: none;
 }
-.legend {
+.canvas-controls {
+  position: absolute;
+  top: 10px;
   right: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.legend {
+  font-size: 11px;
+  background: color-mix(in srgb, var(--color-base-100) 85%, transparent);
+  border: 1px solid var(--color-base-300);
+  border-radius: 8px;
+  padding: 6px 9px;
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+.flat-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  background: color-mix(in srgb, var(--color-base-100) 85%, transparent);
+  border: 1px solid var(--color-base-300);
+  border-radius: 999px;
+}
+.flat-badge .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.flat-badge.flat .dot {
+  background: var(--color-success);
+}
+.flat-badge.nonflat .dot {
+  background: var(--color-warning);
 }
 .legend span {
   display: inline-flex;
@@ -852,6 +1121,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 .box.atom {
   border-color: var(--color-neutral);
   background: var(--color-base-100);
+  border-radius: 3px;
+  transform: rotate(45deg);
 }
 .sw {
   width: 20px;
@@ -902,14 +1173,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   font-size: 15px;
   font-weight: 700;
   fill: var(--color-base-content);
-}
-.ntag {
-  font-family: system-ui, sans-serif;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  fill: color-mix(in srgb, var(--color-base-content) 50%, transparent);
 }
 .factbadge {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
