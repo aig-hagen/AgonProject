@@ -54,7 +54,10 @@ watch(
 const content = computed(() => renderedState.value.current.content)
 
 function commit(recipe: (draft: ABAF) => void) {
-  const next = modifyDocument(renderedState.value, recipe)
+  // Wrap so a model method's return value never leaks back to immer as a replacement state.
+  const next = modifyDocument(renderedState.value, (draft) => {
+    recipe(draft)
+  })
   if (next !== undefined) {
     renderedState.value = next
     emit('change', next)
@@ -328,7 +331,11 @@ function delRule(id: number) {
 }
 function addRule(body: NodeId, head: NodeId) {
   if (body === head) toast(`Tautological rule ${nodeName(head)} ← ${nodeName(head)}`)
-  commit((d) => d.addRule(head, [body]))
+  // Block body: addRule returns the new id; returning it from the immer recipe would make
+  // immer reject a "returned a value and mutated the draft" producer.
+  commit((d) => {
+    d.addRule(head, [body])
+  })
 }
 function addBody(ruleId: number, atom: NodeId) {
   commit((d) => d.addBodyAtom(ruleId, atom))
@@ -391,6 +398,7 @@ function onPointerUp(e: PointerEvent) {
   const g = gesture
   gesture = null
   templink.value = null
+  if (svgEl.value?.hasPointerCapture(e.pointerId)) svgEl.value.releasePointerCapture(e.pointerId)
   if (g.t === 'move') {
     const d = dragging.value
     dragging.value = null
@@ -398,7 +406,8 @@ function onPointerUp(e: PointerEvent) {
     return
   }
   const el = document.elementFromPoint(e.clientX, e.clientY)
-  const tgtNode = attr(el, 'data-node')
+  // Any of a node's own elements (rect or its handles) identify that node as the drop target.
+  const tgtNode = attr(el, 'data-node') ?? attr(el, 'data-rh') ?? attr(el, 'data-ch')
   const tgtHub = attr(el, 'data-hub')
   if (g.t === 'rule') {
     if (tgtHub) addBody(Number(tgtHub), g.from)
@@ -645,8 +654,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             <text class="nlabel" text-anchor="middle" y="1">{{ n.name }}</text>
             <text class="ntag" text-anchor="middle" y="15">{{ n.assm ? 'assm' : 'atom' }}</text>
             <text v-if="n.fact" class="factbadge" :x="-HW + 6" :y="-HH + 13">⊤</text>
-            <circle class="handle rule" :data-rh="n.id" :cx="HW" cy="0" r="6" />
-            <circle v-if="n.assm" class="handle ctr" :data-ch="n.id" cx="0" :cy="HH" r="6" />
+            <circle class="handle-hit" :data-rh="n.id" :cx="HW + 9" cy="0" r="13" />
+            <circle class="handle rule" :data-rh="n.id" :cx="HW + 9" cy="0" r="6.5" />
+            <template v-if="n.assm">
+              <circle class="handle-hit" :data-ch="n.id" cx="0" :cy="HH + 9" r="13" />
+              <circle class="handle ctr" :data-ch="n.id" cx="0" :cy="HH + 9" r="6.5" />
+            </template>
           </g>
         </g>
         <line
@@ -936,10 +949,21 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   stroke-width: 1.5;
   opacity: 0;
   cursor: crosshair;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+.handle-hit {
+  fill: transparent;
+  cursor: crosshair;
+  pointer-events: none;
 }
 .node:hover .handle,
 .node.sel .handle {
   opacity: 1;
+}
+.node:hover .handle-hit,
+.node.sel .handle-hit {
+  pointer-events: all;
 }
 .handle.rule {
   fill: var(--color-primary);
