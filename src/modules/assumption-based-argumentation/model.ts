@@ -91,6 +91,14 @@ export class ABAF {
     if (data) data.name = name
   }
 
+  setPosition(id: NodeId, x: number, y: number) {
+    const data = this.nodes.get(id)
+    if (data) {
+      data.x = x
+      data.y = y
+    }
+  }
+
   setKind(id: NodeId, kind: NodeKind) {
     const data = this.nodes.get(id)
     if (!data) return
