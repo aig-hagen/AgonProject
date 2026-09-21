@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-21
+
 ### Added
 
 - Added a documentation index with separate user, architecture, contributor, reference, and operations paths.
 - Added C4-inspired system and frontend architecture diagrams.
 - Added contributor, testing, release, user, and deployment guides.
+- Added a `share_framework` tool to the MCP service so external tools can save and share frameworks.
+- Added an interactive reference (Swagger UI) for the reasoning backend API, plus a friendly notice
+  for direct browser visits to solver endpoints.
+- Added a localized 404 page for unknown routes.
 
 ### Changed
 
@@ -18,11 +24,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Made the changelog the source for generated GitHub Release notes.
 - Reworked desktop export into an editable LaTeX studio with live preview; moved ICCMA, TGF, and
   image export to one-click Export menu actions.
+- Pinned the base framework term to the top of each module glossary.
 
 ### Fixed
 
 - Corrected the BAF ICCMA example and documentation of save-schema strictness.
 - Updated the documented production topology and development prerequisites.
+- Gave tooltip popups a surface distinct from the app background.
+- Fixed a bug in Incomplete Argumentation reasoning.
 
 ## [0.11.4] - 2026-09-12
 
@@ -121,7 +130,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Earlier versions are available on the
 [GitHub Releases page](https://github.com/aig-hagen/AgonProject/releases).
 
-[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.11.4...HEAD
+[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/aig-hagen/AgonProject/compare/v0.11.4...v0.12.0
 [0.11.4]: https://github.com/aig-hagen/AgonProject/compare/v0.11.3...v0.11.4
 [0.11.3]: https://github.com/aig-hagen/AgonProject/compare/v0.11.2...v0.11.3
 [0.11.2]: https://github.com/aig-hagen/AgonProject/compare/v0.11.1...v0.11.2
