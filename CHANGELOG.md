@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
 
+### Fixed
+
+- Fixed SVG graph export: node labels are centered again and bent edges no longer show a black fill sliver.
+
 ## [0.12.0] - 2026-09-21
 
 ### Added
