@@ -24,6 +24,7 @@ const whitelistedLicenses = [
   'MPL-2.0',
   'CC0-1.0',
   'CC-BY-3.0',
+  'OFL-1.1',
 ].join(';')
 const options: InitOpts = {
   start: '.',
@@ -200,6 +201,10 @@ async function fetchLicense(
     url = `https://raw.githubusercontent.com/lukeed/polka/refs/tags/v${version}/license`
   } else if (packageName.startsWith('@rollup/rollup-linux-')) {
     url = `https://raw.githubusercontent.com/rollup/rollup/refs/tags/v${version}/LICENSE.md`
+  } else if (packageName.startsWith('@napi-rs/lzma-')) {
+    // Platform binaries for @napi-rs/lzma; the upstream repo ships no LICENSE file (declares
+    // MIT only in package.json), so there is no license text to bundle.
+    return null
   } else if (packageName.startsWith('@vue/devtools-api@')) {
     url = `https://raw.githubusercontent.com/vuejs/devtools-v6/refs/tags/v${version}/LICENSE`
   } else if (packageName === 'boolbase@1.0.0') {
@@ -293,7 +298,10 @@ async function writeCtanPackagesAttributionsJson() {
   )
 }
 
-async function mapPackageToAttribution(pkg: { name: string; version?: string }): Promise<Attribution> {
+async function mapPackageToAttribution(pkg: {
+  name: string
+  version?: string
+}): Promise<Attribution> {
   const response = await fetchJsonOk(`https://www.ctan.org/json/2.0/pkg/${pkg.name}`)
   const [license, licenseText] = await getLicense(response)
   const publisher = await getPublisher(response)
@@ -310,13 +318,22 @@ async function mapPackageToAttribution(pkg: { name: string; version?: string }):
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getPublisher(responseObject: any) {
   if (responseObject.copyright.length !== 0) {
-    return responseObject.copyright.map((copyright: { year: string; owner: string }) => `${copyright.year} ${copyright.owner}`).join('; ')
+    return responseObject.copyright
+      .map((copyright: { year: string; owner: string }) => `${copyright.year} ${copyright.owner}`)
+      .join('; ')
   }
   if (responseObject.authors.length !== 0) {
     const authors = []
-    for (const { id: authorId} of responseObject.authors) {
+    for (const { id: authorId } of responseObject.authors) {
       const authorData = await fetchJsonOk(`https://www.ctan.org/json/2.0/author/${authorId}`)
-      const authorName = [authorData.givenname, authorData.von, authorData.familyname, authorData.junior].filter(part => part !== "").join(' ')
+      const authorName = [
+        authorData.givenname,
+        authorData.von,
+        authorData.familyname,
+        authorData.junior,
+      ]
+        .filter((part) => part !== '')
+        .join(' ')
       authors.push(authorName)
     }
     return enumarate(authors)
@@ -377,7 +394,6 @@ async function fetchJsonOk(url: string) {
   }
   return await response.json()
 }
-
 
 function enumarate(strings: string[]) {
   if (strings.length === 0) {

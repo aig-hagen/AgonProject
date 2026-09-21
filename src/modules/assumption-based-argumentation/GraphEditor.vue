@@ -748,7 +748,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 .field .input {
   flex: 1;
   min-width: 0;
-  font-family: ui-monospace, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 .rowbtns {
   display: flex;
@@ -765,13 +765,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   cursor: pointer;
 }
 .ctr-info {
-  font-family: ui-monospace, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   color: var(--color-error);
   font-size: 13px;
   margin-bottom: 8px;
 }
 .rule-str {
-  font-family: ui-monospace, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 13px;
   margin-bottom: 8px;
 }
@@ -898,7 +898,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   stroke-width: 3.4;
 }
 .nlabel {
-  font-family: ui-monospace, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 15px;
   font-weight: 700;
   fill: var(--color-base-content);
@@ -912,7 +912,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   fill: color-mix(in srgb, var(--color-base-content) 50%, transparent);
 }
 .factbadge {
-  font-family: ui-monospace, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 12px;
   font-weight: 700;
   fill: var(--color-primary);
