@@ -75,11 +75,12 @@ export const GRAPH_STYLE_LIBRARY: GraphStyle = {
 // identity in the border so the fill stays free for evaluation shading. The outline is the
 // live `--color-secondary` token (stroke is CSS-only, so it can reference it); the fill is
 // that token mixed 22% into base-100, precomputed per theme (fill goes through JS setColor).
+// Edges use the brand primary (precomputed per theme, since link color goes through setColor).
 export const GRAPH_STYLE_OUTLINE: GraphStyle = {
   nodeColor: '#f5e8d9',
   nodeStrokeColor: 'var(--color-secondary)',
   nodeStrokeWidth: 2,
-  linkColor: LINK_BLACK,
+  linkColor: '#004c97',
   linkStrokeWidth: 2.5,
 }
 
@@ -87,6 +88,6 @@ export const GRAPH_STYLE_OUTLINE_DARK: GraphStyle = {
   nodeColor: '#474745',
   nodeStrokeColor: 'var(--color-secondary)',
   nodeStrokeWidth: 2,
-  linkColor: '#c8dce8',
+  linkColor: '#91add2',
   linkStrokeWidth: 2.5,
 }
