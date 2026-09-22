@@ -97,14 +97,11 @@ function commit(recipe: (draft: ABAF) => void) {
 type Selection = { kind: 'node'; id: NodeId } | { kind: 'rule'; id: number } | null
 const sel = ref<Selection>(null)
 const showAtt = ref(true)
-const showDef = ref(false)
 // TODO: source this from the module glossary once ABA has a glossary registry. Hardcoded for now.
 const ABA_DEFINITION =
-  'An assumption-based argumentation framework is a tuple (L, R, A, ‾): a language L, a set R of ' +
-  'inference rules over L, a set A ⊆ L of assumptions, and a contrary map ‾ sending each ' +
-  'assumption to a sentence in L. A rule h ← b₁,…,bₙ derives its head from its body; a fact is a ' +
-  'rule with an empty body. An assumption is attacked when its contrary is derived. The framework ' +
-  'is flat when no assumption is the head of a rule (or a fact).'
+  'An ABA framework is a tuple (L, R, A, ‾): a language L, inference rules R, assumptions A ⊆ L, ' +
+  'and a contrary map ‾ from each assumption to a sentence. An assumption is attacked when its ' +
+  'contrary is derived; the theory is flat when no assumption heads a rule.'
 const dragging = ref<{ id: NodeId; x: number; y: number } | null>(null)
 type Gesture =
   | { t: 'move'; id: NodeId; dx: number; dy: number }
@@ -313,15 +310,19 @@ function nodeName(id: NodeId): string {
 }
 
 // --- side-panel list data ---
+// Grouped by kind (assumptions first, then atoms); insertion order kept within each group.
+const kindOrder = { assumption: 0, atom: 1 } as const
 const statements = computed(() =>
-  [...content.value.nodeEntries()].map(([id, d]) => ({
-    id,
-    name: d.name,
-    kind: d.kind,
-    fact: d.fact,
-    contrary: d.kind === 'assumption' ? content.value.getContrary(id) : undefined,
-    selected: sel.value?.kind === 'node' && sel.value.id === id,
-  })),
+  [...content.value.nodeEntries()]
+    .map(([id, d]) => ({
+      id,
+      name: d.name,
+      kind: d.kind,
+      fact: d.fact,
+      contrary: d.kind === 'assumption' ? content.value.getContrary(id) : undefined,
+      selected: sel.value?.kind === 'node' && sel.value.id === id,
+    }))
+    .sort((a, b) => kindOrder[a.kind] - kindOrder[b.kind]),
 )
 // Facts are empty-body rules (`h ←`), so they belong in the Rules list. Fact rows carry the
 // node id (facts are a node flag); ordinary rows carry the rule id.
@@ -672,163 +673,164 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 <template>
   <div class="aba-editor">
     <aside class="side">
-      <section class="sect">
-        <h4>Statements</h4>
-        <ul v-if="statements.length" class="stmt-list">
-          <li
-            v-for="s in statements"
-            :key="s.id"
-            class="stmt"
-            :class="{ sel: s.selected }"
-            @click="selectNode(s.id)"
-          >
-            <div class="stmt-main">
-              <span class="glyph" :class="s.kind === 'assumption' ? 'g-assm' : 'g-atom'"></span>
-              <input
-                class="input input-xs stmt-name"
-                type="text"
-                :value="s.name"
-                @click.stop
-                @change="onListRename(s.id, $event)"
-              />
-              <span class="stmt-actions">
-                <button
-                  class="promote"
-                  type="button"
-                  :title="s.kind === 'assumption' ? 'make atom' : 'make assumption'"
-                  @click.stop="toggleKind(s.id)"
-                >
-                  {{ s.kind === 'assumption' ? '◇' : '○' }}
-                </button>
-                <button
-                  class="x"
-                  type="button"
-                  title="delete statement"
-                  @click.stop="delNode(s.id)"
-                >
-                  ×
-                </button>
-              </span>
-            </div>
-            <label v-if="s.kind === 'assumption'" class="stmt-contra" @click.stop>
-              <span class="ct-key"
-                ><span class="ov">{{ s.name }}</span></span
-              >
-              <span class="eq">=</span>
-              <select
-                class="contra-sel"
-                :class="{ unset: s.contrary === undefined }"
-                :value="s.contrary ?? ''"
-                @change="onContraryChange(s.id, $event)"
-              >
-                <option value="" disabled>choose…</option>
-                <template v-for="o in statements" :key="o.id">
-                  <option v-if="o.id !== s.id" :value="o.id">{{ o.name }}</option>
-                </template>
-              </select>
-            </label>
-          </li>
-        </ul>
-        <div v-else class="muted empty">No statements yet.</div>
-        <div class="add-row">
-          <button class="btn btn-sm add-atom" type="button" @click="addAtomSpawn">
-            <span class="glyph g-atom"></span> Atom
-          </button>
-          <button class="btn btn-sm add-assm" type="button" @click="addAssumptionSpawn">
-            <span class="glyph g-assm"></span> Assumption
-          </button>
-        </div>
+      <section class="sect def-sect">
+        <h4>Definition</h4>
+        <p class="def-body">{{ ABA_DEFINITION }}</p>
       </section>
 
-      <section class="sect">
-        <h4>Rules</h4>
-        <div v-if="!ruleRows.length" class="muted empty">No rules yet.</div>
-        <ul v-else class="rule-list">
-          <li
-            v-for="r in ruleRows"
-            :key="r.key"
-            class="rule-row"
-            :class="{ sel: r.selected }"
-            @click="selectRuleRow(r)"
-          >
-            <span class="rule-str">{{ r.head }} ← {{ r.body }}</span>
-            <span v-if="r.fact" class="fact-tag" title="fact (empty-body rule)">fact</span>
-            <button
-              class="x"
-              type="button"
-              :title="r.fact ? 'delete fact' : 'delete rule'"
-              @click.stop="deleteRuleRow(r)"
-            >
-              ×
-            </button>
-          </li>
-        </ul>
-        <div class="rule-build">
-          <div class="rb-row">
-            <select v-model="newHead" class="select select-xs rb-head">
-              <option :value="null" disabled>head…</option>
-              <option v-for="s in statements" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
-            <span class="rb-arrow">←</span>
-            <div class="rb-tokens" @click="focusBodyInput">
-              <span v-for="t in bodyTokens" :key="t" class="pill">
-                {{ t }}
-                <button
-                  class="pill-x"
-                  type="button"
-                  title="remove"
-                  @click.stop="removeBodyToken(t)"
-                >
-                  ×
-                </button>
-              </span>
-              <input
-                ref="bodyInput"
-                v-model="bodyDraft"
-                class="rb-token-input"
-                type="text"
-                :placeholder="bodyTokens.length ? '' : 'body…'"
-                @keydown="onBodyKeydown"
-                @blur="commitDraftToken"
-              />
-            </div>
-          </div>
-          <div class="rb-chips">
-            <span v-if="!statements.length" class="muted">add statements first</span>
-            <button
+      <div class="side-scroll">
+        <section class="sect">
+          <h4>Statements</h4>
+          <ul v-if="statements.length" class="stmt-list">
+            <li
               v-for="s in statements"
               :key="s.id"
-              type="button"
-              class="chip"
-              :class="{ on: bodyTokens.includes(s.name) }"
-              @click="toggleBodyMember(s.name)"
+              class="stmt"
+              :class="{ sel: s.selected }"
+              @click="selectNode(s.id)"
             >
-              {{ s.name }}
+              <div class="stmt-main">
+                <span class="glyph" :class="s.kind === 'assumption' ? 'g-assm' : 'g-atom'"></span>
+                <input
+                  class="input input-xs stmt-name"
+                  type="text"
+                  :value="s.name"
+                  @click.stop
+                  @change="onListRename(s.id, $event)"
+                />
+                <span class="stmt-actions">
+                  <button
+                    class="promote"
+                    type="button"
+                    :title="s.kind === 'assumption' ? 'make atom' : 'make assumption'"
+                    @click.stop="toggleKind(s.id)"
+                  >
+                    {{ s.kind === 'assumption' ? '◇' : '○' }}
+                  </button>
+                  <button
+                    class="x"
+                    type="button"
+                    title="delete statement"
+                    @click.stop="delNode(s.id)"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+              <label v-if="s.kind === 'assumption'" class="stmt-contra" @click.stop>
+                <span class="ct-key"
+                  ><span class="ov">{{ s.name }}</span></span
+                >
+                <span class="eq">=</span>
+                <select
+                  class="contra-sel"
+                  :class="{ unset: s.contrary === undefined }"
+                  :value="s.contrary ?? ''"
+                  @change="onContraryChange(s.id, $event)"
+                >
+                  <option value="" disabled>choose…</option>
+                  <template v-for="o in statements" :key="o.id">
+                    <option v-if="o.id !== s.id" :value="o.id">{{ o.name }}</option>
+                  </template>
+                </select>
+              </label>
+            </li>
+          </ul>
+          <div v-else class="muted empty">No statements yet.</div>
+          <div class="add-row">
+            <button class="btn btn-sm add-atom" type="button" @click="addAtomSpawn">
+              <span class="glyph g-atom"></span> Atom
+            </button>
+            <button class="btn btn-sm add-assm" type="button" @click="addAssumptionSpawn">
+              <span class="glyph g-assm"></span> Assumption
             </button>
           </div>
-          <button
-            class="btn btn-sm btn-add-rule"
-            type="button"
-            :disabled="newHead === null"
-            @click="commitBuiltRule"
-          >
-            {{ hasBody ? '＋ add rule' : '＋ add fact' }}
-          </button>
-        </div>
-      </section>
+        </section>
 
-      <section class="sect">
+        <section class="sect">
+          <h4>Rules</h4>
+          <div v-if="!ruleRows.length" class="muted empty">No rules yet.</div>
+          <ul v-else class="rule-list">
+            <li
+              v-for="r in ruleRows"
+              :key="r.key"
+              class="rule-row"
+              :class="{ sel: r.selected }"
+              @click="selectRuleRow(r)"
+            >
+              <span class="rule-str">{{ r.head }} ← {{ r.body }}</span>
+              <span v-if="r.fact" class="fact-tag" title="fact (empty-body rule)">fact</span>
+              <button
+                class="x"
+                type="button"
+                :title="r.fact ? 'delete fact' : 'delete rule'"
+                @click.stop="deleteRuleRow(r)"
+              >
+                ×
+              </button>
+            </li>
+          </ul>
+          <div class="rule-build">
+            <div class="rb-row">
+              <select v-model="newHead" class="select select-xs rb-head">
+                <option :value="null" disabled>head…</option>
+                <option v-for="s in statements" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </select>
+              <span class="rb-arrow">←</span>
+              <div class="rb-tokens" @click="focusBodyInput">
+                <span v-for="t in bodyTokens" :key="t" class="pill">
+                  {{ t }}
+                  <button
+                    class="pill-x"
+                    type="button"
+                    title="remove"
+                    @click.stop="removeBodyToken(t)"
+                  >
+                    ×
+                  </button>
+                </span>
+                <input
+                  ref="bodyInput"
+                  v-model="bodyDraft"
+                  class="rb-token-input"
+                  type="text"
+                  :placeholder="bodyTokens.length ? '' : 'body…'"
+                  @keydown="onBodyKeydown"
+                  @blur="commitDraftToken"
+                />
+              </div>
+            </div>
+            <div class="rb-chips">
+              <span v-if="!statements.length" class="muted">add statements first</span>
+              <button
+                v-for="s in statements"
+                :key="s.id"
+                type="button"
+                class="chip"
+                :class="{ on: bodyTokens.includes(s.name) }"
+                @click="toggleBodyMember(s.name)"
+              >
+                {{ s.name }}
+              </button>
+            </div>
+            <button
+              class="btn btn-sm btn-add-rule"
+              type="button"
+              :disabled="newHead === null"
+              @click="commitBuiltRule"
+            >
+              {{ hasBody ? '＋ add rule' : '＋ add fact' }}
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <section class="sect checks-sect">
         <h4>Checks</h4>
-        <div v-if="!lints.length" class="lint ok">✓ No warnings — well-formed theory.</div>
-        <div v-for="(m, i) in lints" :key="i" class="lint"><span class="ic">△</span> {{ m }}</div>
-      </section>
-
-      <section class="sect">
-        <button class="def-head" type="button" @click="showDef = !showDef">
-          <span class="chevron" :class="{ open: showDef }">▸</span>
-          <h4>Definition</h4>
-        </button>
-        <p v-if="showDef" class="def-body">{{ ABA_DEFINITION }}</p>
+        <div class="checks-list">
+          <div v-if="!lints.length" class="lint ok">✓ No warnings — well-formed theory.</div>
+          <div v-for="(m, i) in lints" :key="i" class="lint"><span class="ic">△</span> {{ m }}</div>
+        </div>
       </section>
     </aside>
 
@@ -999,9 +1001,28 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   width: 312px;
   background: var(--color-base-200);
   border-right: 1px solid var(--color-base-300);
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+/* Definition pinned top, Checks pinned bottom; only the middle (statements + rules) scrolls. */
+.side-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.def-sect {
+  flex: none;
+}
+.checks-sect {
+  flex: none;
+  margin-top: auto;
+  border-top: 1px solid var(--color-base-300);
+  border-bottom: none;
+}
+.checks-list {
+  max-height: 120px;
+  overflow-y: auto;
 }
 .sect {
   padding: 12px;
@@ -1020,8 +1041,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 3px;
 }
 .stmt {
@@ -1333,27 +1355,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   color: var(--color-success);
 }
 
-/* Definition (collapsible) */
-.def-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  text-align: left;
-}
-.def-head h4 {
-  margin: 0;
-}
-.chevron {
-  font-size: 10px;
-  opacity: 0.6;
-  transition: transform 0.12s;
-}
-.chevron.open {
-  transform: rotate(90deg);
-}
+/* Definition: fixed height, scrolls internally if the text overflows. */
 .def-body {
   margin: 8px 0 0;
+  height: 92px;
+  overflow-y: auto;
   font-size: 12px;
   line-height: 1.5;
   opacity: 0.8;
