@@ -24,7 +24,7 @@ import type { HistoryState, SelectionAction } from '@/modules/common/graph-edito
 import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 
-const { state, historyState } = defineProps<{
+const { state } = defineProps<{
   state: DocumentState<ABAF>
   historyState: HistoryState
   documentId: number
@@ -97,6 +97,14 @@ function commit(recipe: (draft: ABAF) => void) {
 type Selection = { kind: 'node'; id: NodeId } | { kind: 'rule'; id: number } | null
 const sel = ref<Selection>(null)
 const showAtt = ref(true)
+const showDef = ref(false)
+// TODO: source this from the module glossary once ABA has a glossary registry. Hardcoded for now.
+const ABA_DEFINITION =
+  'An assumption-based argumentation framework is a tuple (L, R, A, ‾): a language L, a set R of ' +
+  'inference rules over L, a set A ⊆ L of assumptions, and a contrary map ‾ sending each ' +
+  'assumption to a sentence in L. A rule h ← b₁,…,bₙ derives its head from its body; a fact is a ' +
+  'rule with an empty body. An assumption is attacked when its contrary is derived. The framework ' +
+  'is flat when no assumption is the head of a rule (or a fact).'
 const dragging = ref<{ id: NodeId; x: number; y: number } | null>(null)
 type Gesture =
   | { t: 'move'; id: NodeId; dx: number; dy: number }
@@ -158,6 +166,9 @@ function clip(
   const s = 1 / (Math.abs(dx) / HW + Math.abs(dy) / HH)
   return { x: cx + dx * s, y: cy + dy * s }
 }
+// Fraction of the way from the body centroid to the head that the joint sits — >0.5 pulls it
+// closer to the target node than to the source nodes, so a collective rule reads as "fanning in".
+const HUB_HEAD_BIAS = 0.62
 function hubPos(head: NodeId, body: NodeId[]): { x: number; y: number } {
   let x = 0
   let y = 0
@@ -170,13 +181,15 @@ function hubPos(head: NodeId, body: NodeId[]): { x: number; y: number } {
       c++
     }
   }
-  if (content.value.hasNode(head)) {
-    const p = pos(head)
-    x += p.x
-    y += p.y
-    c++
+  if (!content.value.hasNode(head)) return c ? { x: x / c, y: y / c } : { x: 0, y: 0 }
+  const h = pos(head)
+  if (!c) return { x: h.x, y: h.y }
+  const bx = x / c
+  const by = y / c
+  return {
+    x: bx + (h.x - bx) * HUB_HEAD_BIAS,
+    y: by + (h.y - by) * HUB_HEAD_BIAS,
   }
-  return c ? { x: x / c, y: y / c } : { x: 0, y: 0 }
 }
 
 // --- derived render data ---
@@ -267,7 +280,8 @@ const lints = computed(() => {
   const out: string[] = []
   for (const a of aba.assumptions()) {
     const c = aba.getContrary(a)
-    if (c === a) out.push(`“${aba.getNode(a).name}” is its own contrary → self-attacker`)
+    if (c === undefined) out.push(`assumption “${aba.getNode(a).name}” has no contrary`)
+    else if (c === a) out.push(`“${aba.getNode(a).name}” is its own contrary → self-attacker`)
     else if (c !== undefined && isAssm(c))
       out.push(`contrary of “${aba.getNode(a).name}” is an assumption (“${aba.getNode(c).name}”)`)
   }
@@ -309,33 +323,110 @@ const statements = computed(() =>
     selected: sel.value?.kind === 'node' && sel.value.id === id,
   })),
 )
-const ruleRows = computed(() =>
-  content.value.rules().map((r) => ({
-    id: r.id,
+// Facts are empty-body rules (`h ←`), so they belong in the Rules list. Fact rows carry the
+// node id (facts are a node flag); ordinary rows carry the rule id.
+type RuleRow =
+  | { key: string; fact: true; nodeId: NodeId; head: string; body: string; selected: boolean }
+  | { key: string; fact: false; ruleId: number; head: string; body: string; selected: boolean }
+const ruleRows = computed<RuleRow[]>(() => {
+  const facts: RuleRow[] = [...content.value.nodeEntries()]
+    .filter(([, d]) => d.fact)
+    .map(([id, d]) => ({
+      key: 'f' + id,
+      fact: true,
+      nodeId: id,
+      head: d.name,
+      body: '⊤',
+      selected: sel.value?.kind === 'node' && sel.value.id === id,
+    }))
+  const rules: RuleRow[] = content.value.rules().map((r) => ({
+    key: 'r' + r.id,
+    fact: false,
+    ruleId: r.id,
     head: nodeName(r.head),
     body: r.body.length ? r.body.map(nodeName).join(', ') : '⊤',
     selected: sel.value?.kind === 'rule' && sel.value.id === r.id,
-  })),
-)
+  }))
+  return [...facts, ...rules]
+})
 
-// --- new-rule builder ---
+// --- rule builder: a head select plus a body token field. Typed names become removable pills,
+// and body chips drop into the same field. Unknown names are created as atoms; empty body = fact.
 const newHead = ref<NodeId | null>(null)
-const newBody = ref<NodeId[]>([])
-function toggleBodyMember(id: NodeId) {
-  newBody.value = newBody.value.includes(id)
-    ? newBody.value.filter((b) => b !== id)
-    : [...newBody.value, id]
+const bodyTokens = ref<string[]>([])
+const bodyDraft = ref('')
+const bodyInput = useTemplateRef<HTMLInputElement>('bodyInput')
+const hasBody = computed(() => bodyTokens.value.length > 0 || bodyDraft.value.trim().length > 0)
+
+function maxNodeId(d: ABAF): number {
+  let m = -1
+  for (const [id] of d.nodeEntries()) m = Math.max(m, id)
+  return m
 }
-function commitNewRule() {
-  if (newHead.value === null || !newBody.value.length) return
-  const head = newHead.value
-  const body = [...newBody.value]
-  if (body.includes(head)) toast(`Tautological rule ${nodeName(head)} ← …, ${nodeName(head)}`)
-  commit((d) => {
-    d.addRule(head, body)
-  })
+function addBodyToken(name: string) {
+  const n = name.trim()
+  if (n && !bodyTokens.value.includes(n)) bodyTokens.value = [...bodyTokens.value, n]
+}
+function toggleBodyMember(name: string) {
+  bodyTokens.value = bodyTokens.value.includes(name)
+    ? bodyTokens.value.filter((t) => t !== name)
+    : [...bodyTokens.value, name]
+}
+function removeBodyToken(name: string) {
+  bodyTokens.value = bodyTokens.value.filter((t) => t !== name)
+}
+function commitDraftToken() {
+  addBodyToken(bodyDraft.value)
+  bodyDraft.value = ''
+}
+function onBodyKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+    if (bodyDraft.value.trim()) {
+      e.preventDefault()
+      commitDraftToken()
+    }
+  } else if (e.key === 'Backspace' && !bodyDraft.value && bodyTokens.value.length) {
+    e.preventDefault()
+    removeBodyToken(bodyTokens.value[bodyTokens.value.length - 1]!)
+  }
+}
+function focusBodyInput() {
+  bodyInput.value?.focus()
+}
+function resetBuilder() {
   newHead.value = null
-  newBody.value = []
+  bodyTokens.value = []
+  bodyDraft.value = ''
+}
+function commitBuiltRule() {
+  if (newHead.value === null) return
+  const head = newHead.value
+  const draft = bodyDraft.value.trim()
+  const tokens = draft ? [...bodyTokens.value, draft] : [...bodyTokens.value]
+  if (!tokens.length) {
+    commit((d) => d.setFact(head, true))
+    resetBuilder()
+    return
+  }
+  if (tokens.includes(nodeName(head)))
+    toast(`Tautological rule ${nodeName(head)} ← …, ${nodeName(head)}`)
+  commit((d) => {
+    let next = maxNodeId(d) + 1
+    const resolve = (name: string): NodeId => {
+      for (const [id, dat] of d.nodeEntries()) if (dat.name === name) return id
+      const id = next++
+      d.addNode(id, {
+        name,
+        kind: 'atom',
+        x: 120 + Math.random() * 160,
+        y: 120 + Math.random() * 160,
+        fact: false,
+      })
+      return id
+    }
+    d.addRule(head, tokens.map(resolve))
+  })
+  resetBuilder()
 }
 
 // --- floating action bar (replaces the inspector) ---
@@ -344,6 +435,15 @@ function selectNode(id: NodeId) {
 }
 function selectRule(id: number) {
   sel.value = { kind: 'rule', id }
+}
+function selectRuleRow(r: RuleRow) {
+  if (r.fact) sel.value = { kind: 'node', id: r.nodeId }
+  else selectRule(r.ruleId)
+}
+function deleteRuleRow(r: RuleRow) {
+  if (r.fact) commit((d) => d.setFact(r.nodeId, false))
+  else delRule(r.ruleId)
+  sel.value = null
 }
 const selectionActions = computed<SelectionAction[]>(() => {
   const s = sel.value
@@ -425,6 +525,12 @@ function setContrary(assm: NodeId, target: NodeId) {
   }
   if (target === assm) toast('Self-contrary — now a self-attacker')
   commit((d) => d.setContrary(assm, target))
+}
+// Contrary picker in the panel. In ABA the contrary is a total map, so it can be reassigned but
+// not cleared — the placeholder is disabled and only real targets are selectable.
+function onContraryChange(assm: NodeId, e: Event) {
+  const v = (e.target as HTMLSelectElement).value
+  if (v !== '') setContrary(assm, Number(v))
 }
 function setFact(id: NodeId, on: boolean) {
   commit((d) => d.setFact(id, on))
@@ -566,37 +672,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 <template>
   <div class="aba-editor">
     <aside class="side">
-      <div class="tools">
-        <button
-          class="btn btn-sm"
-          type="button"
-          :disabled="!historyState.canUndo"
-          @click="emit('undo')"
-        >
-          ↶ undo
-        </button>
-        <button
-          class="btn btn-sm"
-          type="button"
-          :disabled="!historyState.canRedo"
-          @click="emit('redo')"
-        >
-          redo↷
-        </button>
-      </div>
-
       <section class="sect">
-        <div class="sect-head">
-          <h4>Statements</h4>
-          <div class="add-btns">
-            <button class="btn btn-xs" type="button" @click="addAtomSpawn">＋ atom</button>
-            <button class="btn btn-xs" type="button" @click="addAssumptionSpawn">
-              ＋ assumption
-            </button>
-          </div>
-        </div>
-        <div v-if="!statements.length" class="muted empty">No statements yet.</div>
-        <ul v-else class="stmt-list">
+        <h4>Statements</h4>
+        <ul v-if="statements.length" class="stmt-list">
           <li
             v-for="s in statements"
             :key="s.id"
@@ -604,73 +682,153 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             :class="{ sel: s.selected }"
             @click="selectNode(s.id)"
           >
-            <span class="glyph" :class="s.kind === 'assumption' ? 'g-assm' : 'g-atom'"></span>
-            <input
-              class="input input-xs stmt-name"
-              type="text"
-              :value="s.name"
-              @click.stop
-              @change="onListRename(s.id, $event)"
-            />
-            <span v-if="s.fact" class="tagpill" title="fact (empty-body rule)">⊤</span>
-            <span v-if="s.kind === 'assumption'" class="ctr-hint">
-              ¬{{ s.name }}={{ s.contrary !== undefined ? nodeName(s.contrary) : '—' }}
-            </span>
+            <div class="stmt-main">
+              <span class="glyph" :class="s.kind === 'assumption' ? 'g-assm' : 'g-atom'"></span>
+              <input
+                class="input input-xs stmt-name"
+                type="text"
+                :value="s.name"
+                @click.stop
+                @change="onListRename(s.id, $event)"
+              />
+              <span class="stmt-actions">
+                <button
+                  class="promote"
+                  type="button"
+                  :title="s.kind === 'assumption' ? 'make atom' : 'make assumption'"
+                  @click.stop="toggleKind(s.id)"
+                >
+                  {{ s.kind === 'assumption' ? '◇' : '○' }}
+                </button>
+                <button
+                  class="x"
+                  type="button"
+                  title="delete statement"
+                  @click.stop="delNode(s.id)"
+                >
+                  ×
+                </button>
+              </span>
+            </div>
+            <label v-if="s.kind === 'assumption'" class="stmt-contra" @click.stop>
+              <span class="ct-key"
+                ><span class="ov">{{ s.name }}</span></span
+              >
+              <span class="eq">=</span>
+              <select
+                class="contra-sel"
+                :class="{ unset: s.contrary === undefined }"
+                :value="s.contrary ?? ''"
+                @change="onContraryChange(s.id, $event)"
+              >
+                <option value="" disabled>choose…</option>
+                <template v-for="o in statements" :key="o.id">
+                  <option v-if="o.id !== s.id" :value="o.id">{{ o.name }}</option>
+                </template>
+              </select>
+            </label>
           </li>
         </ul>
+        <div v-else class="muted empty">No statements yet.</div>
+        <div class="add-row">
+          <button class="btn btn-sm add-atom" type="button" @click="addAtomSpawn">
+            <span class="glyph g-atom"></span> Atom
+          </button>
+          <button class="btn btn-sm add-assm" type="button" @click="addAssumptionSpawn">
+            <span class="glyph g-assm"></span> Assumption
+          </button>
+        </div>
       </section>
 
       <section class="sect">
         <h4>Rules</h4>
+        <div v-if="!ruleRows.length" class="muted empty">No rules yet.</div>
+        <ul v-else class="rule-list">
+          <li
+            v-for="r in ruleRows"
+            :key="r.key"
+            class="rule-row"
+            :class="{ sel: r.selected }"
+            @click="selectRuleRow(r)"
+          >
+            <span class="rule-str">{{ r.head }} ← {{ r.body }}</span>
+            <span v-if="r.fact" class="fact-tag" title="fact (empty-body rule)">fact</span>
+            <button
+              class="x"
+              type="button"
+              :title="r.fact ? 'delete fact' : 'delete rule'"
+              @click.stop="deleteRuleRow(r)"
+            >
+              ×
+            </button>
+          </li>
+        </ul>
         <div class="rule-build">
-          <select v-model="newHead" class="select select-xs rb-head">
-            <option :value="null" disabled>head…</option>
-            <option v-for="s in statements" :key="s.id" :value="s.id">{{ s.name }}</option>
-          </select>
-          <span class="rb-arrow">←</span>
-          <div class="rb-body">
+          <div class="rb-row">
+            <select v-model="newHead" class="select select-xs rb-head">
+              <option :value="null" disabled>head…</option>
+              <option v-for="s in statements" :key="s.id" :value="s.id">{{ s.name }}</option>
+            </select>
+            <span class="rb-arrow">←</span>
+            <div class="rb-tokens" @click="focusBodyInput">
+              <span v-for="t in bodyTokens" :key="t" class="pill">
+                {{ t }}
+                <button
+                  class="pill-x"
+                  type="button"
+                  title="remove"
+                  @click.stop="removeBodyToken(t)"
+                >
+                  ×
+                </button>
+              </span>
+              <input
+                ref="bodyInput"
+                v-model="bodyDraft"
+                class="rb-token-input"
+                type="text"
+                :placeholder="bodyTokens.length ? '' : 'body…'"
+                @keydown="onBodyKeydown"
+                @blur="commitDraftToken"
+              />
+            </div>
+          </div>
+          <div class="rb-chips">
             <span v-if="!statements.length" class="muted">add statements first</span>
             <button
               v-for="s in statements"
               :key="s.id"
               type="button"
               class="chip"
-              :class="{ on: newBody.includes(s.id) }"
-              @click="toggleBodyMember(s.id)"
+              :class="{ on: bodyTokens.includes(s.name) }"
+              @click="toggleBodyMember(s.name)"
             >
               {{ s.name }}
             </button>
           </div>
           <button
-            class="btn btn-xs btn-add"
+            class="btn btn-sm btn-add-rule"
             type="button"
-            :disabled="newHead === null || !newBody.length"
-            @click="commitNewRule"
+            :disabled="newHead === null"
+            @click="commitBuiltRule"
           >
-            add rule
+            {{ hasBody ? '＋ add rule' : '＋ add fact' }}
           </button>
         </div>
-        <div v-if="!ruleRows.length" class="muted empty">No rules yet.</div>
-        <ul v-else class="rule-list">
-          <li
-            v-for="r in ruleRows"
-            :key="r.id"
-            class="rule-row"
-            :class="{ sel: r.selected }"
-            @click="selectRule(r.id)"
-          >
-            <span class="rule-str">{{ r.head }} ← {{ r.body }}</span>
-            <button class="x" type="button" title="delete rule" @click.stop="delRule(r.id)">
-              ×
-            </button>
-          </li>
-        </ul>
       </section>
 
       <section class="sect">
         <h4>Checks</h4>
         <div v-if="!lints.length" class="lint ok">✓ No warnings — well-formed theory.</div>
         <div v-for="(m, i) in lints" :key="i" class="lint"><span class="ic">△</span> {{ m }}</div>
+      </section>
+
+      <section class="sect">
+        <button class="def-head" type="button" @click="showDef = !showDef">
+          <span class="chevron" :class="{ open: showDef }">▸</span>
+          <h4>Definition</h4>
+        </button>
+        <p v-if="showDef" class="def-body">{{ ABA_DEFINITION }}</p>
       </section>
     </aside>
 
@@ -838,30 +996,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 }
 .side {
   flex: none;
-  width: 264px;
+  width: 312px;
   background: var(--color-base-200);
   border-right: 1px solid var(--color-base-300);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
-.tools {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px;
-  border-bottom: 1px solid var(--color-base-300);
-}
 .sect {
   padding: 12px;
   border-bottom: 1px solid var(--color-base-300);
-}
-.sect-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
 }
 .sect h4 {
   margin: 0 0 8px;
@@ -869,13 +1013,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   text-transform: uppercase;
   letter-spacing: 0.06em;
   opacity: 0.6;
-}
-.sect-head h4 {
-  margin: 0;
-}
-.add-btns {
-  display: flex;
-  gap: 4px;
 }
 
 /* Statements list */
@@ -889,8 +1026,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 }
 .stmt {
   display: flex;
-  align-items: center;
-  gap: 7px;
+  flex-direction: column;
+  gap: 3px;
   padding: 3px 5px;
   border-radius: 6px;
   cursor: pointer;
@@ -901,6 +1038,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 .stmt.sel {
   background: color-mix(in srgb, var(--color-primary) 16%, transparent);
   outline: 1px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+.stmt-main {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 .glyph {
   flex: none;
@@ -924,36 +1066,184 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   min-width: 0;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
-.tagpill {
-  flex: none;
-  color: var(--color-primary);
-  font-weight: 700;
-}
-.ctr-hint {
-  flex: none;
+/* Contrary picker: `‾a = <target>` on its own row under the assumption, styled to read as inline
+   text rather than a form control. */
+.stmt-contra {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding-left: 19px;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: 12px;
+  cursor: default;
+}
+.ct-key {
+  flex: none;
   color: var(--color-error);
-  opacity: 0.85;
+}
+.ct-key .ov {
+  text-decoration: overline;
+}
+.stmt-contra .eq {
+  flex: none;
+  opacity: 0.45;
+}
+.contra-sel {
+  flex: 1;
+  min-width: 0;
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 1px 4px;
+  background: transparent;
+  font: inherit;
+  color: var(--color-base-content);
+  cursor: pointer;
+}
+.contra-sel:hover {
+  border-color: var(--color-base-300);
+}
+.contra-sel:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+.contra-sel.unset {
+  color: var(--color-warning);
+}
+.add-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.add-row .btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.add-row .glyph {
+  pointer-events: none;
+}
+.stmt-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.stmt:hover .stmt-actions,
+.stmt.sel .stmt-actions {
+  opacity: 1;
+}
+.stmt-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.stmt-actions button:hover {
+  background: var(--color-base-100);
+}
+.stmt-actions .promote {
+  font-size: 17px;
+  color: var(--color-base-content);
+  opacity: 0.65;
+}
+.stmt-actions .promote:hover {
+  opacity: 1;
+  color: var(--color-primary);
+}
+.stmt-actions .x {
+  color: var(--color-error);
+  font-size: 19px;
+  opacity: 0.7;
+}
+.stmt-actions .x:hover {
+  opacity: 1;
 }
 
 /* Rule builder + list */
 .rule-build {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-base-300);
+}
+.rb-row {
+  display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 10px;
+}
+.rb-head {
+  flex: none;
+  max-width: 80px;
 }
 .rb-arrow {
+  flex: none;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   opacity: 0.6;
 }
-.rb-body {
+/* Body token field: pills + an inline text input, styled to read as one input. */
+.rb-tokens {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  min-height: 26px;
+  border: 1px solid var(--color-base-300);
+  border-radius: 6px;
+  background: var(--color-base-100);
+  cursor: text;
+}
+.rb-tokens:focus-within {
+  border-color: var(--color-primary);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  padding: 0 4px 0 7px;
+  border-radius: 999px;
+  border: 1px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-base-100));
+  color: var(--color-primary);
+}
+.pill-x {
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.7;
+}
+.pill-x:hover {
+  opacity: 1;
+}
+.rb-token-input {
+  flex: 1;
+  min-width: 40px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  padding: 1px 0;
+}
+.rb-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  flex: 1 1 100%;
+  padding-top: 7px;
+  border-top: 1px dashed var(--color-base-300);
 }
 .chip {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -969,8 +1259,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   background: color-mix(in srgb, var(--color-primary) 18%, var(--color-base-100));
   color: var(--color-primary);
 }
-.btn-add {
-  margin-left: auto;
+.btn-add-rule {
+  width: 100%;
 }
 .rule-list {
   list-style: none;
@@ -1000,6 +1290,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   min-width: 0;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 13px;
+}
+.fact-tag {
+  flex: none;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  border-radius: 999px;
+  padding: 0 6px;
 }
 .rule-row .x {
   flex: none;
@@ -1031,6 +1331,32 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 }
 .lint.ok {
   color: var(--color-success);
+}
+
+/* Definition (collapsible) */
+.def-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+}
+.def-head h4 {
+  margin: 0;
+}
+.chevron {
+  font-size: 10px;
+  opacity: 0.6;
+  transition: transform 0.12s;
+}
+.chevron.open {
+  transform: rotate(90deg);
+}
+.def-body {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.8;
 }
 
 .stage {
