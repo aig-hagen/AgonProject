@@ -302,6 +302,11 @@ const currentHighlight = computed<Highlight | undefined>(() => {
     stateId: input.stateId,
     groups: [{ nodes, color: NODE_GREEN }],
     attackedByFirst: NODE_RED,
+    legend: [
+      { label: t('evaluation.legend.accepted'), color: NODE_GREEN },
+      { label: t('evaluation.legend.rejected'), color: NODE_RED },
+      { label: t('evaluation.legend.undecided') },
+    ],
   }
 })
 

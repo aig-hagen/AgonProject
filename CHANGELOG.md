@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
+- Added a color legend to the graph editor while an evaluation result is highlighted.
+
+### Fixed
+
+- SetAF extension highlighting now marks targets of collective attacks as rejected when all attackers are accepted.
 
 ## [0.12.0] - 2026-09-21
 
