@@ -83,6 +83,11 @@ export default {
     hideParams: 'Hide',
     editParams: 'Edit',
   },
+  legend: {
+    accepted: 'Accepted',
+    rejected: 'Rejected',
+    undecided: 'Undecided',
+  },
   extensionWindow: {
     selectExtensionHint: 'Select extension to highlight',
     selectArgumentHint: 'Select acceptable argument to highlight',

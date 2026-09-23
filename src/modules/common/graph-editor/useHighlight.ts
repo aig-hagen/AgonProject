@@ -126,5 +126,5 @@ export function useHighlight({
     for (const id of defaultBucket) setNodeLabelColor(graphEl, graphComponentId, id, '')
   })
 
-  return { extensionHighlightRef, serialisationHighlightRef }
+  return { extensionHighlightRef, serialisationHighlightRef, highlightToShow }
 }
