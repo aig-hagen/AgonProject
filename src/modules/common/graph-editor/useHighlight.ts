@@ -75,6 +75,15 @@ export function useHighlight({
           attackedNodes.add(link.targetId)
         }
       }
+      // A collective attack only defeats its target when all attackers are in the group.
+      for (const hyperLink of state.hyperLinks ?? []) {
+        if (
+          hyperLink.sourceIds.every((id) => firstNodes.has(id)) &&
+          !coveredNodes.has(hyperLink.targetId)
+        ) {
+          attackedNodes.add(hyperLink.targetId)
+        }
+      }
     }
 
     // Categorize all graph nodes into their output buckets
