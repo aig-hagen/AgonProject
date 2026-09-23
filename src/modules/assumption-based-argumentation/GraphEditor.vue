@@ -251,11 +251,39 @@ const contraryPaths = computed(() => {
   return out
 })
 
-// Computed attacks: a rule deriving `~k` yields an attack from its hub onto assumption `k`.
+// Bowed so it doesn't sit on top of the straight contrary edge running the other way.
+function bowedPath(from: NodeId, to: NodeId): string {
+  const A = pos(from)
+  const B = pos(to)
+  const dx = B.x - A.x
+  const dy = B.y - A.y
+  const len = Math.hypot(dx, dy) || 1
+  const cx = (A.x + B.x) / 2 - (dy / len) * 34
+  const cy = (A.y + B.y) / 2 + (dx / len) * 34
+  const s = clip(A.x, A.y, cx, cy, isAssm(from))
+  const e = clip(B.x, B.y, cx, cy, isAssm(to))
+  return `M${s.x},${s.y} Q${cx},${cy} ${e.x},${e.y}`
+}
+
+// Computed attacks: a rule deriving `k̅` yields an attack from its hub onto assumption `k`.
+// A contrary that holds without a rule (a fact or an assumption) attacks `k` directly.
 const attackPaths = computed(() => {
   if (!showAtt.value) return []
   const out: string[] = []
   const contraries = content.value.contraries()
+  for (const [k, t] of contraries) {
+    if (!content.value.hasNode(k) || !content.value.hasNode(t)) continue
+    if (!content.value.getNode(t).fact && !isAssm(t)) continue
+    if (t === k) {
+      // Self-attack loop, mirrored to the left of the contrary loop.
+      const A = pos(k)
+      out.push(
+        `M${A.x - AR + 4},${A.y + AR - 2} C${A.x - AR - 42},${A.y + AR + 26} ${A.x - AR - 42},${A.y - AR - 26} ${A.x - AR + 4},${A.y - AR + 2}`,
+      )
+    } else {
+      out.push(bowedPath(t, k))
+    }
+  }
   for (const r of content.value.rules()) {
     if (!r.body.length || !content.value.hasNode(r.head)) continue
     const h = hubPos(r.head, r.body)
@@ -281,15 +309,6 @@ const lints = computed(() => {
     else if (c === a) out.push(`“${aba.getNode(a).name}” is its own contrary → self-attacker`)
     else if (c !== undefined && isAssm(c))
       out.push(`contrary of “${aba.getNode(a).name}” is an assumption (“${aba.getNode(c).name}”)`)
-  }
-  for (const [id, d] of aba.nodeEntries()) {
-    if (!d.fact) continue
-    for (const [k, t] of aba.contraries()) {
-      if (t === id)
-        out.push(
-          `fact “${d.name}” = ¬${aba.getNode(k).name} → “${aba.getNode(k).name}” attacked unconditionally`,
-        )
-    }
   }
   for (const r of aba.rules()) {
     if (r.body.includes(r.head))
