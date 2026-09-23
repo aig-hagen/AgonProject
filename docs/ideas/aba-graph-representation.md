@@ -210,6 +210,153 @@ to the Δ-semantics.
 assumption; a fact that is a contrary (`~a ←`); tautological/cyclic rule `h ← …, h`; isolated atom
 with no deriving rule. All valid ABAFs — warn, don't wall, since users hit them mid-construction.
 
+## Semantic views — AF / BAF / BSAF
+
+The editable atom graph stays the **only** thing the user edits. The instantiations are read-only
+*lenses* computed from it, and all of them display one evaluation result. The user flips the
+canvas between them with a **view switcher**, not separate windows (see *View switcher*).
+
+### Fidelity differs per view
+
+| View | Nodes | Edges | Faithful for | Size |
+|---|---|---|---|---|
+| **AF** | arguments `S ⊢ c` | binary attacks | flat ABA only | exponential in the worst case |
+| **BAF** | assumptions | binary attack + support | only if every minimal derivation has ≤1 assumption | \|A\| |
+| **BSAF** | assumptions | collective attack + support | all ABA (flat → supports vanish → SETAF) | \|A\| nodes, edges up to 2^\|A\| |
+
+Worked example (the module's initial theory: `p ← a`, `q ← a,b`, `‾a = q`, `‾b = p`):
+
+```
+AF                                   BSAF (flat → SETAF)       BAF
+A1 {a}⊢a    A3 {a}⊢p ──▶ A2, A4      {a,b} ══▶ a               ✗ not available:
+A2 {b}⊢b    A4 {a,b}⊢q ──▶ A1,A3,A4   a ──▶ b                  q needs {a,b}
+```
+
+A view is either **exact** or **unavailable** — no partial states. AF is disabled for non-flat
+theories, BAF outside its fragment; the reason is shown on the switcher (see *View switcher*).
+
+### Compile layer (pure, tested)
+
+`src/modules/assumption-based-argumentation/views/` — one core engine plus thin mappings:
+
+- **Minimal derivations:** for each atom, the ⊆-minimal assumption sets deriving it (fixpoint
+  over the rules, keeping only an antichain of sets). Everything below reads from this.
+- `toBSAF`: minimal `S ⊢ ‾b` → collective attack `S → b`; minimal `S ⊢ b` (`b ∈ A`, `b ∉ S`) →
+  collective support.
+- `toBAF`: same, but returns "not available" unless all sets are singletons.
+- `toAF`: one argument per (minimal support, claim); attacks onto every argument using the
+  attacked assumption. Capped, with "showing N of M".
+- Edge cases: `∅ ⊢ ‾b` (unconditional attack) has no SETAF/BSAF edge — show `b` as *always out*
+  (outline/badge) instead. Self-attacks are legal and must render.
+- Return the existing module models (AF, BAF, SetAF) so tests and the "open as" export reuse them.
+
+### Fit with the current graph editor
+
+How the app renders graphs today, and what each approach would cost:
+
+- **Shared `GraphEditor.vue` is a page shell, not a widget.** It renders the MainMenu, tutorials,
+  help, settings, export, and the mobile bars. It registers window-level `keydown`/`keyup`
+  listeners, and it persists the viewport under a per-document `viewport` key. Two instances for
+  the same document would fire shortcuts twice and overwrite each other's viewport.
+  → **Only one graph on screen at a time**, which the view switcher gives us anyway.
+- **It has no read-only mode.** Node creation, deletion and label editing are hard-wired to
+  `true` in `setDefaults`. Only link creation/deletion are props.
+- **The library already supports read-only.** `@aig-hagen/graph-component` exposes
+  `toggleNodeCreationViaGUI`, per-node `deletable` / `labelEditable` / `fixedPosition` /
+  `allowIncoming|OutgoingLinks`, and per-link `deletable`. Other modules (incomplete, probabilistic,
+  dialectical) already import it directly.
+- **Library gap: hyperlinks carry only a colour.** `jsonHyperLink` / `createHyperLink` have no
+  `arrowType` or dash, so a collective *support* can't be drawn differently from a collective
+  attack except by colour. Proper fix: add `arrowType` to hyperlinks upstream and ship a new vendored
+  tgz (currently `5.0.0-rc.22`). v1 workaround: colour-only via `linkConfigs[type].color`, which
+  hyperlinks already honour.
+- **Node shapes are circle or rect only.** That's fine: the views only contain assumptions or
+  arguments. For AF, use short labels (`A1`…) with the `S ⊢ c` text as an annotation/tooltip, or
+  rect + `nodeAutoGrowToLabelSize`.
+- **Highlighting already fits.** `Highlight = { stateId, groups: {nodes: Set<NodeId>, color}[] }`.
+  If the BSAF/BAF view nodes reuse the ABA assumption `NodeId`s, a result in assumption space maps
+  1:1. Only the AF view needs an argument-id map.
+
+**Verdict: no major changes.** The plan is additive:
+
+1. **New `common/graph-editor/GraphView.vue`**: a lightweight read-only wrapper around the bare
+   `GraphComponent` (zoom on, all GUI editing off, graphviz layout via `layouting.ts`, a `highlight`
+   prop). It fills the canvas when a derived view is active. Lift the state→json mapping and highlight application out of `GraphEditor.vue` into
+   `graphEditorUtils.ts` so both share it. Medium effort, and the existing editor's behaviour is
+   untouched.
+2. **Upstream library change** for hyperlink `arrowType`. Small, but it's a release of a separate
+   package. Not blocking.
+3. **View switcher inside the ABA editor** (below). It needs no change to the shared editor.
+   Converging the ABA canvas onto the shared editor stays a separate track and isn't a
+   prerequisite. If other modules want views later, the switcher can move into the shared editor
+   as a slot or prop.
+
+### View switcher
+
+A segmented control that swaps what the canvas shows. The theory editor is one of the options:
+
+```
+                     ┌──────────┬────┬─────┬──────┐
+ bottom-centre  →    │ ✎ Theory │ AF │ BAF │ BSAF │
+                     └──────────┴──┬─┴──┬──┴──────┘
+                                   │    └ disabled, tooltip: "needs singleton derivations"
+                                   └ disabled for non-flat, tooltip: "AF is only exact for flat theories"
+```
+
+- **Placement:** bottom-centre of the canvas on desktop. It's a *canvas mode*, so it stays apart
+  from the tool buttons on the left, and it uses the same `btn-sm` / `join` styling. On compact
+  layout it goes as a chip row just above the command bar (where `#canvasSelector` sits).
+- **Availability on the button:** a view is enabled (exact) or greyed out with the reason as a
+  tooltip. AF is greyed out for non-flat theories, BAF outside its fragment. The current
+  flat/non-flat badge folds into this.
+- **Becoming unavailable while active:** if a side-panel edit makes the active view unavailable
+  (e.g. the theory turns non-flat while on AF), keep the view selected. Show an empty state with the
+  reason and a "back to Theory" button. It comes back on its own once the theory qualifies again.
+  No surprise jumps.
+- **Derived views are read-only on the canvas; the side panel always stays editable** (decided).
+  Editing a rule while looking at the AF updates it live, which is great for teaching. A small
+  `read-only · derived from theory` chip sits at the top of the canvas.
+  Double-click or drag on empty canvas does nothing (optionally a hint: "switch to Theory to
+  edit").
+- **Stable layout:** BSAF/BAF nodes are assumptions, so they start at their theory positions.
+  That gives continuity when switching. In every view, unchanged nodes keep their place across
+  edits and only new ones are laid out. View positions are UI state, not document content.
+- **Per-view memory:** zoom/pan per view. The active view is kept in document UI state, so a
+  reload returns to it.
+- **Evaluation stays across switches:** the result window stays open, and the highlight is drawn
+  on whichever view is active.
+- **Shortcuts:** `Alt+1…4` (to be checked against `shortcuts.ts`).
+
+### Evaluation
+
+- **Compute once, in assumption space.** ABA extensions are assumption sets `E`. Each view
+  displays it:
+  - theory: `E` shaded, `Th(E)` (atoms derived from `E`) lighter, attacked assumptions struck
+  - BSAF/BAF: `E` highlighted directly
+  - AF: arguments whose support ⊆ `E`
+- The ABA editor has no `EvaluationHost` / `WindowExtensions` wiring yet (the shared editor
+  provides those slots). Evaluation needs that wiring whether or not the canvas converges.
+- **Shortcut for flat ABA:** it compiles exactly to a SETAF, so the SETAF module's existing
+  extension backend could evaluate it (with `∅`-attacked assumptions pre-removed). Non-flat needs
+  a real ABA/BSAF reasoner.
+- **Views as explanations:** "why is `a` out?" → highlight the BSAF edge `{a,b} ⇒ a`, then the
+  theory rule behind it.
+
+### "Open as document"
+
+Copy a compiled view into its target module as a new, independent document (AF → AF module,
+flat BSAF → SETAF module, BAF fragment → BAF module). There is no BSAF module, so non-flat BSAF
+can't be opened this way. There's no cross-module conversion hook today, so this needs a small
+document-creation entry point.
+
+### Suggested order
+
+1. Compile layer + tests.
+2. `GraphView.vue` (read-only) + the view switcher with the BSAF view.
+3. AF view (capped), then BAF (gated on the fragment).
+4. Evaluation wiring, displayed across all views.
+5. Hyperlink `arrowType` upstream; "open as document" whenever convenient.
+
 ## Open questions
 
 - Backend: does the TweetyProject reasoner Agon already uses expose (non-flat) ABA and/or BSAF
@@ -217,7 +364,8 @@ with no deriving rule. All valid ABAFs — warn, don't wall, since users hit the
   [`TODO.md`](TODO.md).)
 - Model shape for `model.ts`: `{ atoms, assumptions: {name → contrary}, rules: [{head, body}] }`
   (the ABA Studio prototype's state) is a clean starting point.
-- Graph component: rendering *collective* (set-to-node) attack **and** support edges is new — the
-  current component only does binary attacks.
+- Graph component: collective attacks render as hyperlinks today, but hyperlinks carry only a
+  colour — collective *support* needs an upstream `arrowType` (see *Fit with the current graph
+  editor*).
 - Flat-only v1 vs. non-flat: flat keeps the LP correspondence clean and dodges the Δ-semantics work;
   non-flat is the research-interesting case but needs the refined semantics.
