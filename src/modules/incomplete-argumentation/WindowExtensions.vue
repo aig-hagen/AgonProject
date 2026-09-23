@@ -47,6 +47,7 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
+import AcceptanceTypeHint from '@/modules/incomplete-argumentation/AcceptanceTypeHint.vue'
 import type { ExtensionWindowInstanceState } from '@/modules/incomplete-argumentation/evaluation/extensionWindowState'
 import {
   type IafMode,
@@ -55,7 +56,6 @@ import {
   type Semantics,
   useExtensionEvaluationQuery,
 } from '@/modules/incomplete-argumentation/evaluation/tweetyProject'
-import AcceptanceTypeHint from '@/modules/incomplete-argumentation/AcceptanceTypeHint.vue'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import type {
   IafArgumentData,
