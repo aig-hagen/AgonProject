@@ -171,29 +171,46 @@ describe('reciprocal links', () => {
 })
 
 describe('buildNodeLabels', () => {
+  const tex = (names: string[], mode: 'auto' | 'full' | 'short', nameStyle = 'math') =>
+    buildNodeLabels(names, mode, nameStyle).map((label) => label.tex)
+
   test('auto keeps short unique names', () => {
-    expect(buildNodeLabels(['a', 'b1', 'Foo'], 'auto', 'math')).toEqual(['a', 'b1', 'Foo'])
+    expect(tex(['a', 'b1', 'a_1', 'α'], 'auto')).toEqual(['a', 'b1', 'a_{1}', '\\alpha'])
   })
 
   test('auto shortens once any name is long', () => {
-    expect(buildNodeLabels(['a', 'Guilty', 'Red Wine'], 'auto', 'math')).toEqual(['a', 'G', 'RW'])
+    expect(tex(['a', 'Guilty', 'Red Wine', 'Äpfel'], 'auto')).toEqual([
+      'a',
+      'G',
+      '\\mathit{RW}',
+      '\\textit{\\"{A}}',
+    ])
   })
 
   test('colliding short labels get an index', () => {
-    expect(buildNodeLabels(['Alibi', 'Accuse', 'Guilty'], 'short', 'math')).toEqual([
-      'A_{1}',
-      'A_{2}',
-      'G',
-    ])
-    expect(buildNodeLabels(['Alibi', 'Accuse'], 'short', 'monospace')).toEqual(['A1', 'A2'])
+    expect(tex(['Alibi', 'Accuse', 'Guilty'], 'short')).toEqual(['A_{1}', 'A_{2}', 'G'])
+    expect(tex(['Alibi', 'Accuse'], 'short', 'monospace')).toEqual(['A1', 'A2'])
   })
 
   test('indexed labels skip ones already taken', () => {
-    expect(buildNodeLabels(['A1', 'Alibi', 'Accuse'], 'short', 'none')).toEqual(['A1', 'A2', 'A3'])
+    expect(tex(['A1', 'Alibi', 'Accuse'], 'short', 'none')).toEqual(['A1', 'A2', 'A3'])
+    expect(tex(['A_1', 'Alibi', 'Accuse'], 'short')).toEqual(['A_{1}', 'A_{2}', 'A_{3}'])
   })
 
-  test('full keeps stripped names', () => {
-    expect(buildNodeLabels(['Alibi', 'a_1'], 'full', 'math')).toEqual(['Alibi', 'a1'])
+  test('full keeps names intact', () => {
+    expect(tex(['Alibi', 'a_1', 'Käse'], 'full')).toEqual([
+      '\\mathit{Alibi}',
+      'a_{1}',
+      '\\textit{K\\"{a}se}',
+    ])
+    expect(tex(['a_1', 'Käse'], 'full', 'monospace')).toEqual(['a\\_1', 'K\\"{a}se'])
+  })
+
+  test('only shortened labels are flagged', () => {
+    expect(buildNodeLabels(['a', 'Alibi'], 'auto', 'math').map((l) => l.shortened)).toEqual([
+      false,
+      true,
+    ])
   })
 })
 

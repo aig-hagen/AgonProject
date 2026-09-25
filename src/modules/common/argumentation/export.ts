@@ -25,6 +25,7 @@ import {
   type ExportStyleOptions,
   type NodeLabelMode,
 } from '@/modules/common/export'
+import { nameToMathTex, textToTex } from '@/modules/common/export/texEscape'
 
 const AF_ENV_BEGIN = '\\begin{af}'
 
@@ -123,7 +124,7 @@ export function buildIccmaText(
 }
 
 interface NodeExportInfo {
-  name: string
+  label: NodeLabel
   fullName: string
   x: number
   y: number
@@ -139,7 +140,7 @@ export interface ExportHooks {
   argumentOptions?: (id: number) => string
   attackOptions?: (sourceId: number, targetId: number) => string
   attackSuffix?: (sourceId: number, targetId: number) => string
-  /** `label` resolves an argument id to its exported node label. */
+  /** `label` resolves an argument id to its node label as math-mode TeX. */
   argumentAnnotation?: (id: number, label: (id: number) => string) => string | undefined
   setAttacks?: Iterable<SetAttack>
 }
@@ -151,7 +152,7 @@ function buildOpts(...parts: string[]): string {
 
 // Shortened labels keep their full name as a trailing comment.
 function labelComment(node: NodeExportInfo): string {
-  return node.name === node.fullName ? '' : ` % ${node.fullName.replace(/\s+/g, ' ')}`
+  return !node.label.shortened ? '' : ` % ${node.fullName.replace(/\s+/g, ' ')}`
 }
 
 function absolutePlacement(
@@ -163,7 +164,7 @@ function absolutePlacement(
   for (const [id, node] of nodeMap.entries()) {
     const x = snapToGrid ? Math.round(node.x).toFixed(1) : node.x.toFixed(2)
     const y = snapToGrid ? Math.round(node.y).toFixed(1) : node.y.toFixed(2)
-    text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.name}} at (${x},${y})${labelComment(node)}\r\n`
+    text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.label.tex}} at (${x},${y})${labelComment(node)}\r\n`
   }
   return text
 }
@@ -171,48 +172,75 @@ function absolutePlacement(
 // Longer names inflate the circular TikZ nodes, so they get shortened.
 const MAX_NODE_LABEL_LENGTH = 3
 
-function stripName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9 ]/g, '').trim()
+export interface NodeLabel {
+  /** TeX for the node, in the mode the name style typesets it in. */
+  tex: string
+  /** Math-mode TeX, for use inside formulas and annotations. */
+  mathTex: string
+  shortened: boolean
 }
 
-function shortLabelBase(stripped: string): string {
-  const words = stripped.split(/\s+/).filter(Boolean)
-  if (words.length === 0) return 'a'
-  if (words.length === 1) {
-    const word = words[0]!
-    return word.length <= MAX_NODE_LABEL_LENGTH ? word : word[0]!
-  }
+function shortLabelBase(name: string): string {
+  if ([...name].length <= MAX_NODE_LABEL_LENGTH && !/\s/.test(name)) return name
+  const words = name.match(/[\p{L}\p{N}]+/gu) ?? []
+  if (words.length === 0) return [...name][0] ?? 'a'
+  if (words.length === 1) return [...words[0]!][0]!
   return words
     .slice(0, MAX_NODE_LABEL_LENGTH)
-    .map((word) => word[0])
+    .map((word) => [...word][0])
     .join('')
 }
 
-/** Maps argument names to node labels; short labels are made unique with an index. */
-export function buildNodeLabels(names: string[], mode: NodeLabelMode, nameStyle: string): string[] {
-  const stripped = names.map(stripName)
-  const allShort =
-    stripped.every((name) => /^[a-zA-Z0-9]{1,3}$/.test(name)) &&
-    new Set(stripped).size === stripped.length
-  if (mode === 'full' || (mode === 'auto' && allShort)) return stripped
+function renderLabel(base: string, index: number | undefined, math: boolean): string {
+  const tex = math ? nameToMathTex(base) : textToTex(base)
+  if (index === undefined) return tex
+  if (!math) return `${tex}${index}`
+  return /[_^]/.test(base) ? `{${tex}}_{${index}}` : `${tex}_{${index}}`
+}
 
-  const bases = stripped.map(shortLabelBase)
+/** Maps argument names to node labels; short labels are made unique with an index. */
+export function buildNodeLabels(
+  names: string[],
+  mode: NodeLabelMode,
+  nameStyle: string,
+): NodeLabel[] {
+  const math = nameStyle === 'math' || nameStyle === 'bold'
+  const trimmed = names.map((name) => name.trim().replace(/\s+/g, ' '))
+  const allShort =
+    trimmed.every((name) => /^\S{1,3}$/u.test(name)) && new Set(trimmed).size === trimmed.length
+  if (mode === 'full' || (mode === 'auto' && allShort)) {
+    return trimmed.map((name) => ({
+      tex: renderLabel(name, undefined, math),
+      mathTex: renderLabel(name, undefined, true),
+      shortened: false,
+    }))
+  }
+
+  const bases = trimmed.map(shortLabelBase)
   const counts = new Map<string, number>()
   for (const base of bases) counts.set(base, (counts.get(base) ?? 0) + 1)
-  const taken = new Set(bases.filter((base) => counts.get(base) === 1))
+  const taken = new Set(
+    bases
+      .filter((base) => counts.get(base) === 1)
+      .map((base) => renderLabel(base, undefined, math)),
+  )
   const nextIndex = new Map<string, number>()
-  // A bare `_` only works in math mode.
-  const subscript = nameStyle === 'math' || nameStyle === 'bold'
-  return bases.map((base) => {
-    if (counts.get(base) === 1) return base
-    let label: string
-    do {
-      const index = (nextIndex.get(base) ?? 0) + 1
-      nextIndex.set(base, index)
-      label = subscript ? `${base}_{${index}}` : `${base}${index}`
-    } while (taken.has(label))
-    taken.add(label)
-    return label
+  return bases.map((base, i) => {
+    let index: number | undefined
+    let tex = renderLabel(base, undefined, math)
+    if (counts.get(base)! > 1) {
+      do {
+        index = (nextIndex.get(base) ?? 0) + 1
+        nextIndex.set(base, index)
+        tex = renderLabel(base, index, math)
+      } while (taken.has(tex))
+      taken.add(tex)
+    }
+    return {
+      tex,
+      mathTex: renderLabel(base, index, true),
+      shortened: index !== undefined || base !== trimmed[i],
+    }
   })
 }
 
@@ -232,7 +260,7 @@ function buildNodeMap(
   const nodeMap = new Map<number, NodeExportInfo>()
   argsList.forEach(([argumentId, argumentData], index) => {
     nodeMap.set(argumentId, {
-      name: labels[index]!,
+      label: labels[index]!,
       fullName: argumentData.name,
       x: argumentData.x / pixelsPerUnit,
       y: (argumentData.y / pixelsPerUnit) * -1,
@@ -327,7 +355,7 @@ function emitAnnotations(
   argumentAnnotation?: ExportHooks['argumentAnnotation'],
 ): string {
   if (!argumentAnnotation) return ''
-  const label = (id: number) => nodeMap.get(id)?.name ?? '?'
+  const label = (id: number) => nodeMap.get(id)?.label.mathTex ?? '?'
   let text = ''
   for (const [id, node] of nodeMap) {
     const annotation = argumentAnnotation(id, label)
