@@ -202,22 +202,26 @@ export function exportLatexArgumentationCommon(
 
   const getLatexId = (id: number) => nodeMap.get(id)!.latexId
 
+  // Singleton set attacks are plain attacks, so they join the pairing (dual/bent) logic.
+  const setAttacks = [...(hooks?.setAttacks ?? [])]
+  const collectiveAttacks = setAttacks.filter(({ attackers }) => attackers.length > 1)
+  function* allAttacks(): IterableIterator<[number, number]> {
+    yield* attacks
+    for (const { attackers, target } of setAttacks) {
+      if (attackers.length === 1) yield [attackers[0]!, target]
+    }
+  }
+
   let text = '\\begin{af}\r\n'
   text += absolutePlacement(nodeMap, styleOptions?.snapToGrid ?? false, hooks?.argumentOptions)
   text += emitLinks(
-    processLinks(attacks, supports),
+    processLinks(allAttacks(), supports),
     getLatexId,
     hooks?.attackOptions,
     hooks?.attackSuffix,
   )
-  if (hooks?.setAttacks) {
-    for (const { attackers, target } of hooks.setAttacks) {
-      if (attackers.length === 1) {
-        text += `  \\attack{a${getLatexId(attackers[0]!)}}{a${getLatexId(target)}}\r\n`
-      } else {
-        text += `  \\setattack{${attackers.map((id) => `a${getLatexId(id)}`).join(',')}}{a${getLatexId(target)}}\r\n`
-      }
-    }
+  for (const { attackers, target } of collectiveAttacks) {
+    text += `  \\setattack{${attackers.map((id) => `a${getLatexId(id)}`).join(',')}}{a${getLatexId(target)}}\r\n`
   }
   text += emitAnnotations(nodeMap.keys(), getLatexId, hooks?.argumentAnnotation)
   text += `\\end{af}`
@@ -311,11 +315,16 @@ function emitLinks(
     } else if (type === ProcessedLinkType.None && reverseType == ProcessedLinkType.Support) {
       text += support(targetId, sourceId)
     } else if (type === ProcessedLinkType.Attack && reverseType == ProcessedLinkType.Attack) {
-      const fwdOpts = attackOptions?.(sourceId, targetId) ?? ''
-      const revOpts = attackOptions?.(targetId, sourceId) ?? ''
-      if (fwdOpts || revOpts) {
-        text += attack(sourceId, targetId)
-        text += attack(targetId, sourceId)
+      // \dualattack takes no per-direction options or labels, so draw a bent pair instead.
+      const perDirection = [
+        attackOptions?.(sourceId, targetId),
+        attackOptions?.(targetId, sourceId),
+        attackSuffix?.(sourceId, targetId),
+        attackSuffix?.(targetId, sourceId),
+      ].some(Boolean)
+      if (perDirection) {
+        text += attack(sourceId, targetId, 'bend right')
+        text += attack(targetId, sourceId, 'bend right')
       } else {
         text += `  \\dualattack{${a(sourceId)}}{${a(targetId)}}\r\n`
       }

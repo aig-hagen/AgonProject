@@ -18,7 +18,13 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { buildAfOptionList, spliceAfOptions } from '@/modules/common/argumentation/export'
+import {
+  buildAfOptionList,
+  type ExportHooks,
+  exportLatexArgumentationCommon,
+  spliceAfOptions,
+} from '@/modules/common/argumentation/export'
+import type { ArgumentData } from '@/modules/common/argumentation/model'
 
 describe('buildAfOptionList', () => {
   test('includes the base styles and omits supportstyle without supports', () => {
@@ -85,5 +91,80 @@ describe('spliceAfOptions', () => {
     expect(result.ok).toBe(false)
     expect(result.reason).toBe('ambiguous')
     expect(result.text).toBe(text)
+  })
+})
+
+function args(): IterableIterator<[number, ArgumentData]> {
+  return new Map<number, ArgumentData>([
+    [1, { name: 'a', x: 0, y: 0 } as ArgumentData],
+    [2, { name: 'b', x: 100, y: 0 } as ArgumentData],
+    [3, { name: 'c', x: 0, y: 100 } as ArgumentData],
+  ]).entries()
+}
+
+function linkLines(
+  attacks: [number, number][],
+  supports: [number, number][] = [],
+  hooks?: ExportHooks,
+): string[] {
+  const { text } = exportLatexArgumentationCommon(
+    args(),
+    attacks.values(),
+    supports.values(),
+    undefined,
+    hooks,
+  )
+  return text
+    .split('\r\n')
+    .map((line) => line.trim())
+    .filter((line) => /^\\(attack|dualattack|support|setattack)/.test(line))
+}
+
+describe('reciprocal links', () => {
+  test('plain mutual attack uses \\dualattack', () => {
+    expect(
+      linkLines([
+        [1, 2],
+        [2, 1],
+      ]),
+    ).toEqual(['\\dualattack{a1}{a2}'])
+  })
+
+  test('mutual attack with per-direction options is bent', () => {
+    const lines = linkLines(
+      [
+        [1, 2],
+        [2, 1],
+      ],
+      [],
+      { attackOptions: (s, t) => (s === 1 && t === 2 ? 'incomplete' : '') },
+    )
+    expect(lines).toEqual([
+      '\\attack[incomplete,bend right]{a1}{a2}',
+      '\\attack[bend right]{a2}{a1}',
+    ])
+  })
+
+  test('mutual attack with labels is bent and keeps the labels', () => {
+    const lines = linkLines(
+      [
+        [1, 2],
+        [2, 1],
+      ],
+      [],
+      { attackSuffix: (s) => (s === 1 ? '($0.5$)' : '') },
+    )
+    expect(lines).toEqual(['\\attack[bend right]{a1}{a2}($0.5$)', '\\attack[bend right]{a2}{a1}'])
+  })
+
+  test('mutual singleton set attacks pair up like plain attacks', () => {
+    const lines = linkLines([], [], {
+      setAttacks: [
+        { attackers: [1], target: 2 },
+        { attackers: [2], target: 1 },
+        { attackers: [1, 2], target: 3 },
+      ],
+    })
+    expect(lines).toEqual(['\\dualattack{a1}{a2}', '\\setattack{a1,a2}{a3}'])
   })
 })

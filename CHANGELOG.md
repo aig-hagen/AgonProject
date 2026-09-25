@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Fixed SVG graph export: node labels are centered again and bent edges no longer show a black fill sliver.
+- Fixed LaTeX export: mutual attacks in iAFs, pAFs and SETAFs are now bent instead of overlapping, and pAF attack probabilities are no longer dropped.
 
 ## [0.12.0] - 2026-09-21
 
