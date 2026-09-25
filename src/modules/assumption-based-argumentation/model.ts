@@ -61,7 +61,7 @@ export class ABAF {
       .map((r) => ({ ...r, body: r.body.filter((b) => b !== id) }))
       .filter((r) => r.body.length > 0)
     // Any assumption whose contrary pointed here loses it and falls back to an atom.
-    for (const [assm, target] of [...this.contraryMap]) {
+    for (const [assm, target] of this.contraryMap) {
       if (target === id) {
         this.contraryMap.delete(assm)
         const data = this.nodes.get(assm)
