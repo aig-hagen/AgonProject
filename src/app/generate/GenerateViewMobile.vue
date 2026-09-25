@@ -22,6 +22,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import type { GenerateController } from '@/app/generate/useGenerate'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -102,14 +103,12 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
         <!-- Algorithm selector -->
         <div class="flex flex-col gap-1.5">
           <label class="text-[13px] font-semibold">{{ t('generate.algorithm') }}</label>
-          <select
+          <PickerSelect
             v-model="selectedAlgorithmId"
-            class="select w-full h-12 rounded-xl bg-base-200 border-base-300"
-          >
-            <option v-for="algo in algorithms" :key="algo.id" :value="algo.id">
-              {{ formatAlgorithmName(algo.id) }}
-            </option>
-          </select>
+            :options="
+              algorithms.map((algo) => ({ value: algo.id, label: formatAlgorithmName(algo.id) }))
+            "
+          />
           <p v-if="selectedAlgorithm" class="text-xs text-base-content/50">
             {{ selectedAlgorithm.description }}
           </p>
