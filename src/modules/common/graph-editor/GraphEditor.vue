@@ -218,10 +218,32 @@ function onSelectionDelete() {
       })
     }
     triggerSettle()
+  } else if (sel.kind === 'hyperlink') {
+    const ends = hyperLinkPublicEnds(sel.id as string)
+    graphComponentRef.value?.deleteElement(sel.id)
+    if (ends !== undefined) emit('hyperLinkDeleted', ends)
+    triggerSettle()
+  } else if (sel.kind === 'hyperlink-source') {
+    const ends = sel.hyperLinkId === undefined ? undefined : hyperLinkPublicEnds(sel.hyperLinkId)
+    graphComponentRef.value?.deleteElement(sel.id)
+    if (ends !== undefined && sel.sourceId !== undefined && idMapping.has(sel.sourceId)) {
+      emit('hyperLinkSourceRemoved', { ...ends, removedSourceId: idMapping.getOrFail(sel.sourceId) })
+    }
+    triggerSettle()
   } else {
     graphComponentRef.value?.deleteElement(sel.id)
   }
   selection.value = null
+}
+
+/** Public sources/target of an internal hyperlink id, or `undefined` if any end is unmapped. */
+function hyperLinkPublicEnds(internalHyperLinkId: string) {
+  const { sourceIds, targetId } = parseHyperLinkId(internalHyperLinkId)
+  if (!sourceIds.every((id) => idMapping.has(id)) || !idMapping.has(targetId)) return undefined
+  return {
+    sourceIds: sourceIds.map((id) => idMapping.getOrFail(id)),
+    targetId: idMapping.getOrFail(targetId),
+  }
 }
 
 /** Public source/target of an internal link id, or `undefined` if its endpoints are unmapped. */
@@ -608,6 +630,13 @@ const emit = defineEmits<{
       targetId: NodeId
     },
   ]
+  hyperLinkSourceRemoved: [
+    data: {
+      sourceIds: NodeId[]
+      targetId: NodeId
+      removedSourceId: NodeId
+    },
+  ]
   annotationClicked: [
     data: {
       id: NodeId
@@ -776,14 +805,38 @@ function onHyperLinkCreated(link: { id: string; label?: string }, cause: EVENT_C
   })
 }
 
+// Removing a branch of a two-source hyperlink also fires hyperLinkDeleted and linkCreated for
+// the conversion; hyperLinkSourceRemoved already covers both.
+let pendingConversion: { hyperLinkId: string; linkId?: string } | undefined
+
 function onHyperLinkDeleted(link: { id: string; label?: string }, cause: EVENT_CAUSE) {
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
-  const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
-  if (!internalSourceIds.every((id) => idMapping.has(id)) || !idMapping.has(internalTargetId))
+  if (pendingConversion?.hyperLinkId === link.id) {
+    if (pendingConversion.linkId === undefined) pendingConversion = undefined
     return
-  const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
-  const publicTargetId = idMapping.getOrFail(internalTargetId)
-  emit('hyperLinkDeleted', { sourceIds: publicSourceIds, targetId: publicTargetId })
+  }
+  const ends = hyperLinkPublicEnds(link.id)
+  if (ends === undefined) return
+  emit('hyperLinkDeleted', ends)
+  triggerSettle()
+}
+
+function onHyperLinkSourceDeleted(
+  source: {
+    previousHyperLinkId: string
+    hyperLinkId?: string
+    sourceId: number
+    convertedLinkId?: string
+  },
+  cause: EVENT_CAUSE,
+) {
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
+  if (source.hyperLinkId === undefined) {
+    pendingConversion = { hyperLinkId: source.previousHyperLinkId, linkId: source.convertedLinkId }
+  }
+  const ends = hyperLinkPublicEnds(source.previousHyperLinkId)
+  if (ends === undefined || !idMapping.has(source.sourceId)) return
+  emit('hyperLinkSourceRemoved', { ...ends, removedSourceId: idMapping.getOrFail(source.sourceId) })
   triggerSettle()
 }
 
@@ -807,6 +860,10 @@ function onLinkCreated(
   cause: EVENT_CAUSE,
 ) {
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
+    return
+  }
+  if (pendingConversion?.linkId === link.id) {
+    pendingConversion = undefined
     return
   }
   const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(link.id)
@@ -1809,6 +1866,7 @@ defineExpose({
       @annotation-moved="onAnnotationMoved"
       @select="onSelect"
       @hyper-link-sources-changed="onHyperLinkSourcesChanged"
+      @hyper-link-source-deleted="onHyperLinkSourceDeleted"
       :id="graphComponentId"
       ref="graph-component"
     />

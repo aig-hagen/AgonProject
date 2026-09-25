@@ -180,19 +180,39 @@ function onHyperLinkCreated(data: { sourceIds: NodeId[]; targetId: NodeId }) {
   })
 }
 
+function findAttack(draft: SetAF<SetAfArgumentData>, attackers: NodeId[], target: NodeId) {
+  const sorted = [...attackers].sort((a, b) => a - b)
+  return draft.attacks().find((a) => {
+    const sortedAttackers = [...a.attackers].sort((a, b) => a - b)
+    return (
+      a.target === target &&
+      sortedAttackers.length === sorted.length &&
+      sortedAttackers.every((id, i) => id === sorted[i])
+    )
+  })
+}
+
 function onHyperLinkDeleted(data: { sourceIds: NodeId[]; targetId: NodeId }) {
-  const sortedSourceIds = [...data.sourceIds].sort((a, b) => a - b)
   createNewState((draft) => {
-    const attack = draft.attacks().find((a) => {
-      const sortedAttackers = [...a.attackers].sort((a, b) => a - b)
-      return (
-        a.target === data.targetId &&
-        sortedAttackers.length === sortedSourceIds.length &&
-        sortedAttackers.every((id, i) => id === sortedSourceIds[i])
-      )
-    })
+    const attack = findAttack(draft, data.sourceIds, data.targetId)
     if (attack !== undefined) {
       draft.deleteCollectiveAttack(attack.id)
+    }
+  })
+}
+
+function onHyperLinkSourceRemoved(data: {
+  sourceIds: NodeId[]
+  targetId: NodeId
+  removedSourceId: NodeId
+}) {
+  createNewState((draft) => {
+    const attack = findAttack(draft, data.sourceIds, data.targetId)
+    if (attack === undefined) return
+    draft.deleteCollectiveAttack(attack.id)
+    const remaining = data.sourceIds.filter((id) => id !== data.removedSourceId)
+    if (findAttack(draft, remaining, data.targetId) === undefined) {
+      draft.addCollectiveAttack(remaining, data.targetId)
     }
   })
 }
@@ -279,6 +299,7 @@ const tutorialContextExtra = computed(() => ({
     @link-deleted="onLinkDeleted"
     @hyper-link-created="onHyperLinkCreated"
     @hyper-link-deleted="onHyperLinkDeleted"
+    @hyper-link-source-removed="onHyperLinkSourceRemoved"
     :link-configs="linkConfig"
     :state="editorState"
     :allow-link-creation="true"
