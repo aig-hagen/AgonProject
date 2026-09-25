@@ -238,11 +238,11 @@ function download(config: ExportConfig<DocumentT>) {
 
       <div class="flex gap-2">
         <ButtonSave
-          class="btn btn-sm btn-soft flex-1"
+          class="btn btn-primary h-12 flex-1 rounded-2xl"
           :filedata="svgFiledata"
           @export="emit('export', $event)"
         />
-        <ButtonCopy class="btn btn-sm btn-soft flex-1" :text="svgText">SVG</ButtonCopy>
+        <ButtonCopy class="btn btn-soft h-12 flex-1 rounded-2xl" :text="svgText">SVG</ButtonCopy>
       </div>
     </div>
 
@@ -259,16 +259,16 @@ function download(config: ExportConfig<DocumentT>) {
           :title="codeConfig.references[0].label"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn btn-sm btn-ghost btn-square"
+          class="btn btn-ghost btn-square size-12 rounded-2xl"
         >
-          <ArrowTopRightOnSquareIcon class="size-4" />
+          <ArrowTopRightOnSquareIcon class="size-5" />
         </a>
         <ButtonSave
-          class="btn btn-sm btn-soft flex-1"
+          class="btn btn-primary h-12 flex-1 rounded-2xl"
           :filedata="codeFiledata"
           @export="emit('export', $event)"
         />
-        <ButtonCopy class="btn btn-sm btn-soft flex-1" :text="codeResult?.text">{{
+        <ButtonCopy tex class="btn btn-soft h-12 flex-1 rounded-2xl" :text="codeResult?.text">{{
           t('export.formatLabels.code')
         }}</ButtonCopy>
       </div>
@@ -277,7 +277,12 @@ function download(config: ExportConfig<DocumentT>) {
         <code class="flex-1 min-w-0 truncate rounded bg-base-200 px-2 py-1.5 text-[0.7rem]">{{
           LATEX_PREAMBLE
         }}</code>
-        <ButtonCopy class="btn btn-xs btn-ghost btn-square" :text="LATEX_PREAMBLE" icon-only tex />
+        <ButtonCopy
+          class="btn btn-xs btn-ghost btn-square"
+          :text="LATEX_PREAMBLE"
+          :title="t('export.button.copyBare')"
+          icon-only
+        />
       </div>
 
       <pre

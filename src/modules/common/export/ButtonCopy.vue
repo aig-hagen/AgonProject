@@ -61,7 +61,7 @@ async function copyToClipboard() {
   if (timeoutId !== undefined) {
     clearTimeout(timeoutId)
   }
-  timeoutId = setTimeout(() => (showCopied.value = false), 500)
+  timeoutId = setTimeout(() => (showCopied.value = false), 1500)
 }
 </script>
 

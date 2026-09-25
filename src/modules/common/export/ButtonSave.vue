@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownTrayIcon, CheckIcon } from '@heroicons/vue/24/outline'
 import { computed, ref, useSlots } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -49,14 +49,14 @@ async function saveFile() {
   if (timeoutId !== undefined) {
     clearTimeout(timeoutId)
   }
-  timeoutId = setTimeout(() => (showSaved.value = false), 500)
+  timeoutId = setTimeout(() => (showSaved.value = false), 1500)
 }
 </script>
 
 <template>
   <button @click="saveFile" :disabled="filedata === undefined">
     <template v-if="showSaved">
-      <ArrowDownTrayIcon class="size-4"></ArrowDownTrayIcon>{{ t('export.button.saved') }}
+      <CheckIcon class="size-4"></CheckIcon>{{ t('export.button.saved') }}
     </template>
     <template v-else>
       <ArrowDownTrayIcon class="size-4"></ArrowDownTrayIcon>

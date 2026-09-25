@@ -20,17 +20,10 @@
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { Annotation, type Extension, Prec, Transaction } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-import {
-  ArrowPathIcon,
-  CheckCircleIcon,
-  ClipboardDocumentCheckIcon,
-  ClipboardDocumentIcon,
-  PencilSquareIcon,
-} from '@heroicons/vue/24/outline'
+import { ArrowPathIcon, CheckCircleIcon, PencilSquareIcon } from '@heroicons/vue/24/outline'
 import { tags } from '@lezer/highlight'
 import { basicSetup } from 'codemirror'
-import copy from 'copy-to-clipboard'
-import { computed, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
@@ -252,14 +245,6 @@ const saveFiledataText = computed(() =>
     ? { content: bufferText.value, ending: latexConfig.value?.extension ?? 'tex' }
     : undefined,
 )
-const preambleCopied = ref(false)
-let preambleCopyTimeout: ReturnType<typeof setTimeout>
-function copyPreamble() {
-  copy(LATEX_PREAMBLE)
-  preambleCopied.value = true
-  clearTimeout(preambleCopyTimeout)
-  preambleCopyTimeout = setTimeout(() => (preambleCopied.value = false), 500)
-}
 
 // ── Editor lifecycle ──────────────────────────────────────────────────────────
 watch(
@@ -325,7 +310,6 @@ watch(open, (isOpen) => {
 
 onBeforeUnmount(() => {
   clearTimeout(debounceTimer)
-  clearTimeout(preambleCopyTimeout)
   editorView.value?.destroy()
 })
 </script>
@@ -452,14 +436,12 @@ onBeforeUnmount(() => {
       <div class="preamble-bar">
         <span class="preamble-tag">{{ t('export.preamble') }}</span>
         <code class="grow truncate font-mono text-xs">{{ LATEX_PREAMBLE }}</code>
-        <button
+        <ButtonCopy
           class="btn btn-xs btn-ghost btn-square"
+          :text="LATEX_PREAMBLE"
           :title="t('export.button.copyBare')"
-          @click="copyPreamble"
-        >
-          <ClipboardDocumentCheckIcon v-if="preambleCopied" class="size-4" />
-          <ClipboardDocumentIcon v-else class="size-4" />
-        </button>
+          icon-only
+        />
       </div>
       <i18n-t
         keypath="export.packageNote"

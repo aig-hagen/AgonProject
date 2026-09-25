@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - ABA editor: statements can be promoted/demoted between atom and assumption, and deleted, directly from the side panel.
 - ABA editor: reworked the side panel — deliberate atom/assumption add buttons, inline contrary picker with overline notation (`‾a`), a unified rule builder (head select plus a body token field taking typed names as removable pills or chip clicks), and a collapsible ABA definition section.
 - The serialisation window, the generate view and the mobile LaTeX export options now use the app's standard picker instead of native selects.
+- Export: mobile Save/Copy buttons use the sheet's large touch style with Save as the primary action, and copy/save feedback now shows a check icon for longer.
 
 ### Fixed
 
