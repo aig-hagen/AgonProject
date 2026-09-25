@@ -105,7 +105,6 @@ export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
   getSaveString(document, name) {
     return saveAsString(document, name)
   },
-  // TODO: restore `underConstruction: true` before merging to dev.
-  underConstruction: false,
+  underConstruction: true,
   tags: [TAG_AUGMENTED, TAG_ATTACK, TAG_SUPPORT, TAG_COLLECTIVE_RELATIONS],
 }
