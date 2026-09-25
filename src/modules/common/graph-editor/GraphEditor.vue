@@ -528,21 +528,17 @@ if (defaultLinkType === undefined) {
 }
 const selectedLinkType = ref<LinkType>(defaultLinkType)
 
-function renderNewState(state: GraphEditorState, center: boolean) {
-  setGraph(state, center)
-}
-
 watch(
   () => state,
   () => {
     if (state.redraw) {
-      setGraph(state, false)
+      updateGraph(state)
     }
   },
 )
 
 watch(isDark, () => {
-  setGraph(state, false)
+  updateGraph(state)
 })
 
 // Opened by the compact Evaluate button; owned by the module so its evaluation host
@@ -668,7 +664,7 @@ watch(defaultGridType, (type) => {
   graphComponentRef.value?.setGridType(type)
 })
 watch(graphStyleSetting, () => {
-  setGraph(state, false)
+  updateGraph(state)
 })
 watch(physicsMode, () => {
   tutorialPhysicsToggleCount.value++
@@ -727,6 +723,7 @@ function onNodeCreated(
 
   const publicId = idGenerator.generate()
   idMapping.add(node.id, publicId)
+  graphComponentRef.value!.setNodeImportedId(node.id, publicId)
   const nodeData = {
     id: publicId,
     label: name,
@@ -775,7 +772,7 @@ function onHyperLinkCreated(link: { id: string; label?: string }, cause: EVENT_C
   void nextTick(() => {
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
     graphComponentRef.value!.setColor(linkColor, link.id)
-    applyHyperLinkSourceColor(link.id, linkColor)
+    graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
   })
 }
 
@@ -825,7 +822,6 @@ function onLinkCreated(
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
     graphComponentRef.value!.setColor(linkColor, link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
-    applyLinkDash(link.id, linkConfigs[selectedLinkType.value]?.dashArray)
   })
 }
 
@@ -1002,7 +998,7 @@ onMounted(() => {
     },
   })
 
-  renderNewState(state, true)
+  setGraph(state)
 
   // Restore a previously saved pan/zoom for this document, overriding the auto-centered
   // view above. Applied after the fact (rather than before centering) since the read is
@@ -1235,74 +1231,22 @@ function toArrowType(linkType: LinkType): ArrowType {
   throw new Error('Encountered unsupported linkType')
 }
 
-function applyHyperLinkSourceColor(hyperLinkId: string, color: string): void {
-  const el = graphComponentRef.value?.$el as Element | undefined
-  if (!el) return
-  const targetPath = el.querySelector(
-    `#${CSS.escape(`${graphComponentId}-hyperlink-${hyperLinkId}`)}`,
-  )
-  const container = targetPath?.closest('.graph-controller__hyperlink-container')
-  if (!container) return
-  container
-    .querySelectorAll<SVGPathElement>('.graph-controller__hyperlink-source-path')
-    .forEach((path) => {
-      path.style.stroke = color
-    })
-}
-
-function applyLinkDash(linkId: string, dashArray?: string): void {
-  const el = graphComponentRef.value?.$el?.querySelector(
-    `.graph-controller__link[id$="-link-${linkId}"]`,
-  )
-  if (el instanceof SVGPathElement) {
-    el.style.strokeDasharray = dashArray ?? ''
-  }
-}
-
-function setGraph(state: GraphEditorState, center: boolean): void {
-  const graphComponent = graphComponentRef.value
-  if (graphComponent === null) {
-    throw new Error('Graph component is not rendered.')
-  }
-  // A redraw reassigns internal ids, so any open selection no longer resolves — dismiss it.
-  selection.value = null
-  // The library resets its hyperlink source set on setGraph too; drop our mirror so the
-  // pending-set pill doesn't linger with stale internal ids after a re-render.
-  hyperLinkSources.value = []
-  // When physics is active, nodes may have drifted from their stored model positions.
-  // Capture current visual positions before resetting so nodes don't snap back.
-  const preservedPositions = new Map<number, { x: number; y: number }>()
+function buildGraphJson(state: GraphEditorState) {
+  const graphComponent = graphComponentRef.value!
+  // With physics on, nodes may have drifted from their stored model positions; keep them there.
+  const livePositions = new Map<number, { x: number; y: number }>()
   if (physicsMode.value !== 'off') {
     for (const internalId of idMapping.inputIds()) {
-      preservedPositions.set(
-        idMapping.getOrFail(internalId),
-        graphComponent.getNodePosition(internalId),
-      )
+      livePositions.set(idMapping.getOrFail(internalId), graphComponent.getNodePosition(internalId))
     }
   }
-  // Capture the D3 zoom state before setGraph destroys and recreates the SVG canvas.
-  // setGraph resets D3 zoom to identity; restoring it keeps the graph visually stable.
-  // Only for in-place redraws (center=false) — initial renders should use the library defaults.
-  const savedZoom = center
-    ? null
-    : (() => {
-        const z = (
-          containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-            | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
-            | null
-        )?.__zoom
-        return z != null ? { k: z.k, x: z.x, y: z.y } : null
-      })()
-  idGenerator = new IdGenerator()
-  idMapping = new IdMapping()
-  liveNodePositions.value = new Map()
   const nodes: jsonNode[] = state.nodes.map((node) => {
-    const preserved = preservedPositions.get(node.id)
+    const live = livePositions.get(node.id)
     return {
       id: node.id,
       label: node.label,
-      x: preserved?.x ?? node.x,
-      y: preserved?.y ?? node.y,
+      x: live?.x ?? node.x,
+      y: live?.y ?? node.y,
       color: effectiveStyle.value.nodeColor,
       outline: nodeOutlines?.get(node.id),
     }
@@ -1317,10 +1261,14 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     sourceIds: hyperLink.sourceIds,
     targetId: hyperLink.targetId,
     color: linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor,
+    arrowType: toArrowType(hyperLink.type),
   }))
+  return { nodes, links, hyperLinks }
+}
 
-  graphComponent.setGraph({ nodes, links, hyperLinks }, true)
-  const { nodes: importedNodes } = graphComponent.getGraph(
+/** Rebuilds the internal → public id mapping from the displayed graph. */
+function syncIdMapping() {
+  const { nodes: importedNodes } = graphComponentRef.value!.getGraph(
     'json',
     false,
     false,
@@ -1328,72 +1276,91 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     false,
     true,
   ) as { nodes: { id: number; idImported: number }[] }
-
+  idGenerator = new IdGenerator()
+  idMapping = new IdMapping()
   for (const importedNode of importedNodes) {
     idGenerator.forward(importedNode.idImported)
     idMapping.add(importedNode.id, importedNode.idImported)
   }
+  return importedNodes
+}
+
+function adjustLabelFontSizes(state: GraphEditorState) {
+  for (const node of state.nodes) {
+    if (!node.label || !idMapping.hasReverse(node.id)) continue
+    adjustNodeLabelFontSize(
+      graphComponentRef.value?.$el as Element | undefined,
+      graphComponentId,
+      idMapping.getOrFailReverse(node.id),
+      node.label,
+    )
+  }
+}
+
+/** Initial render: builds the graph from scratch and fits it into view. */
+function setGraph(state: GraphEditorState): void {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) {
+    throw new Error('Graph component is not rendered.')
+  }
+  selection.value = null
+  hyperLinkSources.value = []
+  liveNodePositions.value = new Map()
+  graphComponent.setGraph(buildGraphJson(state), true)
+  syncIdMapping()
 
   void nextTick(() => {
     previousBadgeInternalIds = new Set()
     applyNodeWeights(nodeWeights)
-    // Outlines were already applied wholesale as node props by setGraph above.
+    // Outlines were already applied as node props by setGraph above.
     previousNodeOutlines = new Map(nodeOutlines ?? [])
     previousAnnotationContent = new Map()
-    for (const [publicId, annotation] of nodeAnnotations ?? []) {
-      if (!idMapping.hasReverse(publicId)) continue
-      const internalId = idMapping.getOrFailReverse(publicId)
-      graphComponent.createAnnotation(internalId, annotation.content, annotation.position)
-      previousAnnotationContent.set(publicId, annotation.content)
-    }
-    for (const link of state.links) {
-      const internalSourceId = idMapping.getOrFailReverse(link.sourceId)
-      const internalTargetId = idMapping.getOrFailReverse(link.targetId)
-      applyLinkDash(`${internalSourceId}-${internalTargetId}`, linkConfigs[link.type]?.dashArray)
-    }
-    for (const hyperLink of state.hyperLinks ?? []) {
-      const internalSourceIds = hyperLink.sourceIds
-        .map((id) => idMapping.getOrFailReverse(id))
-        .sort((a, b) => a - b)
-      const internalTargetId = idMapping.getOrFailReverse(hyperLink.targetId)
-      const internalHyperLinkId = `${internalSourceIds.join(',')}-${internalTargetId}`
-      const color = linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor
-      applyHyperLinkSourceColor(internalHyperLinkId, color)
-    }
-    for (const importedNode of importedNodes) {
-      const node = state.nodes.find((n) => n.id === importedNode.idImported)
-      if (node?.label)
-        adjustNodeLabelFontSize(
-          graphComponentRef.value?.$el as Element | undefined,
-          graphComponentId,
-          importedNode.id,
-          node.label,
-        )
-    }
-    // setGraph recreates the SVG canvas and resets D3 zoom to identity. Restore the
-    // captured zoom so node visual positions don't jump after an in-place redraw. Route
-    // through setViewport so the library's cached transform (used by pointer-to-graph math,
-    // e.g. the edge-creation preview) stays in sync.
-    if (savedZoom !== null) {
-      graphComponent.setViewport(savedZoom.k, savedZoom.x, savedZoom.y)
-    }
-    // setGraph rebuilds the graph DOM, potentially replacing the zoom group element that
-    // zoomObserver and dragObserver are watching. Reconnect them to the current element
-    // so that the overlay transform sync and live drag positions keep working.
+    applyAnnotationContentUpdates(nodeAnnotations)
+    adjustLabelFontSizes(state)
     setupZoomAndDragObservers()
     applyGridVisibility(showGrid.value)
     graphComponentRef.value?.setGridType(defaultGridType.value)
     graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
     graphComponentRef.value?.setSnapToGrid(snapMode.value)
-    if (physicsMode.value === 'on' && center) {
+    if (physicsMode.value === 'on') {
       triggerSettle()
     }
   })
 
-  if (center) {
-    // Initial fit after (re)loading a graph: jump instantly, no glide from the reset transform.
-    fitToView(0, 0, 0)
+  // Jump instantly, no glide from the reset transform.
+  fitToView(0, 0, 0)
+}
+
+/** Reconciles the displayed graph with `state` in place, keeping viewport and selection. */
+function updateGraph(state: GraphEditorState): void {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) {
+    throw new Error('Graph component is not rendered.')
   }
+  const previousInternalIds = new Set(idMapping.inputIds())
+  graphComponent.updateGraph(buildGraphJson(state))
+  const importedNodes = syncIdMapping()
+
+  // Nodes the update (re)created carry none of our per-node extras yet.
+  for (const { id, idImported } of importedNodes) {
+    if (previousInternalIds.has(id)) continue
+    previousAnnotationContent.delete(idImported)
+    previousNodeOutlines.delete(idImported)
+  }
+  previousBadgeInternalIds = new Set(
+    [...previousBadgeInternalIds].filter((internalId) => idMapping.has(internalId)),
+  )
+  const sel = selection.value
+  if (sel !== null && graphComponent.getElementAnchor(sel.kind, sel.id) === undefined) {
+    selection.value = null
+  }
+
+  void nextTick(() => {
+    applyNodeWeights(nodeWeights)
+    applyNodeOutlineUpdates(nodeOutlines)
+    applyAnnotationContentUpdates(nodeAnnotations)
+    adjustLabelFontSizes(state)
+  })
 }
 
 function updateLinkType(linkId: string, linkType: LinkType) {
@@ -1407,7 +1374,6 @@ function updateLinkType(linkId: string, linkType: LinkType) {
   const linkColor = linkConfigs[linkType]?.color ?? effectiveStyle.value.linkColor
   graphComponentRef.value!.setColor(linkColor, linkId)
   graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
-  applyLinkDash(linkId, linkConfigs[linkType]?.dashArray)
 }
 
 function onLabelEdited(

@@ -134,8 +134,7 @@ export type LinkConfigs = Partial<
     {
       displayName: string
       color?: string
-      arrowType?: 'SINGLE' | 'DOUBLE'
-      dashArray?: string
+      arrowType?: 'SINGLE' | 'DOUBLE' | 'DASHED'
       icon?: Component
     }
   >

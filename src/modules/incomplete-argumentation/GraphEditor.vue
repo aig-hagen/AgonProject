@@ -132,8 +132,7 @@ const linkConfig = computed(() => ({
   SINGLE: { displayName: t('editor.links.definiteAttack') },
   DOUBLE: {
     displayName: t('editor.links.uncertainAttack'),
-    arrowType: 'SINGLE' as const,
-    dashArray: '8 4',
+    arrowType: 'DASHED' as const,
     icon: ArrowLongRightDashedIcon,
   },
 }))

@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Updated the bundled graph component to 5.0.0-rc.24; uncertain iAF attacks now use its native dashed links.
 - ABA editor: facts now appear in the Rules list as empty-body rules (`h ← ⊤`), and the rule builder creates a fact when the body is left empty.
 - ABA editor: statements can be promoted/demoted between atom and assumption, and deleted, directly from the side panel.
 - ABA editor: reworked the side panel — deliberate atom/assumption add buttons, inline contrary picker with overline notation (`‾a`), a unified rule builder (head select plus a body token field taking typed names as removable pills or chip clicks), and a collapsible ABA definition section.
