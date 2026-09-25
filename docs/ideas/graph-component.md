@@ -80,8 +80,7 @@ See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic v
 - [x] iAF uncertain attacks use `ArrowType.DASHED`; `applyLinkDash` and `LinkConfigs.dashArray` are gone.
 - [x] Hyperlinks pass `arrowType` in JSON and on GUI creation; `applyHyperLinkSourceColor` is gone.
 - [x] `getViewport()` replaces reading d3's private `__zoom` (`GraphEditor.vue`, `usePhysics.ts`).
-- [ ] Overlay/tutorial transform sync via `viewportChanged` instead of the zoom `MutationObserver`.
-- [ ] Drop the synthetic double-tap → `dblclick` handler (~L1016) once touch creation is checked.
+- [x] Overlay/tutorial transform sync via `viewportChanged` instead of the zoom `MutationObserver`.
 - [ ] `setReadOnly(true)` in the planned read-only `GraphView`.
 
 ## Nice — replacing workarounds in our wrapper
@@ -95,8 +94,9 @@ See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic v
 - **🟡 `editNodeLabel` with select-all.** `editNodeLabel(id)` is public, but it focuses without
   selecting the existing value. We still reach into `#node-label-input-field` to preselect the
   text (~L191).
-- **✅ Double-tap creates a node on touch.** The pointer gesture recognizer maps a canvas
-  double-tap to node creation, with unit tests for the gesture and binding.
+- **⬜ Double-tap creates a node on touch.** The gesture recognizer maps `canvas:doubletap` to
+  node creation and has unit tests, but `GraphComponent.vue` doesn't mount it (only its types are
+  imported). We still detect double-tap and dispatch a synthetic `dblclick` (~L1016).
 - **⬜ Label styling API.** Colour and auto font size are still set by finding the label div in
   the DOM (`setNodeLabelColor`, `adjustNodeLabelFontSize` in `graphEditorUtils.ts`).
   - Wish: `setNodeLabelStyle(id, { color, fontSize })`, or a built-in auto-fit.

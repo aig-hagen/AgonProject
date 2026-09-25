@@ -883,44 +883,27 @@ const saveViewport = useDebounceFn((viewport: StoredViewport) => {
   void setUIStateValue(db, documentId, VIEWPORT_STATE_KEY, viewport)
 }, 400)
 
-function setupZoomAndDragObservers() {
-  zoomObserver?.disconnect()
+let previousViewport: StoredViewport = { k: 1, x: 0, y: 0 }
+
+function onViewportChanged(viewport: StoredViewport) {
+  const { k, x, y } = viewport
+  overlayGroupRef.value?.setAttribute('transform', `translate(${x},${y}) scale(${k})`)
+  // Track pan vs zoom for tutorial context
+  const previous = previousViewport
+  if (Math.abs(k - previous.k) > 0.001) tutorialZoomCount.value++
+  else if (Math.abs(x - previous.x) > 0.5 || Math.abs(y - previous.y) > 0.5)
+    tutorialPanCount.value++
+  previousViewport = { k, x, y }
+  void saveViewport(previousViewport)
+}
+
+function setupDragObserver() {
   dragObserver?.disconnect()
 
   const zoomGroup = containerRef.value?.querySelector(
     '.graph-controller__graph-canvas > g',
   ) as SVGGElement | null
-  if (!zoomGroup || !overlayGroupRef.value) return
-
-  let prevTransformScale = 1
-  let prevTransformTx = 0
-  let prevTransformTy = 0
-
-  const syncTransform = () => {
-    const transform = zoomGroup.getAttribute('transform')
-    if (overlayGroupRef.value) {
-      overlayGroupRef.value.setAttribute('transform', transform ?? '')
-    }
-    // Track pan vs zoom for tutorial context
-    if (transform) {
-      const m = /translate\(([^,]+),([^)]+)\)\s*scale\(([^)]+)\)/.exec(transform)
-      if (m) {
-        const tx = parseFloat(m[1]!)
-        const ty = parseFloat(m[2]!)
-        const k = parseFloat(m[3]!)
-        if (Math.abs(k - prevTransformScale) > 0.001) tutorialZoomCount.value++
-        else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5)
-          tutorialPanCount.value++
-        prevTransformScale = k
-        prevTransformTx = tx
-        prevTransformTy = ty
-        void saveViewport({ k, x: tx, y: ty })
-      }
-    }
-  }
-  syncTransform()
-  zoomObserver = new MutationObserver(syncTransform)
-  zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
+  if (!zoomGroup) return
 
   const nodeIdPrefix = `${graphComponentId}-node-`
   dragObserver = new MutationObserver((mutations) => {
@@ -1007,7 +990,7 @@ onMounted(() => {
     if (viewport) applyViewport(viewport)
   })
 
-  setupZoomAndDragObservers()
+  setupDragObserver()
 
   // The graph-component host has `touch-action: none` which prevents the browser
   // from generating synthetic dblclick events from double-tap. We detect double-tap
@@ -1317,7 +1300,7 @@ function setGraph(state: GraphEditorState): void {
     previousAnnotationContent = new Map()
     applyAnnotationContentUpdates(nodeAnnotations)
     adjustLabelFontSizes(state)
-    setupZoomAndDragObservers()
+    setupDragObserver()
     applyGridVisibility(showGrid.value)
     graphComponentRef.value?.setGridType(defaultGridType.value)
     graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
@@ -1531,7 +1514,6 @@ function onAnnotationMoved(annotations: AnnotationPositionSnapshot[]) {
   emit('annotationMoved', data)
 }
 
-let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
 let doubleTapCleanup: (() => void) | undefined
 let middleClickCleanup: (() => void) | undefined
@@ -1564,7 +1546,6 @@ const overlayNodes = computed(() => {
 })
 
 onUnmounted(() => {
-  zoomObserver?.disconnect()
   dragObserver?.disconnect()
   doubleTapCleanup?.()
   middleClickCleanup?.()
@@ -1822,6 +1803,7 @@ defineExpose({
       @hyper-link-created="onHyperLinkCreated"
       @hyper-link-deleted="onHyperLinkDeleted"
       @nodes-moved="onNodesMoved"
+      @viewport-changed="onViewportChanged"
       @label-edited="onLabelEdited"
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
