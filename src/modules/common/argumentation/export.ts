@@ -29,6 +29,26 @@ import { nameToMathTex, textToTex } from '@/modules/common/export/texEscape'
 
 const AF_ENV_BEGIN = '\\begin{af}'
 
+export const LATEX_PREAMBLE = '\\usepackage{argumentation}'
+
+/** Values offered for each LaTeX style option; they are the package's own keywords. */
+export const LATEX_STYLE_CHOICES = {
+  argumentStyle: ['standard', 'large', 'thick', 'gray', 'colored'],
+  nameStyle: ['math', 'bold', 'monospace', 'monoemph', 'none'],
+  attackStyle: ['standard', 'large', 'modern'],
+  supportStyle: ['standard', 'dashed', 'double'],
+  nodeLabels: ['auto', 'full', 'short'],
+} as const
+
+export const LATEX_STYLE_DEFAULTS = {
+  argumentStyle: 'standard',
+  nameStyle: 'math',
+  attackStyle: 'standard',
+  supportStyle: 'double',
+  nodeDistance: 2,
+  nodeLabels: 'auto',
+} as const satisfies ExportStyleOptions
+
 /**
  * The appearance options that ride on the `\begin{af}[…]` environment. Node distance is not
  * here: it changes generated coordinates (the body), not the environment options.
@@ -46,11 +66,13 @@ export interface AfAppearanceOptions {
  */
 export function buildAfOptionList(options: AfAppearanceOptions, includeSupport: boolean): string {
   const parts = [
-    `argumentstyle=${options.argumentStyle ?? 'colored'}`,
-    `namestyle=${options.nameStyle ?? 'math'}`,
-    `attackstyle=${options.attackStyle ?? 'standard'}`,
+    `argumentstyle=${options.argumentStyle ?? LATEX_STYLE_DEFAULTS.argumentStyle}`,
+    `namestyle=${options.nameStyle ?? LATEX_STYLE_DEFAULTS.nameStyle}`,
+    `attackstyle=${options.attackStyle ?? LATEX_STYLE_DEFAULTS.attackStyle}`,
   ]
-  if (includeSupport) parts.push(`supportstyle=${options.supportStyle ?? 'double'}`)
+  if (includeSupport) {
+    parts.push(`supportstyle=${options.supportStyle ?? LATEX_STYLE_DEFAULTS.supportStyle}`)
+  }
   return parts.join(',')
 }
 
@@ -143,6 +165,8 @@ export interface ExportHooks {
   /** `label` resolves an argument id to its node label as math-mode TeX. */
   argumentAnnotation?: (id: number, label: (id: number) => string) => string | undefined
   setAttacks?: Iterable<SetAttack>
+  /** Adds `supportstyle` to the environment options (documents that can have supports). */
+  includeSupportStyle?: boolean
 }
 
 function buildOpts(...parts: string[]): string {
@@ -248,14 +272,14 @@ function buildNodeMap(
   args: IterableIterator<[id: number, data: ArgumentData]>,
   styleOptions?: ExportStyleOptions,
 ): Map<number, NodeExportInfo> {
-  const nodeDistance = styleOptions?.nodeDistance ?? 1.5
+  const nodeDistance = styleOptions?.nodeDistance ?? LATEX_STYLE_DEFAULTS.nodeDistance
   const gridCellScale = styleOptions?.gridCellScale ?? 3
   const pixelsPerUnit = (2 * ARGUMENT_RADIUS_IN_PX * gridCellScale) / nodeDistance
   const argsList = [...args]
   const labels = buildNodeLabels(
     argsList.map(([, data]) => data.name),
-    styleOptions?.nodeLabels ?? 'auto',
-    styleOptions?.nameStyle ?? 'math',
+    styleOptions?.nodeLabels ?? LATEX_STYLE_DEFAULTS.nodeLabels,
+    styleOptions?.nameStyle ?? LATEX_STYLE_DEFAULTS.nameStyle,
   )
   const nodeMap = new Map<number, NodeExportInfo>()
   argsList.forEach(([argumentId, argumentData], index) => {
@@ -277,11 +301,6 @@ export function exportLatexArgumentationCommon(
   styleOptions?: ExportStyleOptions,
   hooks?: ExportHooks,
 ): ExportResult {
-  const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
-  const nameStyle = styleOptions?.nameStyle ?? 'math'
-  const attackStyle = styleOptions?.attackStyle ?? 'standard'
-  const supportStyle = styleOptions?.supportStyle ?? 'double'
-
   const nodeMap = buildNodeMap(args, styleOptions)
   offsetNodesToOrigin(nodeMap)
 
@@ -297,7 +316,8 @@ export function exportLatexArgumentationCommon(
     }
   }
 
-  let text = '\\begin{af}\r\n'
+  const optionList = buildAfOptionList(styleOptions ?? {}, hooks?.includeSupportStyle ?? false)
+  let text = `${AF_ENV_BEGIN}[${optionList}]\r\n`
   text += absolutePlacement(nodeMap, styleOptions?.snapToGrid ?? false, hooks?.argumentOptions)
   text += emitLinks(
     processLinks(allAttacks(), supports),
@@ -311,16 +331,12 @@ export function exportLatexArgumentationCommon(
   text += emitAnnotations(nodeMap, hooks?.argumentAnnotation)
   text += `\\end{af}`
 
-  const optionList = buildAfOptionList(
-    { argumentStyle, nameStyle, attackStyle, supportStyle },
-    true,
-  )
   return {
     text,
     // Loaded on demand: rendering pulls in opentype.js (~240 kB), only needed for SVG preview.
     svg: async () => {
       const { renderSvg } = await import('@/modules/common/export/renderSvg')
-      return renderSvg(spliceAfOptions(text, optionList).text)
+      return renderSvg(text)
     },
   }
 }

@@ -33,7 +33,13 @@ import copy from 'copy-to-clipboard'
 import { computed, onBeforeUnmount, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { buildAfOptionList, spliceAfOptions } from '@/modules/common/argumentation/export'
+import {
+  buildAfOptionList,
+  LATEX_PREAMBLE,
+  LATEX_STYLE_CHOICES,
+  LATEX_STYLE_DEFAULTS,
+  spliceAfOptions,
+} from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ExportSheet from '@/modules/common/export/ExportSheet.vue'
@@ -49,8 +55,6 @@ import { ExportFormatId } from '.'
 // Marks CodeMirror transactions the studio dispatches itself (graph/style regeneration). Any
 // doc change WITHOUT this annotation is a user edit and detaches the buffer from the graph.
 const internalChange = Annotation.define<boolean>()
-
-const PREAMBLE_HINT = '\\usepackage{argumentation}'
 
 // Palette-driven syntax colours so the code reads correctly in both light and dark: the values
 // resolve from the active daisyUI theme, unlike basicSetup's light-tuned default highlight style.
@@ -100,21 +104,22 @@ const latexConfig = computed<ExportConfig<DocumentT> | undefined>(() =>
   exportConfigs.find((config) => config.id === ExportFormatId.Latex),
 )
 
-const selectedArgumentStyle = shallowRef<string>('standard')
-const selectedNameStyle = shallowRef<string>('math')
-const selectedAttackStyle = shallowRef<string>('standard')
-const selectedSupportStyle = shallowRef<string>('double')
-const selectedNodeDistance = shallowRef<number>(2)
-const selectedNodeLabels = shallowRef<NodeLabelMode>('auto')
+const selectedArgumentStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.argumentStyle)
+const selectedNameStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.nameStyle)
+const selectedAttackStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.attackStyle)
+const selectedSupportStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.supportStyle)
+const selectedNodeDistance = shallowRef<number>(LATEX_STYLE_DEFAULTS.nodeDistance)
+const selectedNodeLabels = shallowRef<NodeLabelMode>(LATEX_STYLE_DEFAULTS.nodeLabels)
 
 // The style values are the package's own (untranslated) keywords, so label == value.
-const toOptions = (values: string[]): PickerOption[] => values.map((v) => ({ value: v, label: v }))
-const argumentStyleOptions = toOptions(['standard', 'large', 'thick', 'gray', 'colored'])
-const nameStyleOptions = toOptions(['math', 'bold', 'monospace', 'monoemph', 'none'])
-const attackStyleOptions = toOptions(['standard', 'large', 'modern'])
-const supportStyleOptions = toOptions(['standard', 'dashed', 'double'])
+const toOptions = (values: readonly string[]): PickerOption[] =>
+  values.map((v) => ({ value: v, label: v }))
+const argumentStyleOptions = toOptions(LATEX_STYLE_CHOICES.argumentStyle)
+const nameStyleOptions = toOptions(LATEX_STYLE_CHOICES.nameStyle)
+const attackStyleOptions = toOptions(LATEX_STYLE_CHOICES.attackStyle)
+const supportStyleOptions = toOptions(LATEX_STYLE_CHOICES.supportStyle)
 const nodeLabelOptions = computed<PickerOption[]>(() =>
-  (['auto', 'full', 'short'] as const).map((value) => ({
+  LATEX_STYLE_CHOICES.nodeLabels.map((value) => ({
     value,
     label: t(`export.style.nodeLabelOptions.${value}`),
   })),
@@ -147,7 +152,7 @@ function currentOptionList(): string {
 function generateSyncedBuffer(): string {
   const config = latexConfig.value
   if (config === undefined) return ''
-  const body = config.export(input, {
+  return config.export(input, {
     argumentStyle: selectedArgumentStyle.value,
     nameStyle: selectedNameStyle.value,
     attackStyle: selectedAttackStyle.value,
@@ -156,7 +161,6 @@ function generateSyncedBuffer(): string {
     gridCellScale: gridCellScale.value,
     nodeLabels: selectedNodeLabels.value,
   }).text
-  return spliceAfOptions(body, currentOptionList()).text
 }
 
 // Replaces the whole document with our own transaction, kept out of undo history so
@@ -251,7 +255,7 @@ const saveFiledataText = computed(() =>
 const preambleCopied = ref(false)
 let preambleCopyTimeout: ReturnType<typeof setTimeout>
 function copyPreamble() {
-  copy(PREAMBLE_HINT)
+  copy(LATEX_PREAMBLE)
   preambleCopied.value = true
   clearTimeout(preambleCopyTimeout)
   preambleCopyTimeout = setTimeout(() => (preambleCopied.value = false), 500)
@@ -447,7 +451,7 @@ onBeforeUnmount(() => {
       <!-- Preamble hint -->
       <div class="preamble-bar">
         <span class="preamble-tag">{{ t('export.preamble') }}</span>
-        <code class="grow truncate font-mono text-xs">{{ PREAMBLE_HINT }}</code>
+        <code class="grow truncate font-mono text-xs">{{ LATEX_PREAMBLE }}</code>
         <button
           class="btn btn-xs btn-ghost btn-square"
           :title="t('export.button.copyBare')"

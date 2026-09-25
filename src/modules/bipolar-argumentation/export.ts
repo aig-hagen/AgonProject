@@ -32,7 +32,9 @@ const exportLatexBipolarArgumentation: ExportConfig<BipoloarArgumentation<Argume
     const args = document.arguments()
     const attacks = document.attacks()
     const supports = document.supports()
-    return exportLatexArgumentationCommon(args, attacks, supports, styleOptions)
+    return exportLatexArgumentationCommon(args, attacks, supports, styleOptions, {
+      includeSupportStyle: true,
+    })
   },
 }
 

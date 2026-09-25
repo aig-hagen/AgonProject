@@ -50,7 +50,7 @@ describe('buildAfOptionList', () => {
 
   test('falls back to defaults for unset styles', () => {
     expect(buildAfOptionList({}, false)).toBe(
-      'argumentstyle=colored,namestyle=math,attackstyle=standard',
+      'argumentstyle=standard,namestyle=math,attackstyle=standard',
     )
   })
 })
@@ -241,5 +241,24 @@ describe('label comments', () => {
       { argumentAnnotation: (id, label) => (id === 2 ? `$\\neg ${label(1)}$` : undefined) },
     )
     expect(text).toContain('\\annotation{a2}{$\\neg A$}')
+  })
+})
+
+describe('environment options', () => {
+  const firstLine = (hooks?: ExportHooks) =>
+    exportLatexArgumentationCommon(
+      args(),
+      [].values(),
+      [].values(),
+      { argumentStyle: 'gray', nameStyle: 'bold' },
+      hooks,
+    ).text.split('\r\n')[0]
+
+  test('the export carries its style options', () => {
+    expect(firstLine()).toBe('\\begin{af}[argumentstyle=gray,namestyle=bold,attackstyle=standard]')
+  })
+
+  test('supportstyle is only added for documents with supports', () => {
+    expect(firstLine({ includeSupportStyle: true })).toContain(',supportstyle=double]')
   })
 })
