@@ -20,6 +20,7 @@ import { describe, expect, test } from 'vitest'
 
 import {
   buildAfOptionList,
+  buildNodeLabels,
   type ExportHooks,
   exportLatexArgumentationCommon,
   spliceAfOptions,
@@ -166,5 +167,62 @@ describe('reciprocal links', () => {
       ],
     })
     expect(lines).toEqual(['\\dualattack{a1}{a2}', '\\setattack{a1,a2}{a3}'])
+  })
+})
+
+describe('buildNodeLabels', () => {
+  test('auto keeps short unique names', () => {
+    expect(buildNodeLabels(['a', 'b1', 'Foo'], 'auto', 'math')).toEqual(['a', 'b1', 'Foo'])
+  })
+
+  test('auto shortens once any name is long', () => {
+    expect(buildNodeLabels(['a', 'Guilty', 'Red Wine'], 'auto', 'math')).toEqual(['a', 'G', 'RW'])
+  })
+
+  test('colliding short labels get an index', () => {
+    expect(buildNodeLabels(['Alibi', 'Accuse', 'Guilty'], 'short', 'math')).toEqual([
+      'A_{1}',
+      'A_{2}',
+      'G',
+    ])
+    expect(buildNodeLabels(['Alibi', 'Accuse'], 'short', 'monospace')).toEqual(['A1', 'A2'])
+  })
+
+  test('indexed labels skip ones already taken', () => {
+    expect(buildNodeLabels(['A1', 'Alibi', 'Accuse'], 'short', 'none')).toEqual(['A1', 'A2', 'A3'])
+  })
+
+  test('full keeps stripped names', () => {
+    expect(buildNodeLabels(['Alibi', 'a_1'], 'full', 'math')).toEqual(['Alibi', 'a1'])
+  })
+})
+
+describe('label comments', () => {
+  test('shortened arguments carry their full name as a trailing comment', () => {
+    const { text } = exportLatexArgumentationCommon(
+      new Map<number, ArgumentData>([
+        [1, { name: 'Alibi', x: 0, y: 0 } as ArgumentData],
+        [2, { name: 'b', x: 100, y: 0 } as ArgumentData],
+      ]).entries(),
+      [].values(),
+      [].values(),
+    )
+    expect(text.startsWith('\\begin{af}')).toBe(true)
+    expect(text).toContain('(a1){A} at (0.00,0.00) % Alibi\r\n')
+    expect(text).toMatch(/\(a2\)\{b\} at \([^)]*\)\r\n/)
+  })
+
+  test('annotations resolve names through the exported labels', () => {
+    const { text } = exportLatexArgumentationCommon(
+      new Map<number, ArgumentData>([
+        [1, { name: 'Alibi', x: 0, y: 0 } as ArgumentData],
+        [2, { name: 'Guilty', x: 100, y: 0 } as ArgumentData],
+      ]).entries(),
+      [].values(),
+      [].values(),
+      undefined,
+      { argumentAnnotation: (id, label) => (id === 2 ? `$\\neg ${label(1)}$` : undefined) },
+    )
+    expect(text).toContain('\\annotation{a2}{$\\neg A$}')
   })
 })

@@ -43,7 +43,7 @@ import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
 
-import type { ExportConfig, ExportFileData } from '.'
+import type { ExportConfig, ExportFileData, NodeLabelMode } from '.'
 import { ExportFormatId } from '.'
 
 // Marks CodeMirror transactions the studio dispatches itself (graph/style regeneration). Any
@@ -105,6 +105,7 @@ const selectedNameStyle = shallowRef<string>('math')
 const selectedAttackStyle = shallowRef<string>('standard')
 const selectedSupportStyle = shallowRef<string>('double')
 const selectedNodeDistance = shallowRef<number>(2)
+const selectedNodeLabels = shallowRef<NodeLabelMode>('auto')
 
 // The style values are the package's own (untranslated) keywords, so label == value.
 const toOptions = (values: string[]): PickerOption[] => values.map((v) => ({ value: v, label: v }))
@@ -112,6 +113,12 @@ const argumentStyleOptions = toOptions(['standard', 'large', 'thick', 'gray', 'c
 const nameStyleOptions = toOptions(['math', 'bold', 'monospace', 'monoemph', 'none'])
 const attackStyleOptions = toOptions(['standard', 'large', 'modern'])
 const supportStyleOptions = toOptions(['standard', 'dashed', 'double'])
+const nodeLabelOptions = computed<PickerOption[]>(() =>
+  (['auto', 'full', 'short'] as const).map((value) => ({
+    value,
+    label: t(`export.style.nodeLabelOptions.${value}`),
+  })),
+)
 
 const isBipolarDocument = computed(() => {
   const maybeSupports = (input as unknown as { supports?: unknown }).supports
@@ -147,6 +154,7 @@ function generateSyncedBuffer(): string {
     supportStyle: selectedSupportStyle.value,
     nodeDistance: selectedNodeDistance.value,
     gridCellScale: gridCellScale.value,
+    nodeLabels: selectedNodeLabels.value,
   }).text
   return spliceAfOptions(body, currentOptionList()).text
 }
@@ -172,8 +180,8 @@ function resetToGraph() {
   applySynced()
 }
 
-// SYNCED: graph, node distance and grid scale regenerate the whole body.
-watch([() => input, selectedNodeDistance, () => gridCellScale.value], () => {
+// SYNCED: graph, node distance, labels and grid scale regenerate the whole body.
+watch([() => input, selectedNodeDistance, selectedNodeLabels, () => gridCellScale.value], () => {
   if (!open.value || editorView.value === undefined) return
   if (mode.value === 'synced') setBuffer(generateSyncedBuffer())
 })
@@ -351,6 +359,17 @@ onBeforeUnmount(() => {
             min-width="8.5rem"
           >
             <PickerSelect v-model="selectedSupportStyle" :options="supportStyleOptions" />
+          </ParameterField>
+          <ParameterField
+            :label="t('export.style.nodeLabels')"
+            min-width="8.5rem"
+            :class="{ 'pointer-events-none opacity-40': mode === 'detached' }"
+          >
+            <PickerSelect
+              :model-value="selectedNodeLabels"
+              :options="nodeLabelOptions"
+              @update:model-value="selectedNodeLabels = $event as NodeLabelMode"
+            />
           </ParameterField>
         </div>
         <div class="flex items-center gap-3 text-sm" :class="{ 'opacity-40': mode === 'detached' }">

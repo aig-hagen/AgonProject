@@ -63,6 +63,8 @@ export default {
     attack: 'Angriff',
     support: 'Unterstützung',
     nodeDistance: 'Knotenabstand',
+    nodeLabels: 'Knotenbeschriftung',
+    nodeLabelOptions: { auto: 'Automatisch', full: 'Volle Namen', short: 'Kurz' },
   },
   formatLabels: {
     text: 'Text',

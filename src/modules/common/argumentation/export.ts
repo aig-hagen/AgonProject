@@ -19,7 +19,12 @@
 import { type Extension } from '@codemirror/state'
 
 import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from '@/modules/common/argumentation/model'
-import { ExportFormatId, type ExportResult, type ExportStyleOptions } from '@/modules/common/export'
+import {
+  ExportFormatId,
+  type ExportResult,
+  type ExportStyleOptions,
+  type NodeLabelMode,
+} from '@/modules/common/export'
 
 const AF_ENV_BEGIN = '\\begin{af}'
 
@@ -119,6 +124,7 @@ export function buildIccmaText(
 
 interface NodeExportInfo {
   name: string
+  fullName: string
   x: number
   y: number
   latexId: number
@@ -133,13 +139,19 @@ export interface ExportHooks {
   argumentOptions?: (id: number) => string
   attackOptions?: (sourceId: number, targetId: number) => string
   attackSuffix?: (sourceId: number, targetId: number) => string
-  argumentAnnotation?: (id: number) => string | undefined
+  /** `label` resolves an argument id to its exported node label. */
+  argumentAnnotation?: (id: number, label: (id: number) => string) => string | undefined
   setAttacks?: Iterable<SetAttack>
 }
 
 function buildOpts(...parts: string[]): string {
   const joined = parts.filter(Boolean).join(',')
   return joined ? `[${joined}]` : ''
+}
+
+// Shortened labels keep their full name as a trailing comment.
+function labelComment(node: NodeExportInfo): string {
+  return node.name === node.fullName ? '' : ` % ${node.fullName.replace(/\s+/g, ' ')}`
 }
 
 function absolutePlacement(
@@ -151,15 +163,57 @@ function absolutePlacement(
   for (const [id, node] of nodeMap.entries()) {
     const x = snapToGrid ? Math.round(node.x).toFixed(1) : node.x.toFixed(2)
     const y = snapToGrid ? Math.round(node.y).toFixed(1) : node.y.toFixed(2)
-    text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.name}} at (${x},${y})\r\n`
+    text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.name}} at (${x},${y})${labelComment(node)}\r\n`
   }
   return text
 }
 
-function shortenNameToLetter(name: string): string {
-  if (name.length <= 3) return name
-  const match = name.match(/[a-zA-Z0-9]/)
-  return match ? match[0] : name
+// Longer names inflate the circular TikZ nodes, so they get shortened.
+const MAX_NODE_LABEL_LENGTH = 3
+
+function stripName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9 ]/g, '').trim()
+}
+
+function shortLabelBase(stripped: string): string {
+  const words = stripped.split(/\s+/).filter(Boolean)
+  if (words.length === 0) return 'a'
+  if (words.length === 1) {
+    const word = words[0]!
+    return word.length <= MAX_NODE_LABEL_LENGTH ? word : word[0]!
+  }
+  return words
+    .slice(0, MAX_NODE_LABEL_LENGTH)
+    .map((word) => word[0])
+    .join('')
+}
+
+/** Maps argument names to node labels; short labels are made unique with an index. */
+export function buildNodeLabels(names: string[], mode: NodeLabelMode, nameStyle: string): string[] {
+  const stripped = names.map(stripName)
+  const allShort =
+    stripped.every((name) => /^[a-zA-Z0-9]{1,3}$/.test(name)) &&
+    new Set(stripped).size === stripped.length
+  if (mode === 'full' || (mode === 'auto' && allShort)) return stripped
+
+  const bases = stripped.map(shortLabelBase)
+  const counts = new Map<string, number>()
+  for (const base of bases) counts.set(base, (counts.get(base) ?? 0) + 1)
+  const taken = new Set(bases.filter((base) => counts.get(base) === 1))
+  const nextIndex = new Map<string, number>()
+  // A bare `_` only works in math mode.
+  const subscript = nameStyle === 'math' || nameStyle === 'bold'
+  return bases.map((base) => {
+    if (counts.get(base) === 1) return base
+    let label: string
+    do {
+      const index = (nextIndex.get(base) ?? 0) + 1
+      nextIndex.set(base, index)
+      label = subscript ? `${base}_{${index}}` : `${base}${index}`
+    } while (taken.has(label))
+    taken.add(label)
+    return label
+  })
 }
 
 function buildNodeMap(
@@ -169,19 +223,22 @@ function buildNodeMap(
   const nodeDistance = styleOptions?.nodeDistance ?? 1.5
   const gridCellScale = styleOptions?.gridCellScale ?? 3
   const pixelsPerUnit = (2 * ARGUMENT_RADIUS_IN_PX * gridCellScale) / nodeDistance
-  const shortenNames = styleOptions?.shortenNames ?? true
+  const argsList = [...args]
+  const labels = buildNodeLabels(
+    argsList.map(([, data]) => data.name),
+    styleOptions?.nodeLabels ?? 'auto',
+    styleOptions?.nameStyle ?? 'math',
+  )
   const nodeMap = new Map<number, NodeExportInfo>()
-  let latexCounter = 0
-  for (const [argumentId, argumentData] of args) {
-    const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
-    const displayName = shortenNames ? shortenNameToLetter(nameEscaped) : nameEscaped
+  argsList.forEach(([argumentId, argumentData], index) => {
     nodeMap.set(argumentId, {
-      name: displayName,
+      name: labels[index]!,
+      fullName: argumentData.name,
       x: argumentData.x / pixelsPerUnit,
       y: (argumentData.y / pixelsPerUnit) * -1,
-      latexId: ++latexCounter,
+      latexId: index + 1,
     })
-  }
+  })
   return nodeMap
 }
 
@@ -223,7 +280,7 @@ export function exportLatexArgumentationCommon(
   for (const { attackers, target } of collectiveAttacks) {
     text += `  \\setattack{${attackers.map((id) => `a${getLatexId(id)}`).join(',')}}{a${getLatexId(target)}}\r\n`
   }
-  text += emitAnnotations(nodeMap.keys(), getLatexId, hooks?.argumentAnnotation)
+  text += emitAnnotations(nodeMap, hooks?.argumentAnnotation)
   text += `\\end{af}`
 
   const optionList = buildAfOptionList(
@@ -266,16 +323,16 @@ function offsetNodesToOrigin(nodes: Map<number, NodeExportInfo>): void {
 }
 
 function emitAnnotations(
-  ids: IterableIterator<number>,
-  getLatexId: (id: number) => number,
-  argumentAnnotation?: (id: number) => string | undefined,
+  nodeMap: Map<number, NodeExportInfo>,
+  argumentAnnotation?: ExportHooks['argumentAnnotation'],
 ): string {
   if (!argumentAnnotation) return ''
+  const label = (id: number) => nodeMap.get(id)?.name ?? '?'
   let text = ''
-  for (const id of ids) {
-    const annotation = argumentAnnotation(id)
+  for (const [id, node] of nodeMap) {
+    const annotation = argumentAnnotation(id, label)
     if (annotation !== undefined) {
-      text += `  \\annotation{a${getLatexId(id)}}{${annotation}}\r\n`
+      text += `  \\annotation{a${node.latexId}}{${annotation}}\r\n`
     }
   }
   return text
