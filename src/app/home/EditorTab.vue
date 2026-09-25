@@ -133,7 +133,7 @@ const deleteButtonRef = useTemplateRef('deleteButton')
         {{ t('home.deleteDialog.warningHint') }}
       </p>
       <div class="modal-action">
-        <button class="btn btn-sm" @click="emit('save')">
+        <button class="btn btn-sm btn-soft" @click="emit('save')">
           <ArrowDownTrayIcon class="size-4"></ArrowDownTrayIcon>{{ t('common.actions.save') }}
         </button>
         <button ref="deleteButton" class="btn btn-error btn-sm" @click="emit('delete')">
