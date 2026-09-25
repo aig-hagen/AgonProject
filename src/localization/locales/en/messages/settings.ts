@@ -56,6 +56,9 @@ export default {
   gridCellSize: {
     label: 'Grid cell size',
   },
+  mergeReciprocalLinks: {
+    label: 'Merge mutual edges',
+  },
   snapToGrid: {
     label: 'Snap to grid',
   },

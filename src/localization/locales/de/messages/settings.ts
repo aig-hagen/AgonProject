@@ -56,6 +56,9 @@ export default {
   gridCellSize: {
     label: 'Rasterzellengröße',
   },
+  mergeReciprocalLinks: {
+    label: 'Gegenseitige Kanten zusammenführen',
+  },
   snapToGrid: {
     label: 'Am Raster ausrichten',
   },

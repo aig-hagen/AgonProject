@@ -55,6 +55,12 @@ export const useSettings = createSharedComposable(() => {
   const gridCellScale = useStorage<number>('settings:gridCellScale', 3, undefined, options)
   const snapMode = useStorage<boolean>('settings:snapMode', false, undefined, options)
   const showHints = useStorage<boolean>('settings:showHints', true, undefined, options)
+  const mergeReciprocalLinks = useStorage<boolean>(
+    'settings:mergeReciprocalLinks',
+    false,
+    undefined,
+    options,
+  )
 
   return {
     graphStyle,
@@ -64,5 +70,6 @@ export const useSettings = createSharedComposable(() => {
     gridCellScale,
     snapMode,
     showHints,
+    mergeReciprocalLinks,
   }
 })

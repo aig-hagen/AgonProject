@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
+- Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
 
 ### Changed
 

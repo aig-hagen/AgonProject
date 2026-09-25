@@ -227,7 +227,10 @@ function onSelectionDelete() {
     const ends = sel.hyperLinkId === undefined ? undefined : hyperLinkPublicEnds(sel.hyperLinkId)
     graphComponentRef.value?.deleteElement(sel.id)
     if (ends !== undefined && sel.sourceId !== undefined && idMapping.has(sel.sourceId)) {
-      emit('hyperLinkSourceRemoved', { ...ends, removedSourceId: idMapping.getOrFail(sel.sourceId) })
+      emit('hyperLinkSourceRemoved', {
+        ...ends,
+        removedSourceId: idMapping.getOrFail(sel.sourceId),
+      })
     }
     triggerSettle()
   } else {
@@ -401,6 +404,7 @@ const {
   gridCellScale,
   snapMode,
   showHints,
+  mergeReciprocalLinks,
 } = useSettings()
 function pickStyle(): GraphStyle {
   if (graphStyle !== undefined) return graphStyle
@@ -692,7 +696,7 @@ watch(defaultShowGrid, (v) => {
 watch(defaultGridType, (type) => {
   graphComponentRef.value?.setGridType(type)
 })
-watch(graphStyleSetting, () => {
+watch([graphStyleSetting, mergeReciprocalLinks], () => {
   updateGraph(state)
 })
 watch(physicsMode, () => {
@@ -879,6 +883,7 @@ function onLinkCreated(
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
     graphComponentRef.value!.setColor(linkColor, link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
+    applyReciprocalStyle(link.id, selectedLinkType.value)
   })
 }
 
@@ -1271,6 +1276,29 @@ function toArrowType(linkType: LinkType): ArrowType {
   throw new Error('Encountered unsupported linkType')
 }
 
+/** Only a mutual pair of the same link type is drawn as a split line. */
+function reciprocalStyleFor(
+  links: GraphEditorState['links'],
+  sourceId: number,
+  targetId: number,
+  type: LinkType,
+): NonNullable<jsonLink['reciprocalStyle']> {
+  if (!mergeReciprocalLinks.value) return 'arc'
+  const reverse = links.find((l) => l.sourceId === targetId && l.targetId === sourceId)
+  return reverse?.type === type ? 'split' : 'arc'
+}
+
+function applyReciprocalStyle(internalLinkId: string, type: LinkType) {
+  const ends = edgePublicEndpoints(internalLinkId)
+  if (ends === undefined) return
+  const { sourceId, targetId } = parseLinkId(internalLinkId)
+  const style = reciprocalStyleFor(state.links, ends.sourceId, ends.targetId, type)
+  graphComponentRef.value!.setLinkReciprocalStyle(style, [
+    internalLinkId,
+    `${targetId}-${sourceId}`,
+  ])
+}
+
 function buildGraphJson(state: GraphEditorState) {
   const graphComponent = graphComponentRef.value!
   // With physics on, nodes may have drifted from their stored model positions; keep them there.
@@ -1296,6 +1324,7 @@ function buildGraphJson(state: GraphEditorState) {
     targetId: link.targetId,
     color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
     arrowType: toArrowType(link.type),
+    reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
   }))
   const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => ({
     sourceIds: hyperLink.sourceIds,
@@ -1414,6 +1443,7 @@ function updateLinkType(linkId: string, linkType: LinkType) {
   const linkColor = linkConfigs[linkType]?.color ?? effectiveStyle.value.linkColor
   graphComponentRef.value!.setColor(linkColor, linkId)
   graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
+  applyReciprocalStyle(linkId, linkType)
 }
 
 function onLabelEdited(
