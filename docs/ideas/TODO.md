@@ -64,7 +64,7 @@ There should be a short tutorial, just for the controls, and one more detailed t
   (atom graph) vs. reasoning (assumptions-only BSAF) split, why a uniform atom-graph semantics
   is unsound, non-flat/Δ-semantics
 - prototype: **ABA Studio** artifact (flat case only)
-- need TweetyProject endpoint (non-flat ABA and/or BSAF)
+- TweetyProject `/aba` exists but needs a rework: [`aba-tweety-rework.md`](aba-tweety-rework.md)
 
 ### Extended AFs
 - need to implement extended edges in graph-component

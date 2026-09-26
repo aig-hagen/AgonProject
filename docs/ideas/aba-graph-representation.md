@@ -356,9 +356,8 @@ document-creation entry point.
 
 ## Open questions
 
-- Backend: does the TweetyProject reasoner Agon already uses expose (non-flat) ABA and/or BSAF
-  reasoning, or is a new endpoint needed? (Same gap flagged for Extended/Weighted AFs in
-  [`TODO.md`](TODO.md).)
+- ~~Backend: does TweetyProject expose (non-flat) ABA reasoning?~~ It has `/aba`, but it needs a
+  rework before use — see [`aba-tweety-rework.md`](aba-tweety-rework.md).
 - Model shape for `model.ts`: `{ atoms, assumptions: {name → contrary}, rules: [{head, body}] }`
   (the ABA Studio prototype's state) is a clean starting point.
 - Graph component: collective attacks render as hyperlinks today, but hyperlinks carry only a
