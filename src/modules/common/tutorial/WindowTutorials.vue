@@ -64,7 +64,7 @@ function launch(tutorial: Tutorial) {
       <div
         v-for="tutorial in visibleTutorials"
         :key="tutorial.id"
-        class="flex items-start justify-between gap-3 p-3 rounded-lg border border-base-300 bg-base-200/50"
+        class="flex items-start justify-between gap-3 p-3 rounded-lg border border-base-300 bg-inset"
       >
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">

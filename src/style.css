@@ -64,6 +64,9 @@
 .bg-scrim {
   background-color: color-mix(in srgb, var(--color-scrim) 40%, transparent);
 }
+.bg-inset {
+  background-color: var(--color-inset);
+}
 .shadow-footer {
   box-shadow: 0 -4px 6px -4px color-mix(in srgb, var(--color-shadow) 15%, transparent);
 }

@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated the bundled graph component to 5.0.0-rc.26; uncertain iAF attacks now use its native dashed links.
 - The serialisation window, the generate view and the mobile LaTeX export options now use the app's standard picker instead of native selects.
 - Export: mobile Save/Copy buttons use the sheet's large touch style with Save as the primary action, and copy/save feedback now shows a check icon for longer.
+- Grouped parameter panels (evaluation, serialisation, LaTeX export options, tutorials, mobile term definitions) now show the same recessed background in light and dark mode.
 - New typography: Inter for the UI, JetBrains Mono for code/data and graph labels, Fraunces for the app name; all fonts are self-hosted.
 
 ### Fixed

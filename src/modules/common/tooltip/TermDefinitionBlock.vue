@@ -38,7 +38,7 @@ const definition = computed(() => registry[id])
     v-if="definition"
     :class="
       isCompact
-        ? 'rounded-box border border-base-300 bg-base-200/50 px-2.5 py-2'
+        ? 'rounded-box border border-base-300 bg-inset px-2.5 py-2'
         : 'text-xs text-base-content/60 leading-relaxed mt-2'
     "
   >
