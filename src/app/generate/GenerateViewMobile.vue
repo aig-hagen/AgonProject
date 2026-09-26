@@ -130,7 +130,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
             <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
             <input
               type="text"
-              class="input w-full h-12 rounded-xl bg-base-200 border-base-300 font-mono"
+              class="input w-full h-12 rounded-xl bg-base-100 border-base-300 font-mono"
               :placeholder="p.description"
               :value="String(paramValues[p.name] ?? '')"
               @input="paramValues[p.name] = ($event.target as HTMLInputElement).value"

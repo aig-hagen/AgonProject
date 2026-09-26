@@ -249,7 +249,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
         <input
           v-if="param.type === 'number'"
           type="number"
-          class="input input-sm w-full bg-base-200"
+          class="input input-sm w-full bg-base-100"
           :min="param.min"
           :max="param.max"
           :step="param.step ?? 'any'"
