@@ -22,6 +22,7 @@ import { computed, inject } from 'vue'
 
 import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import { formatCitation } from '@/modules/common/tooltip/publications'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { id, triggerClass } = defineProps<{ id: string; triggerClass?: string }>()
@@ -50,7 +51,7 @@ const definition = computed(() => registry[id])
         <a
           v-if="definition.reference"
           :href="definition.reference.href"
-          :title="definition.reference.label"
+          :title="formatCitation(definition.reference)"
           target="_blank"
           rel="noopener noreferrer"
           class="ml-auto text-base-content/40 hover:text-base-content/70 shrink-0"

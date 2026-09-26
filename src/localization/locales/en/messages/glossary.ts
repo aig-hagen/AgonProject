@@ -22,4 +22,5 @@ export default {
   searchPlaceholder: 'Search terms…',
   noResults: 'No results',
   selectTerm: 'Select a term from the list.',
+  source: 'Reference',
 }

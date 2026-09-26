@@ -22,6 +22,7 @@ import { computed, inject } from 'vue'
 
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import { formatCitation } from '@/modules/common/tooltip/publications'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -53,7 +54,7 @@ const definition = computed(() => registry[id])
       <a
         v-if="definition.reference"
         :href="definition.reference.href"
-        :title="definition.reference.label"
+        :title="formatCitation(definition.reference)"
         target="_blank"
         rel="noopener noreferrer"
         :class="
