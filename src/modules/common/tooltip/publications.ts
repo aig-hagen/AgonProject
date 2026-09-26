@@ -343,3 +343,19 @@ export const BESWW18: Publication = {
     'Brewka, G., Ellmauthaler, S., Strass, H., Wallner, J.P. & Woltran, S. (2018). Abstract Dialectical Frameworks. In: Handbook of Formal Argumentation, Vol. 1, Chapter 5. College Publications.',
   href: 'https://www.collegepublications.co.uk/downloads/handbooks00003.pdf',
 }
+
+// ── Assumption-based Argumentation ────────────────────────────────────────────
+
+export const BDKT97: Publication = {
+  shortLabel: 'Bondarenko et al. (1997)',
+  label:
+    'Bondarenko, A., Dung, P.M., Kowalski, R.A. & Toni, F. (1997). An Abstract, Argumentation-Theoretic Approach to Default Reasoning. Artificial Intelligence, 93(1-2), pp. 63-101.',
+  href: 'https://doi.org/10.1016/S0004-3702(97)00015-5',
+}
+
+export const BRU24: Publication = {
+  shortLabel: 'Berthold et al. (2024)',
+  label:
+    'Berthold, M., Rapberger, A. & Ulbricht, M. (2024). Capturing Non-flat Assumption-based Argumentation with Bipolar SETAFs. In: Proceedings of the 21st International Conference on Principles of Knowledge Representation and Reasoning (KR 2024), pp. 128-133.',
+  href: 'https://doi.org/10.24963/kr.2024/12',
+}

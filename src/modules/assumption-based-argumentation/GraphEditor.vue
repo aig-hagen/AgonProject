@@ -18,9 +18,10 @@
 -->
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, provide, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
 import type { ExportFileData } from '@/modules/common/export'
@@ -37,6 +38,7 @@ import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
+import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 const { state, historyState, documentId } = defineProps<{
@@ -225,6 +227,8 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
     },
   ]
 }
+
+provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
 
 const isTheoryOpen = ref(false)
 </script>

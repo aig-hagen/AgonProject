@@ -28,6 +28,8 @@ import { computed, ref, useTemplateRef } from 'vue'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import { getNextName } from '@/modules/common/nextName'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
+import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 
 const { aba, compact = false } = defineProps<{
   aba: ABAF
@@ -40,12 +42,6 @@ const emit = defineEmits<{
 }>()
 
 const { addErrorNotification } = useNotifications()
-
-// TODO: source this from the module glossary once ABA has a glossary registry. Hardcoded for now.
-const ABA_DEFINITION =
-  'An ABA framework is a tuple (L, R, A, ‾): a language L, inference rules R, assumptions A ⊆ L, ' +
-  'and a contrary map ‾ from each assumption to a sentence. An assumption is attacked when its ' +
-  'contrary is derived; the theory is flat when no assumption heads a rule.'
 
 function nodeName(id: NodeId): string {
   return aba.hasNode(id) ? aba.getNode(id).name : '?'
@@ -260,16 +256,17 @@ function commitBuiltRule() {
       <span class="flex-1 truncate font-medium">Theory</span>
       <span class="flex items-center gap-1.5 text-xs text-base-content/70">
         <span class="size-1.5 rounded-full" :class="isFlat ? 'bg-success' : 'bg-warning'"></span>
-        {{ isFlat ? 'flat' : 'non-flat' }}
+        <TermTooltip id="abaFlat">{{ isFlat ? 'flat' : 'non-flat' }}</TermTooltip>
       </span>
     </header>
 
     <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4" :class="{ 'p-3': !compact }">
-      <p
-        class="rounded-field bg-inset border border-base-300 p-2.5 text-xs leading-relaxed text-base-content/70"
+      <!-- TermDefinitionBlock draws its own inset card in the compact layout. -->
+      <div
+        :class="{ 'rounded-field bg-inset border border-base-300 px-2.5 pb-2 pt-0.5': !compact }"
       >
-        {{ ABA_DEFINITION }}
-      </p>
+        <TermDefinitionBlock id="ABAF" />
+      </div>
 
       <section class="flex flex-col gap-1.5">
         <h3 class="section-label">Statements</h3>

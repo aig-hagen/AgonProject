@@ -23,6 +23,7 @@ import {
   abstractArgumentationGlossary,
   abstractArgumentationRankingGlossary,
 } from '@/modules/abstract-argumentation/glossary'
+import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
@@ -69,6 +70,12 @@ export const glossaryModules: GlossaryModule[] = [
     label: 'Collective Attacks',
     glossary: collectiveAttacksArgumentationGlossary,
     mainKey: 'SetAF',
+  },
+  {
+    prefix: 'ABA',
+    label: 'Assumption-based',
+    glossary: assumptionBasedArgumentationGlossary,
+    mainKey: 'ABAF',
   },
 ]
 
