@@ -28,19 +28,11 @@ The platform to explore different approaches to formal argumentation.
 - **Sharing** — generate a link to share a framework instance with others
 - **Touch & mobile support** — full editing and evaluation on phones and tablets, with a tap-select action bar for per-argument actions
 
-## Usage
+## Publication
 
-### Public Deployment
+AgonProject is described in the following paper ([PDF](docs/paper/main.pdf)):
 
-Try the [public AgonProject deployment](https://agonproject.aig.fernuni-hagen.de/).
-
-### OCI Image
-
-[Container images](https://github.com/aig-hagen/AgonProject/pkgs/container/AgonProject) are provided and can be run with Docker, Podman or other container runtimes.
-
-```sh
-docker run -p 8080:8080 ghcr.io/aig-hagen/AgonProject:latest
-```
+Lars Bengel, Matti Berthold, Oleksandr Dzhychko, Matthias Thimm. **"AgonProject: An Online Platform for Exploring Approaches to Formal Argumentation"**. In *Proceedings of the 6th International Workshop on Systems and Algorithms for Formal Argumentation (SAFA 2026)*, Barcelona, 2026.
 
 ## Acknowledgments
 
@@ -63,6 +55,21 @@ reference, and operations documentation. If you want to contribute, see
 [CONTRIBUTING.md](/CONTRIBUTING.md).
 
 See [CHANGELOG.md](/CHANGELOG.md) for the release history and changes planned for the next version.
+
+## Usage
+
+### Public Deployment
+
+Try the [public AgonProject deployment](https://agonproject.aig.fernuni-hagen.de/).
+
+### OCI Image
+
+[Container images](https://github.com/aig-hagen/AgonProject/pkgs/container/AgonProject) are provided and can be run with Docker, Podman or other container runtimes.
+
+```sh
+docker run -p 8080:8080 ghcr.io/aig-hagen/AgonProject:latest
+```
+
 
 ## License
 
