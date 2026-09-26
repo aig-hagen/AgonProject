@@ -353,6 +353,13 @@ export const BDKT97: Publication = {
   href: 'https://doi.org/10.1016/S0004-3702(97)00015-5',
 }
 
+export const CFST18: Publication = {
+  shortLabel: 'Čyras et al. (2018)',
+  label:
+    'Čyras, K., Fan, X., Schulz, C. & Toni, F. (2018). Assumption-Based Argumentation: Disputes, Explanations, Preferences. In: Handbook of Formal Argumentation, Vol. 1, Chapter 7. College Publications.',
+  href: 'https://www.collegepublications.co.uk/downloads/handbooks00003.pdf',
+}
+
 export const BRU24: Publication = {
   shortLabel: 'Berthold et al. (2024)',
   label:

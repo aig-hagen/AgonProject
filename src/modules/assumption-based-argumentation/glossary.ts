@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { BDKT97, BRU24 } from '@/modules/common/tooltip/publications'
+import { CFST18 } from '@/modules/common/tooltip/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 // Notation follows Berthold, Rapberger & Ulbricht (KR 2024).
@@ -33,7 +33,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaContrary', label: 'contrary function' },
       '.',
     ],
-    reference: BDKT97,
+    reference: CFST18,
   },
 
   abaDeductiveSystem: {
@@ -44,7 +44,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaRule', label: 'inference rules' },
       ' over $\\mathcal{L}$.',
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaRule: {
@@ -53,7 +53,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
     content: [
       'A rule $r \\in \\mathcal{R}$ has the form $a_0 \\leftarrow a_1, \\ldots, a_n$ with $a_i \\in \\mathcal{L}$ for all $0 \\leq i \\leq n$; $\\mathit{head}(r) := a_0$ is the head and $\\mathit{body}(r) := \\{a_1, \\ldots, a_n\\}$ is the (possibly empty) body of $r$. A rule with an empty body, written $a_0 \\leftarrow \\top$, is a fact.',
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaAssumption: {
@@ -66,7 +66,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaDerivation', label: 'derived' },
       '.',
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaContrary: {
@@ -79,7 +79,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaAttack', label: 'attacks' },
       ' $a$.',
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaDerivation: {
@@ -90,7 +90,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaRule' },
       ' $r \\in R$, and the labels of its children are $\\mathit{body}(r)$, or $\\top$ if $\\mathit{body}(r) = \\emptyset$. We write $S \\vdash p$ iff $S \\vdash_R p$ for some $R \\subseteq \\mathcal{R}$.',
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaTh: {
@@ -103,7 +103,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'ABAF' },
       " $D$ is $Th_D(S) := \\{p \\in \\mathcal{L} \\mid \\exists S' \\subseteq S: S' \\vdash p\\}$.",
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaAttack: {
@@ -112,7 +112,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
     content: [
       "A set $S \\subseteq \\mathcal{A}$ attacks a set $T \\subseteq \\mathcal{A}$ if there are $S' \\subseteq S$ and $a \\in T$ such that $S' \\vdash \\overline{a}$; if $S$ attacks $\\{a\\}$ we say $S$ attacks $a$. $S$ is conflict-free if it does not attack itself.",
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaClosure: {
@@ -123,7 +123,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaTh', label: '$Th_D(S)$' },
       ' $\\cap\\, \\mathcal{A}$, i.e. the assumptions derivable from $S$. $S$ is closed if $S = cl(S)$.',
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 
   abaFlat: {
@@ -136,6 +136,6 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaClosure', label: 'closed' },
       '. Otherwise it is non-flat.',
     ],
-    reference: BRU24,
+    reference: CFST18,
   },
 }
