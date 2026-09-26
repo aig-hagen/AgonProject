@@ -226,7 +226,7 @@ function loadFile() {
           <path d="M9.5 9.5 14.5 14.5" />
         </svg>
       </span>
-      <h1 class="text-2xl font-bold tracking-tight">AgonProject</h1>
+      <h1 class="font-display text-2xl font-bold tracking-tight">AgonProject</h1>
       <p class="text-sm text-base-content/60 mt-1 max-w-64 leading-snug">
         {{ t('home.tagline') }}
       </p>

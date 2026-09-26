@@ -1105,7 +1105,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 .stmt-name {
   flex: 1;
   min-width: 0;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 /* Contrary picker: `‾a = <target>` on its own row under the assumption, styled to read as inline
    text rather than a form control. */
@@ -1114,7 +1114,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   align-items: baseline;
   gap: 5px;
   padding-left: 19px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   cursor: default;
 }
@@ -1228,7 +1228,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 }
 .rb-arrow {
   flex: none;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   opacity: 0.6;
 }
 /* Body token field: pills + an inline text input, styled to read as one input. */
@@ -1253,7 +1253,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   padding: 0 4px 0 7px;
   border-radius: 999px;
@@ -1275,7 +1275,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   border: none;
   outline: none;
   background: transparent;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   padding: 1px 0;
 }
@@ -1287,7 +1287,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   border-top: 1px dashed var(--color-base-300);
 }
 .chip {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   padding: 1px 8px;
   border-radius: 999px;
@@ -1329,7 +1329,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 .rule-str {
   flex: 1;
   min-width: 0;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
 }
 .fact-tag {
@@ -1520,13 +1520,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   stroke-width: 3.4;
 }
 .nlabel {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 700;
   fill: var(--color-base-content);
 }
 .factbadge {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
   fill: var(--color-primary);

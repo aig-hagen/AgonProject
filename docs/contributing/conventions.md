@@ -44,6 +44,7 @@ Keep stable domain identifiers and machine-readable output locale-neutral. Trans
 
 - Prefer Tailwind and DaisyUI semantic utilities in templates.
 - Use the tokens from `palette.ts` or their `--color-*` CSS variables for application colors. Do not introduce raw color values or Tailwind primitive color utilities in app code.
+- Use the font roles from `src/style.css` (`font-sans`, `font-mono`, `font-display`, `var(--font-graph)`), never literal font names. Fonts are self-hosted via Fontsource; add new ones there, not from a CDN.
 - Add global CSS to `src/style.css` only when utilities cannot express the behavior cleanly.
 - Graph rendering, format-owned output, and the standalone maintenance page are documented exceptions to the palette rule; keep their fallback values aligned with the application theme where applicable.
 

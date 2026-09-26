@@ -58,7 +58,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
     <div class="min-h-full flex items-center justify-center">
       <div class="max-w-5xl w-full p-4 sm:p-8">
         <h2 class="text-2xl sm:text-4xl font-bold mb-2">
-          AgonProject
+          <span class="font-display">AgonProject</span>
           <div class="text-lg font-normal text-base-content/70">
             {{ t('home.tagline') }}
           </div>
