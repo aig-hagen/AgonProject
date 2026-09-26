@@ -1856,7 +1856,6 @@ defineExpose({
       '--graph-node-stroke-color': effectiveStyle.nodeStrokeColor,
       '--graph-node-stroke-width': `${effectiveStyle.nodeStrokeWidth}px`,
       '--graph-link-stroke-width': `${effectiveStyle.linkStrokeWidth}px`,
-      '--graph-node-font-family': effectiveStyle.nodeFont,
     }"
   >
     <GraphComponent
@@ -2048,7 +2047,7 @@ defineExpose({
           </span>
           <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
         </button>
-        <span class="text-base font-bold text-base-content/80 text-center truncate">
+        <span class="font-display text-base font-bold text-base-content/80 text-center truncate">
           AgonProject
         </span>
         <button

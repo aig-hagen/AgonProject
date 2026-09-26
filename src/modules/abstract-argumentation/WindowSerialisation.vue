@@ -332,7 +332,7 @@ function onWindowFocus() {
       <button
         v-if="hosted"
         type="button"
-        class="flex items-center gap-2 rounded-field bg-base-200/60 border border-base-300 px-2.5 py-2 text-left"
+        class="flex items-center gap-2 rounded-field bg-inset border border-base-300 px-2.5 py-2 text-left"
         :aria-expanded="paramsOpen"
         @click="paramsOpen = !paramsOpen"
       >
@@ -345,7 +345,7 @@ function onWindowFocus() {
 
       <div
         v-show="paramsOpen"
-        class="rounded-field bg-base-200/60 border border-base-300 p-2.5 flex flex-col gap-2"
+        class="rounded-field bg-inset border border-base-300 p-2.5 flex flex-col gap-2"
       >
         <div class="flex flex-wrap gap-3">
           <ParameterField :label="t('evaluation.fields.selection')" min-width="9rem">

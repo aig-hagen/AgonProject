@@ -583,11 +583,10 @@ function onPopupKeydown(event: KeyboardEvent) {
           text-anchor="middle"
           dominant-baseline="central"
           font-size="10"
-          font-family="monospace"
           stroke="white"
           stroke-width="3"
           paint-order="stroke fill"
-          style="pointer-events: all; cursor: pointer"
+          style="font-family: var(--font-graph); pointer-events: all; cursor: pointer"
           @click="openEditor($event, label)"
           >{{ label.value.toFixed(2) }}</text
         >

@@ -318,7 +318,7 @@ watch(
         ref="trigger"
         type="button"
         class="flex-1 min-w-0 flex items-center gap-2 h-10 px-3 rounded-xl border text-left transition-colors"
-        :class="listOpen ? 'border-primary bg-primary/5' : 'border-base-300 bg-base-200/60'"
+        :class="listOpen ? 'border-primary bg-primary/5' : 'border-base-300 bg-inset'"
         :aria-expanded="listOpen"
         @click="togglePanel"
       >

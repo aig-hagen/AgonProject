@@ -32,7 +32,7 @@ The platform to explore different approaches to formal argumentation.
 
 AgonProject is described in the following paper ([PDF](docs/paper/main.pdf)):
 
-Lars Bengel, Matti Berthold, Oleksandr Dzhychko, Matthias Thimm. **"AgonProject: An Online Platform for Exploring Approaches to Formal Argumentation"**. In *Proceedings of the 6th International Workshop on Systems and Algorithms for Formal Argumentation (SAFA 2026)*, Barcelona, 2026.
+Lars Bengel, Matti Berthold, Oleksandr Dzhychko, Matthias Thimm. **"AgonProject: An Online Platform for Exploring Approaches to Formal Argumentation"**. In _Proceedings of the 6th International Workshop on Systems and Algorithms for Formal Argumentation (SAFA 2026)_, Barcelona, 2026.
 
 ## Acknowledgments
 
@@ -69,7 +69,6 @@ Try the [public AgonProject deployment](https://agonproject.aig.fernuni-hagen.de
 ```sh
 docker run -p 8080:8080 ghcr.io/aig-hagen/AgonProject:latest
 ```
-
 
 ## License
 

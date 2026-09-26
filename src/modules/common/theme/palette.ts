@@ -63,6 +63,8 @@ export type AppColorToken =
   | 'focus'
   | 'scrim'
   | 'shadow'
+  // Recessed panel fill (grouped controls inside a base-100 surface).
+  | 'inset'
 
 export type AppPalette = Record<AppColorToken, string>
 
@@ -97,6 +99,8 @@ export const LIGHT_PALETTE: AppPalette = {
   // applied at the use site); scrim carries a faint cool tint.
   scrim: '#0a141e',
   shadow: '#0b1622',
+  // Full base-200: near white, a lighter tint is invisible.
+  inset: '#eef2f6',
 }
 
 // Dark mode. Provisional cool-dark surfaces; exact neutral hex are tuned in the
@@ -126,6 +130,7 @@ export const DARK_PALETTE: AppPalette = {
   focus: AIG_BLUE_DARK,
   scrim: '#04080d',
   shadow: '#000000',
+  inset: 'color-mix(in srgb, #17222c 60%, #1c2833)',
 }
 
 export const APP_PALETTE = { light: LIGHT_PALETTE, dark: DARK_PALETTE } as const

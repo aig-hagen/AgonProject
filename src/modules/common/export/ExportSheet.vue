@@ -289,7 +289,7 @@ function download(config: ExportConfig<DocumentT>) {
         class="overflow-auto rounded bg-base-200 p-2 text-[0.7rem] leading-relaxed max-h-64"
       ><code>{{ codeResult?.text }}</code></pre>
 
-      <details v-if="isLatex" class="collapse collapse-arrow bg-base-200/60 rounded-field">
+      <details v-if="isLatex" class="collapse collapse-arrow bg-inset rounded-field">
         <summary class="collapse-title text-sm font-medium">
           {{ t('export.style.options') }}
         </summary>

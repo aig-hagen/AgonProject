@@ -24,9 +24,6 @@ export interface GraphStyle {
   nodeStrokeWidth: number
   linkColor: string
   linkStrokeWidth: number
-  // Optional per-style label font. Omitted styles fall back to the global graph-label font
-  // defined in style.css. Label fonts are CSS-only, so this may reference a CSS variable.
-  nodeFont?: string
 }
 
 export const GRAPH_STYLE_DEFAULT: GraphStyle = {

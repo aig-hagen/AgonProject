@@ -212,8 +212,8 @@ watch(isOpen, (open) => {
       ref="trigger"
       :class="[
         isCompact
-          ? 'flex items-center gap-2 h-11 px-3 rounded-box border border-base-300 bg-base-200 text-sm w-full justify-between'
-          : ['select select-sm gap-1 bg-base-200', fullWidth ? 'w-full justify-between' : 'w-fit'],
+          ? 'flex items-center gap-2 h-11 px-3 rounded-box border border-base-300 bg-base-100 text-sm w-full justify-between'
+          : ['select select-sm gap-1 bg-base-100', fullWidth ? 'w-full justify-between' : 'w-fit'],
         { 'outline-2 outline-primary/50': isOpen },
       ]"
       tabindex="0"

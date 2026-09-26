@@ -23,6 +23,16 @@
     dark;
 }
 
+/* Font roles: single source of truth for typefaces (self-hosted, imported in main.ts). */
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+}
+:root {
+  --font-graph: var(--font-mono);
+}
+
 /* App colors (base scale, brand, status, selection) are the single source of
    truth in @/modules/common/theme/palette.ts, injected as --color-* custom
    properties before mount. Graph colors are handled separately. */
@@ -53,6 +63,9 @@
    The base colors come from the palette; opacity is applied here. */
 .bg-scrim {
   background-color: color-mix(in srgb, var(--color-scrim) 40%, transparent);
+}
+.bg-inset {
+  background-color: var(--color-inset);
 }
 .shadow-footer {
   box-shadow: 0 -4px 6px -4px color-mix(in srgb, var(--color-shadow) 15%, transparent);
@@ -147,14 +160,7 @@ body {
 .graph-controller__node-label,
 .graph-controller__annotation-label,
 .graph-controller__badge-label {
-  font-family: var(
-    --graph-node-font-family,
-    'JetBrains Mono',
-    'Fira Mono',
-    'Cascadia Code',
-    'Consolas',
-    monospace
-  );
+  font-family: var(--font-graph);
 }
 
 /* Node names render bold, matching the ABA editor's node labels. */
