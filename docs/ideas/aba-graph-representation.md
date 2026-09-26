@@ -284,10 +284,9 @@ How the app renders graphs today, and what each approach would cost:
    untouched.
 2. **Upstream library change** for hyperlink `arrowType`. Small, but it's a release of a separate
    package. Not blocking.
-3. **View switcher inside the ABA editor** (below). It needs no change to the shared editor.
-   Converging the ABA canvas onto the shared editor stays a separate track and isn't a
-   prerequisite. If other modules want views later, the switcher can move into the shared editor
-   as a slot or prop.
+3. **View switcher inside the ABA editor** (below). The ABA canvas now runs on the shared
+   editor (rules only; contraries as annotations until they can be drawn — see
+   [`graph-component.md`](graph-component.md)), so the switcher can live there as a slot or prop.
 
 ### View switcher
 

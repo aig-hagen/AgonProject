@@ -73,6 +73,7 @@ export default {
     definiteAttack: 'Definite Attack',
     uncertainAttack: 'Uncertain Attack',
     collectiveAttack: 'Collective Attack',
+    rule: 'Rule',
     link: 'Link',
   },
   relayout: {

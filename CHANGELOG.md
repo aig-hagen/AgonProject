@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
 - Added a color legend to the graph editor while an evaluation result is highlighted.
 - Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
+- The ABA editor now runs on the shared graph editor (zoom, layouts, undo, export), with a Theory side panel for statements, rules and contraries. Contraries show as node labels for now.
 
 ### Changed
 

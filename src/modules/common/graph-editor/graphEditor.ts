@@ -158,6 +158,8 @@ export interface SelectionAction {
 
 export type NodeId = number
 
+export type GraphEditorNodeShape = 'circle' | 'diamond'
+
 export interface GraphEditorStateNode {
   id: NodeId
   label: string

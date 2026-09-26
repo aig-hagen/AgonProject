@@ -74,6 +74,7 @@ export default {
     definiteAttack: 'Bedingt sicherer Angriff',
     uncertainAttack: 'Unsicherer Angriff',
     collectiveAttack: 'Mengenangriff',
+    rule: 'Regel',
     link: 'Kante',
   },
   relayout: {

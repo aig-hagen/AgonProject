@@ -85,6 +85,7 @@ import {
   GRAPH_EDITOR_LAYOUTS,
   GRAPH_SVG_RENDERER_KEY,
   type GraphEditorCommands,
+  type GraphEditorNodeShape,
   type GraphEditorState,
   type Highlight,
   type HistoryState,
@@ -340,8 +341,10 @@ const {
   historyState,
   nodeWeights,
   nodeOutlines,
+  nodeShapes,
   nodeAnnotations,
   graphStyle,
+  showEvaluation = true,
   allowLinkCreation = true,
   allowLinkDeletion = true,
   allowHyperLinkCreation = false,
@@ -361,8 +364,12 @@ const {
   historyState: HistoryState
   nodeWeights?: Map<NodeId, number>
   nodeOutlines?: Map<NodeId, NodeOutline>
+  /** Per-node shape; nodes not in the map are circles. */
+  nodeShapes?: Map<NodeId, GraphEditorNodeShape>
   nodeAnnotations?: Map<NodeId, { content: string; position?: AnnotationPosition }>
   graphStyle?: GraphStyle
+  /** Hides the evaluation buttons for modules without evaluation. */
+  showEvaluation?: boolean
   allowLinkCreation?: boolean
   allowLinkDeletion?: boolean
   allowHyperLinkCreation?: boolean
@@ -664,6 +671,14 @@ const emit = defineEmits<{
   'open-ranking-window': []
   'open-serialisation-window': []
 }>()
+
+const CIRCLE_NODE_PROPS = { shape: NodeShape.CIRCLE, radius: ARGUMENT_RADIUS_IN_PX } as const
+const DIAMOND_NODE_PROPS = {
+  shape: NodeShape.DIAMOND,
+  width: ARGUMENT_RADIUS_IN_PX * 2.7,
+  height: ARGUMENT_RADIUS_IN_PX * 2,
+  cornerRadius: 8,
+} as const
 
 let idGenerator = new IdGenerator()
 let idMapping = new IdMapping<number, number>()
@@ -1009,10 +1024,7 @@ onMounted(() => {
     gestureBindingsEnabled: true,
     interactiveNodeFeedbackEnabled: true,
     nodeAutoGrowToLabelSize: false,
-    nodeProps: {
-      shape: NodeShape.CIRCLE,
-      radius: ARGUMENT_RADIUS_IN_PX,
-    },
+    nodeProps: CIRCLE_NODE_PROPS,
     allowNodeCreationViaGUI: true,
     allowAnnotationDragging: false,
     nodeGUIEditability: {
@@ -1304,6 +1316,7 @@ function buildGraphJson(state: GraphEditorState) {
       y: live?.y ?? node.y,
       color: effectiveStyle.value.nodeColor,
       outline: nodeOutlines?.get(node.id),
+      props: nodeShapes?.get(node.id) === 'diamond' ? DIAMOND_NODE_PROPS : CIRCLE_NODE_PROPS,
     }
   })
   const links: jsonLink[] = state.links.map((link) => ({
@@ -1972,6 +1985,7 @@ defineExpose({
           </div>
           <div ref="evaluationButtons" class="flex flex-col gap-2">
             <button
+              v-if="showEvaluation"
               ref="extensionEvalButton"
               class="btn btn-square btn-sm"
               @click="emit('open-extension-window')"
@@ -2007,6 +2021,13 @@ defineExpose({
         </div>
       </div>
       <div class="flex flex-1 items-end pointer-events-none"></div>
+    </div>
+
+    <div
+      v-if="layoutMode === 'regular' && !!slots.sidePanel"
+      class="absolute top-4 right-4 bottom-4 z-10 flex"
+    >
+      <slot name="sidePanel" />
     </div>
 
     <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
@@ -2088,6 +2109,7 @@ defineExpose({
         </div>
 
         <button
+          v-if="showEvaluation"
           ref="mobileEvaluateButton"
           class="btn btn-primary h-13 min-w-0 shrink rounded-2xl px-4 gap-2 text-base font-semibold shadow-md shadow-primary/30"
           @click="evaluationOpen = true"
