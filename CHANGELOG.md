@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
+- Added a color legend to the graph editor while an evaluation result is highlighted.
 - Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
 
 ### Changed
@@ -19,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- SetAF extension highlighting now marks targets of collective attacks as rejected when all attackers are accepted.
 - Fixed SVG graph export: node labels are centered again and bent edges no longer show a black fill sliver.
 - Fixed LaTeX export: mobile and desktop now produce identical code — style options always ride on `\begin{af}[…]`, and both share the same defaults and the Node Labels option.
 - Fixed LaTeX export: argument names keep special characters, umlauts and Greek letters (`a_1` → `a_{1}`, `Käse` → `K\"{a}se`, `α` → `\alpha`) instead of stripping them.

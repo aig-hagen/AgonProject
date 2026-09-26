@@ -83,6 +83,11 @@ export default {
     hideParams: 'Ausblenden',
     editParams: 'Bearbeiten',
   },
+  legend: {
+    accepted: 'Akzeptiert',
+    rejected: 'Abgelehnt',
+    undecided: 'Unbestimmt',
+  },
   extensionWindow: {
     selectExtensionHint: 'Extension zum Hervorheben auswählen',
     selectArgumentHint: 'Argument zum Hervorheben auswählen',

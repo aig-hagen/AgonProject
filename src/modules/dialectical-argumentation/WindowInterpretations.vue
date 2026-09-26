@@ -230,6 +230,11 @@ const currentHighlight = computed<Highlight | undefined>(() => {
         color: NODE_BLUE,
       },
     ],
+    legend: [
+      { label: t('evaluation.legend.accepted'), color: NODE_GREEN },
+      { label: t('evaluation.legend.rejected'), color: NODE_RED },
+      { label: t('evaluation.legend.undecided'), color: NODE_BLUE },
+    ],
   }
 })
 // Register the semantics selector and the result grid as tutorial-spotlight targets while this

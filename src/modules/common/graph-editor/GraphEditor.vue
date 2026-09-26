@@ -713,7 +713,7 @@ watch(snapMode, (enabled) => {
   graphComponentRef.value?.setSnapToGrid(enabled)
   applyGridVisibility(showGrid.value)
 })
-const { extensionHighlightRef, serialisationHighlightRef } = useHighlight({
+const { extensionHighlightRef, serialisationHighlightRef, highlightToShow } = useHighlight({
   graphComponentRef,
   graphComponentId,
   getIdMapping: () => idMapping,
@@ -1923,6 +1923,28 @@ defineExpose({
         <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
       </div>
     </div>
+    <ul
+      v-if="highlightToShow?.legend?.length"
+      class="absolute z-10 flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
+      :class="layoutMode === 'regular' ? 'bottom-4 right-4' : 'right-3'"
+      :style="
+        layoutMode === 'compact'
+          ? { bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.75rem)' }
+          : undefined
+      "
+    >
+      <li
+        v-for="entry in highlightToShow.legend"
+        :key="entry.label"
+        class="flex items-center gap-2"
+      >
+        <span
+          class="size-3 rounded-full border border-base-content/30"
+          :style="{ backgroundColor: entry.color ?? 'var(--graph-node-color)' }"
+        ></span>
+        {{ entry.label }}
+      </li>
+    </ul>
     <ArrowSwitcher
       v-if="arrowSwitcherTarget"
       :link-configs="linkConfigs"

@@ -112,6 +112,13 @@ export function useExtensionWindowBase(
           stateId: dataExtensionsFormatedAndSorted.value.stateId,
           groups: [{ nodes: new Set(extension.extension.map((a) => a.id)), color: NODE_GREEN }],
           attackedByFirst: NODE_RED,
+          legend: [
+            { label: t('evaluation.legend.accepted'), color: NODE_GREEN },
+            { label: t('evaluation.legend.rejected'), color: NODE_RED },
+            ...(selectedMode.value === 'enumerate'
+              ? [{ label: t('evaluation.legend.undecided') }]
+              : []),
+          ],
         }
       }
     }
