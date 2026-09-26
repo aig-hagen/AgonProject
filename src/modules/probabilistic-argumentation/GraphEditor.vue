@@ -307,19 +307,37 @@ function openProbabilitySheet(focusKey: string) {
   isProbabilitiesOpen.value = true
 }
 
-const probabilityAction = (focusKey: string): SelectionAction => ({
+/** Compact: the Probabilities sheet row; regular: the inline popup at the click. */
+const probabilityAction = (
+  target: Omit<ProbabilityLabel, 'x' | 'y' | 'value'>,
+  getValue: () => number,
+): SelectionAction => ({
   key: 'probability',
   label: t('editor.probabilities.editProbability'),
   icon: AdjustmentsHorizontalIcon,
-  run: () => openProbabilitySheet(focusKey),
+  run: (event) => {
+    if (layoutMode.value === 'compact') return openProbabilitySheet(target.key)
+    openPopup({ ...target, x: 0, y: 0, value: getValue() }, event)
+  },
 })
 
 function pafNodeSelectionActions(id: NodeId): SelectionAction[] {
-  return [probabilityAction(`arg-${id}`)]
+  return [
+    probabilityAction(
+      { key: `arg-${id}`, type: 'argument', id },
+      () => renderedState.value.current.content.getArgument(id).probability,
+    ),
+  ]
 }
 
 function pafEdgeSelectionActions(link: { sourceId: NodeId; targetId: NodeId }): SelectionAction[] {
-  return [probabilityAction(`atk-${link.sourceId}-${link.targetId}`)]
+  const { sourceId, targetId } = link
+  return [
+    probabilityAction(
+      { key: `atk-${sourceId}-${targetId}`, type: 'attack', sourceId, targetId },
+      () => renderedState.value.current.content.getAttackProbability(sourceId, targetId),
+    ),
+  ]
 }
 
 // ── Evaluation window management ───────────────────────────────────────────
@@ -410,6 +428,18 @@ const editingLabel = shallowRef<(ProbabilityLabel & { screenX: number; screenY: 
 )
 const editingValue = ref(0)
 
+const editingTitle = computed(() => {
+  const lbl = editingLabel.value
+  if (lbl === null) return ''
+  const names = new Map(
+    [...renderedState.value.current.content.arguments()].map(([id, d]) => [id, d.name]),
+  )
+  const name = (id?: NodeId) => (id === undefined ? '' : (names.get(id) ?? String(id)))
+  return lbl.type === 'argument'
+    ? `P(${name(lbl.id)})`
+    : `P((${name(lbl.sourceId)},${name(lbl.targetId)}))`
+})
+
 function openEditor(event: MouseEvent, label: ProbabilityLabel) {
   event.stopPropagation()
   if (layoutMode.value === 'compact') {
@@ -418,6 +448,10 @@ function openEditor(event: MouseEvent, label: ProbabilityLabel) {
     isProbabilitiesOpen.value = true
     return
   }
+  openPopup(label, event)
+}
+
+function openPopup(label: ProbabilityLabel, event: MouseEvent) {
   editingLabel.value = { ...label, screenX: event.clientX, screenY: event.clientY }
   editingValue.value = label.value
 }
@@ -590,23 +624,28 @@ function onPopupKeydown(event: KeyboardEvent) {
           @click.stop
           @keydown="onPopupKeydown"
         >
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-sm font-medium truncate">
+              {{ editingTitle }}
+            </span>
+            <input
+              type="number"
+              min="0"
+              max="1"
+              step="0.01"
+              class="input input-xs w-16 shrink-0 pl-1.5 pr-1 text-right font-mono"
+              :value="editingValue"
+              @change="applyEdit(parseFloat(($event.target as HTMLInputElement).value))"
+            />
+          </div>
           <input
             type="range"
             min="0"
             max="1"
             step="0.01"
-            class="range range-xs"
+            class="range range-xs w-full"
             :value="editingValue"
             @input="applyEdit(parseFloat(($event.target as HTMLInputElement).value))"
-          />
-          <input
-            type="number"
-            min="0"
-            max="1"
-            step="0.01"
-            class="input input-xs w-full text-right font-mono"
-            :value="editingValue"
-            @change="applyEdit(parseFloat(($event.target as HTMLInputElement).value))"
           />
         </div>
       </template>

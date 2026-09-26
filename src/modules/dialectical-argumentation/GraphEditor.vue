@@ -215,14 +215,13 @@ const conditionAnnotations = computed(() => {
   return annotations
 })
 
-function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
+function openConditionEditor(nodeId: NodeId, event: MouseEvent, svgEl: Element) {
   selectedNodeId.value = nodeId
   conditionEditorOpenCount.value++
   if (layoutMode.value === 'compact') {
     isConditionSheetOpen.value = true
     return
   }
-  const svgEl = (event.currentTarget as SVGElement).ownerSVGElement!
   const rect = svgEl.getBoundingClientRect()
   editorAnchor.value = {
     x: event.clientX - rect.left,
@@ -230,18 +229,19 @@ function openConditionEditor(nodeId: NodeId, event: MouseEvent) {
   }
 }
 
-/** Action-bar button (compact only): open the acceptance-condition sheet for a node. */
+/** Action-bar button: open the acceptance-condition editor (sheet or popover) for a node. */
 function adfNodeSelectionActions(id: NodeId): SelectionAction[] {
-  if (layoutMode.value !== 'compact') return []
   return [
     {
       key: 'condition',
       label: t('editor.condition.editCondition'),
       icon: VariableIcon,
-      run: () => {
-        selectedNodeId.value = id
-        conditionEditorOpenCount.value++
-        isConditionSheetOpen.value = true
+      run: (event) => {
+        const button = event.currentTarget as Element
+        const svgEl = button
+          .closest('.adf-graph')
+          ?.querySelector('.graph-controller__graph-host svg')
+        if (svgEl) openConditionEditor(id, event, svgEl)
       },
     },
   ]
@@ -249,7 +249,7 @@ function adfNodeSelectionActions(id: NodeId): SelectionAction[] {
 
 function onAnnotationClicked(data: { id: NodeId; content: string }, event: PointerEvent) {
   event.stopPropagation()
-  openConditionEditor(data.id, event)
+  openConditionEditor(data.id, event, (event.currentTarget as SVGElement).ownerSVGElement!)
 }
 
 function onAnnotationMoved(data: { id: NodeId; position: AnnotationPosition }[]) {

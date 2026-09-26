@@ -89,20 +89,6 @@ export function adjustNodeLabelFontSize(
   }
 }
 
-/**
- * The graph-component library only enters label-edit mode in response to a real
- * `click` on the node's label element (there is no public API for it), so we
- * simulate that click to make a freshly created node's name immediately editable.
- */
-export function startNodeLabelEdit(
-  graphEl: Element | null | undefined,
-  graphComponentId: string,
-  internalId: number,
-): void {
-  const labelDiv = findNodeLabelDiv(graphEl, graphComponentId, internalId)
-  labelDiv?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
-}
-
 function hasMoreThanOneEntry<T>(array: T[]): array is [T, T, ...T[]] {
   return array.length > 1
 }

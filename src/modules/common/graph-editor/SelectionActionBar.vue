@@ -54,8 +54,8 @@ const { floatingStyles, update } = useFloating(reference, floating, {
 
 // Run an action, then dismiss the bar unless the action opts to stay open (in-place
 // switchers like the edge type-switch and the iAF certainty toggle).
-function runAction(action: SelectionAction) {
-  action.run()
+function runAction(action: SelectionAction, event: PointerEvent) {
+  action.run(event)
   if (action.keepOpen) return
   // Closing unmounts the bar on this pointerdown, so the trailing synthetic click lands on
   // whatever is underneath — usually empty canvas, whose handler would e.g. clear the SetAF
@@ -97,7 +97,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
         class="btn join-item btn-ghost btn-sm"
         :title="action.label"
         :aria-label="action.label"
-        @pointerdown.prevent="runAction(action)"
+        @pointerdown.prevent="runAction(action, $event)"
       >
         <component :is="action.icon" v-if="action.icon" class="size-4" />
         <span v-else>{{ action.label }}</span>
@@ -108,7 +108,7 @@ onBeforeUnmount(() => cancelAnimationFrame(frame))
         class="btn join-item btn-ghost btn-sm text-error"
         :title="action.label"
         :aria-label="action.label"
-        @pointerdown.prevent="runAction(action)"
+        @pointerdown.prevent="runAction(action, $event)"
       >
         <component :is="action.icon" v-if="action.icon" class="size-4" />
         <span v-else>{{ action.label }}</span>

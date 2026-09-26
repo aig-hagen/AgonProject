@@ -60,7 +60,7 @@ export const bipolarBasicsTutorial: Tutorial = {
       body: (isTouchDevice) =>
         isTouchDevice
           ? `${action('Tap')} an existing link to select it, then tap ${barAction('switch', 'Switch')} in the action bar to flip it between attack and support.`
-          : `${action('Left-click')} an existing link to open its type switcher, then pick the other relation to flip it between attack and support.`,
+          : `${action('Left-click')} an existing link to select it, then click ${barAction('switch', 'Switch')} in the action bar to flip it between attack and support.`,
       advanceOn: 'action',
       advanceCondition: (ctx, baseline) => ctx.linkTypeSwitchCount > baseline.linkTypeSwitchCount,
     },

@@ -101,7 +101,6 @@ import {
   adjustNodeLabelFontSize,
   parseHyperLinkId,
   parseLinkId,
-  startNodeLabelEdit,
 } from '@/modules/common/graph-editor/graphEditorUtils'
 import {
   GRAPH_STYLE_DARK,
@@ -113,7 +112,6 @@ import {
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
-import ArrowSwitcher from '@/modules/common/graph-editor/LinkTypeSwitch.vue'
 import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import SerialisationIcon from '@/modules/common/graph-editor/SerialisationIcon.vue'
 import SigmaIcon from '@/modules/common/graph-editor/SigmaIcon.vue'
@@ -314,13 +312,15 @@ const selectionActions = computed<SelectionAction[]>(() => {
       actions.push(...edgeSelectionActions({ ...ends, type }))
     }
   }
-  actions.push({
-    key: 'delete',
-    label: t('common.actions.delete'),
-    icon: TrashIcon,
-    danger: true,
-    run: onSelectionDelete,
-  })
+  if (sel.kind === 'node' || allowLinkDeletion) {
+    actions.push({
+      key: 'delete',
+      label: t('common.actions.delete'),
+      icon: TrashIcon,
+      danger: true,
+      run: onSelectionDelete,
+    })
+  }
   return actions
 })
 
@@ -770,7 +770,7 @@ function onNodeCreated(
     graphComponentRef.value!.setColor(effectiveStyle.value.nodeColor, node.id)
     const graphEl = graphComponentRef.value?.$el as Element | undefined
     adjustNodeLabelFontSize(graphEl, graphComponentId, node.id, name)
-    startNodeLabelEdit(graphEl, graphComponentId, node.id)
+    graphComponentRef.value!.editNodeLabel(node.id)
   })
 }
 function onNodeDeleted(
@@ -844,18 +844,6 @@ function onHyperLinkSourceDeleted(
   triggerSettle()
 }
 
-function openLinkTypeSwitch(link: { id: string; label?: string }, event: PointerEvent) {
-  if (event.button !== 0) return
-  arrowSwitcherTarget.value = {
-    linkId: link.id,
-    targetElement: event.currentTarget as SVGElement,
-  }
-}
-
-function noOp() {}
-
-const onLinkClicked = enableLinkSwitching ? openLinkTypeSwitch : noOp
-
 function onLinkCreated(
   link: {
     id: string
@@ -894,9 +882,6 @@ function onLinkDeleted(
   },
   cause: EVENT_CAUSE,
 ) {
-  if (arrowSwitcherTarget.value?.linkId === link.id) {
-    arrowSwitcherTarget.value = undefined
-  }
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
     return
   }
@@ -1227,6 +1212,8 @@ onMounted(() => {
       const target = event.target
       if (!(target instanceof HTMLInputElement)) return
       if (target.id !== 'node-label-input-field' && target.id !== 'link-label-input-field') return
+      // A double-click rename opens the editor directly; drop the bar its first click opened.
+      selection.value = null
       // Suppress the browser's spellcheck/autocomplete suggestion popover for argument
       // and link names — they're short labels, not prose, so suggestions are just noise.
       target.setAttribute('spellcheck', 'false')
@@ -1433,7 +1420,6 @@ function updateGraph(state: GraphEditorState): void {
 }
 
 function updateLinkType(linkId: string, linkType: LinkType) {
-  arrowSwitcherTarget.value = undefined
   tutorialLinkTypeSwitchCount.value++
   const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(linkId)
   const publicSourceId = idMapping.getOrFail(internalSourceId)
@@ -1486,14 +1472,6 @@ function onLabelEdited(
     ),
   )
 }
-
-const arrowSwitcherTarget = shallowRef<
-  | {
-      targetElement: SVGElement
-      linkId: string
-    }
-  | undefined
->(undefined)
 
 function formatWeight(w: number): string {
   return Number.isInteger(w) ? String(w) : w.toFixed(2)
@@ -1884,7 +1862,6 @@ defineExpose({
     <GraphComponent
       @node-created="onNodeCreated"
       @node-deleted="onNodeDeleted"
-      @link-clicked="onLinkClicked"
       @link-created="onLinkCreated"
       @link-deleted="onLinkDeleted"
       @hyper-link-created="onHyperLinkCreated"
@@ -1901,7 +1878,7 @@ defineExpose({
       ref="graph-component"
     />
     <SelectionActionBar
-      v-if="selection"
+      v-if="selectionActions.length"
       :get-reference-rect="selectionReferenceRect"
       :actions="selectionActions"
       @close="selection = null"
@@ -1945,13 +1922,6 @@ defineExpose({
         {{ entry.label }}
       </li>
     </ul>
-    <ArrowSwitcher
-      v-if="arrowSwitcherTarget"
-      :link-configs="linkConfigs"
-      :reference="arrowSwitcherTarget.targetElement"
-      @update:arrow-type="updateLinkType(arrowSwitcherTarget.linkId, $event)"
-      @close="arrowSwitcherTarget = undefined"
-    />
     <div
       v-if="layoutMode === 'regular'"
       class="absolute top-4 bottom-4 left-4 flex flex-col justify-between"

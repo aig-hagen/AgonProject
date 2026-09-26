@@ -153,7 +153,7 @@ export interface SelectionAction {
   danger?: boolean
   /** Keep the bar open after running (for in-place toggles/switchers); default closes it. */
   keepOpen?: boolean
-  run: () => void
+  run: (event: PointerEvent) => void
 }
 
 export type NodeId = number
