@@ -5,8 +5,16 @@ usable from Agon's `/aba` evaluation. Semantics stay in TweetyProject — includ
 conversion — and Agon only maps its model to the request and the answer back.
 
 Related: [`aba-graph-representation.md`](aba-graph-representation.md) (editor and views design).
-Reference paper: Berthold, Rapberger, Ulbricht, _Capturing Non-flat Assumption-based
-Argumentation with Bipolar SETAFs_ (KR 2024) — "the paper" below.
+Sources:
+
+- **Definitions:** Čyras, Fan, Schulz, Toni, _Assumption-Based Argumentation: Disputes,
+  Explanations, Preferences_, Handbook of Formal Argumentation Vol. 1, Ch. 7 (2018) — "the
+  handbook" below. Standard reference; Tweety's semantics names (`wf`, `id`) follow it.
+- **Origin:** Bondarenko, Dung, Kowalski, Toni, _An abstract, argumentation-theoretic approach to
+  default reasoning_, AIJ 93 (1997).
+- **Non-flat / BSAF / Δ-semantics:** Berthold, Rapberger, Ulbricht, _Capturing Non-flat
+  Assumption-based Argumentation with Bipolar SETAFs_ (KR 2024) — "the paper" below. Its
+  Background recalls the handbook's definitions (with one change, see below).
 
 Paths are relative to `third-party/TweetyProjectTeam/TweetyProject/`:
 
@@ -17,8 +25,8 @@ Review state: submodule at `5940c1a1` (v1.31-10), 2026-09-26.
 
 ## Verdict
 
-The definitions follow the paper (closure, defence against closed attackers, admissible,
-complete, preferred). The implementation around them does not hold up:
+The definitions follow the handbook (closure, defence against closed attackers, admissible,
+complete, preferred, well-founded, ideal). The implementation around them does not hold up:
 
 - two of five semantics return wrong results,
 - the core algorithm is factorial and unusable beyond ~8 assumptions,
@@ -34,7 +42,8 @@ Keep the data model and the text format; rewrite the reasoning core.
 - Scratch harness calling the same parser and `GeneralAbaReasonerFactory` the endpoint uses,
   against the compiled classes. The web server itself was not started, so the HTTP layer is
   untested. The FOL path was only read.
-- Brute-force reference of the paper's Defs 2.2/2.3 in Python, used as ground truth.
+- Brute-force reference of the handbook's Def. 2.8 in Python (identical to the paper's Defs
+  2.2/2.3 except for grounded), used as ground truth.
 - Theories: paper Ex. 2.4, 3.14, 3.15; Tweety's `example3/4/5.aba`; Agon's default theory
   (`p ← a`, `q ← a,b`, `‾a = q`, `‾b = p`).
 
@@ -44,7 +53,7 @@ Keep the data model and the text format; rewrite the reasoning core.
 | preferred (`pr`) | ✅ 7/7        |                                                                            |
 | ideal (`id`)     | ✅ plausible  |                                                                            |
 | stable (`st`)    | ❌ 0/7        | returns every conflict-free closed set                                     |
-| grounded (`wf`)  | ❌ 3/7        | `[[]]` when no complete extension exists; `{c}` on ex5 (not even admissible) |
+| well-founded (`wf`) | ❌ 4/7     | correct as the handbook's intersection; `[[]]` when no complete extension exists |
 
 Scaling (preferred, chain of `n` assumptions): 0.09 s at n=7, 0.63 s at n=8, **7.9 s at n=9**,
 ~10× per extra assumption.
@@ -53,6 +62,22 @@ Note on the paper: Ex. 2.4 claims no stable extension, but read with the rules o
 (Ex. 3.4), `{b,d}` satisfies the stable definition (attacks `a`, `c`, `e`). Don't use that claim
 as a test expectation.
 
+## Which definitions
+
+The three sources agree on rules, deductions, closure, attack, admissible, preferred, complete,
+stable and flatness. They differ in these places:
+
+| Notion             | Bondarenko 1997                      | Handbook 2018 (Def. 2.8)            | Paper (KR 2024)            |
+| ------------------ | ------------------------------------ | ----------------------------------- | -------------------------- |
+| Contrary           | mapping `Ab → L`                     | **total** mapping; only assumptions have one | function `A → L`   |
+| Conflict-free      | no `α` with `T ∪ Δ ⊢ α, ᾱ` (stricter) | does not attack itself              | as handbook                |
+| Defence            | `Δ` attacks `Δ′ − Δ`                 | `A` attacks `B` (closed attackers)  | as handbook                |
+| Well-founded / grounded | intersection of complete sets   | intersection of complete sets ("grounded" for flat) | `gr`: ⊆-minimal complete sets |
+
+Follow the handbook. The paper's `gr` coincides with well-founded for flat frameworks only; offer it
+separately if needed. The 1997 conflict-free and defence notions coincide with the handbook's on
+closed sets, which is all the semantics use.
+
 ## Findings
 
 ### A. Correctness
@@ -60,11 +85,13 @@ as a test expectation.
 - **A1 — stable is broken.** `reasoner/StableReasoner.java:60`: the `continue` inside the inner
   loop only skips to the next assumption, so "attacks every assumption outside E" is never
   checked.
-- **A2 — grounded = intersection of complete extensions.** `reasoner/WellFoundedReasoner.java:52`.
-  Only correct for flat theories. The paper's `gr` is the ⊆-minimal complete sets (possibly
-  several, possibly none). With no complete extension it returns `[∅]` via
-  `new AbaExtension<T>()`. Also named "well-founded".
-- **A3 — missing semantics.** No conflict-free, admissible, proper grounded, or the paper's
+- **A2 — well-founded with no complete extension.** `reasoner/WellFoundedReasoner.java:52`. The
+  intersection of complete extensions is the handbook's definition, so the result is right when
+  complete extensions exist (incl. non-flat ex5: `{c}`). With none, it returns `[∅]` via
+  `new AbaExtension<T>()`; the intersection of an empty family is undefined, so return no
+  extension. The paper's `gr` (⊆-minimal complete) is a different notion for non-flat
+  frameworks.
+- **A3 — missing semantics.** No conflict-free, admissible, the paper's `gr`, or its
   Δ-semantics (`co_Δ`, `gr_Δ`, Defs 4.6/4.7/4.12).
 - **A4 — `FlatAbaReasoner` is unused and costly.** Converts to a Dung AF with one argument per
   derivation tree (exponential), and maps back by matching name strings (an assumption named
@@ -86,7 +113,10 @@ as a test expectation.
 ### C. Model and parser
 
 - **C1 — contrary is a relation, not a function.** Zero or several contraries per assumption,
-  and contraries on non-assumptions, are accepted without check or documentation.
+  and contraries on non-assumptions, are accepted without check or documentation. All three
+  sources define a total mapping; the handbook adds "sentences have a contrary if, and only if,
+  they are assumptions". Several contraries can be rewritten into one via a fresh atom
+  (`c_a ← x`, `c_a ← y`), so they are a harmless shorthand; a missing one is not ABA.
 - **C2 — unknown lines become assumptions.** `parser/AbaParser.java:153`: anything that isn't a
   rule or `not … = …` is an assumption. Typos either throw deep in the formula parser or add a
   bogus assumption.
@@ -105,9 +135,10 @@ as a test expectation.
   `AbaTest` is JUnit 4 (`org.junit.Test`). `mvn test` reports "Tests run: 0".
 - **D2 — disabled tests pass.** `ClosureTest`, `Example4`, `Example5`, `Example11` had `@Test`
   commented out. Run with JUnit 4: 12 tests, 1 failure.
-- **D3 — the failure is a wrong expectation.** The commented-out asserts in `Example3` expect
-  `{c}` and `∅` to be complete; both defend the unattacked `b` without containing it. Tweety is
-  right.
+- **D3 — the failure is a wrong expectation.** `example3.aba` is the handbook's Example 2.9,
+  and the commented-out asserts copy its stated results: `{c}` and `∅` complete, `∅`
+  well-founded. By the handbook's own Def. 2.8 that is wrong — both defend the unattacked `b`
+  without containing it. Correct: complete `{a,b}` only, well-founded `{a,b}`. Tweety is right.
 - **D4 — no coverage** for stable, non-flat grounded, ideal, or the paper's examples.
 
 ### E. Web service (`/aba`)
@@ -136,6 +167,7 @@ Work on a branch in the submodule (`aba-rework`), PR upstream later. Keep the cl
 - [ ] Make `AbaTest` run (migrate to JUnit 5, or add `junit-vintage-engine`) (D1)
 - [ ] Re-enable the disabled tests; fix the `Example3` expectations (D2, D3)
 - [ ] Add the paper's examples with expected results from the reference (2.4, 3.14, 3.15) (D4)
+- [ ] Add the handbook's Ex. 2.9 (= `example3.aba`) with the corrected expectations (D3)
 - [ ] Add a scaling test (e.g. 12 assumptions under a time budget)
 
 ### Phase 2 — core rewrite (`AbaTheory`)
@@ -150,8 +182,9 @@ Work on a branch in the submodule (`aba-rework`), PR upstream later. Keep the cl
 ### Phase 3 — semantics
 
 - [ ] Fix stable: closed, conflict-free, attacks each `x ∈ A \ E` (A1)
-- [ ] Grounded = ⊆-minimal complete; none when there is no complete extension; keep `wf` as an
-      alias (A2)
+- [ ] Well-founded (`wf`, handbook): no extension when there is no complete extension (A2)
+- [ ] Optional `gr` (paper): ⊆-minimal complete sets; label it clearly, it equals `wf` only for
+      flat frameworks (A3)
 - [ ] Add conflict-free and admissible reasoners (A3)
 - [ ] Flat fast path: compile to a SETAF over the assumptions (paper Def. 3.5; attacks
       `(T, h)` for `T ⊢ ‾h`, minimal `T` only), evaluate with `arg-setaf`; handle `∅ ⊢ ‾a`
@@ -187,8 +220,9 @@ Work on a branch in the submodule (`aba-rework`), PR upstream later. Keep the cl
 
 ## Open decisions
 
-- **Contraries:** keep the relation (general, backwards compatible), enforce exactly one per
-  assumption like the paper, or accept the relation with a strict mode the app turns on?
+- **Contraries:** the sources require exactly one per assumption. Proposal: keep accepting
+  several (documented as shorthand), warn on a missing one or one on a non-assumption, and offer
+  a strict mode that rejects both. Agon always sends one per assumption.
 - **PR scope:** phases 1–3 make results correct and fast; 4–5 harden the endpoint; Δ separately.
   One PR or two?
 - **Upstream:** branch in the submodule, then PR to TweetyProjectTeam — confirm with the
