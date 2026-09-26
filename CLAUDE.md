@@ -52,9 +52,10 @@ appropriate `Added`/`Changed`/`Fixed` section. Keep each entry to one line (two 
 
 ## Opening a PR
 
-- **Before pushing, run `npm run lint`, `npm run format`, and `npm run format:check`** (CI
-  checks eslint/oxlint, prettier `--check` over all of `src/`, and type-check — a stray
-  formatting issue anywhere in `src/`, not just your diff, fails the `Lint & type-check` job).
+- **Before pushing, run `npm run lint`, `npm run format`, `npm run format:check`, and
+  `npm run docs:check`** (CI checks eslint/oxlint, prettier `--check` over all of `src/`,
+  type-check, and Markdown format/lint/links/changelog — a stray issue anywhere, not just
+  your diff, fails the `Lint & type-check` job).
   `format:check` mirrors CI exactly; commit any changes from `format`.
 - Base PRs on `dev`. Keep the description **short**: a one-line summary plus a terse bullet
   list of the notable changes.
