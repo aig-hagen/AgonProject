@@ -365,14 +365,14 @@ watch(
               v-for="kind in addKinds"
               :key="kind"
               type="button"
-              class="btn btn-primary btn-outline w-56 justify-start gap-3 px-4"
+              class="btn btn-outline btn-primary h-12 w-56 justify-start gap-3 rounded-2xl px-4"
               @click="chooseKind(kind)"
             >
               <KindIcon :kind="kind" class="size-5 shrink-0" />
               <span class="flex-1 text-left">{{ kindLabel[kind] }}</span>
             </button>
           </template>
-          <button v-else class="btn btn-primary gap-2" @click="onAddClick">
+          <button v-else class="btn btn-primary h-12 gap-2 rounded-2xl px-5" @click="onAddClick">
             <PlusIcon class="size-5" /> {{ t('evaluation.addEvaluation') }}
           </button>
         </div>

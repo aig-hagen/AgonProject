@@ -10,10 +10,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
 - Added a color legend to the graph editor while an evaluation result is highlighted.
+- Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
+
+### Changed
+
+- Updated the bundled graph component to 5.0.0-rc.24; uncertain iAF attacks now use its native dashed links.
+- The serialisation window, the generate view and the mobile LaTeX export options now use the app's standard picker instead of native selects.
+- Export: mobile Save/Copy buttons use the sheet's large touch style with Save as the primary action, and copy/save feedback now shows a check icon for longer.
 
 ### Fixed
 
 - SetAF extension highlighting now marks targets of collective attacks as rejected when all attackers are accepted.
+- Fixed SVG graph export: node labels are centered again and bent edges no longer show a black fill sliver.
+- Fixed LaTeX export: mobile and desktop now produce identical code — style options always ride on `\begin{af}[…]`, and both share the same defaults and the Node Labels option.
+- Fixed LaTeX export: argument names keep special characters, umlauts and Greek letters (`a_1` → `a_{1}`, `Käse` → `K\"{a}se`, `α` → `\alpha`) instead of stripping them.
+- Fixed LaTeX export: shortened argument names are now unique (e.g. `A_{1}`, `A_{2}`) with the full name as a trailing `% Alibi` comment, and used consistently in ADF conditions; a new "Node Labels" option (Auto/Full/Short) controls shortening.
+- Fixed LaTeX export: mutual attacks in iAFs, pAFs and SETAFs are now bent instead of overlapping, and pAF attack probabilities are no longer dropped.
 
 ## [0.12.0] - 2026-09-21
 

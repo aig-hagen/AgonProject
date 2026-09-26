@@ -26,8 +26,11 @@ export interface ExportStyleOptions {
   snapToGrid?: boolean
   nodeDistance?: number
   gridCellScale?: number
-  shortenNames?: boolean
+  nodeLabels?: NodeLabelMode
 }
+
+/** How argument names become node labels: `auto` shortens only when some name is too long. */
+export type NodeLabelMode = 'auto' | 'full' | 'short'
 
 export interface ExportReference {
   label: string

@@ -41,6 +41,7 @@ interface PhysicsCapable {
     maxScale: number,
   ): void
   setViewport(k: number, x: number, y: number): void
+  getViewport(): { k: number; x: number; y: number }
 }
 
 export function usePhysics({
@@ -106,15 +107,8 @@ export function usePhysics({
     // Compensate the zoom/pan so nodes remain at the same visual positions. Route through
     // setViewport so the library's cached transform (used by pointer-to-graph math) stays
     // in sync — hand-setting the group transform leaves it stale.
-    const currentZoom = (
-      containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-        | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
-        | null
-    )?.__zoom
-    if (currentZoom != null) {
-      const k = currentZoom.k
-      gc.setViewport(k, currentZoom.x - dx * k, currentZoom.y - dy * k)
-    }
+    const { k, x, y } = gc.getViewport()
+    gc.setViewport(k, x - dx * k, y - dy * k)
   }
 
   function enablePhysics() {

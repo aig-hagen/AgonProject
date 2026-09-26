@@ -27,10 +27,11 @@
     "generate-attributions": "node ./scripts/generate-attributions.ts"
   },
   "dependencies": {
-    "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.22.tgz",
+    "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.24.tgz",
     "@codemirror/language": "^6.12.4",
     "@drgrice1/tikzjax": "^1.0.0-beta24",
     "@floating-ui/vue": "^1.1.11",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@heroicons/vue": "^2.2.0",
     "@hpcc-js/wasm-graphviz": "^1.21.2",
     "@interactjs/actions": "^1.10.27",

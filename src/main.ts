@@ -17,6 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import '@aig-hagen/graph-component/lib/graph-component.css'
+import '@fontsource/jetbrains-mono/400.css'
+import '@fontsource/jetbrains-mono/500.css'
+import '@fontsource/jetbrains-mono/700.css'
 import '@/style.css'
 import '@/app/setup-immer'
 
@@ -27,6 +30,7 @@ import App from '@/app/App.vue'
 import router from '@/app/router'
 import { installI18n, useLocale } from '@/localization'
 import { abstractArgumentationModule } from '@/modules/abstract-argumentation/moduleConfig'
+import { assumptionBasedArgumentationModule } from '@/modules/assumption-based-argumentation/moduleConfig'
 import { bipoloarArgumentationModule } from '@/modules/bipolar-argumentation/moduleConfig'
 import { collectiveAttacksArgumentationModule } from '@/modules/collective-attacks-argumentation/moduleConfig'
 import { openDocumentsDB } from '@/modules/common/documents/db'
@@ -48,6 +52,7 @@ const modules = [
   incompleteArgumentationModule,
   probabilisticArgumentationModule,
   collectiveAttacksArgumentationModule,
+  assumptionBasedArgumentationModule,
 ] as const
 
 const app = createApp(App, {

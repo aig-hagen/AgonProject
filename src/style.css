@@ -147,7 +147,19 @@ body {
 .graph-controller__node-label,
 .graph-controller__annotation-label,
 .graph-controller__badge-label {
-  font-family: 'JetBrains Mono', 'Fira Mono', 'Cascadia Code', 'Consolas', monospace;
+  font-family: var(
+    --graph-node-font-family,
+    'JetBrains Mono',
+    'Fira Mono',
+    'Cascadia Code',
+    'Consolas',
+    monospace
+  );
+}
+
+/* Node names render bold, matching the ABA editor's node labels. */
+.graph-controller__node-label {
+  font-weight: 700;
 }
 
 .graph-controller__badge {

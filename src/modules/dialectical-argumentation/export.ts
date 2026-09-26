@@ -50,26 +50,26 @@ function nodePrec(node: FormulaNode): number {
 function formulaToLatexInner(
   node: FormulaNode,
   parentPrec: number,
-  argNames: Map<number, string>,
+  label: (id: number) => string,
 ): string {
-  const raw = formulaToLatexRaw(node, argNames)
+  const raw = formulaToLatexRaw(node, label)
   return nodePrec(node) < parentPrec ? `(${raw})` : raw
 }
 
-function formulaToLatexRaw(node: FormulaNode, argNames: Map<number, string>): string {
+function formulaToLatexRaw(node: FormulaNode, label: (id: number) => string): string {
   switch (node.type) {
     case 'tautology':
       return '\\top'
     case 'contradiction':
       return '\\bot'
     case 'atom':
-      return argNames.get(node.argumentId) ?? '?'
+      return label(node.argumentId)
     case 'negation':
-      return `\\neg ${formulaToLatexInner(node.child, PREC_NOT, argNames)}`
+      return `\\neg ${formulaToLatexInner(node.child, PREC_NOT, label)}`
     case 'conjunction':
-      return node.children.map((c) => formulaToLatexInner(c, PREC_AND, argNames)).join(' \\wedge ')
+      return node.children.map((c) => formulaToLatexInner(c, PREC_AND, label)).join(' \\wedge ')
     case 'disjunction':
-      return node.children.map((c) => formulaToLatexInner(c, PREC_OR + 1, argNames)).join(' \\vee ')
+      return node.children.map((c) => formulaToLatexInner(c, PREC_OR + 1, label)).join(' \\vee ')
   }
 }
 
@@ -78,12 +78,6 @@ const exportLatexDialecticalArgumentation: ExportConfig<DialecticalArgumentation
     ...latexExportCommonConfig(),
     export(document, styleOptions?: ExportStyleOptions) {
       const argsList = [...document.arguments()]
-
-      const latexNameMap = new Map<number, string>()
-      for (const [id, data] of argsList) {
-        latexNameMap.set(id, data.name.replace(/[^a-zA-Z0-9 ]/g, ''))
-      }
-
       const dataMap = new Map(argsList)
 
       return exportLatexArgumentationCommon(
@@ -92,8 +86,8 @@ const exportLatexDialecticalArgumentation: ExportConfig<DialecticalArgumentation
         (function* () {})(),
         styleOptions,
         {
-          argumentAnnotation: (id) => {
-            const formula = formulaToLatexRaw(dataMap.get(id)!.condition, latexNameMap)
+          argumentAnnotation: (id, label) => {
+            const formula = formulaToLatexRaw(dataMap.get(id)!.condition, label)
             return `$${formula}$`
           },
         },

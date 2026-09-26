@@ -4,8 +4,8 @@ Design notes for a future **assumption-based argumentation (ABA)** module. Captu
 building, so the core split (what the user edits vs. what the solver evaluates) is on record.
 
 Prototype lives in the **ABA Studio** artifact
-(<https://claude.ai/artifact/DjeP7i9dkcvMUgD4gpTE4A>) — that one covers the *flat* case only.
-Background reading: Berthold, Rapberger, Ulbricht, *Capturing Non-flat ABA with Bipolar SETAFs*
+(<https://claude.ai/artifact/DjeP7i9dkcvMUgD4gpTE4A>) — that one covers the _flat_ case only.
+Background reading: Berthold, Rapberger, Ulbricht, _Capturing Non-flat ABA with Bipolar SETAFs_
 (KR 2024) — the **BSAF** (bipolar set-argumentation framework) instantiation used below.
 
 Notation: `~a` = contrary of assumption `a`; `⊢` = tree-derivability; `A` = assumptions,
@@ -24,17 +24,17 @@ rule  h ← b1..bn ,  h a plain atom →  collective SUPPORT
 This is intuitive to draw, but it is **unsound as a uniform argumentation graph**. The reason is
 one principle:
 
-> **Rules derive. Contraries attack.** In ABA a rule never *is* an attack — it only derives its
-> head. The attack is a *separate* fact: "that head happens to be some assumption's contrary."
+> **Rules derive. Contraries attack.** In ABA a rule never _is_ an attack — it only derives its
+> head. The attack is a _separate_ fact: "that head happens to be some assumption's contrary."
 > An attack is the composition `derive(head) ∘ (head is a contrary)`.
 
 Coloring an edge by its head fuses those two moves into one. That is lossless only when a contrary
-head does nothing *except* be a contrary. Every failure below is a case where a head plays two
+head does nothing _except_ be a contrary. Every failure below is a case where a head plays two
 roles at once.
 
 ## Scenarios that don't model neatly
 
-1. **Shared contraries.** `~a = ~b = x`: the single rule `x ← B` attacks *both* `a` and `b`.
+1. **Shared contraries.** `~a = ~b = x`: the single rule `x ← B` attacks _both_ `a` and `b`.
    BSAF edges are set-to-**single**-target, so one rule must split into several attack edges.
    Survivable, but "one rule = one edge" is already gone.
 
@@ -47,7 +47,7 @@ roles at once.
    ```
 
    ABA: `∅ ⊢ x = ~a` (attacks `a`) and `∅ ⊢ x ⊢ d = ~b` (attacks `b`) — **both a and b are out.**
-   But if the coloring scheme "spends" `x` as an attack on `a`, then `d ← x` has no *supporting*
+   But if the coloring scheme "spends" `x` as an attack on `a`, then `d ← x` has no _supporting_
    node to stand on, `d` never derives, the attack on `b` never fires, and **`b` looks unattacked
    → wrongly "in".** The atom `x` had to be both "the attack on a" and "a derived fact feeding d";
    one colored edge cannot be both.
@@ -59,24 +59,24 @@ roles at once.
    A = {a},  ~a = x,  rule:  x ← a
    ```
 
-   ABA: `{a} ⊢ x = ~a`, so `{a}` attacks *itself* → only extension is `∅`. The correct BSAF encodes
+   ABA: `{a} ⊢ x = ~a`, so `{a}` attacks _itself_ → only extension is `∅`. The correct BSAF encodes
    this as a **self-loop on `a`**. But the uniform atom-graph has `a → x` (rule) and `x → a`
    (contrary) — a clean 2-cycle — so a Dung reading returns preferred extensions `{a}` and `{x}`.
-   **Wrong**, because `x` is only true *parasitically* (when `a` is); it is not a free choice.
+   **Wrong**, because `x` is only true _parasitically_ (when `a` is); it is not a free choice.
 
    → Pinched both ways: consume contrary-heads and you sever derivations (#2); keep them as uniform
    nodes and you invent phantom choices (#3).
 
 4. **Assumption-as-contrary + non-flat heads.** If `~a = b` with `b` an assumption (allowed:
-   `~ : A → L`, and `A ⊆ L`), the contrary link lands on a node that is *also* a free choice — and
+   `~ : A → L`, and `A ⊆ L`), the contrary link lands on a node that is _also_ a free choice — and
    if `b` is itself rule-derivable (non-flat), that node is "true if assumed" OR "true if derived",
    with no principled tiebreak in a uniform graph.
 
-5. **Dangling atoms.** A body atom that is never a head and not an assumption is simply *false*
+5. **Dangling atoms.** A body atom that is never a head and not an assumption is simply _false_
    (underivable). A uniform AF semantics sees an unattacked node and labels it "in" — wrong, same
    root cause as #3.
 
-## Why: atoms are *determined*, not *chosen*
+## Why: atoms are _determined_, not _chosen_
 
 ABA has two kinds of node obeying different laws:
 
@@ -85,7 +85,7 @@ assumption node   →  DEFEASIBLE    : true by default, retracted if its contrar
 ordinary atom     →  DETERMINISTIC : true iff some rule derives it from what is already true (Th)
 ```
 
-Ordinary atoms are a *function* of the assumptions — zero free choice. Dung AFs and BSAFs assume
+Ordinary atoms are a _function_ of the assumptions — zero free choice. Dung AFs and BSAFs assume
 every node is a free, defeasible argument, so putting deterministic atoms in as ordinary nodes
 points the semantics at the wrong kind of object. (In bipolar-argumentation terms: plain-headed
 rules are **evidential/necessary support** — the head can't hold unless grounded back to a fact —
@@ -104,14 +104,14 @@ tier 2 (argumentative):  assumption a is a free choice; a is attacked ⇔ ~a is 
                          conflict-free / defense / … over assumptions only
 ```
 
-Sound, and matches ABA exactly — because it *is* ABA. Each atom with an acceptance condition
+Sound, and matches ABA exactly — because it _is_ ABA. Each atom with an acceptance condition
 (`OR` over rules, `AND` over bodies) and each assumption with "accept unless contrary holds" is
 exactly an **ADF** (abstract dialectical framework — Brewka/Woltran). For the **flat** fragment this
 collapses to the textbook result: flat ABA = normal logic programs (`stable ↔ stable models`,
 `grounded ↔ well-founded`). Rock-solid for flat; delicate-but-known for non-flat (the KR-24 paper's
 subject).
 
-**Punchline:** the paper's BSAF is what you get by *contracting tier 1 away* — compile out every
+**Punchline:** the paper's BSAF is what you get by _contracting tier 1 away_ — compile out every
 deterministic atom, keep assumptions as the only nodes, re-express derivations as collective
 set-edges (their Def 3.5). Atoms are absent from the BSAF not by oversight but because they carry no
 semantic freedom; keeping them as uniform nodes is the specific thing that breaks a uniform AF
@@ -134,18 +134,18 @@ Do **not** force one graph to be both the model and the reasoning object. Split 
 ```
 
 - The atom graph is a good **modeling surface** — keep atoms, rules, and contraries visible. But
-  treat rules as plain derivation edges and contraries as a *separate overlay* (the two-tier view),
+  treat rules as plain derivation edges and contraries as a _separate overlay_ (the two-tier view),
   not as attack/support colors.
 - **Evaluate** by compiling to the assumptions-only BSAF (or handing the ABAF straight to a solver).
   Never run flat Dung semantics on the atom graph.
 - Going non-flat: default the semantics to the paper's **Δ-versions** (`co_Δ`, `gr_Δ`), which patch
   the "no admissible / no complete extension" pathologies otherwise inherited.
-- Either target: nodes stay at `|A|`, but the collective edge relation can blow up to *all* deriving
+- Either target: nodes stay at `|A|`, but the collective edge relation can blow up to _all_ deriving
   subsets — compute **minimal supports/attacks only**.
 
 ## In-graph authoring — interactions, blockers, restrictions
 
-Goal: assemble/modify the ABA theory *directly in the graph*, not only in a side panel.
+Goal: assemble/modify the ABA theory _directly in the graph_, not only in a side panel.
 
 **Drop the left/right tier split for editing.** The lanes in the mockup were didactic. They can't
 survive an editor: non-flat rules put an assumption on both sides, and rule↔contrary cycles fold the
@@ -155,7 +155,7 @@ squared = atom) and let position be free.
 **The rule that shapes the whole editor:**
 
 > Drawable primitives are `atom`, `rule (body→head)`, and `contrary (assumption→atom)`. Attacks and
-> supports are **computed overlays — never drawn.** Two edge *tools*, not two edge *types*.
+> supports are **computed overlays — never drawn.** Two edge _tools_, not two edge _types_.
 
 Drawing "attack"/"support" directly re-fuses `derive ∘ is-a-contrary` and reintroduces the
 unsoundness above. Give assumption nodes a dedicated **contrary handle** (a red port) separate from
@@ -177,21 +177,21 @@ UX and guardrails, not expressive power.
 
 ### Interaction catalog
 
-| Gesture | Creates / edits | Allowed? Restriction |
-|---|---|---|
-| Click empty canvas | new **ordinary atom** (auto-named) | ✓ |
-| Toggle node type | atom ⇄ **assumption** | ✓ — promoting *forces* a contrary (auto `~x`) |
-| Rename node | atom label | ✓ — names must be **unique** |
-| Drag rule-handle node→node | **rule** body→head (single body) | ✓ |
-| Hub / multi-select → head | **collective rule** | ✓ — needs hub or inspector (blocker 1) |
-| Drag rule into an **assumption** (as head) | non-flat rule | ✓ non-flat · **✗ flat mode** |
-| Mark node "fact" | empty-body rule | ✓ (blocker 4) |
-| Drag **contrary-handle** (assm→atom) | set `~a` | ✓ — **single-valued**; redraw *replaces* |
-| Second contrary from one assm | — | ✗ contrary is a function |
-| Contrary on a non-assumption | — | ✗ only assumptions have contraries |
-| Draw an "attack"/"support" edge | — | ✗ **not a primitive** — computed overlay |
-| Delete node / rule / contrary | remove + **cascade** | ✓ |
-| Leave an assumption with no contrary | — | ✗ demote to atom instead |
+| Gesture                                    | Creates / edits                    | Allowed? Restriction                          |
+| ------------------------------------------ | ---------------------------------- | --------------------------------------------- |
+| Click empty canvas                         | new **ordinary atom** (auto-named) | ✓                                             |
+| Toggle node type                           | atom ⇄ **assumption**              | ✓ — promoting _forces_ a contrary (auto `~x`) |
+| Rename node                                | atom label                         | ✓ — names must be **unique**                  |
+| Drag rule-handle node→node                 | **rule** body→head (single body)   | ✓                                             |
+| Hub / multi-select → head                  | **collective rule**                | ✓ — needs hub or inspector (blocker 1)        |
+| Drag rule into an **assumption** (as head) | non-flat rule                      | ✓ non-flat · **✗ flat mode**                  |
+| Mark node "fact"                           | empty-body rule                    | ✓ (blocker 4)                                 |
+| Drag **contrary-handle** (assm→atom)       | set `~a`                           | ✓ — **single-valued**; redraw _replaces_      |
+| Second contrary from one assm              | —                                  | ✗ contrary is a function                      |
+| Contrary on a non-assumption               | —                                  | ✗ only assumptions have contraries            |
+| Draw an "attack"/"support" edge            | —                                  | ✗ **not a primitive** — computed overlay      |
+| Delete node / rule / contrary              | remove + **cascade**               | ✓                                             |
+| Leave an assumption with no contrary       | —                                  | ✗ demote to atom instead                      |
 
 **Read-only overlays** (views, not edits): emergent **attacks** (rule ∘ contrary), **derivability
 shading** (atoms reachable from current assumptions), post-eval **extension highlighting**. This is
@@ -202,13 +202,158 @@ where the `Σ`/evaluate button plugs in.
 **Hard-enforce (reject at edit time):** unique names; atom-XOR-assumption typing; contrary total +
 single-valued on assumptions, none on atoms; every assumption keeps a contrary; deletion cascades.
 
-**Mode knob — flat vs non-flat:** *flat* (recommended v1) rejects any rule whose head is an
-assumption — keeps the LP correspondence, dodges Δ-semantics. *non-flat* allows it and defaults eval
+**Mode knob — flat vs non-flat:** _flat_ (recommended v1) rejects any rule whose head is an
+assumption — keeps the LP correspondence, dodges Δ-semantics. _non-flat_ allows it and defaults eval
 to the Δ-semantics.
 
 **Legal but pathological → allow + lint (never block):** self-contrary `~a = a`; contrary that is an
 assumption; a fact that is a contrary (`~a ←`); tautological/cyclic rule `h ← …, h`; isolated atom
 with no deriving rule. All valid ABAFs — warn, don't wall, since users hit them mid-construction.
+
+## Semantic views — AF / BAF / BSAF
+
+The editable atom graph stays the **only** thing the user edits. The instantiations are read-only
+_lenses_ computed from it, and all of them display one evaluation result. The user flips the
+canvas between them with a **view switcher**, not separate windows (see _View switcher_).
+
+### Fidelity differs per view
+
+| View     | Nodes             | Edges                       | Faithful for                                       | Size                             |
+| -------- | ----------------- | --------------------------- | -------------------------------------------------- | -------------------------------- |
+| **AF**   | arguments `S ⊢ c` | binary attacks              | flat ABA only                                      | exponential in the worst case    |
+| **BAF**  | assumptions       | binary attack + support     | only if every minimal derivation has ≤1 assumption | \|A\|                            |
+| **BSAF** | assumptions       | collective attack + support | all ABA (flat → supports vanish → SETAF)           | \|A\| nodes, edges up to 2^\|A\| |
+
+Worked example (the module's initial theory: `p ← a`, `q ← a,b`, `‾a = q`, `‾b = p`):
+
+```
+AF                                   BSAF (flat → SETAF)       BAF
+A1 {a}⊢a    A3 {a}⊢p ──▶ A2, A4      {a,b} ══▶ a               ✗ not available:
+A2 {b}⊢b    A4 {a,b}⊢q ──▶ A1,A3,A4   a ──▶ b                  q needs {a,b}
+```
+
+A view is either **exact** or **unavailable** — no partial states. AF is disabled for non-flat
+theories, BAF outside its fragment; the reason is shown on the switcher (see _View switcher_).
+
+### Compile layer (pure, tested)
+
+`src/modules/assumption-based-argumentation/views/` — one core engine plus thin mappings:
+
+- **Minimal derivations:** for each atom, the ⊆-minimal assumption sets deriving it (fixpoint
+  over the rules, keeping only an antichain of sets). Everything below reads from this.
+- `toBSAF`: minimal `S ⊢ ‾b` → collective attack `S → b`; minimal `S ⊢ b` (`b ∈ A`, `b ∉ S`) →
+  collective support.
+- `toBAF`: same, but returns "not available" unless all sets are singletons.
+- `toAF`: one argument per (minimal support, claim); attacks onto every argument using the
+  attacked assumption. Capped, with "showing N of M".
+- Edge cases: `∅ ⊢ ‾b` (unconditional attack) has no SETAF/BSAF edge — show `b` as _always out_
+  (outline/badge) instead. Self-attacks are legal and must render.
+- Return the existing module models (AF, BAF, SetAF) so tests and the "open as" export reuse them.
+
+### Fit with the current graph editor
+
+How the app renders graphs today, and what each approach would cost:
+
+- **Shared `GraphEditor.vue` is a page shell, not a widget.** It renders the MainMenu, tutorials,
+  help, settings, export, and the mobile bars. It registers window-level `keydown`/`keyup`
+  listeners, and it persists the viewport under a per-document `viewport` key. Two instances for
+  the same document would fire shortcuts twice and overwrite each other's viewport.
+  → **Only one graph on screen at a time**, which the view switcher gives us anyway.
+- **It has no read-only mode.** Node creation, deletion and label editing are hard-wired to
+  `true` in `setDefaults`. Only link creation/deletion are props.
+- **The library already supports read-only.** `@aig-hagen/graph-component` exposes
+  `toggleNodeCreationViaGUI`, per-node `deletable` / `labelEditable` / `fixedPosition` /
+  `allowIncoming|OutgoingLinks`, and per-link `deletable`. Other modules (incomplete, probabilistic,
+  dialectical) already import it directly.
+- **~~Library gap: hyperlinks carry only a colour.~~** Fixed in the vendored `5.0.0-rc.24`:
+  hyperlinks take `arrowType` (`SINGLE` / `DOUBLE` / `DASHED`), so a collective _support_ can be
+  drawn differently from a collective attack. `setReadOnly(true)` also covers the read-only view.
+- **Node shapes are circle or rect only.** That's fine: the views only contain assumptions or
+  arguments. For AF, use short labels (`A1`…) with the `S ⊢ c` text as an annotation/tooltip, or
+  rect + `nodeAutoGrowToLabelSize`.
+- **Highlighting already fits.** `Highlight = { stateId, groups: {nodes: Set<NodeId>, color}[] }`.
+  If the BSAF/BAF view nodes reuse the ABA assumption `NodeId`s, a result in assumption space maps
+  1:1. Only the AF view needs an argument-id map.
+
+**Verdict: no major changes.** The plan is additive:
+
+1. **New `common/graph-editor/GraphView.vue`**: a lightweight read-only wrapper around the bare
+   `GraphComponent` (zoom on, all GUI editing off, graphviz layout via `layouting.ts`, a `highlight`
+   prop). It fills the canvas when a derived view is active. Lift the state→json mapping and highlight application out of `GraphEditor.vue` into
+   `graphEditorUtils.ts` so both share it. Medium effort, and the existing editor's behaviour is
+   untouched.
+2. **Upstream library change** for hyperlink `arrowType`. Small, but it's a release of a separate
+   package. Not blocking.
+3. **View switcher inside the ABA editor** (below). It needs no change to the shared editor.
+   Converging the ABA canvas onto the shared editor stays a separate track and isn't a
+   prerequisite. If other modules want views later, the switcher can move into the shared editor
+   as a slot or prop.
+
+### View switcher
+
+A segmented control that swaps what the canvas shows. The theory editor is one of the options:
+
+```
+                     ┌──────────┬────┬─────┬──────┐
+ bottom-centre  →    │ ✎ Theory │ AF │ BAF │ BSAF │
+                     └──────────┴──┬─┴──┬──┴──────┘
+                                   │    └ disabled, tooltip: "needs singleton derivations"
+                                   └ disabled for non-flat, tooltip: "AF is only exact for flat theories"
+```
+
+- **Placement:** bottom-centre of the canvas on desktop. It's a _canvas mode_, so it stays apart
+  from the tool buttons on the left, and it uses the same `btn-sm` / `join` styling. On compact
+  layout it goes as a chip row just above the command bar (where `#canvasSelector` sits).
+- **Availability on the button:** a view is enabled (exact) or greyed out with the reason as a
+  tooltip. AF is greyed out for non-flat theories, BAF outside its fragment. The current
+  flat/non-flat badge folds into this.
+- **Becoming unavailable while active:** if a side-panel edit makes the active view unavailable
+  (e.g. the theory turns non-flat while on AF), keep the view selected. Show an empty state with the
+  reason and a "back to Theory" button. It comes back on its own once the theory qualifies again.
+  No surprise jumps.
+- **Derived views are read-only on the canvas; the side panel always stays editable** (decided).
+  Editing a rule while looking at the AF updates it live, which is great for teaching. A small
+  `read-only · derived from theory` chip sits at the top of the canvas.
+  Double-click or drag on empty canvas does nothing (optionally a hint: "switch to Theory to
+  edit").
+- **Stable layout:** BSAF/BAF nodes are assumptions, so they start at their theory positions.
+  That gives continuity when switching. In every view, unchanged nodes keep their place across
+  edits and only new ones are laid out. View positions are UI state, not document content.
+- **Per-view memory:** zoom/pan per view. The active view is kept in document UI state, so a
+  reload returns to it.
+- **Evaluation stays across switches:** the result window stays open, and the highlight is drawn
+  on whichever view is active.
+- **Shortcuts:** `Alt+1…4` (to be checked against `shortcuts.ts`).
+
+### Evaluation
+
+- **Compute once, in assumption space.** ABA extensions are assumption sets `E`. Each view
+  displays it:
+  - theory: `E` shaded, `Th(E)` (atoms derived from `E`) lighter, attacked assumptions struck
+  - BSAF/BAF: `E` highlighted directly
+  - AF: arguments whose support ⊆ `E`
+- The ABA editor has no `EvaluationHost` / `WindowExtensions` wiring yet (the shared editor
+  provides those slots). Evaluation needs that wiring whether or not the canvas converges.
+- **Shortcut for flat ABA:** it compiles exactly to a SETAF, so the SETAF module's existing
+  extension backend could evaluate it (with `∅`-attacked assumptions pre-removed). Non-flat needs
+  a real ABA/BSAF reasoner.
+- **Views as explanations:** "why is `a` out?" → highlight the BSAF edge `{a,b} ⇒ a`, then the
+  theory rule behind it.
+
+### "Open as document"
+
+Copy a compiled view into its target module as a new, independent document (AF → AF module,
+flat BSAF → SETAF module, BAF fragment → BAF module). There is no BSAF module, so non-flat BSAF
+can't be opened this way. There's no cross-module conversion hook today, so this needs a small
+document-creation entry point.
+
+### Suggested order
+
+1. Compile layer + tests.
+2. `GraphView.vue` (read-only) + the view switcher with the BSAF view.
+3. AF view (capped), then BAF (gated on the fragment).
+4. Evaluation wiring, displayed across all views.
+5. Hyperlink `arrowType` upstream; "open as document" whenever convenient.
 
 ## Open questions
 
@@ -217,7 +362,8 @@ with no deriving rule. All valid ABAFs — warn, don't wall, since users hit the
   [`TODO.md`](TODO.md).)
 - Model shape for `model.ts`: `{ atoms, assumptions: {name → contrary}, rules: [{head, body}] }`
   (the ABA Studio prototype's state) is a clean starting point.
-- Graph component: rendering *collective* (set-to-node) attack **and** support edges is new — the
-  current component only does binary attacks.
+- Graph component: collective attacks render as hyperlinks today, but hyperlinks carry only a
+  colour — collective _support_ needs an upstream `arrowType` (see _Fit with the current graph
+  editor_).
 - Flat-only v1 vs. non-flat: flat keeps the LP correspondence clean and dodges the Δ-semantics work;
   non-flat is the research-interesting case but needs the refined semantics.

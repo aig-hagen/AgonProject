@@ -133,7 +133,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
 
         <div class="flex gap-2.5">
           <button
-            class="btn btn-primary flex-1 h-11 gap-1.5"
+            class="btn btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
             @click="openContent(moduleCard.initialCotent, moduleCard.newNamePrefix)"
           >
             <PlusIcon class="size-5" /> {{ t('home.picker.createNew') }}
@@ -145,7 +145,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
                 ? moduleCard.generateHref + '&source=' + sourceDocumentId
                 : moduleCard.generateHref
             "
-            class="btn btn-outline flex-1 h-11 gap-1.5"
+            class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
           >
             <Squares2X2Icon class="size-5" /> {{ t('home.picker.generate') }}
           </RouterLink>

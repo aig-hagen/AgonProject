@@ -38,6 +38,7 @@ import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import type { DocumentId } from '@/modules/common/documents/db'
 import type { Input } from '@/modules/common/evaluation/types'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import { IdMapping } from '@/modules/common/ids'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
@@ -81,6 +82,11 @@ const { t } = useI18n({ useScope: 'global' })
 function resolveFunction(fns: SerialisationFunction[], key: string): SerialisationFunction {
   return fns.find((f) => f.key === key) ?? fns[0]!
 }
+
+const toPickerOptions = (fns: SerialisationFunction[]): PickerOption[] =>
+  fns.map((fn) => ({ value: fn.key, label: fn.displayName }))
+const selectionOptions = toPickerOptions(SELECTION_FUNCTIONS)
+const terminationOptions = toPickerOptions(TERMINATION_FUNCTIONS)
 
 // --- Persistent window state ---
 const selectedSelectionFunction = shallowRef<SerialisationFunction>(
@@ -343,29 +349,32 @@ function onWindowFocus() {
       >
         <div class="flex flex-wrap gap-3">
           <ParameterField :label="t('evaluation.fields.selection')" min-width="9rem">
-            <select v-model="selectedSelectionFunction" class="select select-sm w-full bg-base-200">
-              <option v-for="fn in SELECTION_FUNCTIONS" :key="fn.key" :value="fn">
-                {{ fn.displayName }}
-              </option>
-            </select>
+            <PickerSelect
+              :model-value="selectedSelectionFunction.key"
+              :options="selectionOptions"
+              @update:model-value="
+                selectedSelectionFunction = resolveFunction(SELECTION_FUNCTIONS, $event)
+              "
+            />
           </ParameterField>
           <ParameterField :label="t('evaluation.fields.termination')" min-width="9rem">
-            <select
-              v-model="selectedTerminationFunction"
-              class="select select-sm w-full bg-base-200"
-            >
-              <option v-for="fn in TERMINATION_FUNCTIONS" :key="fn.key" :value="fn">
-                {{ fn.displayName }}
-              </option>
-            </select>
+            <PickerSelect
+              :model-value="selectedTerminationFunction.key"
+              :options="terminationOptions"
+              @update:model-value="
+                selectedTerminationFunction = resolveFunction(TERMINATION_FUNCTIONS, $event)
+              "
+            />
           </ParameterField>
           <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
-            <select v-model="selectedMode" class="select select-sm w-full bg-base-200">
-              <option value="sequences">{{ t('evaluation.serialisation.modeSequences') }}</option>
-              <option value="interactive">
-                {{ t('evaluation.serialisation.modeInteractive') }}
-              </option>
-            </select>
+            <PickerSelect
+              :model-value="selectedMode"
+              :options="[
+                { value: 'sequences', label: t('evaluation.serialisation.modeSequences') },
+                { value: 'interactive', label: t('evaluation.serialisation.modeInteractive') },
+              ]"
+              @update:model-value="selectedMode = $event as 'sequences' | 'interactive'"
+            />
           </ParameterField>
         </div>
         <TermDefinitionBlock :id="selectedSelectionFunction.tooltipId" />

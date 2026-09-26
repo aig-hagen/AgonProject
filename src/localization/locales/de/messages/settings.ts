@@ -39,6 +39,7 @@ export default {
     highContrast: 'Hoher Kontrast',
     minimal: 'Minimal',
     library: 'Bibliothek',
+    outline: 'Umriss',
   },
   physicsMode: {
     label: 'Physikmodus',
@@ -54,6 +55,9 @@ export default {
   },
   gridCellSize: {
     label: 'Rasterzellengröße',
+  },
+  mergeReciprocalLinks: {
+    label: 'Gegenseitige Kanten zusammenführen',
   },
   snapToGrid: {
     label: 'Am Raster ausrichten',

@@ -19,9 +19,35 @@
 import { type Extension } from '@codemirror/state'
 
 import { ARGUMENT_RADIUS_IN_PX, type ArgumentData } from '@/modules/common/argumentation/model'
-import { ExportFormatId, type ExportResult, type ExportStyleOptions } from '@/modules/common/export'
+import {
+  ExportFormatId,
+  type ExportResult,
+  type ExportStyleOptions,
+  type NodeLabelMode,
+} from '@/modules/common/export'
+import { nameToMathTex, textToTex } from '@/modules/common/export/texEscape'
 
 const AF_ENV_BEGIN = '\\begin{af}'
+
+export const LATEX_PREAMBLE = '\\usepackage{argumentation}'
+
+/** Values offered for each LaTeX style option; they are the package's own keywords. */
+export const LATEX_STYLE_CHOICES = {
+  argumentStyle: ['standard', 'large', 'thick', 'gray', 'colored'],
+  nameStyle: ['math', 'bold', 'monospace', 'monoemph', 'none'],
+  attackStyle: ['standard', 'large', 'modern'],
+  supportStyle: ['standard', 'dashed', 'double'],
+  nodeLabels: ['auto', 'full', 'short'],
+} as const
+
+export const LATEX_STYLE_DEFAULTS = {
+  argumentStyle: 'standard',
+  nameStyle: 'math',
+  attackStyle: 'standard',
+  supportStyle: 'double',
+  nodeDistance: 2,
+  nodeLabels: 'auto',
+} as const satisfies ExportStyleOptions
 
 /**
  * The appearance options that ride on the `\begin{af}[…]` environment. Node distance is not
@@ -40,11 +66,13 @@ export interface AfAppearanceOptions {
  */
 export function buildAfOptionList(options: AfAppearanceOptions, includeSupport: boolean): string {
   const parts = [
-    `argumentstyle=${options.argumentStyle ?? 'colored'}`,
-    `namestyle=${options.nameStyle ?? 'math'}`,
-    `attackstyle=${options.attackStyle ?? 'standard'}`,
+    `argumentstyle=${options.argumentStyle ?? LATEX_STYLE_DEFAULTS.argumentStyle}`,
+    `namestyle=${options.nameStyle ?? LATEX_STYLE_DEFAULTS.nameStyle}`,
+    `attackstyle=${options.attackStyle ?? LATEX_STYLE_DEFAULTS.attackStyle}`,
   ]
-  if (includeSupport) parts.push(`supportstyle=${options.supportStyle ?? 'double'}`)
+  if (includeSupport) {
+    parts.push(`supportstyle=${options.supportStyle ?? LATEX_STYLE_DEFAULTS.supportStyle}`)
+  }
   return parts.join(',')
 }
 
@@ -118,7 +146,8 @@ export function buildIccmaText(
 }
 
 interface NodeExportInfo {
-  name: string
+  label: NodeLabel
+  fullName: string
   x: number
   y: number
   latexId: number
@@ -133,13 +162,21 @@ export interface ExportHooks {
   argumentOptions?: (id: number) => string
   attackOptions?: (sourceId: number, targetId: number) => string
   attackSuffix?: (sourceId: number, targetId: number) => string
-  argumentAnnotation?: (id: number) => string | undefined
+  /** `label` resolves an argument id to its node label as math-mode TeX. */
+  argumentAnnotation?: (id: number, label: (id: number) => string) => string | undefined
   setAttacks?: Iterable<SetAttack>
+  /** Adds `supportstyle` to the environment options (documents that can have supports). */
+  includeSupportStyle?: boolean
 }
 
 function buildOpts(...parts: string[]): string {
   const joined = parts.filter(Boolean).join(',')
   return joined ? `[${joined}]` : ''
+}
+
+// Shortened labels keep their full name as a trailing comment.
+function labelComment(node: NodeExportInfo): string {
+  return !node.label.shortened ? '' : ` % ${node.fullName.replace(/\s+/g, ' ')}`
 }
 
 function absolutePlacement(
@@ -151,37 +188,109 @@ function absolutePlacement(
   for (const [id, node] of nodeMap.entries()) {
     const x = snapToGrid ? Math.round(node.x).toFixed(1) : node.x.toFixed(2)
     const y = snapToGrid ? Math.round(node.y).toFixed(1) : node.y.toFixed(2)
-    text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.name}} at (${x},${y})\r\n`
+    text += `  \\argument${buildOpts(argumentOptions?.(id) ?? '')}(a${node.latexId}){${node.label.tex}} at (${x},${y})${labelComment(node)}\r\n`
   }
   return text
 }
 
-function shortenNameToLetter(name: string): string {
-  if (name.length <= 3) return name
-  const match = name.match(/[a-zA-Z0-9]/)
-  return match ? match[0] : name
+// Longer names inflate the circular TikZ nodes, so they get shortened.
+const MAX_NODE_LABEL_LENGTH = 3
+
+export interface NodeLabel {
+  /** TeX for the node, in the mode the name style typesets it in. */
+  tex: string
+  /** Math-mode TeX, for use inside formulas and annotations. */
+  mathTex: string
+  shortened: boolean
+}
+
+function shortLabelBase(name: string): string {
+  if ([...name].length <= MAX_NODE_LABEL_LENGTH && !/\s/.test(name)) return name
+  const words = name.match(/[\p{L}\p{N}]+/gu) ?? []
+  if (words.length === 0) return [...name][0] ?? 'a'
+  if (words.length === 1) return [...words[0]!][0]!
+  return words
+    .slice(0, MAX_NODE_LABEL_LENGTH)
+    .map((word) => [...word][0])
+    .join('')
+}
+
+function renderLabel(base: string, index: number | undefined, math: boolean): string {
+  const tex = math ? nameToMathTex(base) : textToTex(base)
+  if (index === undefined) return tex
+  if (!math) return `${tex}${index}`
+  return /[_^]/.test(base) ? `{${tex}}_{${index}}` : `${tex}_{${index}}`
+}
+
+/** Maps argument names to node labels; short labels are made unique with an index. */
+export function buildNodeLabels(
+  names: string[],
+  mode: NodeLabelMode,
+  nameStyle: string,
+): NodeLabel[] {
+  const math = nameStyle === 'math' || nameStyle === 'bold'
+  const trimmed = names.map((name) => name.trim().replace(/\s+/g, ' '))
+  const allShort =
+    trimmed.every((name) => /^\S{1,3}$/u.test(name)) && new Set(trimmed).size === trimmed.length
+  if (mode === 'full' || (mode === 'auto' && allShort)) {
+    return trimmed.map((name) => ({
+      tex: renderLabel(name, undefined, math),
+      mathTex: renderLabel(name, undefined, true),
+      shortened: false,
+    }))
+  }
+
+  const bases = trimmed.map(shortLabelBase)
+  const counts = new Map<string, number>()
+  for (const base of bases) counts.set(base, (counts.get(base) ?? 0) + 1)
+  const taken = new Set(
+    bases
+      .filter((base) => counts.get(base) === 1)
+      .map((base) => renderLabel(base, undefined, math)),
+  )
+  const nextIndex = new Map<string, number>()
+  return bases.map((base, i) => {
+    let index: number | undefined
+    let tex = renderLabel(base, undefined, math)
+    if (counts.get(base)! > 1) {
+      do {
+        index = (nextIndex.get(base) ?? 0) + 1
+        nextIndex.set(base, index)
+        tex = renderLabel(base, index, math)
+      } while (taken.has(tex))
+      taken.add(tex)
+    }
+    return {
+      tex,
+      mathTex: renderLabel(base, index, true),
+      shortened: index !== undefined || base !== trimmed[i],
+    }
+  })
 }
 
 function buildNodeMap(
   args: IterableIterator<[id: number, data: ArgumentData]>,
   styleOptions?: ExportStyleOptions,
 ): Map<number, NodeExportInfo> {
-  const nodeDistance = styleOptions?.nodeDistance ?? 1.5
+  const nodeDistance = styleOptions?.nodeDistance ?? LATEX_STYLE_DEFAULTS.nodeDistance
   const gridCellScale = styleOptions?.gridCellScale ?? 3
   const pixelsPerUnit = (2 * ARGUMENT_RADIUS_IN_PX * gridCellScale) / nodeDistance
-  const shortenNames = styleOptions?.shortenNames ?? true
+  const argsList = [...args]
+  const labels = buildNodeLabels(
+    argsList.map(([, data]) => data.name),
+    styleOptions?.nodeLabels ?? LATEX_STYLE_DEFAULTS.nodeLabels,
+    styleOptions?.nameStyle ?? LATEX_STYLE_DEFAULTS.nameStyle,
+  )
   const nodeMap = new Map<number, NodeExportInfo>()
-  let latexCounter = 0
-  for (const [argumentId, argumentData] of args) {
-    const nameEscaped = argumentData.name.replace(/[^a-zA-Z0-9 ]/g, '')
-    const displayName = shortenNames ? shortenNameToLetter(nameEscaped) : nameEscaped
+  argsList.forEach(([argumentId, argumentData], index) => {
     nodeMap.set(argumentId, {
-      name: displayName,
+      label: labels[index]!,
+      fullName: argumentData.name,
       x: argumentData.x / pixelsPerUnit,
       y: (argumentData.y / pixelsPerUnit) * -1,
-      latexId: ++latexCounter,
+      latexId: index + 1,
     })
-  }
+  })
   return nodeMap
 }
 
@@ -192,46 +301,42 @@ export function exportLatexArgumentationCommon(
   styleOptions?: ExportStyleOptions,
   hooks?: ExportHooks,
 ): ExportResult {
-  const argumentStyle = styleOptions?.argumentStyle ?? 'colored'
-  const nameStyle = styleOptions?.nameStyle ?? 'math'
-  const attackStyle = styleOptions?.attackStyle ?? 'standard'
-  const supportStyle = styleOptions?.supportStyle ?? 'double'
-
   const nodeMap = buildNodeMap(args, styleOptions)
   offsetNodesToOrigin(nodeMap)
 
   const getLatexId = (id: number) => nodeMap.get(id)!.latexId
 
-  let text = '\\begin{af}\r\n'
+  // Singleton set attacks are plain attacks, so they join the pairing (dual/bent) logic.
+  const setAttacks = [...(hooks?.setAttacks ?? [])]
+  const collectiveAttacks = setAttacks.filter(({ attackers }) => attackers.length > 1)
+  function* allAttacks(): IterableIterator<[number, number]> {
+    yield* attacks
+    for (const { attackers, target } of setAttacks) {
+      if (attackers.length === 1) yield [attackers[0]!, target]
+    }
+  }
+
+  const optionList = buildAfOptionList(styleOptions ?? {}, hooks?.includeSupportStyle ?? false)
+  let text = `${AF_ENV_BEGIN}[${optionList}]\r\n`
   text += absolutePlacement(nodeMap, styleOptions?.snapToGrid ?? false, hooks?.argumentOptions)
   text += emitLinks(
-    processLinks(attacks, supports),
+    processLinks(allAttacks(), supports),
     getLatexId,
     hooks?.attackOptions,
     hooks?.attackSuffix,
   )
-  if (hooks?.setAttacks) {
-    for (const { attackers, target } of hooks.setAttacks) {
-      if (attackers.length === 1) {
-        text += `  \\attack{a${getLatexId(attackers[0]!)}}{a${getLatexId(target)}}\r\n`
-      } else {
-        text += `  \\setattack{${attackers.map((id) => `a${getLatexId(id)}`).join(',')}}{a${getLatexId(target)}}\r\n`
-      }
-    }
+  for (const { attackers, target } of collectiveAttacks) {
+    text += `  \\setattack{${attackers.map((id) => `a${getLatexId(id)}`).join(',')}}{a${getLatexId(target)}}\r\n`
   }
-  text += emitAnnotations(nodeMap.keys(), getLatexId, hooks?.argumentAnnotation)
+  text += emitAnnotations(nodeMap, hooks?.argumentAnnotation)
   text += `\\end{af}`
 
-  const optionList = buildAfOptionList(
-    { argumentStyle, nameStyle, attackStyle, supportStyle },
-    true,
-  )
   return {
     text,
     // Loaded on demand: rendering pulls in opentype.js (~240 kB), only needed for SVG preview.
     svg: async () => {
       const { renderSvg } = await import('@/modules/common/export/renderSvg')
-      return renderSvg(spliceAfOptions(text, optionList).text)
+      return renderSvg(text)
     },
   }
 }
@@ -262,16 +367,16 @@ function offsetNodesToOrigin(nodes: Map<number, NodeExportInfo>): void {
 }
 
 function emitAnnotations(
-  ids: IterableIterator<number>,
-  getLatexId: (id: number) => number,
-  argumentAnnotation?: (id: number) => string | undefined,
+  nodeMap: Map<number, NodeExportInfo>,
+  argumentAnnotation?: ExportHooks['argumentAnnotation'],
 ): string {
   if (!argumentAnnotation) return ''
+  const label = (id: number) => nodeMap.get(id)?.label.mathTex ?? '?'
   let text = ''
-  for (const id of ids) {
-    const annotation = argumentAnnotation(id)
+  for (const [id, node] of nodeMap) {
+    const annotation = argumentAnnotation(id, label)
     if (annotation !== undefined) {
-      text += `  \\annotation{a${getLatexId(id)}}{${annotation}}\r\n`
+      text += `  \\annotation{a${node.latexId}}{${annotation}}\r\n`
     }
   }
   return text
@@ -311,11 +416,16 @@ function emitLinks(
     } else if (type === ProcessedLinkType.None && reverseType == ProcessedLinkType.Support) {
       text += support(targetId, sourceId)
     } else if (type === ProcessedLinkType.Attack && reverseType == ProcessedLinkType.Attack) {
-      const fwdOpts = attackOptions?.(sourceId, targetId) ?? ''
-      const revOpts = attackOptions?.(targetId, sourceId) ?? ''
-      if (fwdOpts || revOpts) {
-        text += attack(sourceId, targetId)
-        text += attack(targetId, sourceId)
+      // \dualattack takes no per-direction options or labels, so draw a bent pair instead.
+      const perDirection = [
+        attackOptions?.(sourceId, targetId),
+        attackOptions?.(targetId, sourceId),
+        attackSuffix?.(sourceId, targetId),
+        attackSuffix?.(targetId, sourceId),
+      ].some(Boolean)
+      if (perDirection) {
+        text += attack(sourceId, targetId, 'bend right')
+        text += attack(targetId, sourceId, 'bend right')
       } else {
         text += `  \\dualattack{${a(sourceId)}}{${a(targetId)}}\r\n`
       }

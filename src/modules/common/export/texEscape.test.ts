@@ -18,7 +18,7 @@
  */
 import { expect, test } from 'vitest'
 
-import { escapeTexText } from '@/modules/common/export/texEscape'
+import { escapeTexText, nameToMathTex, textToTex } from '@/modules/common/export/texEscape'
 
 const cases: [string, string][] = [
   ['a', 'a'],
@@ -32,4 +32,38 @@ const cases: [string, string][] = [
 
 test.for(cases)(`${escapeTexText.name}(%o) -> %s`, ([input, expected]) => {
   expect(escapeTexText(input)).toBe(expected)
+})
+
+const textCases: [string, string][] = [
+  ['Käse', 'K\\"{a}se'],
+  ['Straße', 'Stra\\ss{}e'],
+  ['café', "caf\\'{e}"],
+  ['a_1 & b', 'a\\_1 \\& b'],
+  ['¬a', '$\\neg$a'],
+  ['a☃', 'a'],
+]
+
+test.for(textCases)(`${textToTex.name}(%o) -> %s`, ([input, expected]) => {
+  expect(textToTex(input)).toBe(expected)
+})
+
+const mathCases: [string, string][] = [
+  ['a', 'a'],
+  ['Alibi', '\\mathit{Alibi}'],
+  ['a_1', 'a_{1}'],
+  ['a_12', 'a_{12}'],
+  ['x^2', 'x^{2}'],
+  ["a'", "a'"],
+  ['αb', '\\alpha b'],
+  ['Ωmega', '\\Omega \\mathit{mega}'],
+  ['¬a', '\\neg a'],
+  ['Red Wine', '\\mathit{Red}\\ \\mathit{Wine}'],
+  ['Käse', '\\textit{K\\"{a}se}'],
+  ['R&D', 'R\\&D'],
+  ['50%', '50\\%'],
+  ['a_', 'a\\_'],
+]
+
+test.for(mathCases)(`${nameToMathTex.name}(%o) -> %s`, ([input, expected]) => {
+  expect(nameToMathTex(input)).toBe(expected)
 })

@@ -5,6 +5,11 @@
 - labeling highlight colors - color blind mode
 - export redesign: check if there is anything that should be updated for mobile
 - implement node action bar from mobile also for desktop.
+- store state of export window in db?
+- latex export: 
+    - rectangle node shape to package
+    - can the package actually handle the name styles for all inputs?
+    - positioning of annotations need work
 
 ## Bugs and Issues
 

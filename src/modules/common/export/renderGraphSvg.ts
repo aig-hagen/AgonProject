@@ -47,10 +47,21 @@ const INLINED_STYLE_PROPERTIES = [
   'text-anchor',
   'dominant-baseline',
   'text-align',
+  // Node labels are an HTML div in a foreignObject centred with flexbox; without these the
+  // label loses its vertical centring and rides to the top of the node.
+  'display',
+  'align-items',
+  'justify-content',
+  'width',
+  'height',
   'transform',
   'transform-origin',
   'transform-box',
 ]
+
+// SVG's default fill is black, so a dropped `fill:none` (as on edge paths) fills a bent path's
+// enclosed area black. Fill must be inlined even when `none`; other properties default harmlessly.
+const KEEP_WHEN_NONE = new Set(['fill'])
 
 // Editor-only elements that shouldn't appear in an exported figure. Matched by class substring.
 const CHROME_CLASS_FRAGMENTS = [
@@ -80,9 +91,9 @@ function inlineComputedStyle(live: Element, clone: Element): void {
   let inlineStyle = ''
   for (const property of INLINED_STYLE_PROPERTIES) {
     const value = computed.getPropertyValue(property)
-    if (value && value !== 'none' && value !== 'normal') {
-      inlineStyle += `${property}:${value};`
-    }
+    if (!value || value === 'normal') continue
+    if (value === 'none' && !KEEP_WHEN_NONE.has(property)) continue
+    inlineStyle += `${property}:${value};`
   }
   if (inlineStyle) {
     const existing = clone.getAttribute('style')

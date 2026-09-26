@@ -17,11 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { BoltIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownTrayIcon, BoltIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import type { GenerateController } from '@/app/generate/useGenerate'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -102,14 +103,12 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
         <!-- Algorithm selector -->
         <div class="flex flex-col gap-1.5">
           <label class="text-[13px] font-semibold">{{ t('generate.algorithm') }}</label>
-          <select
+          <PickerSelect
             v-model="selectedAlgorithmId"
-            class="select w-full h-12 rounded-xl bg-base-200 border-base-300"
-          >
-            <option v-for="algo in algorithms" :key="algo.id" :value="algo.id">
-              {{ formatAlgorithmName(algo.id) }}
-            </option>
-          </select>
+            :options="
+              algorithms.map((algo) => ({ value: algo.id, label: formatAlgorithmName(algo.id) }))
+            "
+          />
           <p v-if="selectedAlgorithm" class="text-xs text-base-content/50">
             {{ selectedAlgorithm.description }}
           </p>
@@ -314,28 +313,29 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
         <p v-if="tooManyEdgesForEditor" class="text-xs text-error mt-2">
           {{ t('generate.tooManyEdges', { max: MAX_EDGES_FOR_EDITOR }) }}
         </p>
-        <div class="flex flex-wrap gap-2 mt-3">
+        <div class="flex flex-col gap-2 mt-3">
           <button
-            class="btn btn-sm btn-primary"
+            class="btn btn-primary h-12 w-full rounded-2xl"
             :disabled="tooManyEdgesForEditor"
             @click="openInEditor"
           >
             {{ t('generate.openInEditor') }}
           </button>
-          <button
-            v-if="frameworkTypeId === 'abstract'"
-            class="btn btn-sm btn-soft"
-            @click="downloadICCMA"
-          >
-            {{ t('generate.downloadIccma') }}
-          </button>
-          <button
-            v-if="frameworkTypeId !== 'adf' && frameworkTypeId !== 'setaf'"
-            class="btn btn-sm btn-soft"
-            @click="downloadTGF"
-          >
-            {{ t('generate.downloadTgf') }}
-          </button>
+          <div v-if="frameworkTypeId !== 'adf' && frameworkTypeId !== 'setaf'" class="flex gap-2">
+            <button
+              v-if="frameworkTypeId === 'abstract'"
+              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+              @click="downloadICCMA"
+            >
+              <ArrowDownTrayIcon class="size-5" /> {{ t('generate.downloadIccma') }}
+            </button>
+            <button
+              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+              @click="downloadTGF"
+            >
+              <ArrowDownTrayIcon class="size-5" /> {{ t('generate.downloadTgf') }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

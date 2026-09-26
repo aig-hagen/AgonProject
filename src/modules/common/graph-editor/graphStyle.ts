@@ -24,6 +24,9 @@ export interface GraphStyle {
   nodeStrokeWidth: number
   linkColor: string
   linkStrokeWidth: number
+  // Optional per-style label font. Omitted styles fall back to the global graph-label font
+  // defined in style.css. Label fonts are CSS-only, so this may reference a CSS variable.
+  nodeFont?: string
 }
 
 export const GRAPH_STYLE_DEFAULT: GraphStyle = {
@@ -65,5 +68,17 @@ export const GRAPH_STYLE_LIBRARY: GraphStyle = {
   nodeStrokeColor: 'transparent',
   nodeStrokeWidth: 0,
   linkColor: '#004c97',
+  linkStrokeWidth: 2.5,
+}
+
+// Amber outline over a faint amber-tinted fill: the ABA assumption-node scheme, with the
+// identity in the border so the fill stays free for evaluation shading. Every color is a live
+// palette token — the graph editor resolves these to concrete colors per theme before use, so a
+// single definition covers light and dark and nothing drifts from the palette.
+export const GRAPH_STYLE_OUTLINE: GraphStyle = {
+  nodeColor: 'color-mix(in srgb, var(--color-secondary) 22%, var(--color-base-100))',
+  nodeStrokeColor: 'var(--color-secondary)',
+  nodeStrokeWidth: 2,
+  linkColor: 'var(--color-primary)',
   linkStrokeWidth: 2.5,
 }

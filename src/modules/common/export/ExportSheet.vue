@@ -30,14 +30,21 @@ import {
 import { computed, inject, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import {
+  LATEX_PREAMBLE,
+  LATEX_STYLE_CHOICES,
+  LATEX_STYLE_DEFAULTS,
+} from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
+import ParameterField from '@/modules/common/forms/ParameterField.vue'
+import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
 import { useSettings } from '@/modules/common/settings/useSettings'
 import { supportsNativeShare } from '@/modules/common/share/nativeShare'
 import { QUICK_SHARE_KEY } from '@/modules/common/share/quickShareKey'
 
-import type { ExportConfig, ExportFileData, ExportStyleOptions } from '.'
+import type { ExportConfig, ExportFileData, ExportStyleOptions, NodeLabelMode } from '.'
 import { ExportFormatId } from '.'
 
 const { input, exportConfigs } = defineProps<{
@@ -62,13 +69,13 @@ const canShareNatively = supportsNativeShare()
 type Screen = 'picker' | 'svg' | 'code'
 const screen = ref<Screen>('picker')
 
-// Appearance options change the package line and rendered SVG but not the TikZ body;
-// structure options change TikZ coordinates as well as the SVG.
-const argumentStyle = shallowRef('standard')
-const nameStyle = shallowRef('math')
-const attackStyle = shallowRef('standard')
-const supportStyle = shallowRef('double')
-const nodeDistance = shallowRef(1.5)
+// Same defaults and output as the desktop LaTeX studio.
+const argumentStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.argumentStyle)
+const nameStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.nameStyle)
+const attackStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.attackStyle)
+const supportStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.supportStyle)
+const nodeDistance = shallowRef<number>(LATEX_STYLE_DEFAULTS.nodeDistance)
+const nodeLabels = shallowRef<NodeLabelMode>(LATEX_STYLE_DEFAULTS.nodeLabels)
 
 const isBipolarDocument = computed(
   () => typeof (input as unknown as { supports?: unknown }).supports === 'function',
@@ -81,6 +88,7 @@ const styleOptions = computed<ExportStyleOptions>(() => ({
   supportStyle: supportStyle.value,
   nodeDistance: nodeDistance.value,
   gridCellScale: gridCellScale.value,
+  nodeLabels: nodeLabels.value,
 }))
 
 // The config with a code editor (LaTeX) is both the code view and the SVG source;
@@ -92,16 +100,20 @@ const codeResult = computed(() =>
   codeConfig.value === undefined ? undefined : codeConfig.value.export(input, styleOptions.value),
 )
 
-const packageLine = computed(() => {
-  if (codeConfig.value?.id !== ExportFormatId.Latex) return undefined
-  const opts = [
-    ...(argumentStyle.value !== 'standard' ? [`argumentstyle=${argumentStyle.value}`] : []),
-    `namestyle=${nameStyle.value}`,
-    ...(attackStyle.value !== 'standard' ? [`attackstyle=${attackStyle.value}`] : []),
-  ]
-  if (isBipolarDocument.value) opts.push(`supportstyle=${supportStyle.value}`)
-  return `\\usepackage[${opts.join(',')}]{argumentation}`
-})
+const toOptions = (values: readonly string[]): PickerOption[] =>
+  values.map((v) => ({ value: v, label: v }))
+const argumentStyleOptions = toOptions(LATEX_STYLE_CHOICES.argumentStyle)
+const nameStyleOptions = toOptions(LATEX_STYLE_CHOICES.nameStyle)
+const attackStyleOptions = toOptions(LATEX_STYLE_CHOICES.attackStyle)
+const supportStyleOptions = toOptions(LATEX_STYLE_CHOICES.supportStyle)
+const nodeLabelOptions = computed<PickerOption[]>(() =>
+  LATEX_STYLE_CHOICES.nodeLabels.map((value) => ({
+    value,
+    label: t(`export.style.nodeLabelOptions.${value}`),
+  })),
+)
+
+const isLatex = computed(() => codeConfig.value?.id === ExportFormatId.Latex)
 
 // WYSIWYG SVG snapshot of the live graph. Serialized only on the preview screen, and only when
 // a renderer is provided (i.e. inside a graph editor). No TikZ/WebAssembly, so it works on any
@@ -226,11 +238,11 @@ function download(config: ExportConfig<DocumentT>) {
 
       <div class="flex gap-2">
         <ButtonSave
-          class="btn btn-sm btn-soft flex-1"
+          class="btn btn-primary h-12 flex-1 rounded-2xl"
           :filedata="svgFiledata"
           @export="emit('export', $event)"
         />
-        <ButtonCopy class="btn btn-sm btn-soft flex-1" :text="svgText">SVG</ButtonCopy>
+        <ButtonCopy class="btn btn-soft h-12 flex-1 rounded-2xl" :text="svgText">SVG</ButtonCopy>
       </div>
     </div>
 
@@ -247,86 +259,80 @@ function download(config: ExportConfig<DocumentT>) {
           :title="codeConfig.references[0].label"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn btn-sm btn-ghost btn-square"
+          class="btn btn-ghost btn-square size-12 rounded-2xl"
         >
-          <ArrowTopRightOnSquareIcon class="size-4" />
+          <ArrowTopRightOnSquareIcon class="size-5" />
         </a>
         <ButtonSave
-          class="btn btn-sm btn-soft flex-1"
+          class="btn btn-primary h-12 flex-1 rounded-2xl"
           :filedata="codeFiledata"
           @export="emit('export', $event)"
         />
-        <ButtonCopy class="btn btn-sm btn-soft flex-1" :text="codeResult?.text">{{
+        <ButtonCopy tex class="btn btn-soft h-12 flex-1 rounded-2xl" :text="codeResult?.text">{{
           t('export.formatLabels.code')
         }}</ButtonCopy>
       </div>
 
-      <div v-if="packageLine" class="flex items-center gap-2">
+      <div v-if="isLatex" class="flex items-center gap-2">
         <code class="flex-1 min-w-0 truncate rounded bg-base-200 px-2 py-1.5 text-[0.7rem]">{{
-          packageLine
+          LATEX_PREAMBLE
         }}</code>
-        <ButtonCopy class="btn btn-xs btn-ghost btn-square" :text="packageLine" icon-only tex />
+        <ButtonCopy
+          class="btn btn-xs btn-ghost btn-square"
+          :text="LATEX_PREAMBLE"
+          :title="t('export.button.copyBare')"
+          icon-only
+        />
       </div>
 
       <pre
         class="overflow-auto rounded bg-base-200 p-2 text-[0.7rem] leading-relaxed max-h-64"
       ><code>{{ codeResult?.text }}</code></pre>
 
-      <details v-if="packageLine" class="collapse collapse-arrow bg-base-200/60 rounded-field">
+      <details v-if="isLatex" class="collapse collapse-arrow bg-base-200/60 rounded-field">
         <summary class="collapse-title text-sm font-medium">
           {{ t('export.style.options') }}
         </summary>
         <div class="collapse-content flex flex-col gap-3">
-          <div class="grid grid-cols-2 gap-2">
-            <label class="select select-sm">
-              <span class="label">{{ t('export.style.argument') }}</span>
-              <select v-model="argumentStyle">
-                <option>standard</option>
-                <option>large</option>
-                <option>thick</option>
-                <option>gray</option>
-                <option>colored</option>
-              </select>
-            </label>
-            <label class="select select-sm">
-              <span class="label">{{ t('export.style.name') }}</span>
-              <select v-model="nameStyle">
-                <option>math</option>
-                <option>bold</option>
-                <option>monospace</option>
-                <option>monoemph</option>
-                <option>none</option>
-              </select>
-            </label>
-            <label class="select select-sm">
-              <span class="label">{{ t('export.style.attack') }}</span>
-              <select v-model="attackStyle">
-                <option>standard</option>
-                <option>large</option>
-                <option>modern</option>
-              </select>
-            </label>
-            <label v-if="isBipolarDocument" class="select select-sm">
-              <span class="label">{{ t('export.style.support') }}</span>
-              <select v-model="supportStyle">
-                <option>standard</option>
-                <option>dashed</option>
-                <option>double</option>
-              </select>
-            </label>
+          <div class="grid grid-cols-2 gap-3">
+            <ParameterField :label="t('export.style.argument')" min-width="0" max-width="none">
+              <PickerSelect v-model="argumentStyle" :options="argumentStyleOptions" />
+            </ParameterField>
+            <ParameterField :label="t('export.style.name')" min-width="0" max-width="none">
+              <PickerSelect v-model="nameStyle" :options="nameStyleOptions" />
+            </ParameterField>
+            <ParameterField :label="t('export.style.attack')" min-width="0" max-width="none">
+              <PickerSelect v-model="attackStyle" :options="attackStyleOptions" />
+            </ParameterField>
+            <ParameterField
+              v-if="isBipolarDocument"
+              :label="t('export.style.support')"
+              min-width="0"
+              max-width="none"
+            >
+              <PickerSelect v-model="supportStyle" :options="supportStyleOptions" />
+            </ParameterField>
+            <ParameterField :label="t('export.style.nodeLabels')" min-width="0" max-width="none">
+              <PickerSelect
+                :model-value="nodeLabels"
+                :options="nodeLabelOptions"
+                @update:model-value="nodeLabels = $event as NodeLabelMode"
+              />
+            </ParameterField>
           </div>
-          <label class="label gap-2">
-            <span>{{ t('export.style.nodeDistance') }}</span>
-            <input
-              type="range"
-              class="range range-sm flex-1"
-              min="0.5"
-              max="4"
-              step="0.25"
-              v-model.number="nodeDistance"
-            />
-            <span class="text-sm w-6 text-right opacity-60">{{ nodeDistance }}</span>
-          </label>
+          <ParameterField :label="t('export.style.nodeDistance')" min-width="0" max-width="none">
+            <div class="flex items-center gap-3">
+              <input
+                type="range"
+                class="range range-xs range-primary flex-1"
+                min="0.5"
+                max="4"
+                step="0.25"
+                v-model.number="nodeDistance"
+              />
+              <span class="w-8 text-right font-mono text-xs opacity-70">{{ nodeDistance }}</span>
+            </div>
+          </ParameterField>
         </div>
       </details>
     </div>

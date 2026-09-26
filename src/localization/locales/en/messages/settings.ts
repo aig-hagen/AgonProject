@@ -39,6 +39,7 @@ export default {
     highContrast: 'High contrast',
     minimal: 'Minimal',
     library: 'Library',
+    outline: 'Outline',
   },
   physicsMode: {
     label: 'Physics mode',
@@ -54,6 +55,9 @@ export default {
   },
   gridCellSize: {
     label: 'Grid cell size',
+  },
+  mergeReciprocalLinks: {
+    label: 'Merge mutual edges',
   },
   snapToGrid: {
     label: 'Snap to grid',

@@ -22,6 +22,7 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import type { GenerateController } from '@/app/generate/useGenerate'
+import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -94,11 +95,12 @@ const {
           <!-- Algorithm selector -->
           <div>
             <label class="text-sm font-medium block mb-1">{{ t('generate.algorithm') }}</label>
-            <select class="select select-sm w-full" v-model="selectedAlgorithmId">
-              <option v-for="algo in algorithms" :key="algo.id" :value="algo.id">
-                {{ formatAlgorithmName(algo.id) }}
-              </option>
-            </select>
+            <PickerSelect
+              v-model="selectedAlgorithmId"
+              :options="
+                algorithms.map((algo) => ({ value: algo.id, label: formatAlgorithmName(algo.id) }))
+              "
+            />
             <p v-if="selectedAlgorithm" class="text-xs text-base-content/50 mt-1">
               {{ selectedAlgorithm.description }}
             </p>

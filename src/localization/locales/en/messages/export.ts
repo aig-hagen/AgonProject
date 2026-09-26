@@ -62,6 +62,8 @@ export default {
     attack: 'Attack',
     support: 'Support',
     nodeDistance: 'Node Distance',
+    nodeLabels: 'Node Labels',
+    nodeLabelOptions: { auto: 'Auto', full: 'Full names', short: 'Short' },
   },
   formatLabels: {
     text: 'text',

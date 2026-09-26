@@ -109,6 +109,7 @@ import {
   GRAPH_STYLE_HIGH_CONTRAST,
   GRAPH_STYLE_LIBRARY,
   GRAPH_STYLE_MINIMAL,
+  GRAPH_STYLE_OUTLINE,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
@@ -217,10 +218,35 @@ function onSelectionDelete() {
       })
     }
     triggerSettle()
+  } else if (sel.kind === 'hyperlink') {
+    const ends = hyperLinkPublicEnds(sel.id as string)
+    graphComponentRef.value?.deleteElement(sel.id)
+    if (ends !== undefined) emit('hyperLinkDeleted', ends)
+    triggerSettle()
+  } else if (sel.kind === 'hyperlink-source') {
+    const ends = sel.hyperLinkId === undefined ? undefined : hyperLinkPublicEnds(sel.hyperLinkId)
+    graphComponentRef.value?.deleteElement(sel.id)
+    if (ends !== undefined && sel.sourceId !== undefined && idMapping.has(sel.sourceId)) {
+      emit('hyperLinkSourceRemoved', {
+        ...ends,
+        removedSourceId: idMapping.getOrFail(sel.sourceId),
+      })
+    }
+    triggerSettle()
   } else {
     graphComponentRef.value?.deleteElement(sel.id)
   }
   selection.value = null
+}
+
+/** Public sources/target of an internal hyperlink id, or `undefined` if any end is unmapped. */
+function hyperLinkPublicEnds(internalHyperLinkId: string) {
+  const { sourceIds, targetId } = parseHyperLinkId(internalHyperLinkId)
+  if (!sourceIds.every((id) => idMapping.has(id)) || !idMapping.has(targetId)) return undefined
+  return {
+    sourceIds: sourceIds.map((id) => idMapping.getOrFail(id)),
+    targetId: idMapping.getOrFail(targetId),
+  }
 }
 
 /** Public source/target of an internal link id, or `undefined` if its endpoints are unmapped. */
@@ -378,8 +404,9 @@ const {
   gridCellScale,
   snapMode,
   showHints,
+  mergeReciprocalLinks,
 } = useSettings()
-const effectiveStyle = computed<GraphStyle>(() => {
+function pickStyle(): GraphStyle {
   if (graphStyle !== undefined) return graphStyle
   switch (graphStyleSetting.value) {
     case 'high-contrast':
@@ -388,8 +415,37 @@ const effectiveStyle = computed<GraphStyle>(() => {
       return GRAPH_STYLE_MINIMAL
     case 'library':
       return GRAPH_STYLE_LIBRARY
+    case 'outline':
+      return GRAPH_STYLE_OUTLINE
     default:
       return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
+  }
+}
+
+// Resolve a CSS color that may reference palette tokens (`var(...)` / `color-mix(...)`) to a
+// concrete color, so it can be handed to the graph library (which can't parse either). Plain
+// hex/named colors pass through untouched.
+function resolveCssColor(value: string): string {
+  if (typeof document === 'undefined') return value
+  if (!value.includes('var(') && !value.includes('color-mix')) return value
+  const probe = document.createElement('span')
+  probe.style.color = value
+  probe.style.position = 'absolute'
+  probe.style.pointerEvents = 'none'
+  document.body.appendChild(probe)
+  const resolved = getComputedStyle(probe).color
+  probe.remove()
+  return resolved || value
+}
+
+const effectiveStyle = computed<GraphStyle>(() => {
+  // Referenced so token-based colors re-resolve when the theme toggles.
+  void isDark.value
+  const base = pickStyle()
+  return {
+    ...base,
+    nodeColor: resolveCssColor(base.nodeColor),
+    linkColor: resolveCssColor(base.linkColor),
   }
 })
 
@@ -498,21 +554,17 @@ if (defaultLinkType === undefined) {
 }
 const selectedLinkType = ref<LinkType>(defaultLinkType)
 
-function renderNewState(state: GraphEditorState, center: boolean) {
-  setGraph(state, center)
-}
-
 watch(
   () => state,
   () => {
     if (state.redraw) {
-      setGraph(state, false)
+      updateGraph(state)
     }
   },
 )
 
 watch(isDark, () => {
-  setGraph(state, false)
+  updateGraph(state)
 })
 
 // Opened by the compact Evaluate button; owned by the module so its evaluation host
@@ -582,6 +634,13 @@ const emit = defineEmits<{
       targetId: NodeId
     },
   ]
+  hyperLinkSourceRemoved: [
+    data: {
+      sourceIds: NodeId[]
+      targetId: NodeId
+      removedSourceId: NodeId
+    },
+  ]
   annotationClicked: [
     data: {
       id: NodeId
@@ -637,8 +696,8 @@ watch(defaultShowGrid, (v) => {
 watch(defaultGridType, (type) => {
   graphComponentRef.value?.setGridType(type)
 })
-watch(graphStyleSetting, () => {
-  setGraph(state, false)
+watch([graphStyleSetting, mergeReciprocalLinks], () => {
+  updateGraph(state)
 })
 watch(physicsMode, () => {
   tutorialPhysicsToggleCount.value++
@@ -697,6 +756,7 @@ function onNodeCreated(
 
   const publicId = idGenerator.generate()
   idMapping.add(node.id, publicId)
+  graphComponentRef.value!.setNodeImportedId(node.id, publicId)
   const nodeData = {
     id: publicId,
     label: name,
@@ -745,18 +805,42 @@ function onHyperLinkCreated(link: { id: string; label?: string }, cause: EVENT_C
   void nextTick(() => {
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
     graphComponentRef.value!.setColor(linkColor, link.id)
-    applyHyperLinkSourceColor(link.id, linkColor)
+    graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
   })
 }
 
+// Removing a branch of a two-source hyperlink also fires hyperLinkDeleted and linkCreated for
+// the conversion; hyperLinkSourceRemoved already covers both.
+let pendingConversion: { hyperLinkId: string; linkId?: string } | undefined
+
 function onHyperLinkDeleted(link: { id: string; label?: string }, cause: EVENT_CAUSE) {
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
-  const { sourceIds: internalSourceIds, targetId: internalTargetId } = parseHyperLinkId(link.id)
-  if (!internalSourceIds.every((id) => idMapping.has(id)) || !idMapping.has(internalTargetId))
+  if (pendingConversion?.hyperLinkId === link.id) {
+    if (pendingConversion.linkId === undefined) pendingConversion = undefined
     return
-  const publicSourceIds = internalSourceIds.map((id) => idMapping.getOrFail(id))
-  const publicTargetId = idMapping.getOrFail(internalTargetId)
-  emit('hyperLinkDeleted', { sourceIds: publicSourceIds, targetId: publicTargetId })
+  }
+  const ends = hyperLinkPublicEnds(link.id)
+  if (ends === undefined) return
+  emit('hyperLinkDeleted', ends)
+  triggerSettle()
+}
+
+function onHyperLinkSourceDeleted(
+  source: {
+    previousHyperLinkId: string
+    hyperLinkId?: string
+    sourceId: number
+    convertedLinkId?: string
+  },
+  cause: EVENT_CAUSE,
+) {
+  if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
+  if (source.hyperLinkId === undefined) {
+    pendingConversion = { hyperLinkId: source.previousHyperLinkId, linkId: source.convertedLinkId }
+  }
+  const ends = hyperLinkPublicEnds(source.previousHyperLinkId)
+  if (ends === undefined || !idMapping.has(source.sourceId)) return
+  emit('hyperLinkSourceRemoved', { ...ends, removedSourceId: idMapping.getOrFail(source.sourceId) })
   triggerSettle()
 }
 
@@ -782,6 +866,10 @@ function onLinkCreated(
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
     return
   }
+  if (pendingConversion?.linkId === link.id) {
+    pendingConversion = undefined
+    return
+  }
   const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(link.id)
   const publicSourceId = idMapping.getOrFail(internalSourceId)
   const publicTargetId = idMapping.getOrFail(internalTargetId)
@@ -795,7 +883,7 @@ function onLinkCreated(
     const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
     graphComponentRef.value!.setColor(linkColor, link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
-    applyLinkDash(link.id, linkConfigs[selectedLinkType.value]?.dashArray)
+    applyReciprocalStyle(link.id, selectedLinkType.value)
   })
 }
 
@@ -857,44 +945,27 @@ const saveViewport = useDebounceFn((viewport: StoredViewport) => {
   void setUIStateValue(db, documentId, VIEWPORT_STATE_KEY, viewport)
 }, 400)
 
-function setupZoomAndDragObservers() {
-  zoomObserver?.disconnect()
+let previousViewport: StoredViewport = { k: 1, x: 0, y: 0 }
+
+function onViewportChanged(viewport: StoredViewport) {
+  const { k, x, y } = viewport
+  overlayGroupRef.value?.setAttribute('transform', `translate(${x},${y}) scale(${k})`)
+  // Track pan vs zoom for tutorial context
+  const previous = previousViewport
+  if (Math.abs(k - previous.k) > 0.001) tutorialZoomCount.value++
+  else if (Math.abs(x - previous.x) > 0.5 || Math.abs(y - previous.y) > 0.5)
+    tutorialPanCount.value++
+  previousViewport = { k, x, y }
+  void saveViewport(previousViewport)
+}
+
+function setupDragObserver() {
   dragObserver?.disconnect()
 
   const zoomGroup = containerRef.value?.querySelector(
     '.graph-controller__graph-canvas > g',
   ) as SVGGElement | null
-  if (!zoomGroup || !overlayGroupRef.value) return
-
-  let prevTransformScale = 1
-  let prevTransformTx = 0
-  let prevTransformTy = 0
-
-  const syncTransform = () => {
-    const transform = zoomGroup.getAttribute('transform')
-    if (overlayGroupRef.value) {
-      overlayGroupRef.value.setAttribute('transform', transform ?? '')
-    }
-    // Track pan vs zoom for tutorial context
-    if (transform) {
-      const m = /translate\(([^,]+),([^)]+)\)\s*scale\(([^)]+)\)/.exec(transform)
-      if (m) {
-        const tx = parseFloat(m[1]!)
-        const ty = parseFloat(m[2]!)
-        const k = parseFloat(m[3]!)
-        if (Math.abs(k - prevTransformScale) > 0.001) tutorialZoomCount.value++
-        else if (Math.abs(tx - prevTransformTx) > 0.5 || Math.abs(ty - prevTransformTy) > 0.5)
-          tutorialPanCount.value++
-        prevTransformScale = k
-        prevTransformTx = tx
-        prevTransformTy = ty
-        void saveViewport({ k, x: tx, y: ty })
-      }
-    }
-  }
-  syncTransform()
-  zoomObserver = new MutationObserver(syncTransform)
-  zoomObserver.observe(zoomGroup, { attributes: true, attributeFilter: ['transform'] })
+  if (!zoomGroup) return
 
   const nodeIdPrefix = `${graphComponentId}-node-`
   dragObserver = new MutationObserver((mutations) => {
@@ -972,7 +1043,7 @@ onMounted(() => {
     },
   })
 
-  renderNewState(state, true)
+  setGraph(state)
 
   // Restore a previously saved pan/zoom for this document, overriding the auto-centered
   // view above. Applied after the fact (rather than before centering) since the read is
@@ -981,7 +1052,7 @@ onMounted(() => {
     if (viewport) applyViewport(viewport)
   })
 
-  setupZoomAndDragObservers()
+  setupDragObserver()
 
   // The graph-component host has `touch-action: none` which prevents the browser
   // from generating synthetic dblclick events from double-tap. We detect double-tap
@@ -1205,74 +1276,45 @@ function toArrowType(linkType: LinkType): ArrowType {
   throw new Error('Encountered unsupported linkType')
 }
 
-function applyHyperLinkSourceColor(hyperLinkId: string, color: string): void {
-  const el = graphComponentRef.value?.$el as Element | undefined
-  if (!el) return
-  const targetPath = el.querySelector(
-    `#${CSS.escape(`${graphComponentId}-hyperlink-${hyperLinkId}`)}`,
-  )
-  const container = targetPath?.closest('.graph-controller__hyperlink-container')
-  if (!container) return
-  container
-    .querySelectorAll<SVGPathElement>('.graph-controller__hyperlink-source-path')
-    .forEach((path) => {
-      path.style.stroke = color
-    })
+/** Only a mutual pair of the same link type is drawn as a split line. */
+function reciprocalStyleFor(
+  links: GraphEditorState['links'],
+  sourceId: number,
+  targetId: number,
+  type: LinkType,
+): NonNullable<jsonLink['reciprocalStyle']> {
+  if (!mergeReciprocalLinks.value) return 'arc'
+  const reverse = links.find((l) => l.sourceId === targetId && l.targetId === sourceId)
+  return reverse?.type === type ? 'split' : 'arc'
 }
 
-function applyLinkDash(linkId: string, dashArray?: string): void {
-  const el = graphComponentRef.value?.$el?.querySelector(
-    `.graph-controller__link[id$="-link-${linkId}"]`,
-  )
-  if (el instanceof SVGPathElement) {
-    el.style.strokeDasharray = dashArray ?? ''
-  }
+function applyReciprocalStyle(internalLinkId: string, type: LinkType) {
+  const ends = edgePublicEndpoints(internalLinkId)
+  if (ends === undefined) return
+  const { sourceId, targetId } = parseLinkId(internalLinkId)
+  const style = reciprocalStyleFor(state.links, ends.sourceId, ends.targetId, type)
+  graphComponentRef.value!.setLinkReciprocalStyle(style, [
+    internalLinkId,
+    `${targetId}-${sourceId}`,
+  ])
 }
 
-function setGraph(state: GraphEditorState, center: boolean): void {
-  const graphComponent = graphComponentRef.value
-  if (graphComponent === null) {
-    throw new Error('Graph component is not rendered.')
-  }
-  // A redraw reassigns internal ids, so any open selection no longer resolves — dismiss it.
-  selection.value = null
-  // The library resets its hyperlink source set on setGraph too; drop our mirror so the
-  // pending-set pill doesn't linger with stale internal ids after a re-render.
-  hyperLinkSources.value = []
-  // When physics is active, nodes may have drifted from their stored model positions.
-  // Capture current visual positions before resetting so nodes don't snap back.
-  const preservedPositions = new Map<number, { x: number; y: number }>()
+function buildGraphJson(state: GraphEditorState) {
+  const graphComponent = graphComponentRef.value!
+  // With physics on, nodes may have drifted from their stored model positions; keep them there.
+  const livePositions = new Map<number, { x: number; y: number }>()
   if (physicsMode.value !== 'off') {
     for (const internalId of idMapping.inputIds()) {
-      preservedPositions.set(
-        idMapping.getOrFail(internalId),
-        graphComponent.getNodePosition(internalId),
-      )
+      livePositions.set(idMapping.getOrFail(internalId), graphComponent.getNodePosition(internalId))
     }
   }
-  // Capture the D3 zoom state before setGraph destroys and recreates the SVG canvas.
-  // setGraph resets D3 zoom to identity; restoring it keeps the graph visually stable.
-  // Only for in-place redraws (center=false) — initial renders should use the library defaults.
-  const savedZoom = center
-    ? null
-    : (() => {
-        const z = (
-          containerRef.value?.querySelector('.graph-controller__graph-canvas') as
-            | (SVGElement & { __zoom?: { k: number; x: number; y: number } })
-            | null
-        )?.__zoom
-        return z != null ? { k: z.k, x: z.x, y: z.y } : null
-      })()
-  idGenerator = new IdGenerator()
-  idMapping = new IdMapping()
-  liveNodePositions.value = new Map()
   const nodes: jsonNode[] = state.nodes.map((node) => {
-    const preserved = preservedPositions.get(node.id)
+    const live = livePositions.get(node.id)
     return {
       id: node.id,
       label: node.label,
-      x: preserved?.x ?? node.x,
-      y: preserved?.y ?? node.y,
+      x: live?.x ?? node.x,
+      y: live?.y ?? node.y,
       color: effectiveStyle.value.nodeColor,
       outline: nodeOutlines?.get(node.id),
     }
@@ -1282,15 +1324,20 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     targetId: link.targetId,
     color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
     arrowType: toArrowType(link.type),
+    reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
   }))
   const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => ({
     sourceIds: hyperLink.sourceIds,
     targetId: hyperLink.targetId,
     color: linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor,
+    arrowType: toArrowType(hyperLink.type),
   }))
+  return { nodes, links, hyperLinks }
+}
 
-  graphComponent.setGraph({ nodes, links, hyperLinks }, true)
-  const { nodes: importedNodes } = graphComponent.getGraph(
+/** Rebuilds the internal → public id mapping from the displayed graph. */
+function syncIdMapping() {
+  const { nodes: importedNodes } = graphComponentRef.value!.getGraph(
     'json',
     false,
     false,
@@ -1298,72 +1345,91 @@ function setGraph(state: GraphEditorState, center: boolean): void {
     false,
     true,
   ) as { nodes: { id: number; idImported: number }[] }
-
+  idGenerator = new IdGenerator()
+  idMapping = new IdMapping()
   for (const importedNode of importedNodes) {
     idGenerator.forward(importedNode.idImported)
     idMapping.add(importedNode.id, importedNode.idImported)
   }
+  return importedNodes
+}
+
+function adjustLabelFontSizes(state: GraphEditorState) {
+  for (const node of state.nodes) {
+    if (!node.label || !idMapping.hasReverse(node.id)) continue
+    adjustNodeLabelFontSize(
+      graphComponentRef.value?.$el as Element | undefined,
+      graphComponentId,
+      idMapping.getOrFailReverse(node.id),
+      node.label,
+    )
+  }
+}
+
+/** Initial render: builds the graph from scratch and fits it into view. */
+function setGraph(state: GraphEditorState): void {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) {
+    throw new Error('Graph component is not rendered.')
+  }
+  selection.value = null
+  hyperLinkSources.value = []
+  liveNodePositions.value = new Map()
+  graphComponent.setGraph(buildGraphJson(state), true)
+  syncIdMapping()
 
   void nextTick(() => {
     previousBadgeInternalIds = new Set()
     applyNodeWeights(nodeWeights)
-    // Outlines were already applied wholesale as node props by setGraph above.
+    // Outlines were already applied as node props by setGraph above.
     previousNodeOutlines = new Map(nodeOutlines ?? [])
     previousAnnotationContent = new Map()
-    for (const [publicId, annotation] of nodeAnnotations ?? []) {
-      if (!idMapping.hasReverse(publicId)) continue
-      const internalId = idMapping.getOrFailReverse(publicId)
-      graphComponent.createAnnotation(internalId, annotation.content, annotation.position)
-      previousAnnotationContent.set(publicId, annotation.content)
-    }
-    for (const link of state.links) {
-      const internalSourceId = idMapping.getOrFailReverse(link.sourceId)
-      const internalTargetId = idMapping.getOrFailReverse(link.targetId)
-      applyLinkDash(`${internalSourceId}-${internalTargetId}`, linkConfigs[link.type]?.dashArray)
-    }
-    for (const hyperLink of state.hyperLinks ?? []) {
-      const internalSourceIds = hyperLink.sourceIds
-        .map((id) => idMapping.getOrFailReverse(id))
-        .sort((a, b) => a - b)
-      const internalTargetId = idMapping.getOrFailReverse(hyperLink.targetId)
-      const internalHyperLinkId = `${internalSourceIds.join(',')}-${internalTargetId}`
-      const color = linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor
-      applyHyperLinkSourceColor(internalHyperLinkId, color)
-    }
-    for (const importedNode of importedNodes) {
-      const node = state.nodes.find((n) => n.id === importedNode.idImported)
-      if (node?.label)
-        adjustNodeLabelFontSize(
-          graphComponentRef.value?.$el as Element | undefined,
-          graphComponentId,
-          importedNode.id,
-          node.label,
-        )
-    }
-    // setGraph recreates the SVG canvas and resets D3 zoom to identity. Restore the
-    // captured zoom so node visual positions don't jump after an in-place redraw. Route
-    // through setViewport so the library's cached transform (used by pointer-to-graph math,
-    // e.g. the edge-creation preview) stays in sync.
-    if (savedZoom !== null) {
-      graphComponent.setViewport(savedZoom.k, savedZoom.x, savedZoom.y)
-    }
-    // setGraph rebuilds the graph DOM, potentially replacing the zoom group element that
-    // zoomObserver and dragObserver are watching. Reconnect them to the current element
-    // so that the overlay transform sync and live drag positions keep working.
-    setupZoomAndDragObservers()
+    applyAnnotationContentUpdates(nodeAnnotations)
+    adjustLabelFontSizes(state)
+    setupDragObserver()
     applyGridVisibility(showGrid.value)
     graphComponentRef.value?.setGridType(defaultGridType.value)
     graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
     graphComponentRef.value?.setSnapToGrid(snapMode.value)
-    if (physicsMode.value === 'on' && center) {
+    if (physicsMode.value === 'on') {
       triggerSettle()
     }
   })
 
-  if (center) {
-    // Initial fit after (re)loading a graph: jump instantly, no glide from the reset transform.
-    fitToView(0, 0, 0)
+  // Jump instantly, no glide from the reset transform.
+  fitToView(0, 0, 0)
+}
+
+/** Reconciles the displayed graph with `state` in place, keeping viewport and selection. */
+function updateGraph(state: GraphEditorState): void {
+  const graphComponent = graphComponentRef.value
+  if (graphComponent === null) {
+    throw new Error('Graph component is not rendered.')
   }
+  const previousInternalIds = new Set(idMapping.inputIds())
+  graphComponent.updateGraph(buildGraphJson(state))
+  const importedNodes = syncIdMapping()
+
+  // Nodes the update (re)created carry none of our per-node extras yet.
+  for (const { id, idImported } of importedNodes) {
+    if (previousInternalIds.has(id)) continue
+    previousAnnotationContent.delete(idImported)
+    previousNodeOutlines.delete(idImported)
+  }
+  previousBadgeInternalIds = new Set(
+    [...previousBadgeInternalIds].filter((internalId) => idMapping.has(internalId)),
+  )
+  const sel = selection.value
+  if (sel !== null && graphComponent.getElementAnchor(sel.kind, sel.id) === undefined) {
+    selection.value = null
+  }
+
+  void nextTick(() => {
+    applyNodeWeights(nodeWeights)
+    applyNodeOutlineUpdates(nodeOutlines)
+    applyAnnotationContentUpdates(nodeAnnotations)
+    adjustLabelFontSizes(state)
+  })
 }
 
 function updateLinkType(linkId: string, linkType: LinkType) {
@@ -1377,7 +1443,7 @@ function updateLinkType(linkId: string, linkType: LinkType) {
   const linkColor = linkConfigs[linkType]?.color ?? effectiveStyle.value.linkColor
   graphComponentRef.value!.setColor(linkColor, linkId)
   graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
-  applyLinkDash(linkId, linkConfigs[linkType]?.dashArray)
+  applyReciprocalStyle(linkId, linkType)
 }
 
 function onLabelEdited(
@@ -1535,7 +1601,6 @@ function onAnnotationMoved(annotations: AnnotationPositionSnapshot[]) {
   emit('annotationMoved', data)
 }
 
-let zoomObserver: MutationObserver | undefined
 let dragObserver: MutationObserver | undefined
 let doubleTapCleanup: (() => void) | undefined
 let middleClickCleanup: (() => void) | undefined
@@ -1568,7 +1633,6 @@ const overlayNodes = computed(() => {
 })
 
 onUnmounted(() => {
-  zoomObserver?.disconnect()
   dragObserver?.disconnect()
   doubleTapCleanup?.()
   middleClickCleanup?.()
@@ -1814,6 +1878,7 @@ defineExpose({
       '--graph-node-stroke-color': effectiveStyle.nodeStrokeColor,
       '--graph-node-stroke-width': `${effectiveStyle.nodeStrokeWidth}px`,
       '--graph-link-stroke-width': `${effectiveStyle.linkStrokeWidth}px`,
+      '--graph-node-font-family': effectiveStyle.nodeFont,
     }"
   >
     <GraphComponent
@@ -1825,11 +1890,13 @@ defineExpose({
       @hyper-link-created="onHyperLinkCreated"
       @hyper-link-deleted="onHyperLinkDeleted"
       @nodes-moved="onNodesMoved"
+      @viewport-changed="onViewportChanged"
       @label-edited="onLabelEdited"
       @annotation-clicked="onAnnotationClicked"
       @annotation-moved="onAnnotationMoved"
       @select="onSelect"
       @hyper-link-sources-changed="onHyperLinkSourcesChanged"
+      @hyper-link-source-deleted="onHyperLinkSourceDeleted"
       :id="graphComponentId"
       ref="graph-component"
     />

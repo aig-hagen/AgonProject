@@ -22,7 +22,7 @@ import { createSharedComposable } from '@vueuse/shared'
 import type { GridVisibility, PhysicsMode } from '@/modules/common/main-menu/types'
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
 
-export type GraphStyleName = 'default' | 'high-contrast' | 'minimal' | 'library'
+export type GraphStyleName = 'default' | 'high-contrast' | 'minimal' | 'library' | 'outline'
 export type GridType = 'square' | 'rhombus'
 
 export const useSettings = createSharedComposable(() => {
@@ -55,6 +55,12 @@ export const useSettings = createSharedComposable(() => {
   const gridCellScale = useStorage<number>('settings:gridCellScale', 3, undefined, options)
   const snapMode = useStorage<boolean>('settings:snapMode', false, undefined, options)
   const showHints = useStorage<boolean>('settings:showHints', true, undefined, options)
+  const mergeReciprocalLinks = useStorage<boolean>(
+    'settings:mergeReciprocalLinks',
+    false,
+    undefined,
+    options,
+  )
 
   return {
     graphStyle,
@@ -64,5 +70,6 @@ export const useSettings = createSharedComposable(() => {
     gridCellScale,
     snapMode,
     showHints,
+    mergeReciprocalLinks,
   }
 })
