@@ -31,6 +31,7 @@ import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vu
 import {
   type AbaView,
   afCanvas,
+  bsafCanvas,
   type DerivedCanvas,
   setafCanvas,
   type ViewPositions,
@@ -144,7 +145,7 @@ const isFlat = computed(() => content.value.isFlat())
 const isDerivedView = computed(() => activeView.value !== 'theory')
 // A derived view stays selected when the theory stops qualifying; the canvas then shows an
 // empty state until it qualifies again.
-const isViewUnavailable = computed(() => isDerivedView.value && !isFlat.value)
+const isViewUnavailable = computed(() => activeView.value === 'af' && !isFlat.value)
 
 const derivedCanvas = computed<DerivedCanvas | undefined>(() => {
   if (!isDerivedView.value) return undefined
@@ -158,7 +159,7 @@ const derivedCanvas = computed<DerivedCanvas | undefined>(() => {
       unplaced: [],
     }
   }
-  const toCanvas = activeView.value === 'af' ? afCanvas : setafCanvas
+  const toCanvas = activeView.value === 'af' ? afCanvas : isFlat.value ? setafCanvas : bsafCanvas
   return toCanvas(content.value, stateId, viewPositions.value[activeView.value] ?? {})
 })
 
@@ -197,6 +198,8 @@ const editorState = computed(() => derivedCanvas.value?.state ?? theoryState.val
 
 const linkConfig = computed(() => ({
   SINGLE: { displayName: isDerivedView.value ? t('editor.links.attack') : t('editor.links.rule') },
+  // Only drawn by the BSAF view.
+  DOUBLE: { displayName: t('editor.links.support') },
 }))
 
 const nodeShapes = computed(() => {
@@ -416,6 +419,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     :allow-link-creation="true"
     :allow-link-deletion="true"
     :allow-hyper-link-creation="true"
+    :allow-link-switching="false"
     :read-only="isDerivedView"
     :canvas-key="isDerivedView ? activeView : undefined"
     @undo="emit('undo')"

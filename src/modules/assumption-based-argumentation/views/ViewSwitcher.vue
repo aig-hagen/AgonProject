@@ -23,7 +23,7 @@ import { computed } from 'vue'
 import type { AbaView } from '@/modules/assumption-based-argumentation/views/editorState'
 import {
   FLAT_ONLY_REASON,
-  VIEW_OPTIONS,
+  viewOptions,
 } from '@/modules/assumption-based-argumentation/views/viewOptions'
 import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue'
 
@@ -31,7 +31,7 @@ const { flat } = defineProps<{ flat: boolean }>()
 const view = defineModel<AbaView>({ required: true })
 
 const options = computed(() =>
-  VIEW_OPTIONS.map(({ key, label, icon, flatOnly }) => ({
+  viewOptions(flat).map(({ key, label, icon, flatOnly }) => ({
     key,
     label,
     icon,

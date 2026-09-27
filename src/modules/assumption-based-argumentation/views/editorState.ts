@@ -18,6 +18,7 @@
  */
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import { toAF } from '@/modules/assumption-based-argumentation/views/af'
+import { toBSAF } from '@/modules/assumption-based-argumentation/views/bsaf'
 import { toSETAF } from '@/modules/assumption-based-argumentation/views/setaf'
 import {
   type GraphEditorNodeShape,
@@ -68,6 +69,47 @@ export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions):
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
     unplaced: [],
+  }
+}
+
+// BSAF shares the SETAF slot and its positions; supports are double arrows, as in the BAF module.
+export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
+  const { arguments: args, attacks, supports, alwaysOut, alwaysDerived } = toBSAF(aba)
+  const nodes = args.map((id) => {
+    const { name, x, y } = aba.getNode(id)
+    return { id, label: name, ...(positions[id] ?? { x, y }) }
+  })
+  const links: GraphEditorStateLink[] = []
+  const hyperLinks: GraphEditorStateHyperLink[] = []
+  // The graph keeps one edge per (tail, head), so an attack sharing both with a support is
+  // listed in the note instead of drawn.
+  const drawn = new Set<string>()
+  const hidden: string[] = []
+  const add = (edges: typeof attacks, type: LinkType) => {
+    for (const { tail, head } of edges) {
+      const key = `${tail.join(',')}-${head}`
+      if (drawn.has(key)) {
+        const names = tail.map((id) => aba.getNode(id).name).sort()
+        hidden.push(`{${names.join(', ')}} attacks ${aba.getNode(head).name}`)
+        continue
+      }
+      drawn.add(key)
+      if (tail.length === 1) links.push({ sourceId: tail[0]!, targetId: head, type })
+      else hyperLinks.push({ sourceIds: tail, targetId: head, type })
+    }
+  }
+  add(supports, LinkType.DOUBLE)
+  add(attacks, LinkType.SINGLE)
+  const annotations = new Map<NodeId, { content: string }>()
+  for (const id of alwaysDerived) annotations.set(id, { content: 'always derived' })
+  for (const id of alwaysOut) annotations.set(id, { content: 'always out' })
+  return {
+    state: { stateId, nodes, links, hyperLinks, redraw: true },
+    annotations,
+    shapes: new Map(),
+    positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
+    unplaced: [],
+    note: hidden.length > 0 ? `also: ${hidden.join('; ')}` : undefined,
   }
 }
 

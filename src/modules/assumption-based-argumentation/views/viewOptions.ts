@@ -31,28 +31,33 @@ export interface ViewOption {
   flatOnly: boolean
 }
 
-export const VIEW_OPTIONS: ViewOption[] = [
-  {
-    key: 'theory',
-    label: 'Theory',
-    icon: TheoryViewIcon,
-    description: 'Edit rules and assumptions',
-    flatOnly: false,
-  },
-  {
-    key: 'af',
-    label: 'AF',
-    icon: AfViewIcon,
-    description: 'Arguments and attacks, read-only',
-    flatOnly: true,
-  },
-  {
-    key: 'setaf',
-    label: 'SetAF',
-    icon: SetAfViewIcon,
-    description: 'Assumptions with set-attacks, read-only',
-    flatOnly: true,
-  },
-]
+// The third slot is the SETAF for flat theories and the BSAF otherwise (a flat BSAF is a SETAF).
+export function viewOptions(flat: boolean): ViewOption[] {
+  return [
+    {
+      key: 'theory',
+      label: 'Theory',
+      icon: TheoryViewIcon,
+      description: 'Edit rules and assumptions',
+      flatOnly: false,
+    },
+    {
+      key: 'af',
+      label: 'AF',
+      icon: AfViewIcon,
+      description: 'Arguments and attacks, read-only',
+      flatOnly: true,
+    },
+    {
+      key: 'setaf',
+      label: flat ? 'SetAF' : 'BSAF',
+      icon: SetAfViewIcon,
+      description: flat
+        ? 'Assumptions with set-attacks, read-only'
+        : 'Assumptions with set-attacks and set-supports, read-only',
+      flatOnly: false,
+    },
+  ]
+}
 
 export const FLAT_ONLY_REASON = 'Only exact for flat theories'

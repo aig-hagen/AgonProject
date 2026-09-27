@@ -44,7 +44,8 @@ function insertMinimal(antichain: NodeId[][], set: NodeId[]): boolean {
   return true
 }
 
-// ⊆-minimal assumption sets deriving each node (flat theories; absent = underivable).
+// ⊆-minimal assumption sets deriving each node (absent = underivable). Non-flat: an assumption
+// keeps {a} and also gets the sets deriving it, which then feed further derivations.
 export function minimalSupports(abaf: ABAF): Map<NodeId, NodeId[][]> {
   const supports = new Map<NodeId, NodeId[][]>()
   const get = (id: NodeId) => {

@@ -349,6 +349,7 @@ const {
   allowLinkCreation = true,
   allowLinkDeletion = true,
   allowHyperLinkCreation = false,
+  allowLinkSwitching = true,
   tutorials,
   defaultTutorialId,
   tutorialContextExtra,
@@ -376,6 +377,8 @@ const {
   allowLinkCreation?: boolean
   allowLinkDeletion?: boolean
   allowHyperLinkCreation?: boolean
+  /** Off: extra link types are display-only (e.g. derived views) and never drawn by hand. */
+  allowLinkSwitching?: boolean
   tutorials?: Tutorial[]
   defaultTutorialId?: string
   tutorialContextExtra?: Partial<TutorialContext>
@@ -465,7 +468,9 @@ const effectiveStyle = computed<GraphStyle>(() => {
 })
 
 const linkNames = computed(() =>
-  Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
+  Object.values(linkConfigs)
+    .slice(0, enableLinkSwitching ? undefined : 1)
+    .map((config) => config.displayName.toLocaleLowerCase()),
 )
 const isExportOpened = ref<boolean>(false)
 // Latches on first open so the (async) export window mounts lazily, then stays mounted
@@ -562,7 +567,7 @@ const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
 const hasSerialisationSlot = computed(() => !!slots.evaluationSerialisation)
 
-const enableLinkSwitching = Object.keys(linkConfigs).length > 1
+const enableLinkSwitching = allowLinkSwitching && Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
 if (defaultLinkType === undefined) {
   throw Error('At least one link type must be defined.')

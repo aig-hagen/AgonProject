@@ -24,7 +24,7 @@ import { computed, ref, useTemplateRef } from 'vue'
 import type { AbaView } from '@/modules/assumption-based-argumentation/views/editorState'
 import {
   FLAT_ONLY_REASON,
-  VIEW_OPTIONS,
+  viewOptions,
 } from '@/modules/assumption-based-argumentation/views/viewOptions'
 
 const { flat } = defineProps<{ flat: boolean }>()
@@ -34,7 +34,8 @@ const open = ref(false)
 const root = useTemplateRef<HTMLElement>('root')
 onClickOutside(root, () => (open.value = false))
 
-const active = computed(() => VIEW_OPTIONS.find((option) => option.key === view.value)!)
+const options = computed(() => viewOptions(flat))
+const active = computed(() => options.value.find((option) => option.key === view.value)!)
 
 function select(key: AbaView) {
   view.value = key
@@ -56,7 +57,7 @@ function select(key: AbaView) {
         role="radiogroup"
         aria-label="Canvas view"
       >
-        <template v-for="(option, index) in VIEW_OPTIONS" :key="option.key">
+        <template v-for="(option, index) in options" :key="option.key">
           <div v-if="index === 1" class="mx-2 my-0.5 h-px bg-base-300" />
           <button
             class="grid w-full cursor-pointer grid-cols-[1rem_1fr_auto] items-center gap-x-2 rounded-lg px-2 py-1.5 text-left text-[0.8125rem] font-medium disabled:cursor-not-allowed disabled:opacity-45"

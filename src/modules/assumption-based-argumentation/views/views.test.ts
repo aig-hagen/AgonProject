@@ -20,7 +20,12 @@ import { describe, expect, test } from 'vitest'
 
 import { ABAF, type NodeId } from '@/modules/assumption-based-argumentation/model'
 import { toAF } from '@/modules/assumption-based-argumentation/views/af'
-import { afCanvas, setafCanvas } from '@/modules/assumption-based-argumentation/views/editorState'
+import { toBSAF } from '@/modules/assumption-based-argumentation/views/bsaf'
+import {
+  afCanvas,
+  bsafCanvas,
+  setafCanvas,
+} from '@/modules/assumption-based-argumentation/views/editorState'
 import { toSETAF } from '@/modules/assumption-based-argumentation/views/setaf'
 import {
   minimalSupports,
@@ -159,6 +164,80 @@ describe('SETAF view', () => {
       { sourceIds: [id('a'), id('b')], targetId: id('a'), type: LinkType.SINGLE },
     ])
     expect(state.nodes.find((n) => n.id === id('b'))).toMatchObject({ x: 5, y: 7 })
+  })
+})
+
+// Berthold et al. (KR 2024), Ex. 2.4: non-flat, since e ← a,b derives an assumption.
+const paperExample = () =>
+  build({
+    assumptions: { a: '~a', b: '~b', c: '~c', d: '~d', e: '~e' },
+    rules: [
+      ['~e', ['e']],
+      ['e', ['a', 'b']],
+      ['~a', ['d']],
+      ['~c', ['d']],
+      ['~e', ['b', 'c']],
+      ['~d', ['a']],
+      ['~d', ['c']],
+    ],
+  })
+
+describe('BSAF view', () => {
+  const edges = (list: { tail: NodeId[]; head: NodeId }[], names: (ids: NodeId[]) => string[]) =>
+    list.map((e) => `{${names(e.tail)}}->${names([e.head])}`).sort()
+
+  test('attacks and supports follow Def. 3.5, including derivations through assumptions', () => {
+    const { aba, names } = paperExample()
+    const view = toBSAF(aba)
+    expect(edges(view.attacks, names)).toEqual([
+      '{a,b}->e',
+      '{a}->d',
+      '{b,c}->e',
+      '{c}->d',
+      '{d}->a',
+      '{d}->c',
+      '{e}->e',
+    ])
+    expect(edges(view.supports, names)).toEqual(['{a,b}->e'])
+  })
+
+  test('a flat theory has no supports and the SETAF attacks', () => {
+    const { aba, names } = seed()
+    const view = toBSAF(aba)
+    expect(view.supports).toEqual([])
+    expect(edges(view.attacks, names)).toEqual(['{a,b}->a', '{a}->b'])
+  })
+
+  test('empty tails become annotations', () => {
+    const { aba, id } = build({
+      assumptions: { a: 'f', b: 'p' },
+      rules: [['p', ['a']]],
+      facts: ['f', 'b'],
+    })
+    const view = toBSAF(aba)
+    expect(view.alwaysOut).toEqual([id('a')])
+    expect(view.alwaysDerived).toEqual([id('b')])
+    const canvas = bsafCanvas(aba, generateUUID(), {})
+    expect(canvas.annotations.get(id('a'))).toEqual({ content: 'always out' })
+    expect(canvas.annotations.get(id('b'))).toEqual({ content: 'always derived' })
+  })
+
+  test('canvas: supports are DOUBLE links and win over an attack with the same ends', () => {
+    const { aba, id } = paperExample()
+    const { state, note } = bsafCanvas(aba, generateUUID(), {})
+    const onE = state.hyperLinks!.filter((l) => l.targetId === id('e'))
+    expect(onE).toContainEqual({
+      sourceIds: [id('a'), id('b')],
+      targetId: id('e'),
+      type: LinkType.DOUBLE,
+    })
+    expect(onE.filter((l) => l.sourceIds.join() === [id('a'), id('b')].join())).toHaveLength(1)
+    expect(note).toBe('also: {a, b} attacks e')
+    expect(state.links).toContainEqual({
+      sourceId: id('e'),
+      targetId: id('e'),
+      type: LinkType.SINGLE,
+    })
   })
 })
 
