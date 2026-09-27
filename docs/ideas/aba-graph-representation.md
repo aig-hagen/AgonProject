@@ -241,13 +241,17 @@ theories, BAF outside its fragment; the reason is shown on the switcher (see _Vi
 
 - **Minimal derivations:** for each atom, the ⊆-minimal assumption sets deriving it (fixpoint
   over the rules, keeping only an antichain of sets). Everything below reads from this.
-- `toBSAF`: minimal `S ⊢ ‾b` → collective attack `S → b`; minimal `S ⊢ b` (`b ∈ A`, `b ∉ S`) →
+- `toSETAF` (flat, done): minimal `S ⊢ ‾b` → collective attack `S → b`. Node ids are the ABA
+  assumption ids.
+- `toBSAF` (non-flat, later): as `toSETAF`, plus minimal `S ⊢ b` (`b ∈ A`, `b ∉ S`) →
   collective support.
 - `toBAF`: same, but returns "not available" unless all sets are singletons.
-- `toAF`: one argument per (minimal support, claim); attacks onto every argument using the
-  attacked assumption. Capped, with "showing N of M".
+- `toAF` (flat, done): one **support-unique** argument per minimal support, carrying all its
+  claims — the same construction as TweetyProject's AF reduction, so results map 1:1. Attacks
+  onto every argument using the attacked assumption. Capped, with "showing N of M".
 - Edge cases: `∅ ⊢ ‾b` (unconditional attack) has no SETAF/BSAF edge — show `b` as _always out_
-  (outline/badge) instead. Self-attacks are legal and must render.
+  (outline/badge) instead; Tweety drops `b` and its attacks, which gives the same extensions.
+  Self-attacks are legal and must render.
 - Return the existing module models (AF, BAF, SetAF) so tests and the "open as" export reuse them.
 
 ### Fit with the current graph editor
@@ -348,9 +352,11 @@ document-creation entry point.
 
 ### Suggested order
 
-1. Compile layer + tests.
-2. `GraphView.vue` (read-only) + the view switcher with the BSAF view.
-3. AF view (capped), then BAF (gated on the fragment).
+v1 is **flat only**: AF and SETAF views, greyed out for non-flat theories.
+
+1. [x] Compile layer + tests (`views/supports.ts`, `af.ts`, `setaf.ts`).
+2. [ ] `GraphView.vue` (read-only) + the view switcher with the SETAF view.
+3. [ ] AF view (capped). Later: BAF (gated on the fragment), BSAF (non-flat).
 4. Evaluation wiring, displayed across all views.
 5. Hyperlink `arrowType` upstream; "open as document" whenever convenient.
 
