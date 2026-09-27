@@ -17,37 +17,47 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { LockClosedIcon } from '@heroicons/vue/24/outline'
+import { computed } from 'vue'
+
 import type { AbaView } from '@/modules/assumption-based-argumentation/views/editorState'
+import {
+  FLAT_ONLY_REASON,
+  VIEW_OPTIONS,
+} from '@/modules/assumption-based-argumentation/views/viewOptions'
+import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue'
 
 const { flat } = defineProps<{ flat: boolean }>()
 const view = defineModel<AbaView>({ required: true })
 
-const options: { key: AbaView; label: string; flatOnly: boolean }[] = [
-  { key: 'theory', label: 'Theory', flatOnly: false },
-  { key: 'af', label: 'AF', flatOnly: true },
-  { key: 'setaf', label: 'SETAF', flatOnly: true },
-]
+const options = computed(() =>
+  VIEW_OPTIONS.map(({ key, label, icon, flatOnly }) => ({
+    key,
+    label,
+    icon,
+    disabled: flatOnly && !flat,
+    tip: flatOnly && !flat ? FLAT_ONLY_REASON : undefined,
+  })),
+)
 </script>
 
 <template>
-  <div class="join shadow-md" role="radiogroup" aria-label="Canvas view">
-    <span
-      v-for="option in options"
-      :key="option.key"
-      class="join-item"
-      :class="{ 'tooltip tooltip-top': option.flatOnly && !flat }"
-      :data-tip="option.flatOnly && !flat ? 'Only exact for flat theories' : undefined"
+  <div class="relative w-fit">
+    <SegmentedControl v-model="view" :options="options" aria-label="Canvas view" />
+    <!-- Out of flow so the centered bar keeps its width when this appears. -->
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      leave-active-class="transition duration-150 ease-in"
+      enter-from-class="opacity-0 -translate-x-1"
+      leave-to-class="opacity-0 -translate-x-1"
     >
-      <button
-        class="btn btn-sm rounded-[inherit]"
-        :class="view === option.key ? 'btn-primary' : 'btn-neutral'"
-        role="radio"
-        :aria-checked="view === option.key"
-        :disabled="option.flatOnly && !flat && view !== option.key"
-        @click="view = option.key"
+      <span
+        v-if="view !== 'theory'"
+        class="absolute top-1/2 left-full ml-2 -mt-4 flex h-8 items-center gap-1 rounded-full border border-base-300 bg-base-100/80 px-2.5 text-xs whitespace-nowrap text-base-content/60 shadow-lg backdrop-blur-md"
+        title="Derived from the theory"
       >
-        {{ option.label }}
-      </button>
-    </span>
+        <LockClosedIcon class="size-3.5" /> read-only
+      </span>
+    </Transition>
   </div>
 </template>

@@ -14,10 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - The ABA editor now runs on the shared graph editor (zoom, layouts, undo, export), with a Theory side panel for statements, rules and contraries. Contraries show as node labels for now.
 - Added an Assumption-based section to the glossary (ABAF, rules, assumptions, contraries, derivability, attack, closure, flatness), used in the ABA Theory panel.
 - ABA frameworks can now be evaluated via TweetyProject's `/aba` endpoint (extensions, credulous, skeptical); flat-only semantics are shown disabled for non-flat theories.
-- The ABA canvas can switch between the editable theory and read-only AF and SETAF views (flat theories only).
+- The ABA canvas can switch between the editable theory and read-only AF and SetAF views (flat theories only).
 
 ### Changed
 
+- The link-type switch (attack/support, definite/uncertain) and the iAF argument-type switch now use a pill-style segmented control.
 - Publication references on the module cards and glossary pages now show title, authors and venue on separate lines.
 - The selection action bar now also appears on desktop: click an argument or link to select it; double-click a label to rename it directly. Replaces the old link type popup; ADF arguments get an Edit condition action.
 - The PAF probability popup now shows a compact `P(a)` / `P((a,b))` header with the value, and opens from the selection bar on desktop.

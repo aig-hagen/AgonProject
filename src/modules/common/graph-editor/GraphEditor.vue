@@ -113,6 +113,7 @@ import {
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
 import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
+import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue'
 import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import SerialisationIcon from '@/modules/common/graph-editor/SerialisationIcon.vue'
 import SigmaIcon from '@/modules/common/graph-editor/SigmaIcon.vue'
@@ -567,6 +568,15 @@ if (defaultLinkType === undefined) {
   throw Error('At least one link type must be defined.')
 }
 const selectedLinkType = ref<LinkType>(defaultLinkType)
+const linkSwitchOptions = computed(() =>
+  (Object.keys(linkConfigs) as LinkType[]).map((key) => ({
+    key,
+    title: linkConfigs[key]!.displayName,
+    icon:
+      linkConfigs[key]!.icon ??
+      (key === LinkType.SINGLE ? ArrowLongRightIcon : ArrowDoubleLongRightIcon),
+  })),
+)
 
 watch(
   () => readOnly,
@@ -2020,22 +2030,13 @@ defineExpose({
 
         <div class="flex flex-1 justify-end flex-col gap-2">
           <slot name="toolbar" />
-          <div ref="linkSwitchButton" class="join join-vertical mb-8" v-if="enableLinkSwitching">
-            <button
-              v-for="(linkConfig, linkKey) in linkConfigs"
-              :key="linkKey"
-              class="join-item btn btn-square btn-sm"
-              :class="{ 'btn-active': selectedLinkType === linkKey }"
-              :title="linkConfig!.displayName"
-              @click="selectedLinkType = linkKey"
-            >
-              <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5 opacity-70" />
-              <ArrowLongRightIcon
-                v-else-if="linkKey === LinkType.SINGLE"
-                class="size-5 opacity-70"
-              />
-              <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />
-            </button>
+          <div ref="linkSwitchButton" class="mb-8 w-fit" v-if="enableLinkSwitching">
+            <SegmentedControl
+              v-model="selectedLinkType"
+              :options="linkSwitchOptions"
+              vertical
+              :aria-label="t('editor.links.type')"
+            />
           </div>
           <div ref="evaluationButtons" class="flex flex-col gap-2">
             <button
@@ -2204,21 +2205,12 @@ defineExpose({
         style="bottom: calc(env(safe-area-inset-bottom, 0px) + 4.75rem)"
       >
         <slot name="canvasSelector" />
-        <div v-if="enableLinkSwitching" ref="mobileLinkSwitchButton" class="join shadow-md">
-          <button
-            v-for="(linkConfig, linkKey) in linkConfigs"
-            :key="linkKey"
-            class="join-item btn btn-sm btn-square"
-            :class="selectedLinkType === linkKey ? 'btn-primary' : 'btn-neutral'"
-            :aria-label="linkConfig!.displayName"
-            :aria-pressed="selectedLinkType === linkKey"
-            :title="linkConfig!.displayName"
-            @click="selectedLinkType = linkKey"
-          >
-            <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5" />
-            <ArrowLongRightIcon v-else-if="linkKey === LinkType.SINGLE" class="size-5" />
-            <ArrowDoubleLongRightIcon v-else class="size-5" />
-          </button>
+        <div v-if="enableLinkSwitching" ref="mobileLinkSwitchButton" class="w-fit">
+          <SegmentedControl
+            v-model="selectedLinkType"
+            :options="linkSwitchOptions"
+            :aria-label="t('editor.links.type')"
+          />
         </div>
       </div>
 

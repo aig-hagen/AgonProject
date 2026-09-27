@@ -68,6 +68,7 @@ export default {
     },
   },
   links: {
+    type: 'Link type',
     attack: 'Attack',
     support: 'Support',
     definiteAttack: 'Definite Attack',

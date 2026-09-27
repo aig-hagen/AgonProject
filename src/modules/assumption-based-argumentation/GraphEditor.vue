@@ -35,6 +35,7 @@ import {
   setafCanvas,
   type ViewPositions,
 } from '@/modules/assumption-based-argumentation/views/editorState'
+import ViewPicker from '@/modules/assumption-based-argumentation/views/ViewPicker.vue'
 import ViewSwitcher from '@/modules/assumption-based-argumentation/views/ViewSwitcher.vue'
 import WindowExtensions from '@/modules/assumption-based-argumentation/WindowExtensions.vue'
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
@@ -431,11 +432,10 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     </template>
     <template #canvasOverlay>
       <div
-        v-if="isDerivedView && !isViewUnavailable && layoutMode === 'regular'"
+        v-if="derivedCanvas?.note && !isViewUnavailable && layoutMode === 'regular'"
         class="absolute top-4 left-1/2 -translate-x-1/2 badge badge-neutral badge-sm opacity-80"
       >
-        read-only · derived from theory
-        <template v-if="derivedCanvas?.note"> · {{ derivedCanvas.note }}</template>
+        {{ derivedCanvas.note }}
       </div>
       <div v-if="isViewUnavailable" class="absolute inset-0 flex items-center justify-center p-6">
         <div
@@ -457,10 +457,12 @@ const extensionChips = computed<EvaluationChip[]>(() =>
       </div>
     </template>
     <template #canvasSelector>
-      <ViewSwitcher v-model="activeView" :flat="isFlat" />
-      <button class="btn btn-sm btn-neutral shadow-md gap-1.5" @click="isTheoryOpen = true">
-        <BookOpenIcon class="size-4" /> Theory
-      </button>
+      <div class="flex items-center gap-2">
+        <ViewPicker v-model="activeView" :flat="isFlat" />
+        <button class="btn btn-sm btn-neutral shadow-md gap-1.5" @click="isTheoryOpen = true">
+          <BookOpenIcon class="size-4" /> Theory
+        </button>
+      </div>
       <BottomSheet
         v-if="layoutMode === 'compact'"
         v-model:open="isTheoryOpen"

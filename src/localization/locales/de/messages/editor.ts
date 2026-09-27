@@ -69,6 +69,7 @@ export default {
     },
   },
   links: {
+    type: 'Kantentyp',
     attack: 'Angriff',
     support: 'Unterstützung',
     definiteAttack: 'Bedingt sicherer Angriff',
