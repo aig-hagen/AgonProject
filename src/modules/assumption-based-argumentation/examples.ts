@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import tandemTripJson from '@/modules/assumption-based-argumentation/examples/tandem_trip.json'
 import weatherPlansJson from '@/modules/assumption-based-argumentation/examples/weather_plans.json'
 import type { ABAF } from '@/modules/assumption-based-argumentation/model'
 import { loadExampleFromJson } from '@/modules/assumption-based-argumentation/save/saveFormat'
 import type { Example } from '@/modules/common/examples'
 
-const exampleJsons: unknown[] = [weatherPlansJson]
+const exampleJsons: unknown[] = [tandemTripJson, weatherPlansJson]
 
 export const datasets: Example<ABAF>[] = exampleJsons.map((json) => {
   const { name, description } = loadExampleFromJson(json)

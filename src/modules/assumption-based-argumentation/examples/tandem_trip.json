@@ -1,0 +1,23 @@
+{
+  "apiVersion": "aba/v1",
+  "name": "Tandem trip",
+  "description": "Three friends planning a tandem trip - only two people fit on the bike.",
+  "nodes": {
+    "0": { "name": "Alice", "kind": "assumption", "x": -220, "y": -140, "fact": false },
+    "1": { "name": "Bob", "kind": "assumption", "x": -220, "y": 0, "fact": false },
+    "2": { "name": "Charlie", "kind": "assumption", "x": -220, "y": 140, "fact": false },
+    "3": { "name": "¬Alice", "kind": "atom", "x": 220, "y": -140, "fact": false },
+    "4": { "name": "¬Bob", "kind": "atom", "x": 220, "y": 0, "fact": false },
+    "5": { "name": "¬Charlie", "kind": "atom", "x": 220, "y": 140, "fact": false }
+  },
+  "rules": [
+    { "id": 0, "head": 3, "body": [1, 2] },
+    { "id": 1, "head": 4, "body": [0, 2] },
+    { "id": 2, "head": 5, "body": [0, 1] }
+  ],
+  "contraries": {
+    "0": 3,
+    "1": 4,
+    "2": 5
+  }
+}
