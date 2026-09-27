@@ -5,6 +5,7 @@
 - labeling highlight colors - color blind mode
 - export redesign: check if there is anything that should be updated for mobile
 - store state of export window in db?
+- consider a faster backend solution: python solvers for AFs; translation + call to these solvers for BAF,iAF,SetAF,ABA
 
 ## Bugs and Issues
 
