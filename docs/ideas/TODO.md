@@ -5,7 +5,18 @@
 - labeling highlight colors - color blind mode
 - export redesign: check if there is anything that should be updated for mobile
 - store state of export window in db?
-- consider a faster backend solution: python solvers for AFs; translation + call to these solvers for BAF,iAF,SetAF,ABA
+
+## ABA
+- implement highlighting for all views
+- update glossary entries; show separate for flat/nonflat in eval window
+- several issues where changes to the theory dont update the graph; eg contraries
+- add contraries and derived attacks to theory view
+- issues with switching views; especially on mobile; just weird warping sometimes
+- improve UI of theory panel; also make it collapsable
+- handle the attack/support from empty set
+- need to allow parallel edges (for the contrary thing but also for BSAF view)
+- better handling of the fact annotation
+- better visuals for the action bar
 
 ## Bugs and Issues
 

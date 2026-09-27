@@ -210,7 +210,7 @@ to the Δ-semantics.
 assumption; a fact that is a contrary (`~a ←`); tautological/cyclic rule `h ← …, h`; isolated atom
 with no deriving rule. All valid ABAFs — warn, don't wall, since users hit them mid-construction.
 
-## Semantic views — AF / BAF / BSAF
+## Semantic views — AF / SETAF / BSAF / BAF / ADF
 
 The editable atom graph stays the **only** thing the user edits. The instantiations are read-only
 _lenses_ computed from it, and all of them display one evaluation result. The user flips the
@@ -218,22 +218,66 @@ canvas between them with a **view switcher**, not separate windows (see _View sw
 
 ### Fidelity differs per view
 
-| View     | Nodes             | Edges                       | Faithful for                                       | Size                             |
-| -------- | ----------------- | --------------------------- | -------------------------------------------------- | -------------------------------- |
-| **AF**   | arguments `S ⊢ c` | binary attacks              | flat ABA only                                      | exponential in the worst case    |
-| **BAF**  | assumptions       | binary attack + support     | only if every minimal derivation has ≤1 assumption | \|A\|                            |
-| **BSAF** | assumptions       | collective attack + support | all ABA (flat → supports vanish → SETAF)           | \|A\| nodes, edges up to 2^\|A\| |
+| View      | Nodes                   | Edges                                       | Faithful for                    | Status  |
+| --------- | ----------------------- | ------------------------------------------- | ------------------------------- | ------- |
+| **AF**    | arguments `(S, claims)` | binary attacks                              | flat                            | done    |
+| **SETAF** | assumptions             | collective attacks                          | flat                            | done    |
+| **BSAF**  | assumptions             | collective attacks + supports               | non-flat (replaces SETAF there) | done    |
+| **BAF**   | arguments `(S, claims)` | binary attacks (onto `{b}` only) + supports | flat (co, pr, gr, st)           | planned |
+| **ADF**   | all atoms               | dependency links + acceptance conditions    | flat (to verify, see below)     | planned |
 
-Worked example (the module's initial theory: `p ← a`, `q ← a,b`, `‾a = q`, `‾b = p`):
+Worked example (the module's initial theory: `p ← a`, `q ← a,b`, `‾a = q`, `‾b = p`), with
+`A1 = ({a}, {a, p})`, `A2 = ({b}, {b})`, `A3 = ({a, b}, {q})`:
 
 ```
-AF                                   BSAF (flat → SETAF)       BAF
-A1 {a}⊢a    A3 {a}⊢p ──▶ A2, A4      {a,b} ══▶ a               ✗ not available:
-A2 {b}⊢b    A4 {a,b}⊢q ──▶ A1,A3,A4   a ──▶ b                  q needs {a,b}
+AF                     SETAF            BAF                       ADF
+A1 ──▶ A2, A3          {a,b} ══▶ a      A3 ──▶ A1                 a [¬q]    p [a]
+A3 ──▶ A1, A3          a ──▶ b          A1 ──▶ A2                 b [¬p]    q [a ∧ b]
+                                        A1 ⇒ A3,  A2 ⇒ A3
 ```
 
-A view is either **exact** or **unavailable** — no partial states. AF is disabled for non-flat
-theories, BAF outside its fragment; the reason is shown on the switcher (see _View switcher_).
+A view is either **exact** or **unavailable** — no partial states. AF, SETAF, BAF and ADF are
+flat-only; for non-flat theories the SETAF slot shows the BSAF instead, and the others are
+disabled with the reason on the switcher (see _View switcher_).
+
+### BAF view (flat, planned)
+
+Lehtonen, _Constructing Compact Structured Argumentation Frameworks_ (COMMA 2026), Def. 12 for the
+ABA case (no defeasible rules), on an AF built with any merges — here the support-unique AF:
+
+```text
+Att = {(A, b_singleton) | ‾b ∈ Conc(A)}      b_singleton: the argument with support {b}
+Sup = {(b_singleton, A) | b ∈ Prem(A)}
+```
+
+- **Nodes:** the AF view's support-unique arguments (`supportArguments`), so positions can share
+  the AF view's keys.
+- **Attacks:** only onto singleton arguments: an argument claiming `‾b` attacks the `{b}` argument.
+- **Supports:** from the `{b}` argument to every other argument using `b` (the self-support
+  `(b_singleton, b_singleton)` is trivial and not drawn).
+- **Semantics:** Def. 11 — `X` attacks `B` iff `X` attacks `B` directly, or attacks some `C` with
+  `(C, B) ∈ Sup` (necessary support). Prop. 13: exact for co, stb, prf, grd, mapping an extension
+  `E` to `Prem(E)` and an assumption set `S` back to `{x | Prem(x) ⊆ S}`.
+- **Why show it:** the AF has an attack from every attacker of `b` to every argument using `b`;
+  the BAF routes those through the `{b}` argument (Lehtonen's `n·m` vs. `n + m`), so attacks only
+  hit `|A|` targets and "which assumptions an argument rests on" shows as supports. Drawn with
+  the BAF module's double-arrow support style.
+
+### ADF view (flat, planned)
+
+The "two-tier" reading from above, drawn: every atom is a node with an acceptance condition.
+
+- **Nodes:** all atoms and assumptions, at their theory positions.
+- **Conditions:** atom `p` → OR over its rules of the AND of each body (a fact is `⊤`, no rule is
+  `⊥`); assumption `a` → `¬‾a` (no contrary is `⊤`).
+- **Links:** body atom → head (supporting), contrary → assumption (attacking).
+- **Reuse:** the dialectical (ADF) module's formula model and condition annotations render it;
+  "open as document" goes to the ADF module.
+- **Semantics:** this is the standard flat ABA → normal logic program → ADF chain (Caminada &
+  Schulz 2017 for ABA ↔ LP; Strass 2013 for LP ↔ ADF). Which semantics correspond exactly (co,
+  gr, pr, st expected) needs checking against both papers before the view claims to be exact.
+- **Why show it:** the only view that keeps the non-assumption atoms, so derivations stay
+  visible; the others compile them away.
 
 ### Compile layer (pure, tested)
 
@@ -243,9 +287,12 @@ theories, BAF outside its fragment; the reason is shown on the switcher (see _Vi
   over the rules, keeping only an antichain of sets). Everything below reads from this.
 - `toSETAF` (flat, done): minimal `S ⊢ ‾b` → collective attack `S → b`. Node ids are the ABA
   assumption ids.
-- `toBSAF` (non-flat, later): as `toSETAF`, plus minimal `S ⊢ b` (`b ∈ A`, `b ∉ S`) →
-  collective support.
-- `toBAF`: same, but returns "not available" unless all sets are singletons.
+- `toBSAF` (done): Def. 3.5 of Berthold et al. (KR 2024) literally — minimal `S ⊢ ‾b` →
+  collective attack, minimal `S ⊢ b` (`b ∈ A`, `S ≠ {b}`) → collective support, including
+  derivations that pass through another assumption. Empty tails become _always out_ /
+  _always derived_ annotations.
+- `toBAF` (flat, planned): the AF's arguments with Lehtonen's attacks and supports (above).
+- `toADF` (flat, planned): one node per atom, conditions as above.
 - `toAF` (flat, done): one **support-unique** argument per minimal support, carrying all its
   claims — the same construction as TweetyProject's AF reduction, so results map 1:1. Attacks
   onto every argument using the attacked assumption. Capped, with "showing N of M".
@@ -295,18 +342,22 @@ How the app renders graphs today, and what each approach would cost:
 A segmented control that swaps what the canvas shows. The theory editor is one of the options:
 
 ```
-                     ┌──────────┬────┬─────┬──────┐
- bottom-centre  →    │ ✎ Theory │ AF │ BAF │ BSAF │
-                     └──────────┴──┬─┴──┬──┴──────┘
-                                   │    └ disabled, tooltip: "needs singleton derivations"
-                                   └ disabled for non-flat, tooltip: "AF is only exact for flat theories"
+                     ┌────────┬────┬──────────────┬─────┬─────┐
+ bottom-centre  →    │ Theory │ AF │ SetAF / BSAF │ BAF │ ADF │   (+ read-only chip beside it)
+                     └────────┴──┬─┴──────┬───────┴──┬──┴──┬──┘
+                                 │        │          └─────┴ planned, flat-only
+                                 │        └ SetAF when flat, BSAF when not; never disabled
+                                 └ disabled for non-flat: "Only exact for flat theories"
 ```
+
+Implemented as a pill segmented control (`common/graph-editor/SegmentedControl.vue`); on compact
+layout a "view" picker pill with a one-line description per view.
 
 - **Placement:** bottom-centre of the canvas on desktop. It's a _canvas mode_, so it stays apart
   from the tool buttons on the left, and it uses the same `btn-sm` / `join` styling. On compact
   layout it goes as a chip row just above the command bar (where `#canvasSelector` sits).
 - **Availability on the button:** a view is enabled (exact) or greyed out with the reason as a
-  tooltip. AF is greyed out for non-flat theories, BAF outside its fragment. The current
+  tooltip. AF (later BAF and ADF) is greyed out for non-flat theories. The current
   flat/non-flat badge folds into this.
 - **Becoming unavailable while active:** if a side-panel edit makes the active view unavailable
   (e.g. the theory turns non-flat while on AF), keep the view selected. Show an empty state with the
@@ -344,8 +395,8 @@ A segmented control that swaps what the canvas shows. The theory editor is one o
 ### "Open as document"
 
 Copy a compiled view into its target module as a new, independent document (AF → AF module,
-flat BSAF → SETAF module, BAF fragment → BAF module). There is no BSAF module, so non-flat BSAF
-can't be opened this way. There's no cross-module conversion hook today, so this needs a small
+SETAF → SETAF module, BAF → BAF module, ADF → ADF module). There is no BSAF module, so non-flat
+BSAF can't be opened this way. There's no cross-module conversion hook today, so this needs a small
 document-creation entry point.
 
 ### Suggested order
@@ -354,15 +405,18 @@ v1 is **flat only**: AF and SETAF views, greyed out for non-flat theories.
 
 1. [x] Compile layer + tests (`views/supports.ts`, `af.ts`, `setaf.ts`).
 2. [x] View switcher with the SETAF view. Instead of a separate `GraphView.vue`, the shared
-   `GraphEditor.vue` got a `readOnly` prop (library `setReadOnly`, no action bar), a
-   `canvasKey` prop (rebuild + per-view viewport), and a `canvasOverlay` slot. View positions
-   and the active view live in document UI state.
+       `GraphEditor.vue` got a `readOnly` prop (library `setReadOnly`, no action bar), a
+       `canvasKey` prop (rebuild + per-view viewport), and a `canvasOverlay` slot. View positions
+       and the active view live in document UI state.
 3. [x] AF view (capped at 200): rect nodes labelled `(support, claims)` that grow to fit the
-   label (library autogrow, switched on only while every node is a rect). Unplaced arguments
-   get a left-to-right graphviz layout; positions are keyed by support set.
-   Later: BAF (gated on the fragment), BSAF (non-flat).
-4. Evaluation wiring, displayed across all views.
-5. Hyperlink `arrowType` upstream; "open as document" whenever convenient.
+       label (library autogrow, switched on only while every node is a rect). Unplaced arguments
+       get a left-to-right graphviz layout; positions are keyed by support set.
+4. [x] BSAF view in the SETAF slot for non-flat theories; supports as BAF-style double arrows.
+5. [ ] BAF view (flat): Lehtonen Def. 12 on the AF's arguments.
+6. [ ] ADF view (flat): after checking the LP ↔ ADF correspondence.
+7. [ ] Parallel edges in the graph component: an attack and a support with the same tail and
+       head currently collapse to one edge (the BSAF view lists the hidden attack in its note).
+8. [x] Evaluation wiring; [ ] display across all views. "Open as document" whenever convenient.
 
 ## Open questions
 
@@ -370,8 +424,7 @@ v1 is **flat only**: AF and SETAF views, greyed out for non-flat theories.
   rework before use — see [`aba-tweety-rework.md`](aba-tweety-rework.md).
 - Model shape for `model.ts`: `{ atoms, assumptions: {name → contrary}, rules: [{head, body}] }`
   (the ABA Studio prototype's state) is a clean starting point.
-- Graph component: collective attacks render as hyperlinks today, but hyperlinks carry only a
-  colour — collective _support_ needs an upstream `arrowType` (see _Fit with the current graph
-  editor_).
+- ~~Graph component: hyperlinks carry only a colour.~~ Fixed (`arrowType`). Still open:
+  parallel edges of different types between the same ends.
 - Flat-only v1 vs. non-flat: flat keeps the LP correspondence clean and dodges the Δ-semantics work;
   non-flat is the research-interesting case but needs the refined semantics.
