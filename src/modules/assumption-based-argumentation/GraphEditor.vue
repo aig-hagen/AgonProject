@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
-import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
+import { computed, inject, nextTick, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
@@ -30,12 +30,14 @@ import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/mode
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
 import {
   type AbaView,
+  afCanvas,
   type DerivedCanvas,
   setafCanvas,
   type ViewPositions,
 } from '@/modules/assumption-based-argumentation/views/editorState'
 import ViewSwitcher from '@/modules/assumption-based-argumentation/views/ViewSwitcher.vue'
 import WindowExtensions from '@/modules/assumption-based-argumentation/WindowExtensions.vue'
+import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
@@ -51,7 +53,9 @@ import {
   type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -148,9 +152,44 @@ const derivedCanvas = computed<DerivedCanvas | undefined>(() => {
     return {
       state: { stateId, nodes: [], links: [], hyperLinks: [], redraw: true },
       annotations: new Map(),
+      shapes: new Map(),
+      positionKeys: new Map(),
+      unplaced: [],
     }
   }
-  return setafCanvas(content.value, stateId, viewPositions.value.setaf ?? {})
+  const toCanvas = activeView.value === 'af' ? afCanvas : setafCanvas
+  return toCanvas(content.value, stateId, viewPositions.value[activeView.value] ?? {})
+})
+
+// Lays out AF arguments that have no stored position yet. Graphviz sizes nodes as circles, so
+// x is stretched to make room for the wider rect labels.
+let layoutRun = 0
+const editorRef = useTemplateRef<InstanceType<typeof GraphEditor>>('editor')
+watch(derivedCanvas, async (canvas) => {
+  const view = activeView.value
+  if (!canvas || canvas.unplaced.length === 0 || view === 'theory') return
+  const run = ++layoutRun
+  const { nodes, links } = canvas.state
+  const laidOut = await getNodePositions(
+    nodes.map((n) => n.id),
+    links.map((l) => [l.sourceId, l.targetId]),
+    Layout.LeftToRight,
+  )
+  if (run !== layoutRun) return
+  const longest = Math.max(...nodes.map((n) => n.label.length))
+  const stretch = Math.max(1, (longest * 8 + 88) / (ARGUMENT_RADIUS_IN_PX * 2 + 72))
+  const positions = { ...viewPositions.value[view] }
+  // Every unplaced node gets a position, so this never re-triggers itself.
+  for (const id of canvas.unplaced) {
+    const p = laidOut.get(id) ?? { x: 0, y: 0 }
+    const key = canvas.positionKeys.get(id)
+    if (key !== undefined) positions[key] = { x: p.x * stretch, y: p.y }
+  }
+  viewPositions.value = { ...viewPositions.value, [view]: positions }
+  if (canvas.unplaced.length === nodes.length) {
+    await nextTick()
+    editorRef.value?.fitToView()
+  }
 })
 
 const editorState = computed(() => derivedCanvas.value?.state ?? theoryState.value)
@@ -160,8 +199,8 @@ const linkConfig = computed(() => ({
 }))
 
 const nodeShapes = computed(() => {
+  if (derivedCanvas.value) return derivedCanvas.value.shapes
   const shapes = new Map<NodeId, GraphEditorNodeShape>()
-  if (isDerivedView.value) return shapes
   for (const [id, d] of content.value.nodeEntries()) {
     shapes.set(id, d.kind === 'assumption' ? 'circle' : 'diamond')
   }
@@ -184,7 +223,9 @@ const nodeAnnotations = computed(() => {
   return annotations
 })
 
+// Derived views are read-only; stray canvas events must never reach the theory.
 function onNodeCreated(data: { id: NodeId; label: string; x: number; y: number }) {
+  if (isDerivedView.value) return
   createNewState(
     (draft) =>
       draft.addNode(data.id, { name: data.label, kind: 'atom', x: data.x, y: data.y, fact: false }),
@@ -193,10 +234,12 @@ function onNodeCreated(data: { id: NodeId; label: string; x: number; y: number }
 }
 
 function onNodeDeleted(data: { id: NodeId }) {
+  if (isDerivedView.value) return
   createNewState((draft) => draft.deleteNode(data.id))
 }
 
 function onNodeLabelEdited(data: { id: NodeId; label: string }) {
+  if (isDerivedView.value) return
   const name = data.label.trim()
   const clash = content.value.findByName(name)
   if (clash !== undefined && clash !== data.id) {
@@ -210,9 +253,21 @@ function onNodeLabelEdited(data: { id: NodeId; label: string }) {
 function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
   const view = activeView.value
   if (view !== 'theory') {
+    // The library reports every node after each settle; writing unchanged positions back
+    // would redraw and settle again, forever. Unplaced nodes wait for the layout.
+    const canvas = derivedCanvas.value
+    if (!canvas) return
     const positions = { ...viewPositions.value[view] }
-    for (const { id, x, y } of data) positions[id] = { x, y }
-    viewPositions.value = { ...viewPositions.value, [view]: positions }
+    let changed = false
+    for (const { id, x, y } of data) {
+      const key = canvas.positionKeys.get(id)
+      if (key === undefined || canvas.unplaced.includes(id)) continue
+      const node = canvas.state.nodes.find((n) => n.id === id)
+      if (node && Math.abs(node.x - x) < 0.5 && Math.abs(node.y - y) < 0.5) continue
+      positions[key] = { x, y }
+      changed = true
+    }
+    if (changed) viewPositions.value = { ...viewPositions.value, [view]: positions }
     return
   }
   createNewState((draft) => {
@@ -221,12 +276,14 @@ function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
 }
 
 function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
+  if (isDerivedView.value) return
   createNewState((draft) => {
     draft.addRule(data.targetId, [data.sourceId])
   }, false)
 }
 
 function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
+  if (isDerivedView.value) return
   createNewState((draft) => {
     const rule = draft.findRule(data.targetId, [data.sourceId])
     if (rule !== undefined) draft.deleteRule(rule.id)
@@ -234,12 +291,14 @@ function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
 }
 
 function onHyperLinkCreated(data: { sourceIds: NodeId[]; targetId: NodeId }) {
+  if (isDerivedView.value) return
   createNewState((draft) => {
     draft.addRule(data.targetId, data.sourceIds)
   })
 }
 
 function onHyperLinkDeleted(data: { sourceIds: NodeId[]; targetId: NodeId }) {
+  if (isDerivedView.value) return
   createNewState((draft) => {
     const rule = draft.findRule(data.targetId, data.sourceIds)
     if (rule !== undefined) draft.deleteRule(rule.id)
@@ -251,6 +310,7 @@ function onHyperLinkSourceRemoved(data: {
   targetId: NodeId
   removedSourceId: NodeId
 }) {
+  if (isDerivedView.value) return
   createNewState((draft) => {
     const rule = draft.findRule(data.targetId, data.sourceIds)
     if (rule === undefined) return
@@ -333,6 +393,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
 
 <template>
   <GraphEditor
+    ref="editor"
     v-if="editorState"
     :document-id="documentId"
     @new="emit('new')"
@@ -374,6 +435,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
         class="absolute top-4 left-1/2 -translate-x-1/2 badge badge-neutral badge-sm opacity-80"
       >
         read-only · derived from theory
+        <template v-if="derivedCanvas?.note"> · {{ derivedCanvas.note }}</template>
       </div>
       <div v-if="isViewUnavailable" class="absolute inset-0 flex items-center justify-center p-6">
         <div

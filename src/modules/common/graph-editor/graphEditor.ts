@@ -158,7 +158,7 @@ export interface SelectionAction {
 
 export type NodeId = number
 
-export type GraphEditorNodeShape = 'circle' | 'diamond'
+export type GraphEditorNodeShape = 'circle' | 'diamond' | 'rect'
 
 export interface GraphEditorStateNode {
   id: NodeId

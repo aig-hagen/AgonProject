@@ -24,6 +24,7 @@ const view = defineModel<AbaView>({ required: true })
 
 const options: { key: AbaView; label: string; flatOnly: boolean }[] = [
   { key: 'theory', label: 'Theory', flatOnly: false },
+  { key: 'af', label: 'AF', flatOnly: true },
   { key: 'setaf', label: 'SETAF', flatOnly: true },
 ]
 </script>

@@ -357,7 +357,10 @@ v1 is **flat only**: AF and SETAF views, greyed out for non-flat theories.
    `GraphEditor.vue` got a `readOnly` prop (library `setReadOnly`, no action bar), a
    `canvasKey` prop (rebuild + per-view viewport), and a `canvasOverlay` slot. View positions
    and the active view live in document UI state.
-3. [ ] AF view (capped). Later: BAF (gated on the fragment), BSAF (non-flat).
+3. [x] AF view (capped at 200): rect nodes labelled `(support, claims)` that grow to fit the
+   label (library autogrow, switched on only while every node is a rect). Unplaced arguments
+   get a left-to-right graphviz layout; positions are keyed by support set.
+   Later: BAF (gated on the fragment), BSAF (non-flat).
 4. Evaluation wiring, displayed across all views.
 5. Hyperlink `arrowType` upstream; "open as document" whenever convenient.
 

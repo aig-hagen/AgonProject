@@ -17,8 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
+import { toAF } from '@/modules/assumption-based-argumentation/views/af'
 import { toSETAF } from '@/modules/assumption-based-argumentation/views/setaf'
 import {
+  type GraphEditorNodeShape,
   type GraphEditorState,
   type GraphEditorStateHyperLink,
   type GraphEditorStateLink,
@@ -26,13 +28,21 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import type { UUID } from '@/modules/common/ids'
 
-export type AbaView = 'theory' | 'setaf'
+export type AbaView = 'theory' | 'af' | 'setaf'
 
-export type ViewPositions = Record<NodeId, { x: number; y: number }>
+// Keyed by a stable node key: the assumption id (SETAF) or the support set (AF), since AF
+// argument ids shift when the theory changes.
+export type ViewPositions = Record<string, { x: number; y: number }>
 
 export interface DerivedCanvas {
   state: GraphEditorState
   annotations: Map<NodeId, { content: string }>
+  shapes: Map<NodeId, GraphEditorNodeShape>
+  positionKeys: Map<NodeId, string>
+  // Nodes without a stored position; the editor lays them out.
+  unplaced: NodeId[]
+  // Shown next to the read-only chip, e.g. when the AF is capped.
+  note?: string
 }
 
 // SETAF nodes are the assumptions: they start at their theory position unless moved in the view.
@@ -52,6 +62,43 @@ export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions):
       hyperLinks.push({ sourceIds: attackers, targetId: target, type: LinkType.SINGLE })
     }
   }
-  const annotations = new Map(alwaysOut.map((id) => [id, { content: 'always out' }]))
-  return { state: { stateId, nodes, links, hyperLinks, redraw: true }, annotations }
+  return {
+    state: { stateId, nodes, links, hyperLinks, redraw: true },
+    annotations: new Map(alwaysOut.map((id) => [id, { content: 'always out' }])),
+    shapes: new Map(),
+    positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
+    unplaced: [],
+  }
+}
+
+// AF nodes are support-unique arguments, labelled `(support, claims)` by atom name.
+export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
+  const { af, total } = toAF(aba)
+  const set = (ids: NodeId[]) =>
+    `{${ids
+      .map((id) => aba.getNode(id).name)
+      .sort()
+      .join(', ')}}`
+  const positionKeys = new Map<NodeId, string>()
+  const unplaced: NodeId[] = []
+  const nodes = [...af.arguments()].map(([id, d]) => {
+    const key = d.support.join(',')
+    positionKeys.set(id, key)
+    const position = positions[key]
+    if (!position) unplaced.push(id)
+    return { id, label: `(${set(d.support)}, ${set(d.claims)})`, ...(position ?? { x: 0, y: 0 }) }
+  })
+  const links = [...af.attacks()].map(([sourceId, targetId]) => ({
+    sourceId,
+    targetId,
+    type: LinkType.SINGLE,
+  }))
+  return {
+    state: { stateId, nodes, links, hyperLinks: [], redraw: true },
+    annotations: new Map(),
+    shapes: new Map(nodes.map((n) => [n.id, 'rect' as const])),
+    positionKeys,
+    unplaced,
+    note: total > nodes.length ? `showing ${nodes.length} of ${total} arguments` : undefined,
+  }
 }

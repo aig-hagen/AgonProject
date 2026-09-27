@@ -569,30 +569,24 @@ if (defaultLinkType === undefined) {
 const selectedLinkType = ref<LinkType>(defaultLinkType)
 
 watch(
-  () => state,
-  () => {
-    if (state.redraw) {
-      updateGraph(state)
-    }
-  },
-)
-
-watch(isDark, () => {
-  updateGraph(state)
-})
-
-watch(
   () => readOnly,
   (value) => graphComponentRef.value?.setReadOnly(value),
 )
 
-watch(
-  () => canvasKey,
-  () => {
+// A different canvas is rebuilt, never reconciled from the previous one: reconciling relabels
+// nodes, and the library reports those relabels as `labelEdited`.
+watch([() => state, () => canvasKey], ([, key], [, previousKey]) => {
+  if (key !== previousKey) {
     setGraph(state)
     restoreViewport()
-  },
-)
+  } else if (state.redraw) {
+    updateGraph(state)
+  }
+})
+
+watch(isDark, () => {
+  updateGraph(state)
+})
 
 // Opened by the compact Evaluate button; owned by the module so its evaluation host
 // (rendered in the module's editor slot) and this button share one open state.
@@ -699,6 +693,32 @@ const DIAMOND_NODE_PROPS = {
   height: ARGUMENT_RADIUS_IN_PX * 2,
   cornerRadius: 8,
 } as const
+// Minimum size; rect nodes grow to fit their one-line label (library autogrow).
+const RECT_NODE_PROPS = {
+  shape: NodeShape.RECTANGLE,
+  width: ARGUMENT_RADIUS_IN_PX * 2,
+  height: ARGUMENT_RADIUS_IN_PX * 1.4,
+  cornerRadius: 4,
+  reflexiveEdgeStart: 'MOVABLE',
+} as const
+const RECT_LABEL_FONT_SIZE = '0.8rem'
+
+function nodePropsFor(id: NodeId) {
+  const shape = nodeShapes?.get(id)
+  if (shape === 'diamond') return DIAMOND_NODE_PROPS
+  if (shape === 'rect') return RECT_NODE_PROPS
+  return CIRCLE_NODE_PROPS
+}
+
+// Autogrow is a global library switch, so it is only on while every node is a rect.
+let isAutoGrowOn = false
+function syncAutoGrow(state: GraphEditorState) {
+  const enable =
+    state.nodes.length > 0 && state.nodes.every((n) => nodeShapes?.get(n.id) === 'rect')
+  if (enable === isAutoGrowOn) return
+  isAutoGrowOn = enable
+  graphComponentRef.value?.toggleNodeAutoGrow(enable)
+}
 
 let idGenerator = new IdGenerator()
 let idMapping = new IdMapping<number, number>()
@@ -1341,7 +1361,7 @@ function buildGraphJson(state: GraphEditorState) {
       y: live?.y ?? node.y,
       color: effectiveStyle.value.nodeColor,
       outline: nodeOutlines?.get(node.id),
-      props: nodeShapes?.get(node.id) === 'diamond' ? DIAMOND_NODE_PROPS : CIRCLE_NODE_PROPS,
+      props: nodePropsFor(node.id),
     }
   })
   const links: jsonLink[] = state.links.map((link) => ({
@@ -1387,6 +1407,7 @@ function adjustLabelFontSizes(state: GraphEditorState) {
       graphComponentId,
       idMapping.getOrFailReverse(node.id),
       node.label,
+      nodeShapes?.get(node.id) === 'rect' ? RECT_LABEL_FONT_SIZE : undefined,
     )
   }
 }
@@ -1400,6 +1421,7 @@ function setGraph(state: GraphEditorState): void {
   selection.value = null
   hyperLinkSources.value = []
   liveNodePositions.value = new Map()
+  syncAutoGrow(state)
   graphComponent.setGraph(buildGraphJson(state), true)
   syncIdMapping()
 
@@ -1432,6 +1454,7 @@ function updateGraph(state: GraphEditorState): void {
     throw new Error('Graph component is not rendered.')
   }
   const previousInternalIds = new Set(idMapping.inputIds())
+  syncAutoGrow(state)
   graphComponent.updateGraph(buildGraphJson(state))
   const importedNodes = syncIdMapping()
 
@@ -1475,7 +1498,10 @@ function onLabelEdited(
     id: string | number
   },
   label: string,
+  // Passed from graph-component rc.27 on; older versions also fire for `updateGraph` relabels.
+  cause?: EVENT_CAUSE,
 ) {
+  if (readOnly || cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
   const privateId = parent.id
   if (typeof privateId !== 'number') {
     return

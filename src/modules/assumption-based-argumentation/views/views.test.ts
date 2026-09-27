@@ -20,7 +20,7 @@ import { describe, expect, test } from 'vitest'
 
 import { ABAF, type NodeId } from '@/modules/assumption-based-argumentation/model'
 import { toAF } from '@/modules/assumption-based-argumentation/views/af'
-import { setafCanvas } from '@/modules/assumption-based-argumentation/views/editorState'
+import { afCanvas, setafCanvas } from '@/modules/assumption-based-argumentation/views/editorState'
 import { toSETAF } from '@/modules/assumption-based-argumentation/views/setaf'
 import {
   minimalSupports,
@@ -159,5 +159,22 @@ describe('SETAF view', () => {
       { sourceIds: [id('a'), id('b')], targetId: id('a'), type: LinkType.SINGLE },
     ])
     expect(state.nodes.find((n) => n.id === id('b'))).toMatchObject({ x: 5, y: 7 })
+  })
+})
+
+describe('AF canvas', () => {
+  test('rect nodes labelled (support, claims); positions keyed by support', () => {
+    const { aba, id } = seed()
+    const key = [id('a'), id('b')].join(',')
+    const canvas = afCanvas(aba, generateUUID(), { [key]: { x: 3, y: 4 } })
+    expect(canvas.state.nodes.map((n) => n.label)).toEqual([
+      '({a}, {a, p})',
+      '({b}, {b})',
+      '({a, b}, {q})',
+    ])
+    expect([...canvas.shapes.values()]).toEqual(['rect', 'rect', 'rect'])
+    expect(canvas.state.nodes[2]).toMatchObject({ x: 3, y: 4 })
+    expect(canvas.unplaced).toEqual([0, 1])
+    expect(canvas.note).toBeUndefined()
   })
 })
