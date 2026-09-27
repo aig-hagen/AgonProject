@@ -204,6 +204,32 @@ paths:
         '200':
           $ref: '#/components/responses/ReasonerResponse'
 
+  /aba:
+    post:
+      tags: [Reasoning]
+      summary: Assumption-based argumentation (ABA)
+      description: >
+        The theory is sent as text in `kb`. `cf`, `adm`, `co`, `pr`, `st`, `wf`
+        and `id` accept any theory; the other semantics keys need a flat theory.
+        Errors come back with `status: ERROR` and the message in `answer`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbaRequest'
+            example:
+              email: docs-tryout
+              cmd: get_models
+              kb: "{1,2}\n3 <- 1\n4 <- 1,2\nnot 1 = 4\nnot 2 = 3"
+              kb_format: pl
+              semantics: st
+              timeout: 30000
+              unit_timeout: ms
+      responses:
+        '200':
+          $ref: '#/components/responses/ReasonerResponse'
+
   /rankings:
     post:
       tags: [Reasoning]
@@ -453,6 +479,32 @@ components:
               type: string
               description: Which probabilistic solver to run.
 
+    AbaRequest:
+      allOf:
+        - $ref: '#/components/schemas/CommonRequestFields'
+        - type: object
+          required: [cmd, kb, kb_format, semantics]
+          properties:
+            cmd:
+              type: string
+              enum: [get_models, get_model, get_credulous, get_skeptical, query, semantics]
+            kb:
+              type: string
+              description: >
+                One item per line: assumptions `{a,b}`, rules `h <- b1,b2`,
+                facts `h <-`, contraries `not a = c`.
+            kb_format:
+              type: string
+              enum: [pl, fol]
+            fol_signature:
+              type: string
+              description: Required when `kb_format` is `fol`.
+            query_assumption:
+              type: string
+              description: Required when `cmd` is `query`.
+            semantics:
+              type: string
+              description: Lower-case key, e.g. `st`, `co`, `wf`.
     IafRequest:
       allOf:
         - $ref: '#/components/schemas/CommonRequestFields'

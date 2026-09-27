@@ -62,6 +62,8 @@ const statusStrip = computed(() => {
       return { kind: 'warning', message: t('evaluation.status.rateLimited') }
     case 'EvaluationTimeoutError':
       return { kind: 'warning', message: t('evaluation.status.timedOut', { seconds: TIMEOUT_S }) }
+    case 'ReasonerError':
+      return { kind: 'error', message: error.value.message }
     default:
       return { kind: 'error', message: t('evaluation.status.failed') }
   }

@@ -16,7 +16,11 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<script setup lang="ts" generic="T extends { key: string; displayName: string }">
+<script
+  setup
+  lang="ts"
+  generic="T extends { key: string; displayName: string; disabled?: boolean }"
+>
 import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/24/outline'
 import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
@@ -72,6 +76,7 @@ const { floatingStyles } = useFloating(triggerEl, panelEl, {
 })
 
 const flatOptions = computed(() => groups.flatMap((g) => g.options))
+const enabledOptions = computed(() => flatOptions.value.filter((o) => !o.disabled))
 const activeOptionId = computed(() =>
   activeKey.value === null ? undefined : optionId(activeKey.value),
 )
@@ -104,12 +109,13 @@ function toggle() {
 }
 
 function select(option: T) {
+  if (option.disabled) return
   emit('update:modelValue', option)
   close()
 }
 
 function moveActive(delta: number) {
-  const options = flatOptions.value
+  const options = enabledOptions.value
   if (options.length === 0) return
   const currentIndex = options.findIndex((o) => o.key === activeKey.value)
   const nextIndex = (currentIndex + delta + options.length) % options.length
@@ -143,7 +149,7 @@ function onTypeahead(e: KeyboardEvent) {
   typeaheadTimer = setTimeout(() => {
     typeaheadBuffer = ''
   }, 500)
-  const match = flatOptions.value.find((o) =>
+  const match = enabledOptions.value.find((o) =>
     o.displayName.toLowerCase().startsWith(typeaheadBuffer),
   )
   if (match !== undefined) {
@@ -164,18 +170,18 @@ function onListboxKeydown(e: KeyboardEvent) {
       break
     case 'Home':
       e.preventDefault()
-      activeKey.value = flatOptions.value[0]?.key ?? null
+      activeKey.value = enabledOptions.value[0]?.key ?? null
       scrollActiveIntoView()
       break
     case 'End':
       e.preventDefault()
-      activeKey.value = flatOptions.value[flatOptions.value.length - 1]?.key ?? null
+      activeKey.value = enabledOptions.value[enabledOptions.value.length - 1]?.key ?? null
       scrollActiveIntoView()
       break
     case 'Enter':
     case ' ': {
       e.preventDefault()
-      const option = flatOptions.value.find((o) => o.key === activeKey.value)
+      const option = enabledOptions.value.find((o) => o.key === activeKey.value)
       if (option !== undefined) select(option)
       break
     }
@@ -254,16 +260,18 @@ watch(isOpen, (open) => {
             :key="option.key"
             role="option"
             :aria-selected="option.key === modelValue.key"
-            class="text-sm cursor-pointer"
+            :aria-disabled="option.disabled || undefined"
+            class="text-sm"
             :class="[
               isCompact ? 'px-4 py-2.5' : 'px-3 py-1',
+              option.disabled ? 'cursor-not-allowed text-base-content/40' : 'cursor-pointer',
               {
-                'bg-primary text-primary-content': option.key === activeKey,
+                'bg-primary text-primary-content': option.key === activeKey && !option.disabled,
                 'font-semibold': option.key === modelValue.key && option.key !== activeKey,
               },
             ]"
             @click="select(option)"
-            @mousemove="activeKey = option.key"
+            @mousemove="option.disabled || (activeKey = option.key)"
           >
             {{ option.displayName }}
           </div>

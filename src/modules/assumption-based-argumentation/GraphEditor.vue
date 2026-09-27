@@ -18,12 +18,21 @@
 -->
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
-import { computed, provide, ref, shallowRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import {
+  createDefaultExtensionWindowInstance,
+  type ExtensionWindowInstanceState,
+} from '@/modules/assumption-based-argumentation/evaluation/extensionWindowState'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
+import WindowExtensions from '@/modules/assumption-based-argumentation/WindowExtensions.vue'
+import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
+import { useDocumentUIState } from '@/modules/common/documents/uiState'
+import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
+import type { Input } from '@/modules/common/evaluation/types'
 import type { ExportFileData } from '@/modules/common/export'
 import {
   type GraphEditorNodeShape,
@@ -46,6 +55,11 @@ const { state, historyState, documentId } = defineProps<{
   historyState: HistoryState
   documentId: number
 }>()
+
+const db = inject(DOCUMENTS_DB_INJECTION_KEY)
+if (db === undefined) {
+  throw new Error('Documents database not provided.')
+}
 
 const emit = defineEmits<{
   load: []
@@ -231,6 +245,47 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
 provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
 
 const isTheoryOpen = ref(false)
+
+const evaluationInput = computed<Input<ABAF>>(() => ({
+  stateId: state.stateId,
+  content: state.current.content,
+}))
+
+const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
+  db,
+  documentId,
+  'extension-instances',
+  [],
+)
+
+function addExtensionInstance() {
+  extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
+}
+
+function removeExtensionInstance(id: string) {
+  extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
+}
+
+function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
+  extensionInstances.value = extensionInstances.value.map((i) =>
+    i.id === updated.id ? updated : i,
+  )
+}
+
+const evaluationHostOpen = ref(false)
+const activeExtensionId = ref<string | undefined>(undefined)
+const evaluationTitles = ref<Record<string, string>>({})
+function setEvaluationTitle(id: string, title: string) {
+  evaluationTitles.value[id] = title
+}
+
+const extensionChips = computed<EvaluationChip[]>(() =>
+  extensionInstances.value.map((i) => ({
+    id: i.id,
+    label: evaluationTitles.value[i.id] ?? i.semanticKey,
+    kind: 'extension',
+  })),
+)
 </script>
 
 <template>
@@ -253,7 +308,6 @@ const isTheoryOpen = ref(false)
     :node-shapes="nodeShapes"
     :node-annotations="nodeAnnotations"
     :node-selection-actions="abaNodeSelectionActions"
-    :show-evaluation="false"
     :allow-link-creation="true"
     :allow-link-deletion="true"
     :allow-hyper-link-creation="true"
@@ -263,6 +317,8 @@ const isTheoryOpen = ref(false)
     @share="emit('share')"
     @export-file="emit('export', $event)"
     :history-state="historyState"
+    v-model:evaluation-open="evaluationHostOpen"
+    @open-extension-window="addExtensionInstance"
   >
     <template #sidePanel>
       <TheoryPanel :aba="content" @edit="createNewState($event)" />
@@ -279,6 +335,44 @@ const isTheoryOpen = ref(false)
       >
         <TheoryPanel :aba="content" compact @edit="createNewState($event)" />
       </BottomSheet>
+    </template>
+    <template #evaluationExtensions>
+      <EvaluationHost
+        v-if="layoutMode === 'compact'"
+        v-model:open="evaluationHostOpen"
+        v-model:active-id="activeExtensionId"
+        :chips="extensionChips"
+        @add="addExtensionInstance()"
+        @remove="removeExtensionInstance($event)"
+      >
+        <template #default="{ activeId }">
+          <WindowExtensions
+            v-for="instance in extensionInstances"
+            v-show="instance.id === activeId"
+            :key="instance.id"
+            hosted
+            :input="evaluationInput"
+            :instance-state="instance"
+            :document-id="documentId"
+            :state-key="`${instance.id}:window`"
+            @update:instance-state="updateExtensionInstance($event)"
+            @title="setEvaluationTitle(instance.id, $event)"
+          />
+        </template>
+      </EvaluationHost>
+
+      <WindowExtensions
+        v-for="(instance, index) in extensionInstances"
+        v-else
+        :key="instance.id"
+        :input="evaluationInput"
+        :instance-state="instance"
+        :instance-offset="index"
+        :document-id="documentId"
+        :state-key="`${instance.id}:window`"
+        @update:instance-state="updateExtensionInstance($event)"
+        @close="removeExtensionInstance(instance.id)"
+      />
     </template>
   </GraphEditor>
 </template>

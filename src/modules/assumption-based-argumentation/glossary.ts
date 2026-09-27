@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { CFST18 } from '@/modules/common/tooltip/publications'
+import { BRU24, CFST18 } from '@/modules/common/tooltip/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 // Notation follows Berthold, Rapberger & Ulbricht (KR 2024).
@@ -137,5 +137,114 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       '. Otherwise it is non-flat.',
     ],
     reference: CFST18,
+  },
+
+  // Semantics as in the handbook (Def. 2.8); gr as in Berthold et al. (Def. 2.3).
+  abaCF: {
+    label: 'conflict-free',
+    title: 'Conflict-Freeness (ABA)',
+    content: [
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is conflict-free iff it does not ',
+      { ref: 'abaAttack', label: 'attack' },
+      ' itself.',
+    ],
+    reference: CFST18,
+  },
+
+  abaADM: {
+    label: 'admissible',
+    title: 'Admissibility (ABA)',
+    content: [
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is admissible iff it is ',
+      { ref: 'abaClosure', label: 'closed' },
+      ', ',
+      { ref: 'abaCF' },
+      ' and, for every $B \\subseteq \\mathcal{A}$, if $B$ is closed and ',
+      { ref: 'abaAttack', label: 'attacks' },
+      ' $A$, then $A$ attacks $B$.',
+    ],
+    reference: CFST18,
+  },
+
+  abaCO: {
+    label: 'complete',
+    title: 'Complete Semantics (ABA)',
+    content: [
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is complete iff it is ',
+      { ref: 'abaADM' },
+      ' and contains all assumptions it defends, where $A$ defends $a$ iff for every $B \\subseteq \\mathcal{A}$, if $B$ is ',
+      { ref: 'abaClosure', label: 'closed' },
+      ' and ',
+      { ref: 'abaAttack', label: 'attacks' },
+      ' $\\{a\\}$, then $A$ attacks $B$.',
+    ],
+    reference: CFST18,
+  },
+
+  abaPR: {
+    label: 'preferred',
+    title: 'Preferred Semantics (ABA)',
+    content: [
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is preferred iff it is maximally (w.r.t. $\\subseteq$) ',
+      { ref: 'abaADM' },
+      '.',
+    ],
+    reference: CFST18,
+  },
+
+  abaST: {
+    label: 'stable',
+    title: 'Stable Semantics (ABA)',
+    content: [
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is stable iff it is ',
+      { ref: 'abaClosure', label: 'closed' },
+      ', ',
+      { ref: 'abaCF' },
+      ' and, for every $a \\notin A$, $A$ ',
+      { ref: 'abaAttack', label: 'attacks' },
+      ' $\\{a\\}$.',
+    ],
+    reference: CFST18,
+  },
+
+  abaWF: {
+    label: 'well-founded',
+    title: 'Well-Founded Semantics (ABA)',
+    content: [
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is well-founded iff it is the intersection of all ',
+      { ref: 'abaCO' },
+      ' extensions. For ',
+      { ref: 'abaFlat' },
+      ' ABA frameworks, the term grounded is conventionally used instead.',
+    ],
+    reference: CFST18,
+  },
+
+  abaID: {
+    label: 'ideal',
+    title: 'Ideal Semantics (ABA)',
+    content: [
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is ideal iff $A$ is maximal (w.r.t. $\\subseteq$) such that (i) it is ',
+      { ref: 'abaADM' },
+      ', and (ii) for all ',
+      { ref: 'abaPR' },
+      ' extensions $P \\subseteq \\mathcal{A}$, $A \\subseteq P$.',
+    ],
+    reference: CFST18,
+  },
+
+  abaGR: {
+    label: 'grounded',
+    title: 'Grounded Semantics (ABA)',
+    content: [
+      'Let $D$ be an ',
+      { ref: 'ABAF' },
+      ' and let $S \\in ad(D)$ be ',
+      { ref: 'abaADM' },
+      '. Then $S \\in gr(D)$ iff $S$ is $\\subseteq$-minimal in $co(D)$, the ',
+      { ref: 'abaCO' },
+      ' extensions.',
+    ],
+    reference: BRU24,
   },
 }

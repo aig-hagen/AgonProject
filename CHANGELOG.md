@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
 - The ABA editor now runs on the shared graph editor (zoom, layouts, undo, export), with a Theory side panel for statements, rules and contraries. Contraries show as node labels for now.
 - Added an Assumption-based section to the glossary (ABAF, rules, assumptions, contraries, derivability, attack, closure, flatness), used in the ABA Theory panel.
+- ABA frameworks can now be evaluated via TweetyProject's `/aba` endpoint (extensions, credulous, skeptical); flat-only semantics are shown disabled for non-flat theories.
 
 ### Changed
 

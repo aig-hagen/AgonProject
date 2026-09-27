@@ -16,37 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { KEY_DEFAULT_SEMANTIC } from '@/modules/assumption-based-argumentation/evaluation/tweetyProject'
 
-export class EvaluationTimeoutError extends Error {
-  constructor() {
-    super('Evaluation timed out')
-    this.name = 'EvaluationTimeoutError'
-  }
+export interface ExtensionWindowInstanceState {
+  id: string
+  semanticKey: string
+  mode: string
 }
 
-export class RateLimitError extends Error {
-  constructor() {
-    super('Too many requests')
-    this.name = 'RateLimitError'
+export function createDefaultExtensionWindowInstance(): ExtensionWindowInstanceState {
+  return {
+    id: crypto.randomUUID(),
+    semanticKey: KEY_DEFAULT_SEMANTIC,
+    mode: 'enumerate',
   }
-}
-
-export class ServiceUnavailableError extends Error {
-  constructor() {
-    super('Service unavailable')
-    this.name = 'ServiceUnavailableError'
-  }
-}
-
-// A reasoner-side rejection (e.g. a malformed theory) whose message is shown to the user.
-export class ReasonerError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'ReasonerError'
-  }
-}
-
-export function throwIfTimeout(answer: string | null, status?: string | null): void {
-  if (status === 'TIMEOUT') throw new EvaluationTimeoutError()
-  if (answer === null) throw new Error('Evaluation failed')
 }

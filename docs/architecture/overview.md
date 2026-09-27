@@ -202,13 +202,13 @@ compatibility boundary for users and share links.
 
 ## Service responsibilities
 
-| Service           | Public paths                                                                         | Responsibility                                                               | Persistent state |
-| ----------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ---------------- |
-| TweetyProject     | `/dung`, `/setaf`, `/bipolar`, `/rankings`, `/adf`, `/serialisation`, `/paf`, `/iaf` | Semantics and reasoning                                                      | None owned here  |
-| graph-gen         | `/graph-gen/*`                                                                       | Random framework generation                                                  | None             |
-| share             | `/shares*`, `/events`, `/stats`                                                      | Share storage and anonymous aggregated analytics                             | SQLite           |
-| argumentation MCP | `/mcp`                                                                               | Typed tools for AF reasoning and generation                                  | None             |
-| Caddy             | all public paths                                                                     | Static SPA, reverse proxy, headers, caching, maintenance mode, rate limiting | None             |
+| Service           | Public paths                                                                                 | Responsibility                                                               | Persistent state |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------- |
+| TweetyProject     | `/dung`, `/setaf`, `/bipolar`, `/rankings`, `/adf`, `/serialisation`, `/paf`, `/iaf`, `/aba` | Semantics and reasoning                                                      | None owned here  |
+| graph-gen         | `/graph-gen/*`                                                                               | Random framework generation                                                  | None             |
+| share             | `/shares*`, `/events`, `/stats`                                                              | Share storage and anonymous aggregated analytics                             | SQLite           |
+| argumentation MCP | `/mcp`                                                                                       | Typed tools for AF reasoning and generation                                  | None             |
+| Caddy             | all public paths                                                                             | Static SPA, reverse proxy, headers, caching, maintenance mode, rate limiting | None             |
 
 The service READMEs own exact request and response contracts, except TweetyProject, whose
 contract is documented in the [reasoning backend API reference](./reasoning-backend-api.md) since
