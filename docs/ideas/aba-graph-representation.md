@@ -281,11 +281,9 @@ How the app renders graphs today, and what each approach would cost:
 
 **Verdict: no major changes.** The plan is additive:
 
-1. **New `common/graph-editor/GraphView.vue`**: a lightweight read-only wrapper around the bare
-   `GraphComponent` (zoom on, all GUI editing off, graphviz layout via `layouting.ts`, a `highlight`
-   prop). It fills the canvas when a derived view is active. Lift the state→json mapping and highlight application out of `GraphEditor.vue` into
-   `graphEditorUtils.ts` so both share it. Medium effort, and the existing editor's behaviour is
-   untouched.
+1. **Read-only mode on the shared editor** (done instead of a separate `GraphView.vue`): the
+   derived view is fed to the same `GraphEditor.vue` with `readOnly` and a `canvasKey`, so menus,
+   layouts, export, highlight and the side panel keep working. See _Suggested order_.
 2. **Upstream library change** for hyperlink `arrowType`. Small, but it's a release of a separate
    package. Not blocking.
 3. **View switcher inside the ABA editor** (below). The ABA canvas now runs on the shared
@@ -355,7 +353,10 @@ document-creation entry point.
 v1 is **flat only**: AF and SETAF views, greyed out for non-flat theories.
 
 1. [x] Compile layer + tests (`views/supports.ts`, `af.ts`, `setaf.ts`).
-2. [ ] `GraphView.vue` (read-only) + the view switcher with the SETAF view.
+2. [x] View switcher with the SETAF view. Instead of a separate `GraphView.vue`, the shared
+   `GraphEditor.vue` got a `readOnly` prop (library `setReadOnly`, no action bar), a
+   `canvasKey` prop (rebuild + per-view viewport), and a `canvasOverlay` slot. View positions
+   and the active view live in document UI state.
 3. [ ] AF view (capped). Later: BAF (gated on the fragment), BSAF (non-flat).
 4. Evaluation wiring, displayed across all views.
 5. Hyperlink `arrowType` upstream; "open as document" whenever convenient.

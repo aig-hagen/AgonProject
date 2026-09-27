@@ -267,7 +267,7 @@ function currentLinkType(internalLinkId: string): LinkType | undefined {
  */
 const selectionActions = computed<SelectionAction[]>(() => {
   const sel = selection.value
-  if (sel === null) return []
+  if (sel === null || readOnly) return []
   const actions: SelectionAction[] = []
   if (sel.kind === 'node') {
     // Collective-attack source toggle (touch alternative to the desktop shift-click). Kept
@@ -358,6 +358,8 @@ const {
   nodeTapAction,
   nodeSelectionActions,
   edgeSelectionActions,
+  readOnly = false,
+  canvasKey,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
@@ -395,6 +397,11 @@ const {
     targetId: NodeId
     type: LinkType
   }) => SelectionAction[]
+  /** Blocks all canvas edits; nodes can still be dragged. */
+  readOnly?: boolean
+  /** Names what the canvas shows (e.g. a derived view). Changing it rebuilds the graph and
+      switches to that canvas' own saved viewport. */
+  canvasKey?: string
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -573,6 +580,19 @@ watch(
 watch(isDark, () => {
   updateGraph(state)
 })
+
+watch(
+  () => readOnly,
+  (value) => graphComponentRef.value?.setReadOnly(value),
+)
+
+watch(
+  () => canvasKey,
+  () => {
+    setGraph(state)
+    restoreViewport()
+  },
+)
 
 // Opened by the compact Evaluate button; owned by the module so its evaluation host
 // (rendered in the module's editor slot) and this button share one open state.
@@ -926,7 +946,7 @@ function onNodesMoved(positions: PositionSnapshot[]) {
   emit('nodesMoved', data)
 }
 
-const VIEWPORT_STATE_KEY = 'viewport'
+const viewportStateKey = () => (canvasKey ? `viewport:${canvasKey}` : 'viewport')
 
 interface StoredViewport {
   k: number
@@ -941,9 +961,15 @@ function applyViewport(viewport: StoredViewport) {
   graphComponentRef.value?.setViewport(viewport.k, viewport.x, viewport.y)
 }
 
-const saveViewport = useDebounceFn((viewport: StoredViewport) => {
-  void setUIStateValue(db, documentId, VIEWPORT_STATE_KEY, viewport)
+const saveViewport = useDebounceFn((key: string, viewport: StoredViewport) => {
+  void setUIStateValue(db, documentId, key, viewport)
 }, 400)
+
+const restoreViewport = () => {
+  void getUIStateValue<StoredViewport>(db, documentId, viewportStateKey()).then((viewport) => {
+    if (viewport) applyViewport(viewport)
+  })
+}
 
 let previousViewport: StoredViewport = { k: 1, x: 0, y: 0 }
 
@@ -956,7 +982,7 @@ function onViewportChanged(viewport: StoredViewport) {
   else if (Math.abs(x - previous.x) > 0.5 || Math.abs(y - previous.y) > 0.5)
     tutorialPanCount.value++
   previousViewport = { k, x, y }
-  void saveViewport(previousViewport)
+  void saveViewport(viewportStateKey(), previousViewport)
 }
 
 function setupDragObserver() {
@@ -1045,9 +1071,8 @@ onMounted(() => {
   // Restore a previously saved pan/zoom for this document, overriding the auto-centered
   // view above. Applied after the fact (rather than before centering) since the read is
   // async — if there's nothing saved this is a no-op and the auto-centered view stands.
-  void getUIStateValue<StoredViewport>(db, documentId, VIEWPORT_STATE_KEY).then((viewport) => {
-    if (viewport) applyViewport(viewport)
-  })
+  restoreViewport()
+  graphComponent.setReadOnly(readOnly)
 
   setupDragObserver()
 
@@ -1906,7 +1931,7 @@ defineExpose({
     </svg>
     <div
       class="pointer-events-none w-full opacity-50 absolute inset-0 flex items-center"
-      v-if="layoutMode === 'regular' && state.nodes.length === 0 && showHints"
+      v-if="layoutMode === 'regular' && state.nodes.length === 0 && showHints && !readOnly"
     >
       <div class="m-auto w-fit">
         <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
@@ -1934,6 +1959,9 @@ defineExpose({
         {{ entry.label }}
       </li>
     </ul>
+    <div v-if="!!slots.canvasOverlay" class="absolute inset-0 pointer-events-none">
+      <slot name="canvasOverlay" />
+    </div>
     <div
       v-if="layoutMode === 'regular'"
       class="absolute top-4 bottom-4 left-4 flex flex-col justify-between"

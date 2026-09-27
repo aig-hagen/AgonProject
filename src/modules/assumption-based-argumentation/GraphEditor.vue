@@ -28,6 +28,13 @@ import {
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
+import {
+  type AbaView,
+  type DerivedCanvas,
+  setafCanvas,
+  type ViewPositions,
+} from '@/modules/assumption-based-argumentation/views/editorState'
+import ViewSwitcher from '@/modules/assumption-based-argumentation/views/ViewSwitcher.vue'
 import WindowExtensions from '@/modules/assumption-based-argumentation/WindowExtensions.vue'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
@@ -77,7 +84,7 @@ const { layoutMode } = useLayoutMode()
 const { addErrorNotification } = useNotifications()
 
 const renderedState = shallowRef(state)
-const editorState = shallowRef(transformToEditorState(state, true))
+const theoryState = shallowRef(transformToEditorState(state, true))
 const content = computed(() => renderedState.value.current.content)
 
 watch(
@@ -85,7 +92,7 @@ watch(
   () => {
     if (state.stateId === renderedState.value.stateId) return
     renderedState.value = state
-    editorState.value = transformToEditorState(state, true)
+    theoryState.value = transformToEditorState(state, true)
   },
 )
 
@@ -114,19 +121,47 @@ function createNewState(recipe: (draft: ABAF) => void, redraw = true) {
   })
   if (nextState !== undefined) {
     renderedState.value = nextState
-    editorState.value = transformToEditorState(nextState, redraw)
+    theoryState.value = transformToEditorState(nextState, redraw)
     emit('change', nextState)
   } else if (redraw) {
-    editorState.value = transformToEditorState(renderedState.value, true)
+    theoryState.value = transformToEditorState(renderedState.value, true)
   }
 }
 
+const activeView = useDocumentUIState<AbaView>(db, documentId, 'canvas-view', 'theory')
+const viewPositions = useDocumentUIState<Partial<Record<AbaView, ViewPositions>>>(
+  db,
+  documentId,
+  'view-positions',
+  {},
+)
+const isFlat = computed(() => content.value.isFlat())
+const isDerivedView = computed(() => activeView.value !== 'theory')
+// A derived view stays selected when the theory stops qualifying; the canvas then shows an
+// empty state until it qualifies again.
+const isViewUnavailable = computed(() => isDerivedView.value && !isFlat.value)
+
+const derivedCanvas = computed<DerivedCanvas | undefined>(() => {
+  if (!isDerivedView.value) return undefined
+  const stateId = renderedState.value.stateId
+  if (isViewUnavailable.value) {
+    return {
+      state: { stateId, nodes: [], links: [], hyperLinks: [], redraw: true },
+      annotations: new Map(),
+    }
+  }
+  return setafCanvas(content.value, stateId, viewPositions.value.setaf ?? {})
+})
+
+const editorState = computed(() => derivedCanvas.value?.state ?? theoryState.value)
+
 const linkConfig = computed(() => ({
-  SINGLE: { displayName: t('editor.links.rule') },
+  SINGLE: { displayName: isDerivedView.value ? t('editor.links.attack') : t('editor.links.rule') },
 }))
 
 const nodeShapes = computed(() => {
   const shapes = new Map<NodeId, GraphEditorNodeShape>()
+  if (isDerivedView.value) return shapes
   for (const [id, d] of content.value.nodeEntries()) {
     shapes.set(id, d.kind === 'assumption' ? 'circle' : 'diamond')
   }
@@ -134,6 +169,7 @@ const nodeShapes = computed(() => {
 })
 
 const nodeAnnotations = computed(() => {
+  if (derivedCanvas.value) return derivedCanvas.value.annotations
   const aba = content.value
   const annotations = new Map<NodeId, { content: string }>()
   for (const [id, d] of aba.nodeEntries()) {
@@ -172,6 +208,13 @@ function onNodeLabelEdited(data: { id: NodeId; label: string }) {
 }
 
 function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
+  const view = activeView.value
+  if (view !== 'theory') {
+    const positions = { ...viewPositions.value[view] }
+    for (const { id, x, y } of data) positions[id] = { x, y }
+    viewPositions.value = { ...viewPositions.value, [view]: positions }
+    return
+  }
   createNewState((draft) => {
     for (const node of data) draft.setPosition(node.id, node.x, node.y)
   }, false)
@@ -311,6 +354,8 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     :allow-link-creation="true"
     :allow-link-deletion="true"
     :allow-hyper-link-creation="true"
+    :read-only="isDerivedView"
+    :canvas-key="isDerivedView ? activeView : undefined"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"
@@ -323,7 +368,34 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     <template #sidePanel>
       <TheoryPanel :aba="content" @edit="createNewState($event)" />
     </template>
+    <template #canvasOverlay>
+      <div
+        v-if="isDerivedView && !isViewUnavailable && layoutMode === 'regular'"
+        class="absolute top-4 left-1/2 -translate-x-1/2 badge badge-neutral badge-sm opacity-80"
+      >
+        read-only · derived from theory
+      </div>
+      <div v-if="isViewUnavailable" class="absolute inset-0 flex items-center justify-center p-6">
+        <div
+          class="card card-sm bg-base-100 border border-base-300 shadow-md max-w-xs pointer-events-auto"
+        >
+          <div class="card-body items-center text-center">
+            <p>This view is only exact for flat theories, and this theory derives an assumption.</p>
+            <button class="btn btn-sm btn-primary" @click="activeView = 'theory'">
+              Back to Theory
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        v-if="layoutMode === 'regular'"
+        class="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-auto"
+      >
+        <ViewSwitcher v-model="activeView" :flat="isFlat" />
+      </div>
+    </template>
     <template #canvasSelector>
+      <ViewSwitcher v-model="activeView" :flat="isFlat" />
       <button class="btn btn-sm btn-neutral shadow-md gap-1.5" @click="isTheoryOpen = true">
         <BookOpenIcon class="size-4" /> Theory
       </button>

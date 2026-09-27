@@ -20,11 +20,14 @@ import { describe, expect, test } from 'vitest'
 
 import { ABAF, type NodeId } from '@/modules/assumption-based-argumentation/model'
 import { toAF } from '@/modules/assumption-based-argumentation/views/af'
+import { setafCanvas } from '@/modules/assumption-based-argumentation/views/editorState'
 import { toSETAF } from '@/modules/assumption-based-argumentation/views/setaf'
 import {
   minimalSupports,
   supportArguments,
 } from '@/modules/assumption-based-argumentation/views/supports'
+import { LinkType } from '@/modules/common/graph-editor/graphEditor'
+import { generateUUID } from '@/modules/common/ids'
 
 // Builds an ABAF from names: assumptions map to their contrary, facts are empty-body heads.
 function build(spec: {
@@ -146,5 +149,15 @@ describe('SETAF view', () => {
     expect(alwaysOut).toEqual([id('a')])
     expect([...setaf.arguments()].map(([i]) => i).sort()).toEqual([id('a'), id('b')].sort())
     expect(setaf.attacks()).toEqual([])
+  })
+
+  test('canvas: singleton attacks are links, collective ones hyperlinks', () => {
+    const { aba, id } = seed()
+    const { state } = setafCanvas(aba, generateUUID(), { [id('b')]: { x: 5, y: 7 } })
+    expect(state.links).toEqual([{ sourceId: id('a'), targetId: id('b'), type: LinkType.SINGLE }])
+    expect(state.hyperLinks).toEqual([
+      { sourceIds: [id('a'), id('b')], targetId: id('a'), type: LinkType.SINGLE },
+    ])
+    expect(state.nodes.find((n) => n.id === id('b'))).toMatchObject({ x: 5, y: 7 })
   })
 })
