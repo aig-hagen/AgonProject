@@ -1498,9 +1498,9 @@ function onLabelEdited(
     id: string | number
   },
   label: string,
-  // Passed from graph-component rc.27 on; older versions also fire for `updateGraph` relabels.
-  cause?: EVENT_CAUSE,
+  cause: EVENT_CAUSE,
 ) {
+  // Programmatic relabels (e.g. by `updateGraph`) are not user renames.
   if (readOnly || cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
   const privateId = parent.id
   if (typeof privateId !== 'number') {
