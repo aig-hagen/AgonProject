@@ -7,7 +7,7 @@
 - store state of export window in db?
 
 ## ABA
-- implement highlighting for all views
+- physics doesnt properly respect the rectangle-expandable nodes it seems
 - update glossary entries; show separate for flat/nonflat in eval window
 - several issues where changes to the theory dont update the graph; eg contraries
 - add contraries and derived attacks to theory view

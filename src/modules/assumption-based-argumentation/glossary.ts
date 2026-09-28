@@ -19,7 +19,6 @@
 import { BRU24, CFST18 } from '@/modules/common/tooltip/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
-// Notation follows Berthold, Rapberger & Ulbricht (KR 2024).
 export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
   ABAF: {
     label: 'ABAF',
@@ -110,7 +109,7 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
     label: 'attack',
     title: 'Attack (ABA)',
     content: [
-      "A set $S \\subseteq \\mathcal{A}$ attacks a set $T \\subseteq \\mathcal{A}$ if there are $S' \\subseteq S$ and $a \\in T$ such that $S' \\vdash \\overline{a}$; if $S$ attacks $\\{a\\}$ we say $S$ attacks $a$. $S$ is conflict-free if it does not attack itself.",
+      "A set $S \\subseteq \\mathcal{A}$ attacks a set $T \\subseteq \\mathcal{A}$ if there are $S' \\subseteq S$ and $a \\in T$ such that $S' \\vdash \\overline{a}$; if $S$ attacks $\\{a\\}$ we say $S$ attacks $a$.",
     ],
     reference: CFST18,
   },
@@ -215,7 +214,9 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       { ref: 'abaCO' },
       ' extensions. For ',
       { ref: 'abaFlat' },
-      ' ABA frameworks, the term grounded is conventionally used instead.',
+      ' ABA frameworks, this coincides with the ',
+      { ref: 'abaGR' },
+      ' semantics.',
     ],
     reference: CFST18,
   },
@@ -237,13 +238,9 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
     label: 'grounded',
     title: 'Grounded Semantics (ABA)',
     content: [
-      'Let $D$ be an ',
-      { ref: 'ABAF' },
-      ' and let $S \\in ad(D)$ be ',
-      { ref: 'abaADM' },
-      '. Then $S \\in gr(D)$ iff $S$ is $\\subseteq$-minimal in $co(D)$, the ',
+      'A set of assumptions $A \\subseteq \\mathcal{A}$ is grounded iff $A$ is ',
       { ref: 'abaCO' },
-      ' extensions.',
+      ' and $\\subseteq$-minimal.',
     ],
     reference: BRU24,
   },

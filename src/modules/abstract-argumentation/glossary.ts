@@ -386,7 +386,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: 'grounded',
     title: 'Grounded Semantics',
     content: [
-      'A set of arguments $E$ is a grounded extension iff $E$ is ',
+      'A set of arguments $E$ is the grounded extension iff $E$ is ',
       { ref: 'CO' },
       ' and $\\subseteq$-minimal. The unique grounded extension is the least fixpoint of the ',
       { ref: 'charFunction' },
