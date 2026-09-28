@@ -1,13 +1,13 @@
 # Graph component — wishlist
 
 Changes we'd like in `@aig-hagen/graph-component` (vendored as
-`third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.28.tgz`). Each entry
+`third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.31.tgz`). Each entry
 says who needs it and what we do today instead. Line references point into
 `src/modules/common/graph-editor/GraphEditor.vue` unless noted, and may drift.
 
 Priority: **needed** (blocks a planned feature) · **nice** (removes a workaround or eases work).
 
-Status (checked against the local `../aig_graph_component` worktree at `55d3fb1`):
+Status (checked against the local `../aig_graph_component` worktree at `d975b92`):
 **✅ present** · **🟡 partial** · **⬜ not present**.
 
 ## Needed for the ABA semantic views
@@ -117,15 +117,15 @@ See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic v
 
 ## Converging the ABA editor onto the shared editor
 
-The ABA theory editor now runs on the shared editor. Only rules are drawn (links / hyperlinks);
-atoms are diamonds, assumptions circles (`nodeShapes` prop), and contraries show as node
-annotations and in the Theory side panel (`sidePanel` slot). **Drawing contraries as edges is
-planned** and still needs the two items below that aren't present yet:
+The ABA theory editor now runs on the shared editor. Rules are links / hyperlinks, contraries
+are dashed `⊣` links from the contrary to its assumption (`kind: 'contrary'`, styled through
+the editor's `linkKinds` prop); atoms are diamonds, assumptions circles (`nodeShapes` prop).
+Contraries are still set in the Theory side panel (`sidePanel` slot), not drawn by hand.
 
-- **⬜ Parallel links in the same direction.** A rule `a → x` and a contrary `a ⊣ x` share
-  source and target; `createLink` rejects the second one. Needed for the self-attacking
-  assumption (`x ← a`, `‾a = x`).
-- **⬜ Bar arrow type (⊣)** for contraries. Nice, not blocking — dashed + colour works meanwhile.
+- **✅ Parallel links in the same direction** (rc.31). A link `kind` tells links between the same
+  nodes apart (IDs `a-b` / `a-b:contrary`, at most one per kind), and all links between two
+  nodes fan out into lanes. Hyperlinks have no kind yet.
+- **✅ Bar arrow head (⊣)** (rc.29). `ArrowHead.BAR` / `NONE`, independent of the line style.
 
 Status of the items we needed for the move:
 

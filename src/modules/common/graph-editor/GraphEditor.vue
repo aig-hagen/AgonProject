@@ -20,6 +20,7 @@
 import {
   type AnnotationPosition,
   type AnnotationPositionSnapshot,
+  ArrowHead,
   ArrowType,
   EVENT_CAUSE,
   GraphComponent,
@@ -95,6 +96,7 @@ import {
   type Highlight,
   type HistoryState,
   type LinkConfigs,
+  type LinkKindStyles,
   LinkType,
   type NodeId,
   type SelectionAction,
@@ -214,12 +216,13 @@ function onSelectionDelete() {
   } else if (sel.kind === 'edge') {
     // Same reason as nodes: deleteElement alone emits a PROGRAMMATIC linkDeleted that
     // onLinkDeleted ignores, so drive the document deletion ourselves.
-    const { sourceId, targetId } = parseLinkId(sel.id as string)
+    const { sourceId, targetId, kind } = parseLinkId(sel.id as string)
     graphComponentRef.value?.deleteElement(sel.id)
     if (idMapping.has(sourceId) && idMapping.has(targetId)) {
       emit('linkDeleted', {
         sourceId: idMapping.getOrFail(sourceId),
         targetId: idMapping.getOrFail(targetId),
+        ...(kind === undefined ? {} : { kind }),
       })
     }
     triggerSettle()
@@ -264,7 +267,10 @@ function edgePublicEndpoints(internalLinkId: string) {
 function currentLinkType(internalLinkId: string): LinkType | undefined {
   const ends = edgePublicEndpoints(internalLinkId)
   if (ends === undefined) return undefined
-  return state.links.find((l) => l.sourceId === ends.sourceId && l.targetId === ends.targetId)?.type
+  const { kind } = parseLinkId(internalLinkId)
+  return state.links.find(
+    (l) => l.sourceId === ends.sourceId && l.targetId === ends.targetId && l.kind === kind,
+  )?.type
 }
 
 /**
@@ -300,7 +306,9 @@ const selectionActions = computed<SelectionAction[]>(() => {
   } else if (sel.kind === 'edge') {
     const internalId = sel.id as string
     const keys = Object.keys(linkConfigs) as LinkType[]
-    if (enableLinkSwitching && keys.length > 0) {
+    // Kind links (e.g. ABA contraries) aren't typed attacks/supports: only Delete applies.
+    const isKindLink = parseLinkId(internalId).kind !== undefined
+    if (enableLinkSwitching && keys.length > 0 && !isKindLink) {
       const current = currentLinkType(internalId)
       const next = keys[((current ? keys.indexOf(current) : -1) + 1) % keys.length]!
       const nextName = linkConfigs[next]?.displayName ?? t('editor.selection.linkFallback')
@@ -315,7 +323,7 @@ const selectionActions = computed<SelectionAction[]>(() => {
     }
     const ends = edgePublicEndpoints(internalId)
     const type = currentLinkType(internalId) ?? keys[0]
-    if (edgeSelectionActions && ends !== undefined && type !== undefined) {
+    if (edgeSelectionActions && ends !== undefined && type !== undefined && !isKindLink) {
       actions.push(...edgeSelectionActions({ ...ends, type }))
     }
   }
@@ -342,6 +350,7 @@ provide(GRAPH_SVG_RENDERER_KEY, () => {
 const {
   state,
   linkConfigs,
+  linkKinds,
   historyState,
   nodeWeights,
   nodeOutlines,
@@ -370,6 +379,8 @@ const {
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
+  /** Appearance per link `kind`, see {@link GraphEditorStateLink.kind}. */
+  linkKinds?: LinkKindStyles
   historyState: HistoryState
   nodeWeights?: Map<NodeId, number>
   nodeOutlines?: Map<NodeId, NodeOutline>
@@ -669,6 +680,7 @@ const emit = defineEmits<{
     data: {
       sourceId: NodeId
       targetId: NodeId
+      kind?: string
     },
   ]
   hyperLinkCreated: [
@@ -978,7 +990,7 @@ function onLinkDeleted(
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
     return
   }
-  const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(link.id)
+  const { sourceId: internalSourceId, targetId: internalTargetId, kind } = parseLinkId(link.id)
   // If mapping does not exist,
   // the link deletion is a cascading result of a node deletion..
   if (!idMapping.has(internalSourceId) || !idMapping.has(internalTargetId)) {
@@ -986,7 +998,11 @@ function onLinkDeleted(
   }
   const publicSourceId = idMapping.getOrFail(internalSourceId)
   const publicTargetId = idMapping.getOrFail(internalTargetId)
-  emit('linkDeleted', { sourceId: publicSourceId, targetId: publicTargetId })
+  emit('linkDeleted', {
+    sourceId: publicSourceId,
+    targetId: publicTargetId,
+    ...(kind === undefined ? {} : { kind }),
+  })
   triggerSettle()
 }
 
@@ -1333,7 +1349,9 @@ function reciprocalStyleFor(
   type: LinkType,
 ): NonNullable<jsonLink['reciprocalStyle']> {
   if (!mergeReciprocalLinks.value) return 'arc'
-  const reverse = links.find((l) => l.sourceId === targetId && l.targetId === sourceId)
+  const reverse = links.find(
+    (l) => l.sourceId === targetId && l.targetId === sourceId && l.kind === undefined,
+  )
   return reverse?.type === type ? 'split' : 'arc'
 }
 
@@ -1369,13 +1387,28 @@ function buildGraphJson(state: GraphEditorState) {
       props: nodePropsFor(node.id),
     }
   })
-  const links: jsonLink[] = state.links.map((link) => ({
-    sourceId: link.sourceId,
-    targetId: link.targetId,
-    color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
-    arrowType: toArrowType(link.type),
-    reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
-  }))
+  const links: jsonLink[] = state.links.map((link) => {
+    if (link.kind === undefined) {
+      return {
+        sourceId: link.sourceId,
+        targetId: link.targetId,
+        color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
+        arrowType: toArrowType(link.type),
+        reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
+      }
+    }
+    const style = linkKinds?.[link.kind]
+    return {
+      sourceId: link.sourceId,
+      targetId: link.targetId,
+      kind: link.kind,
+      color: style?.color
+        ? resolveCssColor(style.color)
+        : (linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor),
+      arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(link.type),
+      arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
+    }
+  })
   const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => ({
     sourceIds: hyperLink.sourceIds,
     targetId: hyperLink.targetId,

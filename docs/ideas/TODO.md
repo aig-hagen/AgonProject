@@ -14,10 +14,11 @@
 - physics doesnt properly respect the rectangle-expandable nodes it seems
 - update glossary entries; show separate for flat/nonflat in eval window
 - several issues where changes to the theory dont update the graph; eg contraries
-- add contraries and derived attacks to theory view
+- add derived attacks to theory view (contraries are drawn since graph-component rc.31)
 - improve UI of theory panel;
 - handle the attack/support from empty set
-- need to allow parallel edges (for the contrary thing but also for BSAF view)
+- BSAF view: draw an attack and a support between the same nodes as parallel links (link `kind`)
+  instead of listing the attack in the note; collective ones still collide (hyperlinks have no kind)
 - better handling of the fact annotation
 - better visuals for the action bar
 - the message after making a theory nonflat in the AF view needs to change and look better

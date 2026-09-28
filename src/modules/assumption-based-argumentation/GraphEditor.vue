@@ -31,7 +31,11 @@ import {
 } from '@/modules/assumption-based-argumentation/evaluation/labeling'
 import { availableExports } from '@/modules/assumption-based-argumentation/export'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
-import { theoryAnnotations, theoryShapes } from '@/modules/assumption-based-argumentation/layout'
+import {
+  theoryAnnotations,
+  theoryContraries,
+  theoryShapes,
+} from '@/modules/assumption-based-argumentation/layout'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
 import {
@@ -60,6 +64,7 @@ import {
   type GraphEditorStateHyperLink,
   type GraphEditorStateLink,
   type HistoryState,
+  type LinkKindStyles,
   LinkType,
   QUICK_EXPORT_KEY,
   type QuickExport,
@@ -111,8 +116,14 @@ watch(
   },
 )
 
-// Rules are the only drawn edges: single-body rules become links, collective ones hyperlinks.
-// Contraries are not drawn yet; they show as node annotations.
+// Contraries are drawn as their own kind of link, so they can sit next to a rule between the
+// same nodes: dashed with a ⊣ bar, from the contrary to the assumption it attacks.
+const CONTRARY = 'contrary'
+const linkKinds: LinkKindStyles = {
+  [CONTRARY]: { arrowType: 'DASHED', arrowHead: 'BAR', color: 'var(--color-error)' },
+}
+
+// Single-body rules become links, collective ones hyperlinks; contraries are links too.
 function transformToEditorState(state: DocumentState<ABAF>, redraw: boolean): GraphEditorState {
   const aba = state.current.content
   const nodes = [...aba.nodeEntries()].map(([id, d]) => ({ id, label: d.name, x: d.x, y: d.y }))
@@ -124,6 +135,9 @@ function transformToEditorState(state: DocumentState<ABAF>, redraw: boolean): Gr
     } else {
       hyperLinks.push({ sourceIds: rule.body, targetId: rule.head, type: LinkType.SINGLE })
     }
+  }
+  for (const { contrary, assumption } of theoryContraries(aba)) {
+    links.push({ sourceId: contrary, targetId: assumption, type: LinkType.SINGLE, kind: CONTRARY })
   }
   return { stateId: state.stateId, nodes, links, hyperLinks, redraw }
 }
@@ -281,8 +295,15 @@ function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
   }, false)
 }
 
-function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
+function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId; kind?: string }) {
   if (isDerivedView.value) return
+  if (data.kind === CONTRARY) {
+    // The assumption keeps its kind; it just has no contrary until one is set again.
+    createNewState((draft) => {
+      if (draft.getContrary(data.targetId) === data.sourceId) draft.deleteContrary(data.targetId)
+    }, false)
+    return
+  }
   createNewState((draft) => {
     const rule = draft.findRule(data.targetId, [data.sourceId])
     if (rule !== undefined) draft.deleteRule(rule.id)
@@ -430,6 +451,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     @hyper-link-deleted="onHyperLinkDeleted"
     @hyper-link-source-removed="onHyperLinkSourceRemoved"
     :link-configs="linkConfig"
+    :link-kinds="linkKinds"
     :highlight="evaluationHighlight"
     :state="editorState"
     :node-shapes="nodeShapes"

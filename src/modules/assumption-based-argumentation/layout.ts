@@ -28,22 +28,25 @@ export function theoryShapes(aba: ABAF): Map<NodeId, GraphEditorNodeShape> {
   return shapes
 }
 
-// Facts and contraries show as node annotations until contraries get their own edges.
+// Facts show as node annotations; contraries are drawn as edges (see `theoryContraries`).
 export function theoryAnnotations(aba: ABAF): Map<NodeId, { content: string }> {
   const annotations = new Map<NodeId, { content: string }>()
   for (const [id, d] of aba.nodeEntries()) {
-    const parts: string[] = []
-    if (d.fact) parts.push('⊤')
-    const contrary = aba.getContrary(id)
-    if (contrary !== undefined && aba.hasNode(contrary)) {
-      parts.push(`‾${d.name} = ${aba.getNode(contrary).name}`)
-    }
-    if (parts.length) annotations.set(id, { content: parts.join(' · ') })
+    if (d.fact) annotations.set(id, { content: '⊤' })
   }
   return annotations
 }
 
-// The theory view: rules are edges from their body to their head.
+// Each contrary `‾a = x` as an edge from the contrary `x` to the assumption `a` it attacks.
+export function theoryContraries(aba: ABAF): { contrary: NodeId; assumption: NodeId }[] {
+  return aba
+    .contraries()
+    .filter(([assumption, contrary]) => aba.hasNode(assumption) && aba.hasNode(contrary))
+    .map(([assumption, contrary]) => ({ contrary, assumption }))
+}
+
+// The theory view: rules are edges from their body to their head, contraries from the
+// contrary to its assumption.
 export function toLayoutGraph(aba: ABAF): LayoutGraph {
   const shapes = theoryShapes(aba)
   const annotations = theoryAnnotations(aba)
@@ -54,10 +57,16 @@ export function toLayoutGraph(aba: ABAF): LayoutGraph {
       shape: shapes.get(id),
       annotation: annotations.get(id)?.content,
     })),
-    edges: aba
-      .rules()
-      .filter((rule) => rule.body.length > 0)
-      .map((rule) => ({ sources: rule.body, target: rule.head })),
+    edges: [
+      ...aba
+        .rules()
+        .filter((rule) => rule.body.length > 0)
+        .map((rule) => ({ sources: rule.body, target: rule.head })),
+      ...theoryContraries(aba).map(({ contrary, assumption }) => ({
+        sources: [contrary],
+        target: assumption,
+      })),
+    ],
   }
 }
 

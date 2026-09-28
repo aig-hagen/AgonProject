@@ -107,8 +107,11 @@ export function parseHyperLinkId(hyperLinkId: string): { sourceIds: number[]; ta
   return { sourceIds, targetId }
 }
 
-export function parseLinkId(linkId: string): { sourceId: number; targetId: number } {
-  const linkParts = linkId.split('-')
+/** Parses a library link id `source-target`, or `source-target:kind` for a link with a kind. */
+export function parseLinkId(linkId: string): { sourceId: number; targetId: number; kind?: string } {
+  const kindIndex = linkId.indexOf(':')
+  const kind = kindIndex === -1 ? undefined : linkId.slice(kindIndex + 1)
+  const linkParts = (kindIndex === -1 ? linkId : linkId.slice(0, kindIndex)).split('-')
   if (!hasMoreThanOneEntry(linkParts)) {
     throw new Error(`Link with ID \`${linkId}\` is not valid: Separator \`-\` is not contained.`)
   }
@@ -123,5 +126,5 @@ export function parseLinkId(linkId: string): { sourceId: number; targetId: numbe
     throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid source node ID ${sourceId}.`)
   if (!Number.isSafeInteger(targetId))
     throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid target node ID ${targetId}.`)
-  return { sourceId, targetId }
+  return kind === undefined ? { sourceId, targetId } : { sourceId, targetId, kind }
 }

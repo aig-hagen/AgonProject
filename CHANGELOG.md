@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- ABA theory view: contraries are drawn as dashed ⊣ edges from the contrary to its assumption, next to any rule between the same nodes.
 - New Assumption-based Argumentation (ABA) module (beta): build a theory from rules, assumptions and contraries, view it as an AF,
   SetAF or BSAF, and compute extensions via TweetyProject, highlighted in every view; includes an ABA glossary.
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
