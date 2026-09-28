@@ -8,15 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- New Assumption-based Argumentation (ABA) module (beta): build a theory from rules, assumptions and contraries, view it as an AF,
+  SetAF or BSAF, and compute extensions via TweetyProject, highlighted in every view; includes an ABA glossary.
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
 - Added a color legend to the graph editor while an evaluation result is highlighted.
 - Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
-- The ABA editor now runs on the shared graph editor (zoom, layouts, undo, export), with a collapsible Theory side panel for statements, rules and contraries. Contraries show as node labels for now.
-- Added an Assumption-based section to the glossary (ABAF, rules, assumptions, contraries, derivability, attack, closure, flatness), used in the ABA Theory panel.
-- ABA frameworks can now be evaluated via TweetyProject's `/aba` endpoint (extensions, credulous, skeptical); flat-only semantics are shown disabled for non-flat theories.
-- The ABA canvas can switch between the editable theory and read-only AF and SetAF views (flat theories only); for non-flat theories the SetAF view becomes a BSAF with set-supports.
-- ABA extensions can now be highlighted in every view: accepted and attacked assumptions, derived atoms (Theory), and AF arguments by their support.
-- Modules can carry a Beta badge on the welcome screen; the ABA module is marked as beta.
 
 ### Changed
 
@@ -30,7 +26,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Grouped parameter panels (evaluation, serialisation, LaTeX export options, tutorials, mobile term definitions) now show the same recessed background in light and dark mode.
 - Dropdowns and text fields now share one field background that sets them apart from grouped panels in light and dark mode.
 - New typography: Inter for the UI, JetBrains Mono for code/data, graph labels and evaluation results, Fraunces for the app name; all fonts are self-hosted.
-- ABA views get their own force-directed layout on first open (kept afterwards, set attacks spread out); switching views moves the camera once and never moves nodes.
 - Auto-layouts now respect node shapes, annotations (ADF conditions, PAF probabilities) and collective attacks; generated graphs of every type are laid out force-directed.
 
 ### Fixed
