@@ -116,14 +116,16 @@ export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): 
   }
 }
 
-// AF nodes are support-unique arguments, labelled `(support, claims)` by atom name.
+// AF nodes are support-unique arguments, labelled `{support} ⊢ claims` by atom name.
 export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
   const { af, total } = toAF(aba)
-  const set = (ids: NodeId[]) =>
-    `{${ids
+  const names = (ids: NodeId[]) =>
+    ids
       .map((id) => aba.getNode(id).name)
       .sort()
-      .join(', ')}}`
+      .join(', ')
+  const support = (ids: NodeId[]) => (ids.length === 0 ? '∅' : `{${names(ids)}}`)
+  const claims = (ids: NodeId[]) => (ids.length === 1 ? names(ids) : `{${names(ids)}}`)
   const positionKeys = new Map<NodeId, string>()
   const unplaced: NodeId[] = []
   const nodes = [...af.arguments()].map(([id, d]) => {
@@ -131,7 +133,11 @@ export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): De
     positionKeys.set(id, key)
     const position = positions[key]
     if (!position) unplaced.push(id)
-    return { id, label: `(${set(d.support)}, ${set(d.claims)})`, ...(position ?? { x: 0, y: 0 }) }
+    return {
+      id,
+      label: `${support(d.support)} ⊢ ${claims(d.claims)}`,
+      ...(position ?? { x: 0, y: 0 }),
+    }
   })
   const links = [...af.attacks()].map(([sourceId, targetId]) => ({
     sourceId,

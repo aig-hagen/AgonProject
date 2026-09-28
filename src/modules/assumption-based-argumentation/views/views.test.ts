@@ -243,18 +243,24 @@ describe('BSAF view', () => {
 })
 
 describe('AF canvas', () => {
-  test('rect nodes labelled (support, claims); positions keyed by support', () => {
+  test('rect nodes labelled support ⊢ claims; positions keyed by support', () => {
     const { aba, id } = seed()
     const key = [id('a'), id('b')].join(',')
     const canvas = afCanvas(aba, generateUUID(), { [key]: { x: 3, y: 4 } })
     expect(canvas.state.nodes.map((n) => n.label)).toEqual([
-      '({a}, {a, p})',
-      '({b}, {b})',
-      '({a, b}, {q})',
+      '{a} ⊢ {a, p}',
+      '{b} ⊢ b',
+      '{a, b} ⊢ q',
     ])
     expect([...canvas.shapes.values()]).toEqual(['rect', 'rect', 'rect'])
     expect(canvas.state.nodes[2]).toMatchObject({ x: 3, y: 4 })
     expect(canvas.unplaced).toEqual([0, 1])
     expect(canvas.note).toBeUndefined()
+  })
+
+  test('empty support shown as ∅', () => {
+    const { aba } = build({ assumptions: { a: 'p' }, facts: ['p'] })
+    const labels = afCanvas(aba, generateUUID(), {}).state.nodes.map((n) => n.label)
+    expect(labels).toContain('∅ ⊢ p')
   })
 })
