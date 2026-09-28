@@ -1,12 +1,16 @@
 ## Features
+
 - Rework fonts to be consistent across browsers
 - Localization of definitions, semantics, etc
 - graph style colors need update
 - labeling highlight colors - color blind mode
 - export redesign: check if there is anything that should be updated for mobile
 - store state of export window in db?
+- SVG export in dark mode is an issue; annotation text with its black outline also looks bad in that
 
 ## ABA
+
+- eval view: display of semantics definitions is incomplete; semantics list should look better
 - physics doesnt properly respect the rectangle-expandable nodes it seems
 - update glossary entries; show separate for flat/nonflat in eval window
 - several issues where changes to the theory dont update the graph; eg contraries
@@ -26,11 +30,12 @@
 
 ## Bugs and Issues
 
-
 ### desktop/general
+
 - need a ranking tutorial for AF
 
 ### Mobile
+
 #### Home and document management
 
 - show reference on main view cards somewhere
@@ -43,7 +48,7 @@
 #### Sharing and export
 
 - **[Feature]** Per-share link preview cards. `index.html` now serves static Open Graph tags,
-  so a shared link shows one *generic* branded card. To get a card specific to the shared
+  so a shared link shows one _generic_ branded card. To get a card specific to the shared
   framework, the `/share/:id` route must return server-rendered HTML with per-share `og:*` tags
   (title = framework name, description = arg/attack counts) — the share server currently only
   serves JSON. Stretch goal: a dynamic `og:image` rendering the actual graph (server-side
@@ -54,37 +59,40 @@
 - **[Design]** could update the creation-mode-switchers in the bottom left. visual style doesnt really fit well
 
 #### Other
+
 - Can we somehow enforce fullscreen on mobile? does that make sense?
 
 ## Features
 
 ### Mobile eval sheet: full-detent two-pane compare
+
 At the `full` (~90dvh) detent, the mobile evaluation sheet should show a **second, one-off,
 view-only** eval below a `Compare with` divider (`view only` + `✕` clear), so two evaluations
 can be read side by side. Rules:
+
 - Top pane = the switchable saved eval; **owns** the canvas highlight.
 - Bottom pane = a one-off eval slot (own params + result), must **not** emit `highlight` — only
   one eval touches the canvas.
 - Needs host-local state to hold the one-off instance (not in the saved chip list).
-See the checklist in `docs/mobile-layout.md` (Evaluate UI rework).
+  See the checklist in `docs/mobile-layout.md` (Evaluate UI rework).
 
 ### use tags to filter AF types
+
 Tags are now defined and associated with each module (see `src/modules/common/tags.ts` and each module's `moduleConfig.ts`). In the future, those can be used to filter AF types; can also implement a search bar on the main page.
 
-
 ### Split Basic Tutorials into functional part and argumentation part
+
 There should be a short tutorial, just for the controls, and one more detailed tutorial that explains in more detail the specifics of the argumentation formalism.
 
 ## New Framework Types
 
 ### Assumption-based Argumentation (ABA)
-- design notes: [`aba-graph-representation.md`](aba-graph-representation.md) — modeling
-  (atom graph) vs. reasoning (assumptions-only BSAF) split, why a uniform atom-graph semantics
-  is unsound, non-flat/Δ-semantics
-- prototype: **ABA Studio** artifact (flat case only)
-- TweetyProject `/aba` exists but needs a rework: [`aba-tweety-rework.md`](aba-tweety-rework.md)
+
+- remaining work (BAF/ADF views, export, generation, Δ-semantics, tutorials):
+  [`aba-graph-representation.md`](aba-graph-representation.md)
 
 ### Extended AFs
+
 - need to implement extended edges in graph-component
 - extended attacks stored separately
 - distinguish between extended and recursive-extended AFs?
@@ -92,6 +100,7 @@ There should be a short tutorial, just for the controls, and one more detailed t
 - take a look at the TweetyProject reasoner (performance)
 
 ### Weighted AFs
+
 - How to incorporate the Semiring? Select in EvalWindow?
 - alpha/beta parameters need to be setable in the EvalWindow as well
 - need TweetyProject endpoint
