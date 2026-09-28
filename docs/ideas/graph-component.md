@@ -111,9 +111,19 @@ See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic v
   like `.graph-controller__graph-host`.
   - Wish: exposed element getters, so internal renames don't break us.
 
-## Later — converging the ABA editor onto the shared editor
+## Converging the ABA editor onto the shared editor
 
-The ABA theory editor is a custom SVG for now. To move it onto the shared editor we'd need:
+The ABA theory editor now runs on the shared editor. Only rules are drawn (links / hyperlinks);
+atoms are diamonds, assumptions circles (`nodeShapes` prop), and contraries show as node
+annotations and in the Theory side panel (`sidePanel` slot). **Drawing contraries as edges is
+planned** and still needs the two items below that aren't present yet:
+
+- **⬜ Parallel links in the same direction.** A rule `a → x` and a contrary `a ⊣ x` share
+  source and target; `createLink` rejects the second one. Needed for the self-attacking
+  assumption (`x ← a`, `‾a = x`).
+- **⬜ Bar arrow type (⊣)** for contraries. Nice, not blocking — dashed + colour works meanwhile.
+
+Status of the items we needed for the move:
 
 - **✅ More node shapes.** `NodeShape.DIAMOND` is present (including rounded corners), and link
   geometry clips to its outline. Rounded rectangles are also supported through `cornerRadius`.

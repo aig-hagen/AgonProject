@@ -17,13 +17,14 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowLeftIcon, BookOpenIcon, MapPinIcon } from '@heroicons/vue/24/outline'
+import { ArrowLeftIcon, MapPinIcon } from '@heroicons/vue/24/outline'
 import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
 import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -144,16 +145,6 @@ watch(
             <h2 class="text-xl font-bold leading-snug">
               <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
             </h2>
-            <a
-              v-if="activeDefinition.reference"
-              :href="activeDefinition.reference.href"
-              :title="activeDefinition.reference.label"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="mt-1 text-base-content/40 hover:text-base-content/70 shrink-0"
-            >
-              <BookOpenIcon class="size-5" />
-            </a>
           </div>
           <p class="text-base-content/80 leading-relaxed">
             <template v-for="(part, i) in activeDefinition.content" :key="i">
@@ -172,6 +163,12 @@ watch(
               </span>
             </template>
           </p>
+          <section v-if="activeDefinition.reference" class="mt-6 pt-4 border-t border-base-300">
+            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+              {{ t('glossary.source') }}
+            </h3>
+            <PublicationCitation :publication="activeDefinition.reference" />
+          </section>
         </div>
         <p v-else class="text-sm text-base-content/40">{{ t('glossary.selectTerm') }}</p>
       </div>

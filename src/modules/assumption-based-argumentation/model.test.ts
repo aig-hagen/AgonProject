@@ -85,6 +85,26 @@ describe('ABAF model', () => {
     aba.setKind(0, 'atom')
     expect(aba.getContrary(0)).toBeUndefined()
   })
+
+  test('adding an existing rule returns it instead of duplicating', () => {
+    const aba = seed()
+    const count = aba.rules().length
+    const existing = aba.findRule(3, [1, 0])!
+    expect(aba.addRule(3, [1, 0])).toBe(existing.id)
+    expect(aba.rules().length).toBe(count)
+  })
+
+  test('promoting creates the ¬ contrary atom, or reuses an existing one', () => {
+    const aba = seed()
+    aba.promoteToAssumption(2)
+    const created = aba.getContrary(2)!
+    expect(aba.getNode(2).kind).toBe('assumption')
+    expect(aba.getNode(created)).toMatchObject({ name: '¬p', kind: 'atom' })
+
+    aba.addNode(10, { name: '¬q', kind: 'atom', x: 0, y: 0, fact: false })
+    aba.promoteToAssumption(3)
+    expect(aba.getContrary(3)).toBe(10)
+  })
 })
 
 describe('ABAF save format', () => {

@@ -24,6 +24,7 @@ import { TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY, TAG_WEIGHTS } from '@/module
 import { H12, HPPRT21, LON11 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/probabilistic-argumentation/examples'
 import GraphEditor from '@/modules/probabilistic-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/probabilistic-argumentation/layout'
 import {
   type PafArgumentData,
   ProbabilisticArgumentation,
@@ -83,6 +84,9 @@ export const probabilisticArgumentationModule: ModuleConfig<
   },
   getSaveString(document, name) {
     return saveAsString(document, name)
+  },
+  applyLayout(document, layoutType) {
+    return layout(document, layoutType)
   },
   generateHref: '/generate?type=probabilistic',
   publications: [LON11, H12, HPPRT21],

@@ -21,6 +21,7 @@ import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { ref } from 'vue'
 
 import type { Publication } from '@/app/home/moduleConfig'
+import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
 defineProps<{
   publications: Publication[]
@@ -71,16 +72,11 @@ function onMouseLeave() {
         <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1">
           Publications
         </p>
-        <a
-          v-for="(pub, i) in publications"
-          :key="i"
-          :href="pub.href"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-xs text-base-content/70 hover:text-base-content hover:underline leading-snug"
-        >
-          {{ pub.label }}
-        </a>
+        <ul class="flex flex-col divide-y divide-base-300">
+          <li v-for="(pub, i) in publications" :key="i" class="py-2 first:pt-0 last:pb-0">
+            <PublicationCitation :publication="pub" />
+          </li>
+        </ul>
       </div>
     </Teleport>
   </div>

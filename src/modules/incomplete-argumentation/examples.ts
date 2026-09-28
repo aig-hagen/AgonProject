@@ -17,9 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { Example } from '@/modules/common/examples'
-import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import murderTrialJson from '@/modules/incomplete-argumentation/examples/murder_trial.json'
 import treatmentChoiceJson from '@/modules/incomplete-argumentation/examples/treatment_choice.json'
+import { layout } from '@/modules/incomplete-argumentation/layout'
 import {
   type IafArgumentData,
   IncompleteArgumentation,
@@ -35,19 +35,7 @@ export const datasets: Example<IncompleteArgumentation<IafArgumentData>>[] = exa
       name: name ?? 'unknown',
       description,
       load: () => loadExampleFromJson(json).framework,
-      applyLayout: layoutType
-        ? async (af) => {
-            const layout = layoutType
-            const nodes = [...af.arguments()].map(([id]) => id)
-            const links = [...af.definiteAttacks(), ...af.uncertainAttacks()]
-            const positions = await getNodePositions(nodes, links, layout)
-            for (const [id, data] of af.arguments()) {
-              const pos = positions.get(id)!
-              data.x = pos.x
-              data.y = pos.y
-            }
-          }
-        : undefined,
+      applyLayout: layoutType ? (iaf) => layout(iaf, layoutType) : undefined,
     }
   },
 )

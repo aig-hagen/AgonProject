@@ -8,23 +8,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- New Assumption-based Argumentation (ABA) module (beta): build a theory from rules, assumptions and contraries, view it as an AF,
+  SetAF or BSAF, and compute extensions via TweetyProject, highlighted in every view; includes an ABA glossary.
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
 - Added a color legend to the graph editor while an evaluation result is highlighted.
 - Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
 
 ### Changed
 
+- The link-type switch (attack/support, definite/uncertain) and the iAF argument-type switch now use a pill-style segmented control.
+- Publication references on the module cards and glossary pages now show title, authors and venue on separate lines.
 - The selection action bar now also appears on desktop: click an argument or link to select it; double-click a label to rename it directly. Replaces the old link type popup; ADF arguments get an Edit condition action.
 - The PAF probability popup now shows a compact `P(a)` / `P((a,b))` header with the value, and opens from the selection bar on desktop.
-- Updated the bundled graph component to 5.0.0-rc.26; uncertain iAF attacks now use its native dashed links.
+- Updated the bundled graph component to 5.0.0-rc.27; uncertain iAF attacks now use its native dashed links.
 - The serialisation window, the generate view and the mobile LaTeX export options now use the app's standard picker instead of native selects.
 - Export: mobile Save/Copy buttons use the sheet's large touch style with Save as the primary action, and copy/save feedback now shows a check icon for longer.
 - Grouped parameter panels (evaluation, serialisation, LaTeX export options, tutorials, mobile term definitions) now show the same recessed background in light and dark mode.
 - Dropdowns and text fields now share one field background that sets them apart from grouped panels in light and dark mode.
 - New typography: Inter for the UI, JetBrains Mono for code/data, graph labels and evaluation results, Fraunces for the app name; all fonts are self-hosted.
+- Auto-layouts now respect node shapes, annotations (ADF conditions, PAF probabilities) and collective attacks; generated graphs of every type are laid out force-directed.
 
 ### Fixed
 
+- BAF extension highlighting no longer marks supported arguments as rejected, and follows the complex attacks of the chosen support type.
+- iAF extension highlighting only marks targets of definite attacks as rejected.
+- With several evaluation windows open, only the focused one highlights the canvas, and closing it clears the highlight.
 - SetAF extension highlighting now marks targets of collective attacks as rejected when all attackers are accepted.
 - Fixed SVG graph export: node labels are centered again and bent edges no longer show a black fill sliver.
 - Fixed LaTeX export: mobile and desktop now produce identical code — style options always ride on `\begin{af}[…]`, and both share the same defaults and the Node Labels option.

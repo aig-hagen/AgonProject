@@ -36,6 +36,8 @@ export default {
   picker: {
     underConstruction: 'Under Construction',
     soon: 'Soon',
+    beta: 'Beta',
+    betaHint: 'Early version: usable, but some features are still missing.',
     openExample: 'Open example',
     newHeading: 'New',
     createNew: 'Create new',

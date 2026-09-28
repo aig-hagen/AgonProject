@@ -17,10 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { Example } from '@/modules/common/examples'
-import { getNodePositions } from '@/modules/common/graph-editor/layouting'
-import { Layout } from '@/modules/common/main-menu/layouting'
 import murderTrialJson from '@/modules/probabilistic-argumentation/examples/murder_trial.json'
 import softwareReleaseJson from '@/modules/probabilistic-argumentation/examples/software_release.json'
+import { layout } from '@/modules/probabilistic-argumentation/layout'
 import {
   type PafArgumentData,
   ProbabilisticArgumentation,
@@ -36,17 +35,7 @@ export const datasets: Example<ProbabilisticArgumentation<PafArgumentData>>[] = 
       name: name ?? 'unknown',
       description,
       load: () => loadExampleFromJson(json).framework,
-      applyLayout: async (af) => {
-        const layout = layoutType ?? Layout.Circular
-        const nodes = [...af.arguments()].map(([id]) => id)
-        const links = [...af.attacks()].map(([src, tgt]) => [src, tgt] as [number, number])
-        const positions = await getNodePositions(nodes, links, layout)
-        for (const [id, data] of af.arguments()) {
-          const pos = positions.get(id)!
-          data.x = pos.x
-          data.y = pos.y
-        }
-      },
+      applyLayout: (paf) => layout(paf, layoutType),
     }
   },
 )

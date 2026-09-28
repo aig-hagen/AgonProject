@@ -34,8 +34,12 @@ import {
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
-import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import type { DocumentId } from '@/modules/common/documents/db'
+import {
+  binaryAttacks,
+  extensionLabels,
+  labelsToHighlight,
+} from '@/modules/common/evaluation/labeling'
 import type { Input } from '@/modules/common/evaluation/types'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
@@ -304,25 +308,17 @@ const currentHighlight = computed<Highlight | undefined>(() => {
       return entry[0]
     }),
   )
-  return {
-    stateId: input.stateId,
-    groups: [{ nodes, color: NODE_GREEN }],
-    attackedByFirst: NODE_RED,
-    legend: [
-      { label: t('evaluation.legend.accepted'), color: NODE_GREEN },
-      { label: t('evaluation.legend.rejected'), color: NODE_RED },
-      { label: t('evaluation.legend.undecided') },
-    ],
-  }
+  return labelsToHighlight(
+    input.stateId,
+    extensionLabels(nodes, binaryAttacks(input.content.attacks())),
+    t,
+    { undecided: true },
+  )
 })
 
-const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
+// Always reported; the host's useEvaluationFocus picks which window paints the canvas.
+watch(currentHighlight, (h) => emit('highlight', h), { immediate: true })
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
-
-watch(emittedHighlight, (h) => emit('highlight', h))
-function onWindowFocus() {
-  emit('focus')
-}
 </script>
 
 <template>
@@ -505,7 +501,7 @@ function onWindowFocus() {
     :state-key="stateKey"
     :active="isActive"
     :minimizable="false"
-    @focus="onWindowFocus"
+    @focus="emit('focus')"
   >
     <ReuseBody />
   </WindowShell>

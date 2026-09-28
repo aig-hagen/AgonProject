@@ -55,7 +55,12 @@ import {
   Squares2X2Icon,
   TrashIcon,
 } from '@heroicons/vue/24/outline'
-import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
+import {
+  createReusableTemplate,
+  useDebounceFn,
+  useElementVisibility,
+  useMediaQuery,
+} from '@vueuse/core'
 import {
   computed,
   inject,
@@ -76,7 +81,7 @@ import { useI18n } from 'vue-i18n'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
-import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
+import { getUIStateRow, getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import type { ExportFileData } from '@/modules/common/export'
 import { serializeGraphSvg } from '@/modules/common/export/renderGraphSvg'
 import TexIcon from '@/modules/common/export/TexIcon.vue'
@@ -85,6 +90,7 @@ import {
   GRAPH_EDITOR_LAYOUTS,
   GRAPH_SVG_RENDERER_KEY,
   type GraphEditorCommands,
+  type GraphEditorNodeShape,
   type GraphEditorState,
   type Highlight,
   type HistoryState,
@@ -111,7 +117,12 @@ import {
   GRAPH_STYLE_OUTLINE,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
-import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
+import {
+  editorStateToLayoutGraph,
+  layoutGraph,
+  prefetchGraphviz,
+} from '@/modules/common/graph-editor/layouting'
+import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue'
 import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import SerialisationIcon from '@/modules/common/graph-editor/SerialisationIcon.vue'
 import SigmaIcon from '@/modules/common/graph-editor/SigmaIcon.vue'
@@ -266,7 +277,7 @@ function currentLinkType(internalLinkId: string): LinkType | undefined {
  */
 const selectionActions = computed<SelectionAction[]>(() => {
   const sel = selection.value
-  if (sel === null) return []
+  if (sel === null || readOnly) return []
   const actions: SelectionAction[] = []
   if (sel.kind === 'node') {
     // Collective-attack source toggle (touch alternative to the desktop shift-click). Kept
@@ -340,11 +351,14 @@ const {
   historyState,
   nodeWeights,
   nodeOutlines,
+  nodeShapes,
   nodeAnnotations,
   graphStyle,
+  showEvaluation = true,
   allowLinkCreation = true,
   allowLinkDeletion = true,
   allowHyperLinkCreation = false,
+  allowLinkSwitching = true,
   tutorials,
   defaultTutorialId,
   tutorialContextExtra,
@@ -355,17 +369,27 @@ const {
   nodeTapAction,
   nodeSelectionActions,
   edgeSelectionActions,
+  readOnly = false,
+  canvasKey,
+  highlight,
+  sidePanelCollapsed = false,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
   nodeWeights?: Map<NodeId, number>
   nodeOutlines?: Map<NodeId, NodeOutline>
+  /** Per-node shape; nodes not in the map are circles. */
+  nodeShapes?: Map<NodeId, GraphEditorNodeShape>
   nodeAnnotations?: Map<NodeId, { content: string; position?: AnnotationPosition }>
   graphStyle?: GraphStyle
+  /** Hides the evaluation buttons for modules without evaluation. */
+  showEvaluation?: boolean
   allowLinkCreation?: boolean
   allowLinkDeletion?: boolean
   allowHyperLinkCreation?: boolean
+  /** Off: extra link types are display-only (e.g. derived views) and never drawn by hand. */
+  allowLinkSwitching?: boolean
   tutorials?: Tutorial[]
   defaultTutorialId?: string
   tutorialContextExtra?: Partial<TutorialContext>
@@ -388,6 +412,15 @@ const {
     targetId: NodeId
     type: LinkType
   }) => SelectionAction[]
+  /** Blocks all canvas edits; nodes can still be dragged. */
+  readOnly?: boolean
+  /** Names what the canvas shows (e.g. a derived view). Changing it rebuilds the graph and
+      switches to that canvas' own saved viewport. */
+  canvasKey?: string
+  /** Evaluation result painted on the canvas; see `useEvaluationFocus`. */
+  highlight?: Highlight
+  /** A collapsed side panel frees the bottom-right corner, so the legend returns there. */
+  sidePanelCollapsed?: boolean
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -450,7 +483,9 @@ const effectiveStyle = computed<GraphStyle>(() => {
 })
 
 const linkNames = computed(() =>
-  Object.values(linkConfigs).map((config) => config.displayName.toLocaleLowerCase()),
+  Object.values(linkConfigs)
+    .slice(0, enableLinkSwitching ? undefined : 1)
+    .map((config) => config.displayName.toLocaleLowerCase()),
 )
 const isExportOpened = ref<boolean>(false)
 // Latches on first open so the (async) export window mounts lazily, then stays mounted
@@ -546,22 +581,43 @@ watch(
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
 const hasSerialisationSlot = computed(() => !!slots.evaluationSerialisation)
+const hasExportSlot = computed(() => !!slots.export)
 
-const enableLinkSwitching = Object.keys(linkConfigs).length > 1
+const enableLinkSwitching = allowLinkSwitching && Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
 if (defaultLinkType === undefined) {
   throw Error('At least one link type must be defined.')
 }
 const selectedLinkType = ref<LinkType>(defaultLinkType)
+const linkSwitchOptions = computed(() =>
+  (Object.keys(linkConfigs) as LinkType[]).map((key) => ({
+    key,
+    title: linkConfigs[key]!.displayName,
+    icon:
+      linkConfigs[key]!.icon ??
+      (key === LinkType.SINGLE ? ArrowLongRightIcon : ArrowDoubleLongRightIcon),
+  })),
+)
 
 watch(
-  () => state,
-  () => {
-    if (state.redraw) {
-      updateGraph(state)
-    }
-  },
+  () => readOnly,
+  (value) => graphComponentRef.value?.setReadOnly(value),
 )
+
+// A different canvas is rebuilt, never reconciled from the previous one: reconciling relabels
+// nodes, and the library reports those relabels as `labelEdited`.
+watch([() => state, () => canvasKey], ([, key], [, previousKey]) => {
+  if (key !== previousKey) {
+    // One camera move per switch: the cached viewport if there is one, else a fit. No settle,
+    // since merely viewing a canvas must not move its nodes.
+    const viewport = viewportCache.get(viewportStateKey())
+    setGraph(state, { fit: !viewport, settle: false })
+    if (viewport) applyViewport(viewport)
+    else restoreViewport()
+  } else if (state.redraw) {
+    updateGraph(state)
+  }
+})
 
 watch(isDark, () => {
   updateGraph(state)
@@ -665,6 +721,40 @@ const emit = defineEmits<{
   'open-serialisation-window': []
 }>()
 
+const CIRCLE_NODE_PROPS = { shape: NodeShape.CIRCLE, radius: ARGUMENT_RADIUS_IN_PX } as const
+const DIAMOND_NODE_PROPS = {
+  shape: NodeShape.DIAMOND,
+  width: ARGUMENT_RADIUS_IN_PX * 2.7,
+  height: ARGUMENT_RADIUS_IN_PX * 2,
+  cornerRadius: 8,
+} as const
+// Minimum size; rect nodes grow to fit their one-line label (library autogrow).
+const RECT_NODE_PROPS = {
+  shape: NodeShape.RECTANGLE,
+  width: ARGUMENT_RADIUS_IN_PX * 2,
+  height: ARGUMENT_RADIUS_IN_PX * 1.4,
+  cornerRadius: 4,
+  reflexiveEdgeStart: 'MOVABLE',
+} as const
+const RECT_LABEL_FONT_SIZE = '0.8rem'
+
+function nodePropsFor(id: NodeId) {
+  const shape = nodeShapes?.get(id)
+  if (shape === 'diamond') return DIAMOND_NODE_PROPS
+  if (shape === 'rect') return RECT_NODE_PROPS
+  return CIRCLE_NODE_PROPS
+}
+
+// Autogrow is a global library switch, so it is only on while every node is a rect.
+let isAutoGrowOn = false
+function syncAutoGrow(state: GraphEditorState) {
+  const enable =
+    state.nodes.length > 0 && state.nodes.every((n) => nodeShapes?.get(n.id) === 'rect')
+  if (enable === isAutoGrowOn) return
+  isAutoGrowOn = enable
+  graphComponentRef.value?.toggleNodeAutoGrow(enable)
+}
+
 let idGenerator = new IdGenerator()
 let idMapping = new IdMapping<number, number>()
 
@@ -713,7 +803,13 @@ watch(snapMode, (enabled) => {
   graphComponentRef.value?.setSnapToGrid(enabled)
   applyGridVisibility(showGrid.value)
 })
-const { extensionHighlightRef, serialisationHighlightRef, highlightToShow } = useHighlight({
+// An expanded side panel covers the bottom-right corner, so the legend sits beside it.
+const [DefineLegend, ReuseLegend] = createReusableTemplate()
+const hasSidePanel = computed(() => layoutMode.value === 'regular' && !!slots.sidePanel)
+const legendBesidePanel = computed(() => hasSidePanel.value && !sidePanelCollapsed)
+
+useHighlight({
+  highlightRef: toRef(() => highlight),
   graphComponentRef,
   graphComponentId,
   getIdMapping: () => idMapping,
@@ -911,7 +1007,7 @@ function onNodesMoved(positions: PositionSnapshot[]) {
   emit('nodesMoved', data)
 }
 
-const VIEWPORT_STATE_KEY = 'viewport'
+const viewportStateKey = () => (canvasKey ? `viewport:${canvasKey}` : 'viewport')
 
 interface StoredViewport {
   k: number
@@ -926,9 +1022,18 @@ function applyViewport(viewport: StoredViewport) {
   graphComponentRef.value?.setViewport(viewport.k, viewport.x, viewport.y)
 }
 
-const saveViewport = useDebounceFn((viewport: StoredViewport) => {
-  void setUIStateValue(db, documentId, VIEWPORT_STATE_KEY, viewport)
+// Filled from storage on mount and kept current, so a canvas switch restores synchronously.
+const viewportCache = new Map<string, StoredViewport>()
+
+const saveViewport = useDebounceFn((key: string, viewport: StoredViewport) => {
+  void setUIStateValue(db, documentId, key, viewport)
 }, 400)
+
+const restoreViewport = () => {
+  void getUIStateValue<StoredViewport>(db, documentId, viewportStateKey()).then((viewport) => {
+    if (viewport) applyViewport(viewport)
+  })
+}
 
 let previousViewport: StoredViewport = { k: 1, x: 0, y: 0 }
 
@@ -941,7 +1046,8 @@ function onViewportChanged(viewport: StoredViewport) {
   else if (Math.abs(x - previous.x) > 0.5 || Math.abs(y - previous.y) > 0.5)
     tutorialPanCount.value++
   previousViewport = { k, x, y }
-  void saveViewport(previousViewport)
+  viewportCache.set(viewportStateKey(), previousViewport)
+  void saveViewport(viewportStateKey(), previousViewport)
 }
 
 function setupDragObserver() {
@@ -1009,10 +1115,7 @@ onMounted(() => {
     gestureBindingsEnabled: true,
     interactiveNodeFeedbackEnabled: true,
     nodeAutoGrowToLabelSize: false,
-    nodeProps: {
-      shape: NodeShape.CIRCLE,
-      radius: ARGUMENT_RADIUS_IN_PX,
-    },
+    nodeProps: CIRCLE_NODE_PROPS,
     allowNodeCreationViaGUI: true,
     allowAnnotationDragging: false,
     nodeGUIEditability: {
@@ -1033,9 +1136,15 @@ onMounted(() => {
   // Restore a previously saved pan/zoom for this document, overriding the auto-centered
   // view above. Applied after the fact (rather than before centering) since the read is
   // async — if there's nothing saved this is a no-op and the auto-centered view stands.
-  void getUIStateValue<StoredViewport>(db, documentId, VIEWPORT_STATE_KEY).then((viewport) => {
-    if (viewport) applyViewport(viewport)
+  restoreViewport()
+  void getUIStateRow(db, documentId).then((row) => {
+    for (const [key, value] of Object.entries(row)) {
+      if (key.startsWith('viewport:') && !viewportCache.has(key)) {
+        viewportCache.set(key, value as StoredViewport)
+      }
+    }
   })
+  graphComponent.setReadOnly(readOnly)
 
   setupDragObserver()
 
@@ -1304,6 +1413,7 @@ function buildGraphJson(state: GraphEditorState) {
       y: live?.y ?? node.y,
       color: effectiveStyle.value.nodeColor,
       outline: nodeOutlines?.get(node.id),
+      props: nodePropsFor(node.id),
     }
   })
   const links: jsonLink[] = state.links.map((link) => ({
@@ -1349,12 +1459,13 @@ function adjustLabelFontSizes(state: GraphEditorState) {
       graphComponentId,
       idMapping.getOrFailReverse(node.id),
       node.label,
+      nodeShapes?.get(node.id) === 'rect' ? RECT_LABEL_FONT_SIZE : undefined,
     )
   }
 }
 
 /** Initial render: builds the graph from scratch and fits it into view. */
-function setGraph(state: GraphEditorState): void {
+function setGraph(state: GraphEditorState, { fit = true, settle = true } = {}): void {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) {
     throw new Error('Graph component is not rendered.')
@@ -1362,6 +1473,7 @@ function setGraph(state: GraphEditorState): void {
   selection.value = null
   hyperLinkSources.value = []
   liveNodePositions.value = new Map()
+  syncAutoGrow(state)
   graphComponent.setGraph(buildGraphJson(state), true)
   syncIdMapping()
 
@@ -1378,13 +1490,13 @@ function setGraph(state: GraphEditorState): void {
     graphComponentRef.value?.setGridType(defaultGridType.value)
     graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
     graphComponentRef.value?.setSnapToGrid(snapMode.value)
-    if (physicsMode.value === 'on') {
+    if (settle && physicsMode.value === 'on') {
       triggerSettle()
     }
   })
 
   // Jump instantly, no glide from the reset transform.
-  fitToView(0, 0, 0)
+  if (fit) fitToView(0, 0, 0)
 }
 
 /** Reconciles the displayed graph with `state` in place, keeping viewport and selection. */
@@ -1394,6 +1506,7 @@ function updateGraph(state: GraphEditorState): void {
     throw new Error('Graph component is not rendered.')
   }
   const previousInternalIds = new Set(idMapping.inputIds())
+  syncAutoGrow(state)
   graphComponent.updateGraph(buildGraphJson(state))
   const importedNodes = syncIdMapping()
 
@@ -1437,7 +1550,10 @@ function onLabelEdited(
     id: string | number
   },
   label: string,
+  cause: EVENT_CAUSE,
 ) {
+  // Programmatic relabels (e.g. by `updateGraph`) are not user renames.
+  if (readOnly || cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) return
   const privateId = parent.id
   if (typeof privateId !== 'number') {
     return
@@ -1697,22 +1813,16 @@ async function doLayout(layout: Layout) {
   const wasPhysicsOn = physicsMode.value === 'on'
   if (wasPhysicsOn) disablePhysics()
 
-  const nodes = [...state.nodes]
-    .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
-    .map((node) => node.id)
-  const links: [number, number][] = [
-    ...state.links.map((link) => [link.sourceId, link.targetId] as [number, number]),
-    ...(state.hyperLinks ?? []).flatMap((hl) =>
-      hl.sourceIds.map((sourceId) => [sourceId, hl.targetId] as [number, number]),
-    ),
-  ]
-  const positions = await getNodePositions(nodes, links, layout)
+  const positions = await layoutGraph(
+    editorStateToLayoutGraph(state, nodeShapes, nodeAnnotations),
+    layout,
+  )
   const newPositions = []
-  for (const nodeId of nodes) {
+  for (const { id: nodeId } of state.nodes) {
     // nodeId is a public document id; the library keys nodes by internal id. Skip any node
     // not in the mapping (e.g. deleted without a redraw) so one stale id can't abort the layout.
-    if (!idMapping.hasReverse(nodeId)) continue
-    const position = positions.get(nodeId)!
+    const position = positions.get(nodeId)
+    if (!idMapping.hasReverse(nodeId) || !position || !graphComponentRef.value) continue
     graphComponentRef.value.setNodePosition(position, undefined, idMapping.getOrFailReverse(nodeId))
     newPositions.push({
       id: nodeId,
@@ -1893,15 +2003,28 @@ defineExpose({
     </svg>
     <div
       class="pointer-events-none w-full opacity-50 absolute inset-0 flex items-center"
-      v-if="layoutMode === 'regular' && state.nodes.length === 0 && showHints"
+      v-if="layoutMode === 'regular' && state.nodes.length === 0 && showHints && !readOnly"
     >
       <div class="m-auto w-fit">
         <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
       </div>
     </div>
-    <ul
-      v-if="highlightToShow?.legend?.length"
-      class="absolute z-10 flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
+    <DefineLegend>
+      <ul
+        class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
+      >
+        <li v-for="entry in highlight?.legend" :key="entry.label" class="flex items-center gap-2">
+          <span
+            class="size-3 rounded-full border border-base-content/30"
+            :style="{ backgroundColor: entry.color ?? 'var(--graph-node-color)' }"
+          ></span>
+          {{ entry.label }}
+        </li>
+      </ul>
+    </DefineLegend>
+    <div
+      v-if="highlight?.legend?.length && !legendBesidePanel"
+      class="absolute z-10"
       :class="layoutMode === 'regular' ? 'bottom-4 right-4' : 'right-3'"
       :style="
         layoutMode === 'compact'
@@ -1909,18 +2032,11 @@ defineExpose({
           : undefined
       "
     >
-      <li
-        v-for="entry in highlightToShow.legend"
-        :key="entry.label"
-        class="flex items-center gap-2"
-      >
-        <span
-          class="size-3 rounded-full border border-base-content/30"
-          :style="{ backgroundColor: entry.color ?? 'var(--graph-node-color)' }"
-        ></span>
-        {{ entry.label }}
-      </li>
-    </ul>
+      <ReuseLegend />
+    </div>
+    <div v-if="!!slots.canvasOverlay" class="absolute inset-0 pointer-events-none">
+      <slot name="canvasOverlay" />
+    </div>
     <div
       v-if="layoutMode === 'regular'"
       class="absolute top-4 bottom-4 left-4 flex flex-col justify-between"
@@ -1934,7 +2050,7 @@ defineExpose({
             :show-save="EntryState.ENABLE"
             :layouts-to-show="GRAPH_EDITOR_LAYOUTS"
             @save="emit('save')"
-            :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
+            :show-export="isExportOpened || !hasExportSlot ? EntryState.DISABLE : EntryState.ENABLE"
             @export="isExportOpened = !isExportOpened"
             @export-file="emit('export-file', $event)"
             :show-share="EntryState.ENABLE"
@@ -1953,25 +2069,17 @@ defineExpose({
 
         <div class="flex flex-1 justify-end flex-col gap-2">
           <slot name="toolbar" />
-          <div ref="linkSwitchButton" class="join join-vertical mb-8" v-if="enableLinkSwitching">
-            <button
-              v-for="(linkConfig, linkKey) in linkConfigs"
-              :key="linkKey"
-              class="join-item btn btn-square btn-sm"
-              :class="{ 'btn-active': selectedLinkType === linkKey }"
-              :title="linkConfig!.displayName"
-              @click="selectedLinkType = linkKey"
-            >
-              <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5 opacity-70" />
-              <ArrowLongRightIcon
-                v-else-if="linkKey === LinkType.SINGLE"
-                class="size-5 opacity-70"
-              />
-              <ArrowDoubleLongRightIcon v-else class="size-5 opacity-70" />
-            </button>
+          <div ref="linkSwitchButton" class="mb-8 w-fit" v-if="enableLinkSwitching">
+            <SegmentedControl
+              v-model="selectedLinkType"
+              :options="linkSwitchOptions"
+              vertical
+              :aria-label="t('editor.links.type')"
+            />
           </div>
           <div ref="evaluationButtons" class="flex flex-col gap-2">
             <button
+              v-if="showEvaluation"
               ref="extensionEvalButton"
               class="btn btn-square btn-sm"
               @click="emit('open-extension-window')"
@@ -1999,6 +2107,7 @@ defineExpose({
           <button
             ref="exportButton"
             class="btn btn-square btn-sm"
+            :disabled="!hasExportSlot"
             @click="isExportOpened = !isExportOpened"
             :title="t('menu.latexStudio')"
           >
@@ -2007,6 +2116,16 @@ defineExpose({
         </div>
       </div>
       <div class="flex flex-1 items-end pointer-events-none"></div>
+    </div>
+
+    <div
+      v-if="hasSidePanel"
+      class="absolute top-4 right-4 bottom-4 z-10 flex items-end gap-3 pointer-events-none"
+    >
+      <ReuseLegend v-if="legendBesidePanel && highlight?.legend?.length" />
+      <div class="flex self-stretch pointer-events-auto">
+        <slot name="sidePanel" />
+      </div>
     </div>
 
     <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
@@ -2088,6 +2207,7 @@ defineExpose({
         </div>
 
         <button
+          v-if="showEvaluation"
           ref="mobileEvaluateButton"
           class="btn btn-primary h-13 min-w-0 shrink rounded-2xl px-4 gap-2 text-base font-semibold shadow-md shadow-primary/30"
           @click="evaluationOpen = true"
@@ -2100,6 +2220,7 @@ defineExpose({
           <button
             ref="mobileExportButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            :disabled="!hasExportSlot"
             :aria-label="t('menu.export')"
             :title="t('menu.export')"
             @click="isExportOpened = true"
@@ -2128,21 +2249,12 @@ defineExpose({
         style="bottom: calc(env(safe-area-inset-bottom, 0px) + 4.75rem)"
       >
         <slot name="canvasSelector" />
-        <div v-if="enableLinkSwitching" ref="mobileLinkSwitchButton" class="join shadow-md">
-          <button
-            v-for="(linkConfig, linkKey) in linkConfigs"
-            :key="linkKey"
-            class="join-item btn btn-sm btn-square"
-            :class="selectedLinkType === linkKey ? 'btn-primary' : 'btn-neutral'"
-            :aria-label="linkConfig!.displayName"
-            :aria-pressed="selectedLinkType === linkKey"
-            :title="linkConfig!.displayName"
-            @click="selectedLinkType = linkKey"
-          >
-            <component :is="linkConfig!.icon" v-if="linkConfig!.icon" class="size-5" />
-            <ArrowLongRightIcon v-else-if="linkKey === LinkType.SINGLE" class="size-5" />
-            <ArrowDoubleLongRightIcon v-else class="size-5" />
-          </button>
+        <div v-if="enableLinkSwitching" ref="mobileLinkSwitchButton" class="w-fit">
+          <SegmentedControl
+            v-model="selectedLinkType"
+            :options="linkSwitchOptions"
+            :aria-label="t('editor.links.type')"
+          />
         </div>
       </div>
 
@@ -2256,14 +2368,7 @@ defineExpose({
       </BottomSheet>
     </template>
 
-    <slot
-      name="evaluationExtensions"
-      :on-highlight="
-        (h: Highlight | undefined) => {
-          extensionHighlightRef = h
-        }
-      "
-    ></slot>
+    <slot name="evaluationExtensions"></slot>
     <slot
       name="export"
       :isOpen="isExportOpened"
@@ -2271,14 +2376,7 @@ defineExpose({
       @isOpen="isExportOpened = $event"
     ></slot>
     <slot name="evaluationRanking"></slot>
-    <slot
-      name="evaluationSerialisation"
-      :on-highlight="
-        (h: Highlight | undefined) => {
-          serialisationHighlightRef = h
-        }
-      "
-    ></slot>
+    <slot name="evaluationSerialisation"></slot>
     <TutorialOverlay
       v-if="tutorials && showHints && layoutMode === 'regular'"
       :tutorials="tutorials"

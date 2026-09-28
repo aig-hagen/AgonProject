@@ -82,6 +82,37 @@ export class ABAF {
     return this.nodes.entries()
   }
 
+  nextNodeId(): NodeId {
+    let max = -1
+    for (const id of this.nodes.keys()) max = Math.max(max, id)
+    return max + 1
+  }
+
+  findByName(name: string): NodeId | undefined {
+    for (const [id, d] of this.nodes) if (d.name === name) return id
+    return undefined
+  }
+
+  // Makes `id` an assumption; its contrary is the atom `¬name`, created next to it if missing.
+  promoteToAssumption(id: NodeId) {
+    const data = this.nodes.get(id)
+    if (!data || data.kind === 'assumption') return
+    const contraryName = '¬' + data.name
+    let target = this.findByName(contraryName)
+    if (target === undefined) {
+      target = this.nextNodeId()
+      this.addNode(target, {
+        name: contraryName,
+        kind: 'atom',
+        x: data.x + 150,
+        y: data.y - 30,
+        fact: false,
+      })
+    }
+    data.kind = 'assumption'
+    this.contraryMap.set(id, target)
+  }
+
   assumptions(): NodeId[] {
     return [...this.nodes].filter(([, d]) => d.kind === 'assumption').map(([id]) => id)
   }
@@ -127,10 +158,20 @@ export class ABAF {
     return [...this.contraryMap]
   }
 
+  // Adding a rule that already exists (same head, same body set) returns the existing id.
   addRule(head: NodeId, body: NodeId[]): number {
+    const existing = this.findRule(head, body)
+    if (existing !== undefined) return existing.id
     const id = this.nextRuleId++
     this.ruleList.push({ id, head, body: [...body] })
     return id
+  }
+
+  findRule(head: NodeId, body: NodeId[]): ABARule | undefined {
+    const set = new Set(body)
+    return this.ruleList.find(
+      (r) => r.head === head && r.body.length === set.size && r.body.every((b) => set.has(b)),
+    )
   }
 
   deleteRule(id: number) {

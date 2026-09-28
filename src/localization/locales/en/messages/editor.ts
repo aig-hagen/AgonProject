@@ -68,11 +68,13 @@ export default {
     },
   },
   links: {
+    type: 'Link type',
     attack: 'Attack',
     support: 'Support',
     definiteAttack: 'Definite Attack',
     uncertainAttack: 'Uncertain Attack',
     collectiveAttack: 'Collective Attack',
+    rule: 'Rule',
     link: 'Link',
   },
   relayout: {

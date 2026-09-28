@@ -17,17 +17,13 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  BookOpenIcon,
-  ChevronLeftIcon,
-  MagnifyingGlassIcon,
-  MapPinIcon,
-} from '@heroicons/vue/24/outline'
+import { ChevronLeftIcon, MagnifyingGlassIcon, MapPinIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -130,17 +126,13 @@ const router = useRouter()
                 </span>
               </template>
             </p>
+            <PublicationCitation
+              v-if="pinnedTerm[1].reference"
+              :publication="pinnedTerm[1].reference"
+              compact
+              class="mt-2.5 pt-2.5 border-t border-base-300"
+            />
           </div>
-          <a
-            v-if="pinnedTerm[1].reference"
-            :href="pinnedTerm[1].reference.href"
-            :title="pinnedTerm[1].reference.label"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="grid place-items-center size-7 rounded-lg bg-base-200 text-primary shrink-0"
-          >
-            <BookOpenIcon class="size-4" />
-          </a>
         </div>
       </article>
       <template v-for="group in groupedTerms" :key="group.letter">
@@ -174,17 +166,13 @@ const router = useRouter()
                   </span>
                 </template>
               </p>
+              <PublicationCitation
+                v-if="def.reference"
+                :publication="def.reference"
+                compact
+                class="mt-2.5 pt-2.5 border-t border-base-300"
+              />
             </div>
-            <a
-              v-if="def.reference"
-              :href="def.reference.href"
-              :title="def.reference.label"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="grid place-items-center size-7 rounded-lg bg-base-200 text-primary shrink-0"
-            >
-              <BookOpenIcon class="size-4" />
-            </a>
           </div>
         </article>
       </template>

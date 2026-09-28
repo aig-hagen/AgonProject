@@ -18,19 +18,21 @@
  */
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { type ArgumentData } from '@/modules/common/argumentation/model'
-import { getNodePositions } from '@/modules/common/graph-editor/layouting'
+import { applyGraphLayout, type LayoutGraph } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 
-export async function layout(
-  argumentation: AbstractArgumentation<ArgumentData>,
-  layoutType: Layout = Layout.BottomToTop,
-) {
-  const nodes = [...argumentation.arguments()].map(([id]) => id)
-  const links = [...argumentation.attacks()]
-  const nodePositions = await getNodePositions(nodes, links, layoutType)
-  for (const [argumentId, argumentData] of argumentation.arguments()) {
-    const newPosition = nodePositions.get(argumentId)!
-    argumentData.x = newPosition.x
-    argumentData.y = newPosition.y
+export function toLayoutGraph(af: AbstractArgumentation<ArgumentData>): LayoutGraph {
+  return {
+    nodes: [...af.arguments()].map(([id, { name }]) => ({ id, label: name })),
+    edges: [...af.attacks()].map(([source, target]) => ({ sources: [source], target })),
   }
+}
+
+export function layout(
+  af: AbstractArgumentation<ArgumentData>,
+  layoutType: Layout = Layout.BottomToTop,
+): Promise<void> {
+  return applyGraphLayout(toLayoutGraph(af), layoutType, (id, position) =>
+    Object.assign(af.getArgument(id), position),
+  )
 }

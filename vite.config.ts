@@ -15,7 +15,10 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import backendRoutes from './config/backend-routes.json'
 
 const solverTarget = 'http://localhost:8080/'
-const solverProxy = Object.fromEntries(backendRoutes.solverPaths.map((p) => [p, solverTarget]))
+// Keep the Host header like Caddy does; otherwise Tweety's CORS mapping for /aba rejects the call.
+const solverProxy = Object.fromEntries(
+  backendRoutes.solverPaths.map((p) => [p, { target: solverTarget, changeOrigin: false }]),
+)
 
 // The solver endpoints are POST-only. Mirror the prod (Caddyfile) behaviour in
 // dev/preview: a browser GET/HEAD to one of them gets the friendly notice page

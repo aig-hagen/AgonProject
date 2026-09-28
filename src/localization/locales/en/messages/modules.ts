@@ -49,7 +49,7 @@ export default {
   assumptionBased: {
     name: 'Assumption-Based Argumentation',
     description:
-      'Build a theory from rules over atoms and defeasible assumptions, where attacks arise from the contraries of assumptions.',
+      'Arguments are derived from defeasible assumptions via rules and attack an assumption by deriving its contrary.',
   },
   tags: {
     abstract: {

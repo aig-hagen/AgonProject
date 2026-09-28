@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/collective-attacks-argumentation/examples'
 import GraphEditor from '@/modules/collective-attacks-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/collective-attacks-argumentation/layout'
 import { SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
 import {
   canLoadFromObject,
@@ -93,6 +94,9 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   },
   getSaveString(document, name) {
     return saveAsString(document, name)
+  },
+  applyLayout(document, layoutType) {
+    return layout(document, layoutType)
   },
   generateHref: '/generate?type=setaf',
   publications: [NP06, BCDFP21],

@@ -87,6 +87,7 @@ export default {
     accepted: 'Accepted',
     rejected: 'Rejected',
     undecided: 'Undecided',
+    derived: 'Derived',
   },
   extensionWindow: {
     selectExtensionHint: 'Select extension to highlight',

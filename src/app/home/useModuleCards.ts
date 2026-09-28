@@ -43,6 +43,7 @@ export function useModuleCards<DocumentT extends Objectish>(
       initialCotent: module.initialCotent,
       generateHref: module.generateHref,
       underConstruction: module.underConstruction,
+      beta: module.beta,
       publications: module.publications,
       tags: (module.tags ?? []).map((id) => ({
         id,

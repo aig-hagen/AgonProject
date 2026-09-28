@@ -17,10 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { Example } from '@/modules/common/examples'
-import { getNodePositions } from '@/modules/common/graph-editor/layouting'
-import { Layout } from '@/modules/common/main-menu/layouting'
 import mealWineJson from '@/modules/dialectical-argumentation/examples/meal_wine.json'
 import murderTrialJson from '@/modules/dialectical-argumentation/examples/murder_trial.json'
+import { layout } from '@/modules/dialectical-argumentation/layout'
 import {
   type AdfArgumentData,
   DialecticalArgumentation,
@@ -36,17 +35,7 @@ export const datasets: Example<DialecticalArgumentation<AdfArgumentData>>[] = ex
       name: name ?? 'unknown',
       description,
       load: () => loadExampleFromJson(json).framework,
-      applyLayout: async (adf) => {
-        const layout = layoutType ?? Layout.Circular
-        const nodes = [...adf.arguments()].map(([id]) => id)
-        const links = [...adf.links()]
-        const positions = await getNodePositions(nodes, links, layout)
-        for (const [id, data] of adf.arguments()) {
-          const pos = positions.get(id)!
-          data.x = pos.x
-          data.y = pos.y
-        }
-      },
+      applyLayout: (adf) => layout(adf, layoutType),
     }
   },
 )

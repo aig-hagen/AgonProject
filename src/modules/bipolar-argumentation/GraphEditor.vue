@@ -36,12 +36,12 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
+import { useEvaluationFocus } from '@/modules/common/evaluation/useEvaluationFocus'
 import type { ExportFileData } from '@/modules/common/export'
 import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
-  type Highlight,
   type HistoryState,
   LinkType,
   type NodeId,
@@ -212,6 +212,15 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
 
 // --- Multi-instance window management ---
 
+const {
+  activeId: activeExtensionId,
+  highlight: evaluationHighlight,
+  isSuppressed,
+  focus: focusEvaluation,
+  report: reportHighlight,
+  remove: releaseFocus,
+} = useEvaluationFocus()
+
 const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
   db,
   documentId,
@@ -223,8 +232,8 @@ function addExtensionInstance() {
   extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
 }
 
-function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (extensionInstances.value.length === 1) onHighlight(undefined)
+function removeExtensionInstance(id: string) {
+  releaseFocus(id)
   extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
 }
 
@@ -238,7 +247,6 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
 
 const { layoutMode } = useLayoutMode()
 const evaluationHostOpen = ref(false)
-const activeExtensionId = ref<string | undefined>(undefined)
 // Each hosted window reports its formatted title (semantics name + mode); the switcher
 // pill shows that instead of the raw key. Falls back to the key until the first report.
 const evaluationTitles = ref<Record<string, string>>({})
@@ -287,6 +295,7 @@ const tutorialContextExtra = computed(() => ({
     @link-changed="onLinkChanged"
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
+    :highlight="evaluationHighlight"
     :state="editorState"
     :history-state="historyState"
     :tutorials="bipolarTutorials"
@@ -300,7 +309,7 @@ const tutorialContextExtra = computed(() => ({
     v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance()"
   >
-    <template #evaluationExtensions="{ onHighlight }">
+    <template #evaluationExtensions>
       <!-- Compact: one host sheet with a chip switcher over all saved configs. -->
       <EvaluationHost
         v-if="layoutMode === 'compact'"
@@ -308,7 +317,7 @@ const tutorialContextExtra = computed(() => ({
         v-model:active-id="activeExtensionId"
         :chips="extensionChips"
         @add="addExtensionInstance()"
-        @remove="removeExtensionInstance($event, onHighlight)"
+        @remove="removeExtensionInstance($event)"
       >
         <template #default="{ activeId }">
           <WindowExtensions
@@ -325,7 +334,7 @@ const tutorialContextExtra = computed(() => ({
             @title="setEvaluationTitle(instance.id, $event)"
             @highlight="
               (h) => {
-                onHighlight(h)
+                reportHighlight(instance.id, h)
                 if (h) highlightCount++
               }
             "
@@ -344,15 +353,17 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
+        :suppressed="isSuppressed(instance.id)"
+        @focus="focusEvaluation(instance.id)"
         @update:instance-state="updateExtensionInstance($event)"
         @highlight="
           (h) => {
-            onHighlight(h)
+            reportHighlight(instance.id, h)
             if (h) highlightCount++
           }
         "
         @evaluate="evaluationCount++"
-        @close="removeExtensionInstance(instance.id, onHighlight)"
+        @close="removeExtensionInstance(instance.id)"
       />
     </template>
     <template #export="{ isOpen, onIsOpen, hasBeenOpened }">

@@ -38,6 +38,14 @@ export class ServiceUnavailableError extends Error {
   }
 }
 
+// A reasoner-side rejection (e.g. a malformed theory) whose message is shown to the user.
+export class ReasonerError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ReasonerError'
+  }
+}
+
 export function throwIfTimeout(answer: string | null, status?: string | null): void {
   if (status === 'TIMEOUT') throw new EvaluationTimeoutError()
   if (answer === null) throw new Error('Evaluation failed')

@@ -82,10 +82,11 @@ export function adjustNodeLabelFontSize(
   graphComponentId: string,
   internalId: number,
   label: string,
+  fontSize = computeLabelFontSize(label),
 ): void {
   const labelDiv = findNodeLabelDiv(graphEl, graphComponentId, internalId)
   if (labelDiv) {
-    labelDiv.style.fontSize = computeLabelFontSize(label)
+    labelDiv.style.fontSize = fontSize
   }
 }
 

@@ -22,4 +22,5 @@ export default {
   searchPlaceholder: 'Begriffe suchen…',
   noResults: 'Keine Ergebnisse',
   selectTerm: 'Wähle einen Begriff aus der Liste.',
+  source: 'Referenz',
 }

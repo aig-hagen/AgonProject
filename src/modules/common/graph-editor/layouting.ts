@@ -19,6 +19,10 @@
 import type { Graphviz } from '@hpcc-js/wasm-graphviz'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
+import type {
+  GraphEditorNodeShape,
+  GraphEditorState,
+} from '@/modules/common/graph-editor/graphEditor'
 import { Layout } from '@/modules/common/main-menu/layouting'
 
 const NUMERIC_ID_TO_STRING_RADIX = 16
@@ -49,142 +53,218 @@ interface Position {
   y: number
 }
 
-function renderWithEngine(graphviz: Graphviz, dotSource: string, layout: Layout): string {
-  switch (layout) {
-    case Layout.ForceDirected:
-      return graphviz.fdp(dotSource, 'json')
-    case Layout.Neato:
-      return graphviz.neato(dotSource, 'json')
-    case Layout.Circular:
-      return graphviz.circo(dotSource, 'json')
-    case Layout.Radial:
-      return graphviz.twopi(dotSource, 'json')
-    default:
-      return graphviz.dot(dotSource, 'json')
+export type LayoutNodeShape = GraphEditorNodeShape
+
+export interface LayoutNode {
+  id: number
+  label: string
+  shape?: LayoutNodeShape
+  // Text drawn below the node; the layout reserves room for it.
+  annotation?: string
+  // Kept in place by `neato`; other engines ignore it.
+  pinned?: Position
+}
+
+// A plain edge has one source; a hyperedge (collective attack, multi-premise rule) several.
+export interface LayoutEdge {
+  sources: number[]
+  target: number
+}
+
+export interface LayoutGraph {
+  nodes: LayoutNode[]
+  edges: LayoutEdge[]
+}
+
+const PIXEL_PER_INCH = 72
+const inch = (px: number) => (px / PIXEL_PER_INCH).toFixed(3)
+const dotId = (id: number) => `"${id.toString(NUMERIC_ID_TO_STRING_RADIX)}"`
+const ANNOTATION_GAP = 6
+
+// Mirrors the node props in GraphEditor.vue; rect labels are 0.8rem monospace and autogrow.
+function nodeSize({ shape = 'circle', label }: LayoutNode) {
+  const r = ARGUMENT_RADIUS_IN_PX
+  if (shape === 'diamond') return { width: r * 2.7, height: r * 2 }
+  if (shape === 'rect') return { width: Math.max(r * 2, label.length * 7.7 + 24), height: r * 1.4 }
+  return { width: r * 2, height: r * 2 }
+}
+
+function annotationSize(text: string) {
+  const lines = text.split('\n')
+  return {
+    width: Math.max(...lines.map((line) => line.length)) * 7.5 + 8,
+    height: lines.length * 18,
   }
 }
 
-export async function getNodePositions(
-  nodes: number[],
-  links: [sourceId: number, targetId: number][],
-  layout: Layout,
-): Promise<Map<number, Position>> {
-  const graphviz = await loadGraphviz()
-  const dotSource = argumentationFrameworkToDotSource(nodes, links, layout)
-  const dotJsonString = renderWithEngine(graphviz, dotSource, layout)
-  const dotJson = JSON.parse(dotJsonString) as DotJson
-
-  const nodePositions = new Map()
-  for (const object of dotJson.objects ?? []) {
-    const stringId = object.name
-    const [xString, yString] = object.pos.split(',')
-    if (xString === undefined || yString === undefined) {
-      throw new Error('Invalid object position: ' + object.pos)
-    }
-    const x = Number.parseFloat(xString)
-    const y = Number.parseFloat(yString)
-    if (!Number.isFinite(x)) {
-      throw new Error('Invalid x value in object position: ' + object.pos)
-    }
-    if (!Number.isFinite(y)) {
-      throw new Error('Invalid y value in object position: ' + object.pos)
-    }
-    const id = parseInt(stringId, NUMERIC_ID_TO_STRING_RADIX)
-    nodePositions.set(id, {
-      x: x,
-      y: y,
-    })
+// The box Graphviz places: the node plus its annotation below it. `offset` is how far the node
+// centre sits above the box centre.
+function layoutBox(node: LayoutNode) {
+  const size = nodeSize(node)
+  if (!node.annotation) return { ...size, offset: 0 }
+  const note = annotationSize(node.annotation)
+  const extra = note.height + ANNOTATION_GAP
+  return {
+    width: Math.max(size.width, note.width),
+    height: size.height + extra,
+    offset: extra / 2,
   }
-
-  return convertPositionsForArgumentEditor(nodePositions)
 }
 
-export function argumentationFrameworkToDotSource(
-  nodes: number[],
-  links: [sourceId: number, targetId: number][],
-  layout: Layout,
-) {
-  // 72 is the default scale used by Graphviz.
-  // See https://graphviz.org/doc/info/command.html#-s
-  const PIXEL_PER_IN = 72
-  function toInch(px: number) {
-    return px / PIXEL_PER_IN
-  }
+const engineOf = (layout: Layout): 'dot' | 'fdp' | 'neato' | 'circo' | 'twopi' =>
+  layout === Layout.ForceDirected
+    ? 'fdp'
+    : layout === Layout.Neato
+      ? 'neato'
+      : layout === Layout.Circular
+        ? 'circo'
+        : layout === Layout.Radial
+          ? 'twopi'
+          : 'dot'
 
-  const ARGUMENT_RADIUS_IN_IN = toInch(ARGUMENT_RADIUS_IN_PX)
-  const ARGUMENT_DIAMETER_IN_IN = ARGUMENT_RADIUS_IN_IN * 2
-  const MIN_HORIZONTAL_ARGUMENT_DISTANCE = ARGUMENT_RADIUS_IN_IN / 2
-
-  const dotSourceLines = []
-  dotSourceLines.push('digraph {')
+function graphAttributes(layout: Layout, packed: boolean): string[] {
+  const pack = packed ? ['  pack=true'] : []
   switch (layout) {
     case Layout.TopToBottom:
     case Layout.BottomToTop:
     case Layout.LeftToRight:
     case Layout.RightToLeft: {
-      const rankdirMap = {
-        [Layout.TopToBottom]: 'TB',
-        [Layout.BottomToTop]: 'BT',
-        [Layout.LeftToRight]: 'LR',
-        [Layout.RightToLeft]: 'RL',
-      }
-      dotSourceLines.push(`  rankdir="${rankdirMap[layout]}"`)
-      dotSourceLines.push('  ranksep=1')
-      dotSourceLines.push(`  nodesep=${MIN_HORIZONTAL_ARGUMENT_DISTANCE.toString()}`)
-      break
+      const rankdir = { TopToBottom: 'TB', BottomToTop: 'BT', LeftToRight: 'LR', RightToLeft: 'RL' }
+      return [
+        `  rankdir="${rankdir[layout]}"`,
+        '  ranksep=1',
+        `  nodesep=${inch(ARGUMENT_RADIUS_IN_PX / 2)}`,
+      ]
     }
     case Layout.ForceDirected:
-      dotSourceLines.push('  overlap=false')
-      dotSourceLines.push('  K=1.5')
-      dotSourceLines.push('  sep="+10"')
-      break
+      return ['  overlap=false', '  K=1.5', '  sep="+10"', ...pack]
     case Layout.Neato:
-      dotSourceLines.push('  overlap=false')
-      dotSourceLines.push('  sep="+30"')
-      break
-    case Layout.Circular:
-      break
+      return ['  inputscale=72', '  overlap=false', '  sep="+16"', '  edge[len=2]', ...pack]
     case Layout.Radial:
-      dotSourceLines.push('  ranksep=2')
-      break
+      return ['  ranksep=2']
+    default:
+      return []
   }
-  dotSourceLines.push(`  node[fixedsize=true]`)
-  dotSourceLines.push('')
-  for (const nodeId of nodes) {
-    const shapeProps = `shape=circle width=${ARGUMENT_DIAMETER_IN_IN.toString()} height=${ARGUMENT_DIAMETER_IN_IN.toString()}`
-    dotSourceLines.push(
-      `  "${nodeId.toString(NUMERIC_ID_TO_STRING_RADIX)}"[margin="0,0" ${shapeProps}]`,
-    )
-  }
-  for (const [sourceId, targetId] of links) {
-    dotSourceLines.push(
-      `  "${sourceId.toString(NUMERIC_ID_TO_STRING_RADIX)}" -> "${targetId.toString(NUMERIC_ID_TO_STRING_RADIX)}"`,
-    )
-  }
-  dotSourceLines.push('')
-  dotSourceLines.push('}')
-  return dotSourceLines.join('\n')
 }
 
-function convertPositionsForArgumentEditor(
-  byIdPositions: Map<number, { x: number; y: number }>,
-): Map<number, Position> {
-  if (byIdPositions.size === 0) {
-    return byIdPositions
+// Stable order and no redundant springs: exact duplicates and self-loops go, and force
+// engines also merge a mutual pair into one edge.
+function normalizeEdges(edges: LayoutEdge[], directed: boolean): LayoutEdge[] {
+  const seen = new Set<string>()
+  const result: LayoutEdge[] = []
+  for (const edge of edges) {
+    const sources = [...new Set(edge.sources)].sort((a, b) => a - b)
+    if (sources.length === 0) continue
+    if (sources.length === 1 && sources[0] === edge.target) continue
+    const key =
+      sources.length === 1 && !directed
+        ? [sources[0]!, edge.target].sort((a, b) => a - b).join('-')
+        : `${sources.join(',')}>${edge.target.toString()}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push({ sources, target: edge.target })
   }
-  const positions = [...byIdPositions.values()]
-  const ys = positions.map((position) => position.y)
-  const yMin = Math.min(...ys)
-  const yMax = Math.max(...ys)
-  const height = yMax - yMin
-
-  return new Map(
-    [...byIdPositions.entries()].map(([id, position]) => [
-      id,
-      {
-        x: position.x,
-        y: height - position.y,
-      },
-    ]),
+  return result.sort(
+    (a, b) => a.target - b.target || a.sources.join(',').localeCompare(b.sources.join(',')),
   )
+}
+
+// What the editor draws: its shapes, labels, annotations, links and hyperlinks.
+export function editorStateToLayoutGraph(
+  state: Pick<GraphEditorState, 'nodes' | 'links' | 'hyperLinks'>,
+  shapes?: Map<number, LayoutNodeShape>,
+  annotations?: Map<number, { content: string }>,
+): LayoutGraph {
+  return {
+    nodes: state.nodes.map(({ id, label }) => ({
+      id,
+      label,
+      shape: shapes?.get(id),
+      annotation: annotations?.get(id)?.content,
+    })),
+    edges: [
+      ...state.links.map((link) => ({ sources: [link.sourceId], target: link.targetId })),
+      ...(state.hyperLinks ?? []).map((link) => ({
+        sources: link.sourceIds,
+        target: link.targetId,
+      })),
+    ],
+  }
+}
+
+export function layoutGraphToDot(graph: LayoutGraph, layout: Layout): string {
+  const engine = engineOf(layout)
+  const pins = engine === 'neato' && graph.nodes.some((node) => node.pinned)
+  // Circular engines would put a junction on the circle like any node, so they get plain edges.
+  const junctions = engine !== 'circo' && engine !== 'twopi'
+  const nodes = [...graph.nodes].sort((a, b) => a.label.localeCompare(b.label) || a.id - b.id)
+  const lines = ['digraph {', ...graphAttributes(layout, !pins), '  node[fixedsize=true shape=box]']
+  for (const node of nodes) {
+    const { width, height } = layoutBox(node)
+    // Graphviz' y axis points up, the editor's down.
+    const pos =
+      pins && node.pinned
+        ? ` pos="${node.pinned.x.toString()},${(-node.pinned.y - layoutBox(node).offset).toString()}!"`
+        : ''
+    lines.push(`  ${dotId(node.id)}[width=${inch(width)} height=${inch(height)}${pos}]`)
+  }
+  const edges = normalizeEdges(graph.edges, engine === 'dot')
+  edges.forEach(({ sources, target }, index) => {
+    if (sources.length === 1) {
+      lines.push(`  ${dotId(sources[0]!)} -> ${dotId(target)}`)
+    } else if (!junctions) {
+      for (const source of sources) lines.push(`  ${dotId(source)} -> ${dotId(target)}`)
+    } else {
+      // Short source legs keep a set together without collapsing the junction onto it.
+      const junction = `"j${index.toString()}"`
+      const [sourceLen, targetLen] = engine === 'neato' ? ['[len=1]', '[len=1.5]'] : ['', '']
+      lines.push(`  ${junction}[shape=point width=0.05]`)
+      for (const source of sources) lines.push(`  ${dotId(source)} -> ${junction}${sourceLen}`)
+      lines.push(`  ${junction} -> ${dotId(target)}${targetLen}`)
+    }
+  })
+  lines.push('}')
+  return lines.join('\n')
+}
+
+// Positions in editor coordinates. With pins, the drawing is realigned on a pinned node, since
+// Graphviz may translate it.
+export async function layoutGraph(
+  graph: LayoutGraph,
+  layout: Layout,
+): Promise<Map<number, Position>> {
+  if (graph.nodes.length === 0) return new Map()
+  const graphviz = await loadGraphviz()
+  const dotJson = JSON.parse(
+    graphviz[engineOf(layout)](layoutGraphToDot(graph, layout), 'json'),
+  ) as DotJson
+  const byId = new Map(graph.nodes.map((node) => [node.id, node]))
+  const positions = new Map<number, Position>()
+  for (const { name, pos } of dotJson.objects ?? []) {
+    const id = parseInt(name, NUMERIC_ID_TO_STRING_RADIX)
+    const node = byId.get(id)
+    const [x, y] = pos.split(',').map(Number.parseFloat)
+    if (!node || !Number.isFinite(x) || !Number.isFinite(y)) continue
+    positions.set(id, { x: x!, y: -y! - layoutBox(node).offset })
+  }
+  const anchor =
+    engineOf(layout) === 'neato'
+      ? graph.nodes.find((n) => n.pinned && positions.has(n.id))
+      : undefined
+  if (anchor) {
+    const laidOut = positions.get(anchor.id)!
+    const dx = anchor.pinned!.x - laidOut.x
+    const dy = anchor.pinned!.y - laidOut.y
+    for (const [id, p] of positions) positions.set(id, { x: p.x + dx, y: p.y + dy })
+  }
+  return positions
+}
+
+// Lays out a document in place; `place` writes one node's position back into it.
+export async function applyGraphLayout(
+  graph: LayoutGraph,
+  layout: Layout,
+  place: (id: number, position: Position) => void,
+): Promise<void> {
+  for (const [id, position] of await layoutGraph(graph, layout)) place(id, position)
 }

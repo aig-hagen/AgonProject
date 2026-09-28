@@ -138,6 +138,24 @@ The `pos`/`nec` suffix selects possible vs. necessary reasoning. Instead of a si
 | `definiteAttacks`    | number[][] | Attacks that certainly hold.        |
 | `uncertainAttacks`   | number[][] | Attacks that may hold.              |
 
+### `POST /aba` — assumption-based argumentation
+
+`cmd`: `get_models`, `get_model`, `get_credulous`, `get_skeptical`, `query` (needs
+`query_assumption`), or `semantics` (lists the semantics keys). Instead of arguments and attacks,
+the theory is sent as text:
+
+| Field              | Type   | Notes                                                         |
+| ------------------ | ------ | ------------------------------------------------------------- |
+| `kb`               | string | One item per line: `{a,b}`, `h <- b1,b2`, `h <-`, `not a = c` |
+| `kb_format`        | string | `pl` (the app) or `fol` (needs `fol_signature`)               |
+| `semantics`        | string | Lower-case key, e.g. `st`, `co`, `wf`                         |
+| `query_assumption` | string | Assumption for `cmd: "query"`                                 |
+
+`cf`, `adm`, `co`, `pr`, `st`, `wf`, `id` accept any theory; the other keys go through a SETAF
+translation and need a flat theory. The app sends node ids as atoms, so `answer` is a list-of-sets
+of assumption ids. Parse and validation errors come back with `status: "ERROR"` and the message in
+`answer`.
+
 ### `POST /rankings` — ranking semantics
 
 `cmd`: `get_model`. Fields as `/dung` (`nr_of_arguments`, `attacks`, `semantics`, optional `args`).

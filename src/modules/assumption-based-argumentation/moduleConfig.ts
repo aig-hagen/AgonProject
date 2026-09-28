@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/assumption-based-argumentation/examples'
 import GraphEditor from '@/modules/assumption-based-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/assumption-based-argumentation/layout'
 import { ABAF, type ABANodeData } from '@/modules/assumption-based-argumentation/model'
 import {
   canLoadFromObject,
@@ -33,6 +34,7 @@ import {
   TAG_COLLECTIVE_RELATIONS,
   TAG_SUPPORT,
 } from '@/modules/common/tags'
+import { BDKT97, CFST18 } from '@/modules/common/tooltip/publications'
 
 const TYPE_KEY = 'type'
 const ABAF_V1_TYPE = 'aba-v1'
@@ -95,7 +97,7 @@ export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
   examples: datasets,
   initialCotent: initialABAF,
   editorComponent: GraphEditor,
-  evaluationKinds: [],
+  evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {
     return canLoadFromObject(dataObject)
   },
@@ -105,6 +107,10 @@ export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
   getSaveString(document, name) {
     return saveAsString(document, name)
   },
-  underConstruction: true,
+  applyLayout(document, layoutType) {
+    return layout(document, layoutType)
+  },
+  publications: [BDKT97, CFST18],
+  beta: true,
   tags: [TAG_AUGMENTED, TAG_ATTACK, TAG_SUPPORT, TAG_COLLECTIVE_RELATIONS],
 }

@@ -158,6 +158,8 @@ export interface SelectionAction {
 
 export type NodeId = number
 
+export type GraphEditorNodeShape = 'circle' | 'diamond' | 'rect'
+
 export interface GraphEditorStateNode {
   id: NodeId
   label: string
@@ -188,7 +190,6 @@ export interface GraphEditorState {
 export interface Highlight {
   stateId: UUID
   groups: ReadonlyArray<{ nodes: ReadonlySet<NodeId>; color: string }>
-  attackedByFirst?: string
   // Entries without a color use the default node color.
   legend?: ReadonlyArray<{ label: string; color?: string }>
 }

@@ -45,6 +45,7 @@ import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
+import { binaryAttacks, extensionLabels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
@@ -212,7 +213,9 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query)
+} = useExtensionWindowBase(selectedMode, query, (extension) =>
+  extensionLabels(extension, binaryAttacks(input.content.attacks())),
+)
 
 // Meta-reasoners with 2 parameters (e.g. Vacuous Reduct, Serialisable) have 4 fields total
 // incl. Semantics/Mode and can grow to a 4-column row; every other case (0 or 1 parameter)
@@ -234,13 +237,9 @@ watch(
   { flush: 'post', immediate: true },
 )
 
-const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
+// Always reported; the host's useEvaluationFocus picks which window paints the canvas.
+watch(currentHighlight, (h) => emit('highlight', h), { immediate: true })
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
-
-watch(emittedHighlight, (h) => emit('highlight', h))
-function onWindowFocus() {
-  emit('focus')
-}
 
 const windowTitle = computed(() => {
   const modeLabel =
@@ -267,7 +266,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
     :document-id="documentId"
     :state-key="stateKey"
     @close="emit('close')"
-    @focus="onWindowFocus"
+    @focus="emit('focus')"
     @evaluate="emit('evaluate')"
   >
     <template #parameters>

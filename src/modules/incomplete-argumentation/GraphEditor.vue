@@ -27,13 +27,13 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
+import { useEvaluationFocus } from '@/modules/common/evaluation/useEvaluationFocus'
 import type { ExportFileData } from '@/modules/common/export'
 import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import ArrowLongRightDashedIcon from '@/modules/common/graph-editor/ArrowLongRightDashedIcon.vue'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
-  type Highlight,
   type HistoryState,
   LinkType,
   type NodeId,
@@ -42,10 +42,12 @@ import {
   type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
+import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
+import DefiniteArgumentIcon from '@/modules/incomplete-argumentation/DefiniteArgumentIcon.vue'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
@@ -58,6 +60,7 @@ import type {
 } from '@/modules/incomplete-argumentation/model'
 import { iafBasicsTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-basics'
 import { iafEvaluationTutorial } from '@/modules/incomplete-argumentation/tutorials/iaf-evaluation'
+import UncertainArgumentIcon from '@/modules/incomplete-argumentation/UncertainArgumentIcon.vue'
 import WindowExtensions from '@/modules/incomplete-argumentation/WindowExtensions.vue'
 
 const { state, historyState, documentId } = defineProps<{
@@ -88,6 +91,22 @@ const evaluationInput = computed<Input<IncompleteArgumentation<IafArgumentData>>
 }))
 
 const isDefiniteArgumentMode = ref(true)
+const argumentMode = computed({
+  get: () => (isDefiniteArgumentMode.value ? 'definite' : 'uncertain'),
+  set: (mode) => (isDefiniteArgumentMode.value = mode === 'definite'),
+})
+const argumentModeOptions = computed(() => [
+  {
+    key: 'definite' as const,
+    icon: DefiniteArgumentIcon,
+    title: t('editor.certainty.definiteArgument'),
+  },
+  {
+    key: 'uncertain' as const,
+    icon: UncertainArgumentIcon,
+    title: t('editor.certainty.uncertainArgument'),
+  },
+])
 
 const renderedState = shallowRef(state)
 const editorState = shallowRef(transformToEditorState(state, true))
@@ -228,6 +247,15 @@ function onLinkCreatedOrChanged(data: { sourceId: NodeId; targetId: NodeId; type
 
 // --- Multi-instance window management ---
 
+const {
+  activeId: activeExtensionId,
+  highlight: evaluationHighlight,
+  isSuppressed,
+  focus: focusEvaluation,
+  report: reportHighlight,
+  remove: releaseFocus,
+} = useEvaluationFocus()
+
 const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
   db,
   documentId,
@@ -239,8 +267,8 @@ function addExtensionInstance() {
   extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
 }
 
-function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (extensionInstances.value.length === 1) onHighlight(undefined)
+function removeExtensionInstance(id: string) {
+  releaseFocus(id)
   extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
 }
 
@@ -254,7 +282,6 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
 
 const { layoutMode } = useLayoutMode()
 const evaluationHostOpen = ref(false)
-const activeExtensionId = ref<string | undefined>(undefined)
 // Each hosted window reports its formatted title (semantics name + mode); the switcher
 // pill shows that instead of the raw key. Falls back to the key until the first report.
 const evaluationTitles = ref<Record<string, string>>({})
@@ -316,6 +343,7 @@ const tutorialRefs = computed(() => ({
     @link-changed="onLinkChanged"
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
+    :highlight="evaluationHighlight"
     :node-outlines="argumentOutlines"
     :node-selection-actions="iafNodeSelectionActions"
     :state="editorState"
@@ -333,95 +361,25 @@ const tutorialRefs = computed(() => ({
     @open-extension-window="addExtensionInstance()"
   >
     <template #canvasSelector>
-      <!-- Compact twin of the desktop argument-type toolbar (horizontal). -->
-      <div
-        ref="mobileArgumentModeButton"
-        class="join shadow-md"
-        :title="t('editor.certainty.argumentType')"
-      >
-        <button
-          class="join-item btn btn-sm btn-square"
-          :class="isDefiniteArgumentMode ? 'btn-primary' : 'btn-neutral'"
-          :aria-pressed="isDefiniteArgumentMode"
-          :aria-label="t('editor.certainty.definiteArgument')"
-          @click="isDefiniteArgumentMode = true"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="size-5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="9" />
-          </svg>
-        </button>
-        <button
-          class="join-item btn btn-sm btn-square"
-          :class="!isDefiniteArgumentMode ? 'btn-primary' : 'btn-neutral'"
-          :aria-pressed="!isDefiniteArgumentMode"
-          :aria-label="t('editor.certainty.uncertainArgument')"
-          @click="isDefiniteArgumentMode = false"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="size-5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-dasharray="3 2"
-          >
-            <circle cx="12" cy="12" r="9" />
-          </svg>
-        </button>
+      <div ref="mobileArgumentModeButton" class="w-fit">
+        <SegmentedControl
+          v-model="argumentMode"
+          :options="argumentModeOptions"
+          :aria-label="t('editor.certainty.argumentType')"
+        />
       </div>
     </template>
     <template #toolbar>
-      <div
-        ref="argumentModeButton"
-        class="join join-vertical mb-2"
-        :title="t('editor.certainty.argumentType')"
-      >
-        <button
-          class="join-item btn btn-square btn-sm"
-          :class="{ 'btn-active': isDefiniteArgumentMode }"
-          :title="t('editor.certainty.definiteArgument')"
-          @click="isDefiniteArgumentMode = true"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="size-5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="9" />
-          </svg>
-        </button>
-        <button
-          class="join-item btn btn-square btn-sm"
-          :class="{ 'btn-active': !isDefiniteArgumentMode }"
-          :title="t('editor.certainty.uncertainArgument')"
-          @click="isDefiniteArgumentMode = false"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="size-5"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-dasharray="3 2"
-          >
-            <circle cx="12" cy="12" r="9" />
-          </svg>
-        </button>
+      <div ref="argumentModeButton" class="mb-2 w-fit">
+        <SegmentedControl
+          v-model="argumentMode"
+          :options="argumentModeOptions"
+          vertical
+          :aria-label="t('editor.certainty.argumentType')"
+        />
       </div>
     </template>
-    <template #evaluationExtensions="{ onHighlight }">
+    <template #evaluationExtensions>
       <!-- Compact: one host sheet with a chip switcher over all saved configs. -->
       <EvaluationHost
         v-if="layoutMode === 'compact'"
@@ -429,7 +387,7 @@ const tutorialRefs = computed(() => ({
         v-model:active-id="activeExtensionId"
         :chips="extensionChips"
         @add="addExtensionInstance()"
-        @remove="removeExtensionInstance($event, onHighlight)"
+        @remove="removeExtensionInstance($event)"
       >
         <template #default="{ activeId }">
           <WindowExtensions
@@ -446,7 +404,7 @@ const tutorialRefs = computed(() => ({
             @title="setEvaluationTitle(instance.id, $event)"
             @highlight="
               (h) => {
-                onHighlight(h)
+                reportHighlight(instance.id, h)
                 if (h) highlightCount++
               }
             "
@@ -465,15 +423,17 @@ const tutorialRefs = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
+        :suppressed="isSuppressed(instance.id)"
+        @focus="focusEvaluation(instance.id)"
         @update:instance-state="updateExtensionInstance($event)"
         @highlight="
           (h) => {
-            onHighlight(h)
+            reportHighlight(instance.id, h)
             if (h) highlightCount++
           }
         "
         @evaluate="evaluationCount++"
-        @close="removeExtensionInstance(instance.id, onHighlight)"
+        @close="removeExtensionInstance(instance.id)"
       />
     </template>
     <template #export="{ isOpen, onIsOpen, hasBeenOpened }">

@@ -87,6 +87,7 @@ export default {
     accepted: 'Akzeptiert',
     rejected: 'Abgelehnt',
     undecided: 'Unbestimmt',
+    derived: 'Abgeleitet',
   },
   extensionWindow: {
     selectExtensionHint: 'Extension zum Hervorheben auswählen',

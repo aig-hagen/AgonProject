@@ -24,6 +24,7 @@ import { TAG_ABSTRACT, TAG_ATTACK, TAG_UNCERTAINTY } from '@/modules/common/tags
 import { BJNNR21, CDKLM07 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/incomplete-argumentation/examples'
 import GraphEditor from '@/modules/incomplete-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/incomplete-argumentation/layout'
 import {
   type IafArgumentData,
   IncompleteArgumentation,
@@ -82,6 +83,9 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
     },
     getSaveString(document, name) {
       return saveAsString(document, name)
+    },
+    applyLayout(document, layoutType) {
+      return layout(document, layoutType)
     },
     generateHref: '/generate?type=incomplete',
     publications: [CDKLM07, BJNNR21],

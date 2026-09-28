@@ -69,11 +69,13 @@ export default {
     },
   },
   links: {
+    type: 'Kantentyp',
     attack: 'Angriff',
     support: 'Unterstützung',
     definiteAttack: 'Bedingt sicherer Angriff',
     uncertainAttack: 'Unsicherer Angriff',
     collectiveAttack: 'Mengenangriff',
+    rule: 'Regel',
     link: 'Kante',
   },
   relayout: {

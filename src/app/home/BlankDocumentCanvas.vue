@@ -20,6 +20,7 @@
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
+import BetaBadge from '@/app/home/BetaBadge.vue'
 import type { ModuleCard } from '@/app/home/moduleCard'
 import { trackEvent } from '@/app/usage/report'
 import { ANALYTICS_EVENTS } from '@/app/usage/signals'
@@ -56,7 +57,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
 <template>
   <div class="h-full w-full overflow-y-auto bg-base-200">
     <div class="min-h-full flex items-center justify-center">
-      <div class="max-w-5xl w-full p-4 sm:p-8">
+      <div class="max-w-5xl w-full p-4 sm:p-8 sm:pt-14">
         <h2 class="text-2xl sm:text-4xl font-bold mb-2">
           <span class="font-display">AgonProject</span>
           <div class="text-lg font-normal text-base-content/70">
@@ -76,10 +77,13 @@ function openContent(content: DocumentT, modulePrefix: string) {
                  each grid row, so a 2nd title line is reserved only when a title actually wraps. -->
             <div class="flex items-start justify-between gap-2">
               <h3 class="card-title line-clamp-2">{{ moduleCard.displayNameSingular }}</h3>
-              <PublicationsTooltip
-                v-if="moduleCard.publications?.length"
-                :publications="moduleCard.publications"
-              />
+              <div class="flex shrink-0 items-center gap-1">
+                <BetaBadge v-if="moduleCard.beta" />
+                <PublicationsTooltip
+                  v-if="moduleCard.publications?.length"
+                  :publications="moduleCard.publications"
+                />
+              </div>
             </div>
             <p class="text-sm text-base-content/60">
               {{ moduleCard.description }}
