@@ -31,7 +31,7 @@ import { useSettings } from '@/modules/common/settings/useSettings'
 const PHYSICS_MODE_STATE_KEY = 'physics-mode'
 
 interface PhysicsCapable {
-  $el: unknown
+  getHostElement(): HTMLDivElement | null
   toggleNodePhysics(enabled: boolean): void
   getNodePosition(id: number): { x: number; y: number }
   setNodePosition(pos: { x: number; y: number }, a: undefined, id: number): void
@@ -81,8 +81,8 @@ export function usePhysics({
   function alignNodesToSimulationCenter() {
     const gc = graphComponentRef.value
     if (!gc) return
-    const el = gc.$el as HTMLElement
-    const graphHost = (el.querySelector('.graph-controller__graph-host') ?? el) as HTMLElement
+    const graphHost = gc.getHostElement()
+    if (!graphHost) return
     const svgCenterX = graphHost.clientWidth / 2
     const svgCenterY = graphHost.clientHeight / 2
     // Iterate idMapping directly so newly created nodes (added to idMapping before
@@ -171,9 +171,7 @@ export function usePhysics({
   })
 
   onMounted(() => {
-    const graphHost = containerRef.value?.querySelector<HTMLElement>(
-      '.graph-controller__graph-host',
-    )
+    const graphHost = graphComponentRef.value?.getHostElement()
     if (!graphHost) return
 
     let nodePointerDown = false

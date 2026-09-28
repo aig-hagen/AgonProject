@@ -1,13 +1,13 @@
 # Graph component — wishlist
 
 Changes we'd like in `@aig-hagen/graph-component` (vendored as
-`third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.24.tgz`). Each entry
+`third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.28.tgz`). Each entry
 says who needs it and what we do today instead. Line references point into
 `src/modules/common/graph-editor/GraphEditor.vue` unless noted, and may drift.
 
 Priority: **needed** (blocks a planned feature) · **nice** (removes a workaround or eases work).
 
-Status (checked against the local `../aig_graph_component` worktree at `e743cb1`):
+Status (checked against the local `../aig_graph_component` worktree at `55d3fb1`):
 **✅ present** · **🟡 partial** · **⬜ not present**.
 
 ## Needed for the ABA semantic views
@@ -83,17 +83,23 @@ See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic v
 - [x] Overlay/tutorial transform sync via `viewportChanged` instead of the zoom `MutationObserver`.
 - [ ] `setReadOnly(true)` in the planned read-only `GraphView`.
 
+## Adopted in rc.28
+
+- [x] `deleteAnnotation(anchorId)`: `applyAnnotationContentUpdates` removes annotations that no
+      longer apply (e.g. ABA `⊤` / `‾a = x`).
+- [x] Label edits commit on blur; the fake-Enter `pointerdown` handler is gone.
+- [x] The label editor preselects its text and disables spellcheck/autocomplete itself.
+- [x] `getHostElement()` / `getCanvasElement()` replace the `.graph-controller__graph-host` /
+      `__graph-canvas` lookups in `GraphEditor.vue` and `usePhysics.ts`.
+
 ## Nice — replacing workarounds in our wrapper
 
 - **✅ Viewport getter + change event.** `getViewport()` returns `{ k, x, y }`, and
   `viewportChanged` reports user and programmatic changes. `setGraph(..., true)` preserves the
   current viewport.
-- **⬜ Commit a label edit on blur.** The library still commits only after Enter; an ordinary blur
-  removes the editor without applying the value. We fake an Enter keyup
-  before the click blurs the input (~L1157).
-- **🟡 `editNodeLabel` with select-all.** `editNodeLabel(id)` is public, but it focuses without
-  selecting the existing value. We still reach into `#node-label-input-field` to preselect the
-  text (~L191).
+- **✅ Commit a label edit on blur.** Blur commits (without an event if the label is unchanged);
+  only Escape discards.
+- **✅ `editNodeLabel` with select-all.** Every label editor opens with its text selected.
 - **⬜ Double-tap creates a node on touch.** The gesture recognizer maps `canvas:doubletap` to
   node creation and has unit tests, but `GraphComponent.vue` doesn't mount it (only its types are
   imported). We still detect double-tap and dispatch a synthetic `dblclick` (~L1016).
@@ -106,10 +112,8 @@ See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic v
 - **⬜ Live drag events.** `nodesMoved` still fires on drop (and simulation completion), not on
   every drag frame. We watch node containers with a
   `MutationObserver` for in-progress positions (~L930).
-- **⬜ Stable host/canvas access.** No host/canvas element getters are exposed. Several places
-  (incl. `usePhysics.ts`) query internal class names
-  like `.graph-controller__graph-host`.
-  - Wish: exposed element getters, so internal renames don't break us.
+- **✅ Stable host/canvas access.** `getHostElement()` and `getCanvasElement()`. Class-name
+  queries for nodes/links (e.g. `.graph-controller__node-container`) remain.
 
 ## Converging the ABA editor onto the shared editor
 

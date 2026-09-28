@@ -186,7 +186,7 @@ function selectionReferenceRect(): DOMRect | null {
   const sel = selection.value
   if (sel === null) return null
   const anchor = graphComponentRef.value?.getElementAnchor(sel.kind, sel.id)
-  const host = containerRef.value?.querySelector('.graph-controller__graph-host')
+  const host = graphComponentRef.value?.getHostElement()
   if (anchor === undefined || !host) return null
   const h = host.getBoundingClientRect()
   return new DOMRect(h.left + anchor.x, h.top + anchor.y, anchor.width, anchor.height)
@@ -196,10 +196,6 @@ function onSelectionRename() {
   const sel = selection.value
   if (sel === null || sel.kind !== 'node') return
   graphComponentRef.value?.editNodeLabel(sel.id as number)
-  // The library only focuses the label input; preselect its text so the user can
-  // type over the current name immediately (matches desktop double-click behaviour).
-  const input = containerRef.value?.querySelector<HTMLInputElement>('#node-label-input-field')
-  input?.select()
   selection.value = null
 }
 
@@ -339,9 +335,7 @@ const selectionActions = computed<SelectionAction[]>(() => {
 // it can offer an SVG format that works on any device (no TikZ/WebAssembly). Returns null when
 // the canvas isn't mounted or has no content to render.
 provide(GRAPH_SVG_RENDERER_KEY, () => {
-  const canvas = containerRef.value?.querySelector(
-    '.graph-controller__graph-canvas',
-  ) as SVGSVGElement | null
+  const canvas = graphComponentRef.value?.getCanvasElement()
   return canvas ? serializeGraphSvg(canvas) : null
 })
 
@@ -1056,9 +1050,7 @@ function onViewportChanged(viewport: StoredViewport) {
 function setupDragObserver() {
   dragObserver?.disconnect()
 
-  const zoomGroup = containerRef.value?.querySelector(
-    '.graph-controller__graph-canvas > g',
-  ) as SVGGElement | null
+  const zoomGroup = graphComponentRef.value?.getCanvasElement()?.querySelector(':scope > g')
   if (!zoomGroup) return
 
   const nodeIdPrefix = `${graphComponentId}-node-`
@@ -1155,9 +1147,8 @@ onMounted(() => {
   // from generating synthetic dblclick events from double-tap. We detect double-tap
   // in the capture phase (before d3's stopImmediatePropagation can block it) and
   // dispatch a synthetic MouseEvent so the graph's dblclick → createNode path fires.
-  const graphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
-  const svgCanvas = containerRef.value?.querySelector('.graph-controller__graph-canvas')
-  if (graphHost && svgCanvas) {
+  const graphHost = graphComponent.getHostElement()
+  if (graphHost) {
     let lastTap: { time: number; x: number; y: number } | null = null
     const handleDoubleTap = (event: TouchEvent) => {
       if (event.touches.length !== 1) {
@@ -1172,10 +1163,7 @@ onMounted(() => {
         Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
       ) {
         // Query fresh — setGraph recreates the SVG element so a captured reference goes stale.
-        const currentSvgCanvas = containerRef.value?.querySelector(
-          '.graph-controller__graph-canvas',
-        )
-        currentSvgCanvas?.dispatchEvent(
+        graphComponentRef.value?.getCanvasElement()?.dispatchEvent(
           new MouseEvent('dblclick', {
             clientX: touch.clientX,
             clientY: touch.clientY,
@@ -1213,10 +1201,7 @@ onMounted(() => {
     middleClickCleanup = () => graphHost.removeEventListener('auxclick', handleMiddleClick)
   }
 
-  const ctrlSnapGraphHost = containerRef.value?.querySelector<HTMLElement>(
-    '.graph-controller__graph-host',
-  )
-  if (ctrlSnapGraphHost) {
+  if (graphHost) {
     const nodeIdPrefix = `${graphComponentId}-node-`
     let draggingNodeId: number | null = null
 
@@ -1278,77 +1263,42 @@ onMounted(() => {
       disableSnap()
     }
 
-    ctrlSnapGraphHost.addEventListener('pointerdown', handleCtrlSnapPointerDown, true)
-    ctrlSnapGraphHost.addEventListener('pointerup', handleCtrlSnapPointerUp, true)
-    ctrlSnapGraphHost.addEventListener('pointercancel', handleCtrlSnapPointerUp, true)
+    graphHost.addEventListener('pointerdown', handleCtrlSnapPointerDown, true)
+    graphHost.addEventListener('pointerup', handleCtrlSnapPointerUp, true)
+    graphHost.addEventListener('pointercancel', handleCtrlSnapPointerUp, true)
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
     ctrlSnapCleanup = () => {
-      ctrlSnapGraphHost.removeEventListener('pointerdown', handleCtrlSnapPointerDown, true)
-      ctrlSnapGraphHost.removeEventListener('pointerup', handleCtrlSnapPointerUp, true)
-      ctrlSnapGraphHost.removeEventListener('pointercancel', handleCtrlSnapPointerUp, true)
+      graphHost.removeEventListener('pointerdown', handleCtrlSnapPointerDown, true)
+      graphHost.removeEventListener('pointerup', handleCtrlSnapPointerUp, true)
+      graphHost.removeEventListener('pointercancel', handleCtrlSnapPointerUp, true)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
   }
 
-  // The graph-component library only commits a node/link label edit on Enter; clicking
-  // away discards it. We force a commit by simulating the same Enter keyup the library
-  // listens for before the click can blur the input out from under it.
-  const renameCommitGraphHost = containerRef.value?.querySelector<HTMLElement>(
-    '.graph-controller__graph-host',
-  )
-  if (renameCommitGraphHost) {
-    const handleRenameCommitPointerDown = (event: PointerEvent) => {
-      const activeElement = document.activeElement
-      if (!(activeElement instanceof HTMLInputElement)) return
-      if (
-        activeElement.id !== 'node-label-input-field' &&
-        activeElement.id !== 'link-label-input-field'
-      )
-        return
-      if (activeElement.contains(event.target as Node)) return
-      activeElement.dispatchEvent(
-        new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }),
-      )
-    }
-    renameCommitGraphHost.addEventListener('pointerdown', handleRenameCommitPointerDown, true)
-
-    // The library focuses the label input it creates but leaves the caret at the end
-    // instead of selecting the existing text. A bubble-phase 'click' listener can't see
-    // this open: the library's own click handler calls stopPropagation() on the click
-    // that creates the input, so it never reaches an ancestor. 'focusin' is a separate
-    // event fired by the library's T.focus() call and isn't affected by that
-    // stopPropagation(), so it reliably catches the moment the input becomes active.
+  if (graphHost) {
+    // 'focusin' still fires when the library's own click handler stops the click propagating.
     const handleRenameOpenFocus = (event: FocusEvent) => {
       const target = event.target
       if (!(target instanceof HTMLInputElement)) return
       if (target.id !== 'node-label-input-field' && target.id !== 'link-label-input-field') return
       // A double-click rename opens the editor directly; drop the bar its first click opened.
       selection.value = null
-      // Suppress the browser's spellcheck/autocomplete suggestion popover for argument
-      // and link names — they're short labels, not prose, so suggestions are just noise.
-      target.setAttribute('spellcheck', 'false')
-      target.setAttribute('autocomplete', 'off')
-      target.setAttribute('autocorrect', 'off')
-      target.setAttribute('autocapitalize', 'off')
       // On touch devices, focusing the fresh label input pops the on-screen keyboard over
-      // the graph on every node creation. Commit the default label (same simulated Enter the
-      // pointerdown handler uses) so the library tears the input down and the keyboard stays
-      // closed; the user taps the node to rename when they actually want to type.
+      // the graph on every node creation. Commit the default label (the Enter keyup the
+      // library listens for) so the input is torn down and the keyboard stays closed; the
+      // user taps the node to rename when they actually want to type.
       if (window.matchMedia('(pointer: coarse)').matches) {
         target.dispatchEvent(
           new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }),
         )
-        return
       }
-      target.select()
     }
-    renameCommitGraphHost.addEventListener('focusin', handleRenameOpenFocus)
+    graphHost.addEventListener('focusin', handleRenameOpenFocus)
 
     renameCommitCleanup = () => {
-      renameCommitGraphHost.removeEventListener('pointerdown', handleRenameCommitPointerDown, true)
-      renameCommitGraphHost.removeEventListener('focusin', handleRenameOpenFocus)
+      graphHost.removeEventListener('focusin', handleRenameOpenFocus)
     }
   }
 
@@ -1359,7 +1309,7 @@ onMounted(() => {
     if (selection.value === null) return
     const target = event.target as Element | null
     if (target?.closest('.selection-action-bar')) return
-    if (target?.closest('.graph-controller__graph-host')) return
+    if (target && graphComponentRef.value?.getHostElement()?.contains(target)) return
     selection.value = null
   }
   document.addEventListener('pointerdown', handleOutsidePointerDown, true)
@@ -1673,6 +1623,11 @@ function applyAnnotationContentUpdates(
     } else {
       graphComponent.setAnnotationContent(internalId, annotation.content)
     }
+  }
+  for (const publicId of previousAnnotationContent.keys()) {
+    if (nextContent.has(publicId)) continue
+    if (!idMapping.hasReverse(publicId)) continue
+    graphComponent.deleteAnnotation(idMapping.getOrFailReverse(publicId))
   }
   previousAnnotationContent = nextContent
 }
