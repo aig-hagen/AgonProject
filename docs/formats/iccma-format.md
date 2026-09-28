@@ -1,8 +1,8 @@
 # ICCMA-style export formats
 
-AgonProject exports the official ICCMA AF text format and related project-specific formats for BAF, IAF, PAF, and SetAF. ADF does not currently have an ICCMA-style export.
+AgonProject exports the official ICCMA AF and ABA text formats and related project-specific formats for BAF, IAF, PAF, and SetAF. ADF does not currently have an ICCMA-style export.
 
-Only the AF syntax is an official competition format, as specified by the [ICCMA 2025 rules](https://argumentationcompetition.org/2025/rules.html). The other syntaxes are AgonProject extensions.
+Only the AF and ABA syntaxes are official competition formats, as specified by the [ICCMA 2025 rules](https://argumentationcompetition.org/2025/rules.html). The other syntaxes are AgonProject extensions.
 
 ## Shared output
 
@@ -31,6 +31,32 @@ p af 3
 ```
 
 Each relation line is an attack. Implementation: [`abstract-argumentation/export.ts`](/src/modules/abstract-argumentation/export.ts).
+
+## ABA — official ICCMA format
+
+File extension: `.aba`
+
+```text
+p aba <n>
+a <assumption>
+c <assumption> <contrary>
+r <head> <body-1> ... <body-k>
+...
+```
+
+`<n>` counts all atoms, assumptions included. Lines are written as assumptions, then contraries, then rules. Facts are written last, as empty-body rules (`r <head>`). Atom names are not exported.
+
+```text
+p aba 4
+a 1
+a 2
+c 1 4
+c 2 3
+r 3 1
+r 4 1 2
+```
+
+Implementation: [`assumption-based-argumentation/export.ts`](/src/modules/assumption-based-argumentation/export.ts).
 
 ## BAF — AgonProject extension
 

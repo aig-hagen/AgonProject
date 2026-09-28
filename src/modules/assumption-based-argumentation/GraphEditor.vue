@@ -29,6 +29,7 @@ import {
   argumentLabels,
   theoryLabels,
 } from '@/modules/assumption-based-argumentation/evaluation/labeling'
+import { availableExports } from '@/modules/assumption-based-argumentation/export'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import { theoryAnnotations, theoryShapes } from '@/modules/assumption-based-argumentation/layout'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
@@ -60,6 +61,8 @@ import {
   type GraphEditorStateLink,
   type HistoryState,
   LinkType,
+  QUICK_EXPORT_KEY,
+  type QuickExport,
   type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
@@ -341,6 +344,10 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
   ]
 }
 
+provide(QUICK_EXPORT_KEY, {
+  configs: availableExports as unknown as QuickExport['configs'],
+  getInput: () => state.current.content,
+})
 provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
 
 const isTheoryOpen = ref(false)
