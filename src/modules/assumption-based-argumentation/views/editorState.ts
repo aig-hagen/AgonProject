@@ -40,7 +40,7 @@ export interface DerivedCanvas {
   annotations: Map<NodeId, { content: string }>
   shapes: Map<NodeId, GraphEditorNodeShape>
   positionKeys: Map<NodeId, string>
-  // Nodes without a stored position; the editor lays them out.
+  // Nodes without a stored position; the editor lays them out before showing the view.
   unplaced: NodeId[]
   // Shown next to the read-only chip, e.g. when the AF is capped.
   note?: string
@@ -48,13 +48,13 @@ export interface DerivedCanvas {
   supports?: Map<NodeId, NodeId[]>
 }
 
-// SETAF nodes are the assumptions: they start at their theory position unless moved in the view.
+// SETAF nodes are the assumptions, keyed by id.
 export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
   const { setaf, alwaysOut } = toSETAF(aba)
   const nodes = [...setaf.arguments()].map(([id, d]) => ({
     id,
     label: d.name,
-    ...(positions[id] ?? { x: d.x, y: d.y }),
+    ...(positions[id] ?? { x: 0, y: 0 }),
   }))
   const links: GraphEditorStateLink[] = []
   const hyperLinks: GraphEditorStateHyperLink[] = []
@@ -70,17 +70,18 @@ export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions):
     annotations: new Map(alwaysOut.map((id) => [id, { content: 'always out' }])),
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
-    unplaced: [],
+    unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
   }
 }
 
 // BSAF shares the SETAF slot and its positions; supports are double arrows, as in the BAF module.
 export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
   const { arguments: args, attacks, supports, alwaysOut, alwaysDerived } = toBSAF(aba)
-  const nodes = args.map((id) => {
-    const { name, x, y } = aba.getNode(id)
-    return { id, label: name, ...(positions[id] ?? { x, y }) }
-  })
+  const nodes = args.map((id) => ({
+    id,
+    label: aba.getNode(id).name,
+    ...(positions[id] ?? { x: 0, y: 0 }),
+  }))
   const links: GraphEditorStateLink[] = []
   const hyperLinks: GraphEditorStateHyperLink[] = []
   // The graph keeps one edge per (tail, head), so an attack sharing both with a support is
@@ -110,7 +111,7 @@ export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): 
     annotations,
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
-    unplaced: [],
+    unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
     note: hidden.length > 0 ? `also: ${hidden.join('; ')}` : undefined,
   }
 }

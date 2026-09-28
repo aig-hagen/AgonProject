@@ -40,6 +40,7 @@ Each of `abstract-argumentation`, `bipolar-argumentation`, `dialectical-argument
 - `evaluation/` — semantics-evaluation logic, typically a `tweetyProject.ts` calling the TweetyProject backend
 - `examples.ts` (+ `examples/`) — bundled example frameworks
 - `export.ts` — available export formats (LaTeX, ICCMA, TGF, ...)
+- `layout.ts` — `toLayoutGraph` + `layout` for Graphviz auto-layout
 - `save/` — the native save-file format (de)serialisation
 - `Window*.vue` — floating windows for evaluation results, rankings, serialisation, etc.
 

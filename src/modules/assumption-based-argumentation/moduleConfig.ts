@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/assumption-based-argumentation/examples'
 import GraphEditor from '@/modules/assumption-based-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/assumption-based-argumentation/layout'
 import { ABAF, type ABANodeData } from '@/modules/assumption-based-argumentation/model'
 import {
   canLoadFromObject,
@@ -105,6 +106,9 @@ export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
   },
   getSaveString(document, name) {
     return saveAsString(document, name)
+  },
+  applyLayout(document, layoutType) {
+    return layout(document, layoutType)
   },
   publications: [BDKT97, CFST18],
   underConstruction: false,

@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
-import { computed, inject, nextTick, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
@@ -30,6 +30,7 @@ import {
   theoryLabels,
 } from '@/modules/assumption-based-argumentation/evaluation/labeling'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
+import { theoryAnnotations, theoryShapes } from '@/modules/assumption-based-argumentation/layout'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
 import {
@@ -40,18 +41,20 @@ import {
   setafCanvas,
   type ViewPositions,
 } from '@/modules/assumption-based-argumentation/views/editorState'
+import { layoutUnplaced } from '@/modules/assumption-based-argumentation/views/layout'
 import ViewPicker from '@/modules/assumption-based-argumentation/views/ViewPicker.vue'
 import ViewSwitcher from '@/modules/assumption-based-argumentation/views/ViewSwitcher.vue'
 import WindowExtensions from '@/modules/assumption-based-argumentation/WindowExtensions.vue'
-import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
-import { useDocumentUIState } from '@/modules/common/documents/uiState'
+import {
+  useDocumentUIState,
+  useDocumentUIStateWithLoaded,
+} from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useEvaluationFocus } from '@/modules/common/evaluation/useEvaluationFocus'
 import type { ExportFileData } from '@/modules/common/export'
 import {
-  type GraphEditorNodeShape,
   type GraphEditorState,
   type GraphEditorStateHyperLink,
   type GraphEditorStateLink,
@@ -60,9 +63,7 @@ import {
   type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
-import { getNodePositions } from '@/modules/common/graph-editor/layouting'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
-import { Layout } from '@/modules/common/main-menu/layouting'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -139,21 +140,26 @@ function createNewState(recipe: (draft: ABAF) => void, redraw = true) {
   }
 }
 
-const activeView = useDocumentUIState<AbaView>(db, documentId, 'canvas-view', 'theory')
-const viewPositions = useDocumentUIState<Partial<Record<AbaView, ViewPositions>>>(
+const { state: activeView, loaded: isViewLoaded } = useDocumentUIStateWithLoaded<AbaView>(
   db,
   documentId,
-  'view-positions',
-  {},
+  'canvas-view',
+  'theory',
 )
+const { state: viewPositions, loaded: arePositionsLoaded } = useDocumentUIStateWithLoaded<
+  Partial<Record<AbaView, ViewPositions>>
+>(db, documentId, 'view-positions', {})
+// Nothing renders before both load, so the canvas neither flashes the theory nor lays out a
+// view from empty positions.
+const isUIStateLoaded = computed(() => isViewLoaded.value && arePositionsLoaded.value)
 const isFlat = computed(() => content.value.isFlat())
-const isDerivedView = computed(() => activeView.value !== 'theory')
 // A derived view stays selected when the theory stops qualifying; the canvas then shows an
 // empty state until it qualifies again.
 const isViewUnavailable = computed(() => activeView.value === 'af' && !isFlat.value)
 
-const derivedCanvas = computed<DerivedCanvas | undefined>(() => {
-  if (!isDerivedView.value) return undefined
+// The selected view's canvas; it only goes on screen once every node has a position.
+const targetCanvas = computed<DerivedCanvas | undefined>(() => {
+  if (!isUIStateLoaded.value || activeView.value === 'theory') return undefined
   const stateId = renderedState.value.stateId
   if (isViewUnavailable.value) {
     return {
@@ -168,36 +174,36 @@ const derivedCanvas = computed<DerivedCanvas | undefined>(() => {
   return toCanvas(content.value, stateId, viewPositions.value[activeView.value] ?? {})
 })
 
-// Lays out AF arguments that have no stored position yet. Graphviz sizes nodes as circles, so
-// x is stretched to make room for the wider rect labels.
+// The view on screen lags the selected one while its new nodes are laid out; the stored
+// result then re-triggers this with nothing left unplaced.
+const shownView = ref<AbaView>('theory')
+const derivedCanvas = shallowRef<DerivedCanvas>()
+const isDerivedView = computed(() => shownView.value !== 'theory')
 let layoutRun = 0
-const editorRef = useTemplateRef<InstanceType<typeof GraphEditor>>('editor')
-watch(derivedCanvas, async (canvas) => {
+watch(targetCanvas, async (canvas) => {
   const view = activeView.value
-  if (!canvas || canvas.unplaced.length === 0 || view === 'theory') return
   const run = ++layoutRun
-  const { nodes, links } = canvas.state
-  const laidOut = await getNodePositions(
-    nodes.map((n) => n.id),
-    links.map((l) => [l.sourceId, l.targetId]),
-    Layout.LeftToRight,
-  )
-  if (run !== layoutRun) return
-  const longest = Math.max(...nodes.map((n) => n.label.length))
-  const stretch = Math.max(1, (longest * 8 + 88) / (ARGUMENT_RADIUS_IN_PX * 2 + 72))
-  const positions = { ...viewPositions.value[view] }
-  // Every unplaced node gets a position, so this never re-triggers itself.
-  for (const id of canvas.unplaced) {
-    const p = laidOut.get(id) ?? { x: 0, y: 0 }
-    const key = canvas.positionKeys.get(id)
-    if (key !== undefined) positions[key] = { x: p.x * stretch, y: p.y }
+  if (!canvas || canvas.unplaced.length === 0) {
+    shownView.value = canvas ? view : 'theory'
+    derivedCanvas.value = canvas
+    return
   }
-  viewPositions.value = { ...viewPositions.value, [view]: positions }
-  if (canvas.unplaced.length === nodes.length) {
-    await nextTick()
-    editorRef.value?.fitToView()
+  const placed = await layoutUnplaced(canvas)
+  if (run !== layoutRun) return
+  viewPositions.value = {
+    ...viewPositions.value,
+    [view]: { ...viewPositions.value[view], ...placed },
   }
 })
+
+const isCanvasReady = ref(false)
+watch(
+  [isUIStateLoaded, shownView, activeView],
+  () => {
+    if (isUIStateLoaded.value && shownView.value === activeView.value) isCanvasReady.value = true
+  },
+  { immediate: true },
+)
 
 const editorState = computed(() => derivedCanvas.value?.state ?? theoryState.value)
 
@@ -207,30 +213,11 @@ const linkConfig = computed(() => ({
   DOUBLE: { displayName: t('editor.links.support') },
 }))
 
-const nodeShapes = computed(() => {
-  if (derivedCanvas.value) return derivedCanvas.value.shapes
-  const shapes = new Map<NodeId, GraphEditorNodeShape>()
-  for (const [id, d] of content.value.nodeEntries()) {
-    shapes.set(id, d.kind === 'assumption' ? 'circle' : 'diamond')
-  }
-  return shapes
-})
+const nodeShapes = computed(() => derivedCanvas.value?.shapes ?? theoryShapes(content.value))
 
-const nodeAnnotations = computed(() => {
-  if (derivedCanvas.value) return derivedCanvas.value.annotations
-  const aba = content.value
-  const annotations = new Map<NodeId, { content: string }>()
-  for (const [id, d] of aba.nodeEntries()) {
-    const parts: string[] = []
-    if (d.fact) parts.push('⊤')
-    const contrary = aba.getContrary(id)
-    if (contrary !== undefined && aba.hasNode(contrary)) {
-      parts.push(`‾${d.name} = ${aba.getNode(contrary).name}`)
-    }
-    if (parts.length) annotations.set(id, { content: parts.join(' · ') })
-  }
-  return annotations
-})
+const nodeAnnotations = computed(
+  () => derivedCanvas.value?.annotations ?? theoryAnnotations(content.value),
+)
 
 // Derived views are read-only; stray canvas events must never reach the theory.
 function onNodeCreated(data: { id: NodeId; label: string; x: number; y: number }) {
@@ -260,17 +247,17 @@ function onNodeLabelEdited(data: { id: NodeId; label: string }) {
 }
 
 function onNodesMoved(data: { id: NodeId; x: number; y: number }[]) {
-  const view = activeView.value
+  const view = shownView.value
   if (view !== 'theory') {
     // The library reports every node after each settle; writing unchanged positions back
-    // would redraw and settle again, forever. Unplaced nodes wait for the layout.
+    // would redraw and settle again, forever.
     const canvas = derivedCanvas.value
     if (!canvas) return
     const positions = { ...viewPositions.value[view] }
     let changed = false
     for (const { id, x, y } of data) {
       const key = canvas.positionKeys.get(id)
-      if (key === undefined || canvas.unplaced.includes(id)) continue
+      if (key === undefined) continue
       const node = canvas.state.nodes.find((n) => n.id === id)
       if (node && Math.abs(node.x - x) < 0.5 && Math.abs(node.y - y) < 0.5) continue
       positions[key] = { x, y }
@@ -344,7 +331,6 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
           if (d.kind === 'assumption') draft.setKind(id, 'atom')
           else draft.promoteToAssumption(id)
         }),
-const isTheoryCollapsed = useDocumentUIState(db, documentId, 'theory-collapsed', false)
     },
     {
       key: 'fact',
@@ -358,6 +344,7 @@ const isTheoryCollapsed = useDocumentUIState(db, documentId, 'theory-collapsed',
 provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
 
 const isTheoryOpen = ref(false)
+const isTheoryCollapsed = useDocumentUIState(db, documentId, 'theory-collapsed', false)
 
 const evaluationInput = computed<Input<ABAF>>(() => ({
   stateId: state.stateId,
@@ -422,8 +409,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
 
 <template>
   <GraphEditor
-    ref="editor"
-    v-if="editorState"
+    v-if="isCanvasReady && editorState"
     :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"
@@ -447,8 +433,8 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     :allow-hyper-link-creation="true"
     :allow-link-switching="false"
     :read-only="isDerivedView"
+    :canvas-key="isDerivedView ? shownView : undefined"
     :side-panel-collapsed="isTheoryCollapsed"
-    :canvas-key="isDerivedView ? activeView : undefined"
     @undo="emit('undo')"
     @redo="emit('redo')"
     @save="emit('save')"

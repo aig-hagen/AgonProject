@@ -69,7 +69,7 @@ a `v*` tag; watch the resulting workflow through completion and report its resul
 
 Every argumentation type under `src/modules/<type>/` follows the same internal file layout
 (`moduleConfig.ts`, `model.ts`, `GraphEditor.vue`, `glossary.ts`, `tutorials/`, `evaluation/`,
-`examples.ts`, `export.ts`, `save/`, `Window*.vue`). When adding or changing a module,
+`examples.ts`, `export.ts`, `layout.ts`, `save/`, `Window*.vue`). When adding or changing a module,
 pattern-match an existing one — see [`docs/contributing/extending.md`](docs/contributing/extending.md).
 
 ## Implementation workflow

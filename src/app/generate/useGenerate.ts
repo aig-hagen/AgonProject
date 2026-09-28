@@ -26,7 +26,6 @@ import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { trackEvent } from '@/app/usage/report'
 import { ANALYTICS_EVENTS } from '@/app/usage/signals'
 import { availableExports as abstractExports } from '@/modules/abstract-argumentation/export'
-import { layout } from '@/modules/abstract-argumentation/layout'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { abstractArgumentationModule } from '@/modules/abstract-argumentation/moduleConfig'
 import { availableExports as bipolarExports } from '@/modules/bipolar-argumentation/export'
@@ -394,9 +393,7 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
     if (fw === null) return
     const prefix = activeModule.value?.newNamePrefix ?? 'AF'
     trackEvent(ANALYTICS_EVENTS.moduleOpen, prefix, { source: 'generate', module: prefix })
-    if (fw instanceof AbstractArgumentation) {
-      await layout(fw, Layout.ForceDirected)
-    }
+    await activeModule.value?.applyLayout?.(fw as Objectish, Layout.ForceDirected)
     const newId = await createDocument(getNextName(prefix), fw as Objectish)
     // Focus the freshly generated document in the editor, not the source AF.
     try {

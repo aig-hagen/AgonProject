@@ -16,26 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { Example } from '@/modules/common/examples'
-import murderTrialJson from '@/modules/incomplete-argumentation/examples/murder_trial.json'
-import treatmentChoiceJson from '@/modules/incomplete-argumentation/examples/treatment_choice.json'
-import { layout } from '@/modules/incomplete-argumentation/layout'
+import { applyGraphLayout, type LayoutGraph } from '@/modules/common/graph-editor/layouting'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import {
   type IafArgumentData,
-  IncompleteArgumentation,
+  type IncompleteArgumentation,
 } from '@/modules/incomplete-argumentation/model'
-import { loadExampleFromJson } from '@/modules/incomplete-argumentation/save/saveFormat'
 
-const exampleJsons: unknown[] = [murderTrialJson, treatmentChoiceJson]
+export function toLayoutGraph(iaf: IncompleteArgumentation<IafArgumentData>): LayoutGraph {
+  return {
+    nodes: [...iaf.arguments()].map(([id, { name }]) => ({ id, label: name })),
+    edges: [...iaf.definiteAttacks(), ...iaf.uncertainAttacks()].map(([source, target]) => ({
+      sources: [source],
+      target,
+    })),
+  }
+}
 
-export const datasets: Example<IncompleteArgumentation<IafArgumentData>>[] = exampleJsons.map(
-  (json) => {
-    const { framework: _, name, description, layoutType } = loadExampleFromJson(json)
-    return {
-      name: name ?? 'unknown',
-      description,
-      load: () => loadExampleFromJson(json).framework,
-      applyLayout: layoutType ? (iaf) => layout(iaf, layoutType) : undefined,
-    }
-  },
-)
+export function layout(
+  iaf: IncompleteArgumentation<IafArgumentData>,
+  layoutType: Layout = Layout.Circular,
+): Promise<void> {
+  return applyGraphLayout(toLayoutGraph(iaf), layoutType, (id, position) =>
+    Object.assign(iaf.getArgument(id), position),
+  )
+}

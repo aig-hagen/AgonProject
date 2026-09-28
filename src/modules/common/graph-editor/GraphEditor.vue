@@ -81,7 +81,7 @@ import { useI18n } from 'vue-i18n'
 
 import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
-import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
+import { getUIStateRow, getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import type { ExportFileData } from '@/modules/common/export'
 import { serializeGraphSvg } from '@/modules/common/export/renderGraphSvg'
 import TexIcon from '@/modules/common/export/TexIcon.vue'
@@ -117,7 +117,11 @@ import {
   GRAPH_STYLE_OUTLINE,
   type GraphStyle,
 } from '@/modules/common/graph-editor/graphStyle'
-import { getNodePositions, prefetchGraphviz } from '@/modules/common/graph-editor/layouting'
+import {
+  editorStateToLayoutGraph,
+  layoutGraph,
+  prefetchGraphviz,
+} from '@/modules/common/graph-editor/layouting'
 import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue'
 import SelectionActionBar from '@/modules/common/graph-editor/SelectionActionBar.vue'
 import SerialisationIcon from '@/modules/common/graph-editor/SerialisationIcon.vue'
@@ -368,11 +372,11 @@ const {
   readOnly = false,
   canvasKey,
   highlight,
+  sidePanelCollapsed = false,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
-  sidePanelCollapsed = false,
   nodeWeights?: Map<NodeId, number>
   nodeOutlines?: Map<NodeId, NodeOutline>
   /** Per-node shape; nodes not in the map are circles. */
@@ -415,12 +419,12 @@ const {
   canvasKey?: string
   /** Evaluation result painted on the canvas; see `useEvaluationFocus`. */
   highlight?: Highlight
+  /** A collapsed side panel frees the bottom-right corner, so the legend returns there. */
+  sidePanelCollapsed?: boolean
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
 if (db === undefined) {
-  /** A collapsed side panel frees the bottom-right corner, so the legend returns there. */
-  sidePanelCollapsed?: boolean
   throw new Error('Documents database not provided.')
 }
 
@@ -603,8 +607,12 @@ watch(
 // nodes, and the library reports those relabels as `labelEdited`.
 watch([() => state, () => canvasKey], ([, key], [, previousKey]) => {
   if (key !== previousKey) {
-    setGraph(state)
-    restoreViewport()
+    // One camera move per switch: the cached viewport if there is one, else a fit. No settle,
+    // since merely viewing a canvas must not move its nodes.
+    const viewport = viewportCache.get(viewportStateKey())
+    setGraph(state, { fit: !viewport, settle: false })
+    if (viewport) applyViewport(viewport)
+    else restoreViewport()
   } else if (state.redraw) {
     updateGraph(state)
   }
@@ -1013,6 +1021,9 @@ function applyViewport(viewport: StoredViewport) {
   graphComponentRef.value?.setViewport(viewport.k, viewport.x, viewport.y)
 }
 
+// Filled from storage on mount and kept current, so a canvas switch restores synchronously.
+const viewportCache = new Map<string, StoredViewport>()
+
 const saveViewport = useDebounceFn((key: string, viewport: StoredViewport) => {
   void setUIStateValue(db, documentId, key, viewport)
 }, 400)
@@ -1034,6 +1045,7 @@ function onViewportChanged(viewport: StoredViewport) {
   else if (Math.abs(x - previous.x) > 0.5 || Math.abs(y - previous.y) > 0.5)
     tutorialPanCount.value++
   previousViewport = { k, x, y }
+  viewportCache.set(viewportStateKey(), previousViewport)
   void saveViewport(viewportStateKey(), previousViewport)
 }
 
@@ -1124,6 +1136,13 @@ onMounted(() => {
   // view above. Applied after the fact (rather than before centering) since the read is
   // async — if there's nothing saved this is a no-op and the auto-centered view stands.
   restoreViewport()
+  void getUIStateRow(db, documentId).then((row) => {
+    for (const [key, value] of Object.entries(row)) {
+      if (key.startsWith('viewport:') && !viewportCache.has(key)) {
+        viewportCache.set(key, value as StoredViewport)
+      }
+    }
+  })
   graphComponent.setReadOnly(readOnly)
 
   setupDragObserver()
@@ -1445,7 +1464,7 @@ function adjustLabelFontSizes(state: GraphEditorState) {
 }
 
 /** Initial render: builds the graph from scratch and fits it into view. */
-function setGraph(state: GraphEditorState): void {
+function setGraph(state: GraphEditorState, { fit = true, settle = true } = {}): void {
   const graphComponent = graphComponentRef.value
   if (graphComponent === null) {
     throw new Error('Graph component is not rendered.')
@@ -1470,13 +1489,13 @@ function setGraph(state: GraphEditorState): void {
     graphComponentRef.value?.setGridType(defaultGridType.value)
     graphComponentRef.value?.setGridCellSize(ARGUMENT_RADIUS_IN_PX * gridCellScale.value)
     graphComponentRef.value?.setSnapToGrid(snapMode.value)
-    if (physicsMode.value === 'on') {
+    if (settle && physicsMode.value === 'on') {
       triggerSettle()
     }
   })
 
   // Jump instantly, no glide from the reset transform.
-  fitToView(0, 0, 0)
+  if (fit) fitToView(0, 0, 0)
 }
 
 /** Reconciles the displayed graph with `state` in place, keeping viewport and selection. */
@@ -1793,22 +1812,16 @@ async function doLayout(layout: Layout) {
   const wasPhysicsOn = physicsMode.value === 'on'
   if (wasPhysicsOn) disablePhysics()
 
-  const nodes = [...state.nodes]
-    .sort((nodeA, nodeB) => nodeA.label.localeCompare(nodeB.label))
-    .map((node) => node.id)
-  const links: [number, number][] = [
-    ...state.links.map((link) => [link.sourceId, link.targetId] as [number, number]),
-    ...(state.hyperLinks ?? []).flatMap((hl) =>
-      hl.sourceIds.map((sourceId) => [sourceId, hl.targetId] as [number, number]),
-    ),
-  ]
-  const positions = await getNodePositions(nodes, links, layout)
+  const positions = await layoutGraph(
+    editorStateToLayoutGraph(state, nodeShapes, nodeAnnotations),
+    layout,
+  )
   const newPositions = []
-  for (const nodeId of nodes) {
+  for (const { id: nodeId } of state.nodes) {
     // nodeId is a public document id; the library keys nodes by internal id. Skip any node
     // not in the mapping (e.g. deleted without a redraw) so one stale id can't abort the layout.
-    if (!idMapping.hasReverse(nodeId)) continue
-    const position = positions.get(nodeId)!
+    const position = positions.get(nodeId)
+    if (!idMapping.hasReverse(nodeId) || !position || !graphComponentRef.value) continue
     graphComponentRef.value.setNodePosition(position, undefined, idMapping.getOrFailReverse(nodeId))
     newPositions.push({
       id: nodeId,

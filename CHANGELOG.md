@@ -29,6 +29,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Grouped parameter panels (evaluation, serialisation, LaTeX export options, tutorials, mobile term definitions) now show the same recessed background in light and dark mode.
 - Dropdowns and text fields now share one field background that sets them apart from grouped panels in light and dark mode.
 - New typography: Inter for the UI, JetBrains Mono for code/data, graph labels and evaluation results, Fraunces for the app name; all fonts are self-hosted.
+- ABA views get their own force-directed layout on first open (kept afterwards, set attacks spread out); switching views moves the camera once and never moves nodes.
+- Auto-layouts now respect node shapes, annotations (ADF conditions, PAF probabilities) and collective attacks; generated graphs of every type are laid out force-directed.
 
 ### Fixed
 

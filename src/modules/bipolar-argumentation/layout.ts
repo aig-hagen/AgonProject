@@ -16,23 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
+import { type BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import { type ArgumentData } from '@/modules/common/argumentation/model'
 import { applyGraphLayout, type LayoutGraph } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
 
-export function toLayoutGraph(af: AbstractArgumentation<ArgumentData>): LayoutGraph {
+export function toLayoutGraph(baf: BipoloarArgumentation<ArgumentData>): LayoutGraph {
   return {
-    nodes: [...af.arguments()].map(([id, { name }]) => ({ id, label: name })),
-    edges: [...af.attacks()].map(([source, target]) => ({ sources: [source], target })),
+    nodes: [...baf.arguments()].map(([id, { name }]) => ({ id, label: name })),
+    edges: [...baf.attacks(), ...baf.supports()].map(([source, target]) => ({
+      sources: [source],
+      target,
+    })),
   }
 }
 
 export function layout(
-  af: AbstractArgumentation<ArgumentData>,
-  layoutType: Layout = Layout.BottomToTop,
+  baf: BipoloarArgumentation<ArgumentData>,
+  layoutType: Layout = Layout.Circular,
 ): Promise<void> {
-  return applyGraphLayout(toLayoutGraph(af), layoutType, (id, position) =>
-    Object.assign(af.getArgument(id), position),
+  return applyGraphLayout(toLayoutGraph(baf), layoutType, (id, position) =>
+    Object.assign(baf.getArgument(id), position),
   )
 }

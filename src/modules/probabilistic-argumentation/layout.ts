@@ -16,26 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { Example } from '@/modules/common/examples'
-import murderTrialJson from '@/modules/probabilistic-argumentation/examples/murder_trial.json'
-import softwareReleaseJson from '@/modules/probabilistic-argumentation/examples/software_release.json'
-import { layout } from '@/modules/probabilistic-argumentation/layout'
+import { applyGraphLayout, type LayoutGraph } from '@/modules/common/graph-editor/layouting'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import {
   type PafArgumentData,
-  ProbabilisticArgumentation,
+  type ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
-import { loadExampleFromJson } from '@/modules/probabilistic-argumentation/save/saveFormat'
 
-const exampleJsons: unknown[] = [murderTrialJson, softwareReleaseJson]
+// Probabilities are drawn below each argument, so they take part in the layout.
+export function toLayoutGraph(paf: ProbabilisticArgumentation<PafArgumentData>): LayoutGraph {
+  return {
+    nodes: [...paf.arguments()].map(([id, { name, probability }]) => ({
+      id,
+      label: name,
+      annotation: probability.toFixed(2),
+    })),
+    edges: [...paf.attacks()].map(([source, target]) => ({ sources: [source], target })),
+  }
+}
 
-export const datasets: Example<ProbabilisticArgumentation<PafArgumentData>>[] = exampleJsons.map(
-  (json) => {
-    const { framework: _, name, description, layoutType } = loadExampleFromJson(json)
-    return {
-      name: name ?? 'unknown',
-      description,
-      load: () => loadExampleFromJson(json).framework,
-      applyLayout: (paf) => layout(paf, layoutType),
-    }
-  },
-)
+export function layout(
+  paf: ProbabilisticArgumentation<PafArgumentData>,
+  layoutType: Layout = Layout.Circular,
+): Promise<void> {
+  return applyGraphLayout(toLayoutGraph(paf), layoutType, (id, position) =>
+    Object.assign(paf.getArgument(id), position),
+  )
+}

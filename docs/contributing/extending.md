@@ -31,6 +31,19 @@ Examples are registered through `ModuleConfig.examples`. An [`Example`](/src/mod
 
 Bundled example JSON files use the [native save format](../formats/save-format.md) with optional `name`, `description`, and `layoutType` metadata. Follow an existing module's `examples.ts` and `examples/` directory.
 
+## Add auto-layout
+
+Auto-layouts (the Layout menu, examples, share imports, generated graphs) all go through
+[`layoutGraph`](/src/modules/common/graph-editor/layouting.ts), which translates a `LayoutGraph`
+into Graphviz input: node boxes sized by shape, label and annotation, hyperedges via junction
+points, and per-engine quirks. The Layout menu builds its graph from the editor state, so it needs
+no module code.
+
+For the other paths, a module's `layout.ts` exports `toLayoutGraph(content)` (nodes with their
+label, shape and annotation; edges with one or several sources) and a `layout(content, layoutType)`
+built on `applyGraphLayout`, which `moduleConfig.applyLayout` and `examples.ts` use. Follow the
+[collective-attacks `layout.ts`](/src/modules/collective-attacks-argumentation/layout.ts).
+
 ## Add tutorials
 
 Tutorials are wired into each module's `GraphEditor.vue`; they are not part of `ModuleConfig`. A module conventionally supplies basic and evaluation tutorials under `tutorials/` and explicitly appends [`commonTutorials`](/src/modules/common/tutorial/editor-navigation.ts):

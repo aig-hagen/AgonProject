@@ -40,6 +40,18 @@ export async function getUIStateValue<T>(
   }
 }
 
+export async function getUIStateRow(
+  db: IDBPDatabase<DocumentsDB>,
+  documentId: DocumentId,
+): Promise<Record<string, unknown>> {
+  try {
+    return ((await db.get(OBJECT_STORE_UI_STATE_NAME, documentId)) ?? {}) as Record<string, unknown>
+  } catch (error) {
+    notifyStorageFailureOnce(error)
+    return {}
+  }
+}
+
 export async function setUIStateValue<T>(
   db: IDBPDatabase<DocumentsDB>,
   documentId: DocumentId,
@@ -78,7 +90,18 @@ export function useDocumentUIState<T>(
   key: string,
   defaultValue: T,
 ): Ref<T> {
+  return useDocumentUIStateWithLoaded(db, documentId, key, defaultValue).state
+}
+
+/** Like `useDocumentUIState`, plus a flag that turns true once the stored value was read. */
+export function useDocumentUIStateWithLoaded<T>(
+  db: IDBPDatabase<DocumentsDB>,
+  documentId: DocumentId,
+  key: string,
+  defaultValue: T,
+): { state: Ref<T>; loaded: Ref<boolean> } {
   const state = ref(defaultValue) as Ref<T>
+  const loaded = ref(false)
   // Guards the initial load against a write that happens to land before it resolves
   // (e.g. a user action fired immediately on mount) — the local write wins in that race.
   let hasWrittenLocally = false
@@ -108,11 +131,11 @@ export function useDocumentUIState<T>(
     void setUIStateValue(db, documentId, key, value).then(() => channel.postMessage({ key }))
   })
 
-  void applyStored(true)
+  void applyStored(true).finally(() => (loaded.value = true))
 
   onScopeDispose(() => {
     channel.close()
   })
 
-  return state
+  return { state, loaded }
 }

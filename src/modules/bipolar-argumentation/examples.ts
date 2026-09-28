@@ -19,12 +19,11 @@
 import mealWineJson from '@/modules/bipolar-argumentation/examples/meal_wine.json'
 import murderTrialJson from '@/modules/bipolar-argumentation/examples/murder_trial.json'
 import vacationPlanningJson from '@/modules/bipolar-argumentation/examples/vacation_planning.json'
+import { layout } from '@/modules/bipolar-argumentation/layout'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import { loadExampleFromJson } from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { Example } from '@/modules/common/examples'
-import { getNodePositions } from '@/modules/common/graph-editor/layouting'
-import { Layout } from '@/modules/common/main-menu/layouting'
 
 const exampleJsons: unknown[] = [mealWineJson, vacationPlanningJson, murderTrialJson]
 
@@ -34,16 +33,6 @@ export const datasets: Example<BipoloarArgumentation<ArgumentData>>[] = exampleJ
     name: name ?? 'unknown',
     description,
     load: () => loadExampleFromJson(json).framework,
-    applyLayout: async (af) => {
-      const layout = layoutType ?? Layout.Circular
-      const nodes = [...af.arguments()].map(([id]) => id)
-      const links = [...af.attacks(), ...af.supports()]
-      const positions = await getNodePositions(nodes, links, layout)
-      for (const [id, data] of af.arguments()) {
-        const pos = positions.get(id)!
-        data.x = pos.x
-        data.y = pos.y
-      }
-    },
+    applyLayout: (baf) => layout(baf, layoutType),
   }
 })

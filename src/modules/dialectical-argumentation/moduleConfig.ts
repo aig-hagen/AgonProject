@@ -30,6 +30,7 @@ import {
 import { BESWW13, BESWW18, BW10 } from '@/modules/common/tooltip/publications'
 import { datasets } from '@/modules/dialectical-argumentation/examples'
 import GraphEditor from '@/modules/dialectical-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/dialectical-argumentation/layout'
 import {
   type AdfArgumentData,
   DialecticalArgumentation,
@@ -126,6 +127,9 @@ export const dialecticalArgumentationModule: ModuleConfig<
   },
   getSaveString(document, name) {
     return saveAsString(document, name)
+  },
+  applyLayout(document, layoutType) {
+    return layout(document, layoutType)
   },
   generateHref: '/generate?type=adf',
   publications: [BW10, BESWW13, BESWW18],

@@ -16,23 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import { type ArgumentData } from '@/modules/common/argumentation/model'
 import { applyGraphLayout, type LayoutGraph } from '@/modules/common/graph-editor/layouting'
 import { Layout } from '@/modules/common/main-menu/layouting'
+import { formulaToString } from '@/modules/dialectical-argumentation/condition/formula'
+import {
+  type AdfArgumentData,
+  type DialecticalArgumentation,
+} from '@/modules/dialectical-argumentation/model'
 
-export function toLayoutGraph(af: AbstractArgumentation<ArgumentData>): LayoutGraph {
+// Acceptance conditions are drawn below each argument, so they take part in the layout.
+export function toLayoutGraph(adf: DialecticalArgumentation<AdfArgumentData>): LayoutGraph {
+  const names = new Map([...adf.arguments()].map(([id, { name }]) => [id, name]))
   return {
-    nodes: [...af.arguments()].map(([id, { name }]) => ({ id, label: name })),
-    edges: [...af.attacks()].map(([source, target]) => ({ sources: [source], target })),
+    nodes: [...adf.arguments()].map(([id, { name, condition }]) => ({
+      id,
+      label: name,
+      annotation: formulaToString(condition, names),
+    })),
+    edges: [...adf.links()].map(([source, target]) => ({ sources: [source], target })),
   }
 }
 
 export function layout(
-  af: AbstractArgumentation<ArgumentData>,
-  layoutType: Layout = Layout.BottomToTop,
+  adf: DialecticalArgumentation<AdfArgumentData>,
+  layoutType: Layout = Layout.Circular,
 ): Promise<void> {
-  return applyGraphLayout(toLayoutGraph(af), layoutType, (id, position) =>
-    Object.assign(af.getArgument(id), position),
+  return applyGraphLayout(toLayoutGraph(adf), layoutType, (id, position) =>
+    Object.assign(adf.getArgument(id), position),
   )
 }

@@ -158,12 +158,13 @@ describe('SETAF view', () => {
 
   test('canvas: singleton attacks are links, collective ones hyperlinks', () => {
     const { aba, id } = seed()
-    const { state } = setafCanvas(aba, generateUUID(), { [id('b')]: { x: 5, y: 7 } })
+    const { state, unplaced } = setafCanvas(aba, generateUUID(), { [id('b')]: { x: 5, y: 7 } })
     expect(state.links).toEqual([{ sourceId: id('a'), targetId: id('b'), type: LinkType.SINGLE }])
     expect(state.hyperLinks).toEqual([
       { sourceIds: [id('a'), id('b')], targetId: id('a'), type: LinkType.SINGLE },
     ])
     expect(state.nodes.find((n) => n.id === id('b'))).toMatchObject({ x: 5, y: 7 })
+    expect(unplaced).toEqual([id('a')])
   })
 })
 

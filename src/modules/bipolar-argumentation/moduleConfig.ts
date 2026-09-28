@@ -21,6 +21,7 @@ import type { Objectish } from 'immer'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { datasets } from '@/modules/bipolar-argumentation/examples'
 import GraphEditor from '@/modules/bipolar-argumentation/GraphEditor.vue'
+import { layout } from '@/modules/bipolar-argumentation/layout'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
 import {
   canLoadFromObject,
@@ -98,6 +99,9 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   },
   getSaveString(document, name) {
     return saveAsString(document, name)
+  },
+  applyLayout(document, layoutType) {
+    return layout(document, layoutType)
   },
   generateHref: '/generate?type=bipolar',
   publications: [CL05, CL10, CCL21],
