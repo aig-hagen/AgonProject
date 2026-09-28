@@ -862,6 +862,9 @@ function onNodeCreated(
   emit('nodeCreated', nodeData)
   triggerSettle()
   nextTick(() => {
+    // The library creates a default circle; apply the module's shape before the label editor opens.
+    if (nodeShapes?.has(publicId))
+      graphComponentRef.value!.setNodeProps(nodePropsFor(publicId), node.id)
     graphComponentRef.value!.setLabel(name, node.id)
     graphComponentRef.value!.setColor(effectiveStyle.value.nodeColor, node.id)
     const graphEl = graphComponentRef.value?.$el as Element | undefined
