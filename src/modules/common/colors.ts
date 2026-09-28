@@ -23,6 +23,7 @@ export const NODE_LIGHT_ORANGE = 'PapayaWhip'
 export const NODE_BLUE = '#99b7d5'
 export const NODE_ORANGE = '#e4bf97'
 export const NODE_GREEN = '#99ff99'
+export const NODE_LIGHT_GREEN = '#d6ffd6'
 export const NODE_RED = '#ff9999'
 export const NODE_YELLOW = '#ffff99'
 

@@ -26,10 +26,11 @@ import {
   useAbaEvaluationQuery,
 } from '@/modules/assumption-based-argumentation/evaluation/tweetyProject'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
-import type { ABAF } from '@/modules/assumption-based-argumentation/model'
+import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
+import type { Labels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
 import type { Semantics } from '@/modules/common/evaluation/tweety-project/semantics'
 import type { Input } from '@/modules/common/evaluation/types'
@@ -37,6 +38,7 @@ import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtension
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
+import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -46,6 +48,8 @@ const {
   instanceOffset = 0,
   documentId,
   stateKey,
+  labelsFor,
+  suppressed = false,
   hosted = false,
 } = defineProps<{
   input: Input<ABAF>
@@ -53,12 +57,17 @@ const {
   instanceOffset?: number
   documentId?: DocumentId
   stateKey?: string
+  // Maps a selected assumption set onto whatever the canvas currently shows.
+  labelsFor: (extension: ReadonlySet<NodeId>) => Labels
+  suppressed?: boolean
   hosted?: boolean
 }>()
 
 const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
+  highlight: [highlight?: Highlight]
   title: [title: string]
+  focus: []
   close: []
   evaluate: []
 }>()
@@ -102,10 +111,18 @@ const query = useAbaEvaluationQuery(
   true,
 )
 
-const { emptyMessage, dataExtensionsFormatedAndSorted, resultItems } = useExtensionWindowBase(
-  selectedMode,
-  query,
-)
+const {
+  selectedExtension,
+  selectionHint,
+  emptyMessage,
+  dataExtensionsFormatedAndSorted,
+  resultItems,
+  currentHighlight,
+} = useExtensionWindowBase(selectedMode, query, (extension) => labelsFor(extension))
+
+// Always reported; the host's useEvaluationFocus picks which window paints the canvas.
+watch(currentHighlight, (h) => emit('highlight', h), { immediate: true })
+const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
 const windowTitle = computed(() => {
   const modeLabel =
@@ -130,7 +147,9 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
     :query="query"
     :document-id="documentId"
     :state-key="stateKey"
+    :active="isActive"
     @close="emit('close')"
+    @focus="emit('focus')"
     @evaluate="emit('evaluate')"
   >
     <template #parameters>
@@ -157,9 +176,11 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
     <template #results>
       <template v-if="dataExtensionsFormatedAndSorted !== undefined">
         <EvaluationResultGrid
+          v-model:selected="selectedExtension"
           :result-noun="t('evaluation.nouns.extensions')"
           :items="resultItems"
           :empty-message="emptyMessage"
+          :selection-hint="selectionHint"
           :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
         />
       </template>

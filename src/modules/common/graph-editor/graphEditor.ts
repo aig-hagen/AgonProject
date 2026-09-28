@@ -190,7 +190,6 @@ export interface GraphEditorState {
 export interface Highlight {
   stateId: UUID
   groups: ReadonlyArray<{ nodes: ReadonlySet<NodeId>; color: string }>
-  attackedByFirst?: string
   // Entries without a color use the default node color.
   legend?: ReadonlyArray<{ label: string; color?: string }>
 }

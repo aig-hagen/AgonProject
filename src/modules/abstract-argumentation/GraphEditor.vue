@@ -45,12 +45,12 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { EvaluationKind, Input } from '@/modules/common/evaluation/types'
+import { useEvaluationFocus } from '@/modules/common/evaluation/useEvaluationFocus'
 import type { ExportFileData } from '@/modules/common/export'
 import { WindowExport } from '@/modules/common/export/WindowExportAsync'
 import {
   type GraphEditorStateLink,
   type GraphEditorStateNode,
-  type Highlight,
   type HistoryState,
   LinkType,
   type NodeId,
@@ -170,20 +170,20 @@ function onSetWeights(weights: Array<{ id: ArgumentId; weight: number }>) {
   nodeWeights.value = new Map(weights.map(({ id, weight }) => [id, weight]))
 }
 
-// --- Highlight/weight visibility across evaluation window instances ---
-// Only the most recently focused window's result is shown on the canvas, so
-// e.g. an Extension selection and a Ranking don't render on top of each other,
-// and so multiple windows of the same type (e.g. two Extension windows) don't
-// both claim to be active at once.
-type HighlightSource = 'extension' | 'ranking' | 'serialisation'
-const activeWindow = ref<{ source: HighlightSource; id: string } | undefined>(undefined)
-
-function isSuppressed(source: HighlightSource, id: string): boolean {
-  return activeWindow.value?.source !== source || activeWindow.value.id !== id
-}
+// Only the most recently focused window (of any kind) shows its result on the canvas.
+const {
+  activeId: activeEvaluationId,
+  highlight: evaluationHighlight,
+  isSuppressed,
+  focus: focusEvaluation,
+  report: reportHighlight,
+  remove: releaseFocus,
+} = useEvaluationFocus()
 
 const visibleNodeWeights = computed(() =>
-  activeWindow.value?.source === 'ranking' ? nodeWeights.value : new Map(),
+  rankingInstances.value.some((i) => i.id === activeEvaluationId.value)
+    ? nodeWeights.value
+    : new Map(),
 )
 
 function onNodeLabelEdited(data: { id: NodeId; label: string }) {
@@ -235,11 +235,8 @@ function addExtensionInstance() {
   extensionInstances.value = [...extensionInstances.value, createDefaultExtensionWindowInstance()]
 }
 
-function removeExtensionInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (activeWindow.value?.id === id) {
-    onHighlight(undefined)
-    activeWindow.value = undefined
-  }
+function removeExtensionInstance(id: string) {
+  releaseFocus(id)
   extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
 }
 
@@ -282,26 +279,6 @@ const evaluationChips = computed<EvaluationChip[]>(() => [
 
 const addableKinds: EvaluationKind[] = ['extension', 'ranking', 'serialisation']
 
-// The host's active chip is the highlighted window; only it highlights the canvas.
-// A single active id spans all kinds, mapping back to the right highlight source.
-const activeEvaluationId = computed<string | undefined>({
-  get: () => activeWindow.value?.id,
-  set: (id) => {
-    if (id === undefined) {
-      activeWindow.value = undefined
-      return
-    }
-    const source: HighlightSource | undefined = extensionInstances.value.some((i) => i.id === id)
-      ? 'extension'
-      : rankingInstances.value.some((i) => i.id === id)
-        ? 'ranking'
-        : serialisationInstances.value.some((i) => i.id === id)
-          ? 'serialisation'
-          : undefined
-    activeWindow.value = source ? { source, id } : undefined
-  },
-})
-
 function lastId<T extends { id: string }>(items: T[]): string | undefined {
   return items.length > 0 ? items[items.length - 1]!.id : undefined
 }
@@ -319,11 +296,10 @@ function addEvaluation(kind: EvaluationKind) {
   }
 }
 
-function removeEvaluation(id: string, onHighlight: (h?: Highlight) => void) {
+function removeEvaluation(id: string) {
   if (rankingInstances.value.some((i) => i.id === id)) removeRankingInstance(id)
-  else if (serialisationInstances.value.some((i) => i.id === id))
-    removeSerialisationInstance(id, onHighlight)
-  else removeExtensionInstance(id, onHighlight)
+  else if (serialisationInstances.value.some((i) => i.id === id)) removeSerialisationInstance(id)
+  else removeExtensionInstance(id)
 }
 
 function addRankingInstance() {
@@ -331,10 +307,8 @@ function addRankingInstance() {
 }
 
 function removeRankingInstance(id: string) {
-  if (activeWindow.value?.id === id) {
-    nodeWeights.value = new Map()
-    activeWindow.value = undefined
-  }
+  if (activeEvaluationId.value === id) nodeWeights.value = new Map()
+  releaseFocus(id)
   rankingInstances.value = rankingInstances.value.filter((i) => i.id !== id)
 }
 
@@ -356,11 +330,8 @@ function addSerialisationInstance() {
   ]
 }
 
-function removeSerialisationInstance(id: string, onHighlight: (h?: Highlight) => void) {
-  if (activeWindow.value?.id === id) {
-    onHighlight(undefined)
-    activeWindow.value = undefined
-  }
+function removeSerialisationInstance(id: string) {
+  releaseFocus(id)
   serialisationInstances.value = serialisationInstances.value.filter((i) => i.id !== id)
 }
 
@@ -408,6 +379,7 @@ const tutorialContextExtra = computed(() => ({
     @link-created="onLinkCreated"
     @link-deleted="onLinkDeleted"
     :link-configs="linkConfig"
+    :highlight="evaluationHighlight"
     :state="editorState"
     :node-weights="visibleNodeWeights"
     @undo="emit('undo')"
@@ -424,7 +396,7 @@ const tutorialContextExtra = computed(() => ({
     @open-ranking-window="addRankingInstance()"
     @open-serialisation-window="addSerialisationInstance()"
   >
-    <template #evaluationExtensions="{ onHighlight }">
+    <template #evaluationExtensions>
       <!-- Compact: one host sheet with a chip switcher over all saved configs of every kind. -->
       <EvaluationHost
         v-if="layoutMode === 'compact'"
@@ -433,7 +405,7 @@ const tutorialContextExtra = computed(() => ({
         :chips="evaluationChips"
         :add-kinds="addableKinds"
         @add="addEvaluation($event)"
-        @remove="removeEvaluation($event, onHighlight)"
+        @remove="removeEvaluation($event)"
       >
         <template #default="{ activeId }">
           <WindowExtensions
@@ -450,7 +422,7 @@ const tutorialContextExtra = computed(() => ({
             @title="setEvaluationTitle(instance.id, $event)"
             @highlight="
               (h) => {
-                onHighlight(h)
+                reportHighlight(instance.id, h)
                 if (h) highlightCount++
               }
             "
@@ -488,7 +460,7 @@ const tutorialContextExtra = computed(() => ({
               :suppressed="instance.id !== activeId"
               @update:instance-state="updateSerialisationInstance($event)"
               @title="setEvaluationTitle(instance.id, $event)"
-              @highlight="onHighlight"
+              @highlight="reportHighlight(instance.id, $event)"
             />
           </div>
         </template>
@@ -504,19 +476,19 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
-        :suppressed="isSuppressed('extension', instance.id)"
+        :suppressed="isSuppressed(instance.id)"
         @update:instance-state="updateExtensionInstance($event)"
         @highlight="
           (h) => {
-            onHighlight(h)
+            reportHighlight(instance.id, h)
             if (h) highlightCount++
           }
         "
-        @focus="activeWindow = { source: 'extension', id: instance.id }"
+        @focus="focusEvaluation(instance.id)"
         @evaluate="evaluationCount++"
         @semantics-interact="semanticsInteractCount++"
         @mode-interact="modeInteractCount++"
-        @close="removeExtensionInstance(instance.id, onHighlight)"
+        @close="removeExtensionInstance(instance.id)"
       />
     </template>
     <template #export="{ isOpen, onIsOpen, hasBeenOpened }">
@@ -540,18 +512,18 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
-        :suppressed="isSuppressed('ranking', instance.id)"
+        :suppressed="isSuppressed(instance.id)"
         @update:instance-state="updateRankingInstance($event)"
         @set-weights="
           (w) => {
-            if (!isSuppressed('ranking', instance.id)) onSetWeights(w)
+            if (!isSuppressed(instance.id)) onSetWeights(w)
           }
         "
-        @focus="activeWindow = { source: 'ranking', id: instance.id }"
+        @focus="focusEvaluation(instance.id)"
         @close="removeRankingInstance(instance.id)"
       />
     </template>
-    <template #evaluationSerialisation="{ onHighlight }">
+    <template #evaluationSerialisation>
       <WindowSerialisation
         v-for="(instance, index) in layoutMode === 'regular' ? serialisationInstances : []"
         :key="instance.id"
@@ -560,11 +532,11 @@ const tutorialContextExtra = computed(() => ({
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
-        :suppressed="isSuppressed('serialisation', instance.id)"
+        :suppressed="isSuppressed(instance.id)"
         @update:instance-state="updateSerialisationInstance($event)"
-        @highlight="onHighlight"
-        @focus="activeWindow = { source: 'serialisation', id: instance.id }"
-        @close="removeSerialisationInstance(instance.id, onHighlight)"
+        @highlight="reportHighlight(instance.id, $event)"
+        @focus="focusEvaluation(instance.id)"
+        @close="removeSerialisationInstance(instance.id)"
       />
     </template>
   </GraphEditor>

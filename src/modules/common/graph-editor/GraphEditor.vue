@@ -55,7 +55,12 @@ import {
   Squares2X2Icon,
   TrashIcon,
 } from '@heroicons/vue/24/outline'
-import { useDebounceFn, useElementVisibility, useMediaQuery } from '@vueuse/core'
+import {
+  createReusableTemplate,
+  useDebounceFn,
+  useElementVisibility,
+  useMediaQuery,
+} from '@vueuse/core'
 import {
   computed,
   inject,
@@ -362,6 +367,7 @@ const {
   edgeSelectionActions,
   readOnly = false,
   canvasKey,
+  highlight,
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
@@ -406,6 +412,8 @@ const {
   /** Names what the canvas shows (e.g. a derived view). Changing it rebuilds the graph and
       switches to that canvas' own saved viewport. */
   canvasKey?: string
+  /** Evaluation result painted on the canvas; see `useEvaluationFocus`. */
+  highlight?: Highlight
 }>()
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
@@ -783,7 +791,12 @@ watch(snapMode, (enabled) => {
   graphComponentRef.value?.setSnapToGrid(enabled)
   applyGridVisibility(showGrid.value)
 })
-const { extensionHighlightRef, serialisationHighlightRef, highlightToShow } = useHighlight({
+// With a side panel the legend sits beside it, since the panel covers the bottom-right corner.
+const [DefineLegend, ReuseLegend] = createReusableTemplate()
+const legendBesidePanel = computed(() => layoutMode.value === 'regular' && !!slots.sidePanel)
+
+useHighlight({
+  highlightRef: toRef(() => highlight),
   graphComponentRef,
   graphComponentId,
   getIdMapping: () => idMapping,
@@ -1978,9 +1991,22 @@ defineExpose({
         <HelpControls :link-names="linkNames" :allow-hyper-link-creation="allowHyperLinkCreation" />
       </div>
     </div>
-    <ul
-      v-if="highlightToShow?.legend?.length"
-      class="absolute z-10 flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
+    <DefineLegend>
+      <ul
+        class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
+      >
+        <li v-for="entry in highlight?.legend" :key="entry.label" class="flex items-center gap-2">
+          <span
+            class="size-3 rounded-full border border-base-content/30"
+            :style="{ backgroundColor: entry.color ?? 'var(--graph-node-color)' }"
+          ></span>
+          {{ entry.label }}
+        </li>
+      </ul>
+    </DefineLegend>
+    <div
+      v-if="highlight?.legend?.length && !legendBesidePanel"
+      class="absolute z-10"
       :class="layoutMode === 'regular' ? 'bottom-4 right-4' : 'right-3'"
       :style="
         layoutMode === 'compact'
@@ -1988,18 +2014,8 @@ defineExpose({
           : undefined
       "
     >
-      <li
-        v-for="entry in highlightToShow.legend"
-        :key="entry.label"
-        class="flex items-center gap-2"
-      >
-        <span
-          class="size-3 rounded-full border border-base-content/30"
-          :style="{ backgroundColor: entry.color ?? 'var(--graph-node-color)' }"
-        ></span>
-        {{ entry.label }}
-      </li>
-    </ul>
+      <ReuseLegend />
+    </div>
     <div v-if="!!slots.canvasOverlay" class="absolute inset-0 pointer-events-none">
       <slot name="canvasOverlay" />
     </div>
@@ -2084,10 +2100,13 @@ defineExpose({
     </div>
 
     <div
-      v-if="layoutMode === 'regular' && !!slots.sidePanel"
-      class="absolute top-4 right-4 bottom-4 z-10 flex"
+      v-if="legendBesidePanel"
+      class="absolute top-4 right-4 bottom-4 z-10 flex items-end gap-3 pointer-events-none"
     >
-      <slot name="sidePanel" />
+      <ReuseLegend v-if="highlight?.legend?.length" />
+      <div class="flex self-stretch pointer-events-auto">
+        <slot name="sidePanel" />
+      </div>
     </div>
 
     <!-- Compact chrome: top bar + bottom command bar, replacing the desktop cluster. -->
@@ -2329,14 +2348,7 @@ defineExpose({
       </BottomSheet>
     </template>
 
-    <slot
-      name="evaluationExtensions"
-      :on-highlight="
-        (h: Highlight | undefined) => {
-          extensionHighlightRef = h
-        }
-      "
-    ></slot>
+    <slot name="evaluationExtensions"></slot>
     <slot
       name="export"
       :isOpen="isExportOpened"
@@ -2344,14 +2356,7 @@ defineExpose({
       @isOpen="isExportOpened = $event"
     ></slot>
     <slot name="evaluationRanking"></slot>
-    <slot
-      name="evaluationSerialisation"
-      :on-highlight="
-        (h: Highlight | undefined) => {
-          serialisationHighlightRef = h
-        }
-      "
-    ></slot>
+    <slot name="evaluationSerialisation"></slot>
     <TutorialOverlay
       v-if="tutorials && showHints && layoutMode === 'regular'"
       :tutorials="tutorials"

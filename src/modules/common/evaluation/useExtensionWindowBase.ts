@@ -19,9 +19,9 @@
 import { computed, type Ref, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { NODE_GREEN, NODE_RED } from '@/modules/common/colors'
+import { type Labels, labelsToHighlight } from '@/modules/common/evaluation/labeling'
 import { escapeTexText } from '@/modules/common/export/texEscape'
-import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
+import type { Highlight, NodeId } from '@/modules/common/graph-editor/graphEditor'
 import type { UUID } from '@/modules/common/ids'
 
 export interface EvaluationArgument {
@@ -38,6 +38,8 @@ export interface ExtensionWindowQueryData {
 export function useExtensionWindowBase(
   selectedMode: { readonly value: string },
   query: { data: Readonly<Ref<ExtensionWindowQueryData | undefined>> },
+  // Labels the canvas for a selected extension, using the module's own attack relation.
+  labelsFor: (extension: ReadonlySet<NodeId>) => Labels,
 ) {
   const { t } = useI18n({ useScope: 'global' })
 
@@ -108,18 +110,12 @@ export function useExtensionWindowBase(
     }
     for (const extension of dataExtensionsFormatedAndSorted.value.formatedAndSorted) {
       if (extension.key === selectedExtension.value) {
-        return {
-          stateId: dataExtensionsFormatedAndSorted.value.stateId,
-          groups: [{ nodes: new Set(extension.extension.map((a) => a.id)), color: NODE_GREEN }],
-          attackedByFirst: NODE_RED,
-          legend: [
-            { label: t('evaluation.legend.accepted'), color: NODE_GREEN },
-            { label: t('evaluation.legend.rejected'), color: NODE_RED },
-            ...(selectedMode.value === 'enumerate'
-              ? [{ label: t('evaluation.legend.undecided') }]
-              : []),
-          ],
-        }
+        return labelsToHighlight(
+          dataExtensionsFormatedAndSorted.value.stateId,
+          labelsFor(new Set(extension.extension.map((a) => a.id))),
+          t,
+          { undecided: selectedMode.value === 'enumerate' },
+        )
       }
     }
     return undefined

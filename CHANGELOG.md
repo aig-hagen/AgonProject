@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added an Assumption-based section to the glossary (ABAF, rules, assumptions, contraries, derivability, attack, closure, flatness), used in the ABA Theory panel.
 - ABA frameworks can now be evaluated via TweetyProject's `/aba` endpoint (extensions, credulous, skeptical); flat-only semantics are shown disabled for non-flat theories.
 - The ABA canvas can switch between the editable theory and read-only AF and SetAF views (flat theories only); for non-flat theories the SetAF view becomes a BSAF with set-supports.
+- ABA extensions can now be highlighted in every view: accepted and attacked assumptions, derived atoms (Theory), and AF arguments by their support.
 
 ### Changed
 
@@ -31,6 +32,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- BAF extension highlighting no longer marks supported arguments as rejected, and follows the complex attacks of the chosen support type.
+- iAF extension highlighting only marks targets of definite attacks as rejected.
+- With several evaluation windows open, only the focused one highlights the canvas, and closing it clears the highlight.
 - SetAF extension highlighting now marks targets of collective attacks as rejected when all attackers are accepted.
 - Fixed SVG graph export: node labels are centered again and bent edges no longer show a black fill sliver.
 - Fixed LaTeX export: mobile and desktop now produce identical code — style options always ride on `\begin{af}[…]`, and both share the same defaults and the Node Labels option.

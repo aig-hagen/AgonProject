@@ -25,6 +25,10 @@ import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
 } from '@/modules/assumption-based-argumentation/evaluation/extensionWindowState'
+import {
+  argumentLabels,
+  theoryLabels,
+} from '@/modules/assumption-based-argumentation/evaluation/labeling'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
@@ -44,6 +48,7 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
 import type { Input } from '@/modules/common/evaluation/types'
+import { useEvaluationFocus } from '@/modules/common/evaluation/useEvaluationFocus'
 import type { ExportFileData } from '@/modules/common/export'
 import {
   type GraphEditorNodeShape,
@@ -358,6 +363,25 @@ const evaluationInput = computed<Input<ABAF>>(() => ({
   content: state.current.content,
 }))
 
+// Results are assumption sets; each view maps them onto its own nodes, so a view switch repaints.
+const labelsFor = computed(() => {
+  const aba = content.value
+  const supports = derivedCanvas.value?.supports
+  return (extension: ReadonlySet<NodeId>) => {
+    const labels = theoryLabels(aba, extension)
+    return supports ? argumentLabels(labels, supports) : labels
+  }
+})
+
+const {
+  activeId: activeExtensionId,
+  highlight: evaluationHighlight,
+  isSuppressed,
+  focus: focusEvaluation,
+  report: reportHighlight,
+  remove: releaseFocus,
+} = useEvaluationFocus()
+
 const extensionInstances = useDocumentUIState<ExtensionWindowInstanceState[]>(
   db,
   documentId,
@@ -370,6 +394,7 @@ function addExtensionInstance() {
 }
 
 function removeExtensionInstance(id: string) {
+  releaseFocus(id)
   extensionInstances.value = extensionInstances.value.filter((i) => i.id !== id)
 }
 
@@ -380,7 +405,6 @@ function updateExtensionInstance(updated: ExtensionWindowInstanceState) {
 }
 
 const evaluationHostOpen = ref(false)
-const activeExtensionId = ref<string | undefined>(undefined)
 const evaluationTitles = ref<Record<string, string>>({})
 function setEvaluationTitle(id: string, title: string) {
   evaluationTitles.value[id] = title
@@ -412,6 +436,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     @hyper-link-deleted="onHyperLinkDeleted"
     @hyper-link-source-removed="onHyperLinkSourceRemoved"
     :link-configs="linkConfig"
+    :highlight="evaluationHighlight"
     :state="editorState"
     :node-shapes="nodeShapes"
     :node-annotations="nodeAnnotations"
@@ -495,8 +520,11 @@ const extensionChips = computed<EvaluationChip[]>(() =>
             :instance-state="instance"
             :document-id="documentId"
             :state-key="`${instance.id}:window`"
+            :labels-for="labelsFor"
+            :suppressed="instance.id !== activeId"
             @update:instance-state="updateExtensionInstance($event)"
             @title="setEvaluationTitle(instance.id, $event)"
+            @highlight="reportHighlight(instance.id, $event)"
           />
         </template>
       </EvaluationHost>
@@ -510,7 +538,11 @@ const extensionChips = computed<EvaluationChip[]>(() =>
         :instance-offset="index"
         :document-id="documentId"
         :state-key="`${instance.id}:window`"
+        :labels-for="labelsFor"
+        :suppressed="isSuppressed(instance.id)"
+        @focus="focusEvaluation(instance.id)"
         @update:instance-state="updateExtensionInstance($event)"
+        @highlight="reportHighlight(instance.id, $event)"
         @close="removeExtensionInstance(instance.id)"
       />
     </template>

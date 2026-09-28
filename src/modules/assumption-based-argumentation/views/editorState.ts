@@ -44,6 +44,8 @@ export interface DerivedCanvas {
   unplaced: NodeId[]
   // Shown next to the read-only chip, e.g. when the AF is capped.
   note?: string
+  // AF view only: each argument's assumption support, for mapping evaluation results.
+  supports?: Map<NodeId, NodeId[]>
 }
 
 // SETAF nodes are the assumptions: they start at their theory position unless moved in the view.
@@ -141,6 +143,7 @@ export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): De
     shapes: new Map(nodes.map((n) => [n.id, 'rect' as const])),
     positionKeys,
     unplaced,
+    supports: new Map([...af.arguments()].map(([id, d]) => [id, d.support])),
     note: total > nodes.length ? `showing ${nodes.length} of ${total} arguments` : undefined,
   }
 }

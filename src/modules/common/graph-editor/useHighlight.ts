@@ -17,9 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { ComputedRef, Ref } from 'vue'
-import { computed, ref, watchEffect } from 'vue'
+import { watchEffect } from 'vue'
 
-import type { GraphEditorState, Highlight, NodeId } from '@/modules/common/graph-editor/graphEditor'
+import type { GraphEditorState, Highlight } from '@/modules/common/graph-editor/graphEditor'
 import {
   getContrastingLabelColor,
   setNodeLabelColor,
@@ -33,62 +33,31 @@ interface HighlightCapable {
 }
 
 export function useHighlight({
+  highlightRef,
   graphComponentRef,
   graphComponentId,
   getIdMapping,
   stateRef,
   effectiveStyle,
 }: {
+  highlightRef: Readonly<Ref<Highlight | undefined>>
   graphComponentRef: Ref<HighlightCapable | null>
   graphComponentId: string
   getIdMapping: () => IdMapping<number, number>
   stateRef: Ref<GraphEditorState> | ComputedRef<GraphEditorState>
   effectiveStyle: Ref<GraphStyle> | ComputedRef<GraphStyle>
 }) {
-  const extensionHighlightRef = ref<Highlight | undefined>(undefined)
-  const serialisationHighlightRef = ref<Highlight | undefined>(undefined)
-  const highlightToShow = computed(
-    () => extensionHighlightRef.value ?? serialisationHighlightRef.value,
-  )
-
   watchEffect(() => {
     const graphComponent = graphComponentRef.value
     if (graphComponent === null) return
 
-    const highlight = highlightToShow.value
+    const highlight = highlightRef.value
     const groups = highlight?.groups ?? []
     const state = stateRef.value
     const idMapping = getIdMapping()
 
-    // Collect all nodes explicitly covered by a group
-    const coveredNodes = new Set<NodeId>()
-    for (const group of groups) {
-      for (const id of group.nodes) coveredNodes.add(id)
-    }
-
-    // Compute nodes attacked by the first group (if requested)
-    const attackedNodes = new Set<NodeId>()
-    if (highlight?.attackedByFirst !== undefined && groups.length > 0) {
-      const firstNodes = groups[0]!.nodes
-      for (const link of state.links) {
-        if (firstNodes.has(link.sourceId) && !coveredNodes.has(link.targetId)) {
-          attackedNodes.add(link.targetId)
-        }
-      }
-      // A collective attack only defeats its target when all attackers are in the group.
-      for (const hyperLink of state.hyperLinks ?? []) {
-        if (
-          hyperLink.sourceIds.every((id) => firstNodes.has(id)) &&
-          !coveredNodes.has(hyperLink.targetId)
-        ) {
-          attackedNodes.add(hyperLink.targetId)
-        }
-      }
-    }
-
     // Categorize all graph nodes into their output buckets
     const groupBuckets: number[][] = groups.map(() => [])
-    const attackedBucket: number[] = []
     const defaultBucket: number[] = []
     for (const { id } of state.nodes) {
       if (!idMapping.hasReverse(id)) continue
@@ -101,10 +70,7 @@ export function useHighlight({
           break
         }
       }
-      if (!placed) {
-        if (attackedNodes.has(id)) attackedBucket.push(internalId)
-        else defaultBucket.push(internalId)
-      }
+      if (!placed) defaultBucket.push(internalId)
     }
 
     // Apply colors, and give each node a label color that contrasts with its
@@ -118,13 +84,8 @@ export function useHighlight({
     for (let i = 0; i < groups.length; i++) {
       applyColors(groups[i]!.color, groupBuckets[i]!)
     }
-    if (highlight?.attackedByFirst !== undefined) {
-      applyColors(highlight.attackedByFirst, attackedBucket)
-    }
     // Reset the default bucket's label color to inherit the theme color.
     graphComponent.setColor(effectiveStyle.value.nodeColor, defaultBucket)
     for (const id of defaultBucket) setNodeLabelColor(graphEl, graphComponentId, id, '')
   })
-
-  return { extensionHighlightRef, serialisationHighlightRef, highlightToShow }
 }

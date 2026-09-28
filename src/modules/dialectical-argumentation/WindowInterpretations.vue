@@ -32,10 +32,10 @@ import {
 import { useI18n } from 'vue-i18n'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
-import { NODE_BLUE, NODE_GREEN, NODE_RED } from '@/modules/common/colors'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
+import { labelsToHighlight } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { escapeTexText } from '@/modules/common/export/texEscape'
@@ -82,6 +82,7 @@ const {
 const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
+  focus: []
   title: [title: string]
   close: []
   evaluate: []
@@ -214,28 +215,11 @@ const currentHighlight = computed<Highlight | undefined>(() => {
   if (selectedKey.value === undefined || formattedData.value === undefined) return undefined
   const item = formattedData.value.items.find((i) => i.key === selectedKey.value)
   if (item === undefined) return undefined
-  return {
-    stateId: formattedData.value.stateId,
-    groups: [
-      {
-        nodes: new Set(item.interpretation.filter((a) => a.label === 'in').map((a) => a.id)),
-        color: NODE_GREEN,
-      },
-      {
-        nodes: new Set(item.interpretation.filter((a) => a.label === 'out').map((a) => a.id)),
-        color: NODE_RED,
-      },
-      {
-        nodes: new Set(item.interpretation.filter((a) => a.label === 'undec').map((a) => a.id)),
-        color: NODE_BLUE,
-      },
-    ],
-    legend: [
-      { label: t('evaluation.legend.accepted'), color: NODE_GREEN },
-      { label: t('evaluation.legend.rejected'), color: NODE_RED },
-      { label: t('evaluation.legend.undecided'), color: NODE_BLUE },
-    ],
-  }
+  return labelsToHighlight(
+    formattedData.value.stateId,
+    new Map(item.interpretation.map((a) => [a.id, a.label] as const)),
+    t,
+  )
 })
 // Register the semantics selector and the result grid as tutorial-spotlight targets while this
 // window is the active one, so the evaluation tutorial can highlight them.
@@ -262,12 +246,9 @@ onUnmounted(() => {
   registerTutorialRef?.('resultArea', null)
 })
 
-// Suppressed instances (all but the active one in the compact host) emit no highlight.
-const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
-watch(emittedHighlight, (h) => emit('highlight', h))
-function onWindowFocus() {
-  emit('highlight', emittedHighlight.value)
-}
+// Always reported; the host's useEvaluationFocus picks which window paints the canvas.
+watch(currentHighlight, (h) => emit('highlight', h), { immediate: true })
+const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
 // The compact host labels its switcher pill with this title (not the raw key).
 watch(windowTitle, (title) => emit('title', title), { immediate: true })
@@ -283,7 +264,8 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
     :document-id="documentId"
     :state-key="stateKey"
     @close="emit('close')"
-    @focus="onWindowFocus"
+    :active="isActive"
+    @focus="emit('focus')"
     @evaluate="emit('evaluate')"
   >
     <template #parameters>

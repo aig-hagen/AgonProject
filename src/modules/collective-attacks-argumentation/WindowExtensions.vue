@@ -35,6 +35,7 @@ import {
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
+import { extensionLabels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
@@ -66,6 +67,7 @@ const {
 const emit = defineEmits<{
   'update:instanceState': [state: ExtensionWindowInstanceState]
   highlight: [highlight?: Highlight]
+  focus: []
   title: [title: string]
   close: []
   evaluate: []
@@ -115,14 +117,16 @@ const {
   dataExtensionsFormatedAndSorted,
   resultItems,
   currentHighlight,
-} = useExtensionWindowBase(selectedMode, query)
+} = useExtensionWindowBase(selectedMode, query, (extension) =>
+  extensionLabels(
+    extension,
+    input.content.attacks().map((a) => ({ tail: a.attackers, head: a.target })),
+  ),
+)
 
-// Suppressed instances (all but the active one in the compact host) emit no highlight.
-const emittedHighlight = computed(() => (suppressed ? undefined : currentHighlight.value))
-watch(emittedHighlight, (h) => emit('highlight', h))
-function onWindowFocus() {
-  emit('highlight', emittedHighlight.value)
-}
+// Always reported; the host's useEvaluationFocus picks which window paints the canvas.
+watch(currentHighlight, (h) => emit('highlight', h), { immediate: true })
+const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
 const windowTitle = computed(() => {
   const modeLabel =
@@ -148,7 +152,8 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
     :document-id="documentId"
     :state-key="stateKey"
     @close="emit('close')"
-    @focus="onWindowFocus"
+    :active="isActive"
+    @focus="emit('focus')"
     @evaluate="emit('evaluate')"
   >
     <template #parameters>
