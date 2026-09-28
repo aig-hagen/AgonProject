@@ -1,6 +1,6 @@
 {
   "apiVersion": "aba/v1",
-  "name": "Weather plans",
+  "name": "weather_plans",
   "description": "A small flat theory: we assume it is sunny and dry, but an observed fact of rain undercuts both assumptions.",
   "nodes": {
     "0": { "name": "sunny", "kind": "assumption", "x": -220, "y": -90, "fact": false },

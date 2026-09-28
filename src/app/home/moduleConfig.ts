@@ -113,6 +113,10 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    */
   underConstruction?: boolean
   /**
+   * If true, the module is usable but marked with a beta badge on the welcome screen.
+   */
+  beta?: boolean
+  /**
    * Stable tag IDs describing properties of this argumentation type, e.g. for filtering or
    * search. Labels are localized via the `modules.tags.<id>` catalog.
    */

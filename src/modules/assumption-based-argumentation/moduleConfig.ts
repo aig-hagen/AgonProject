@@ -111,6 +111,6 @@ export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
     return layout(document, layoutType)
   },
   publications: [BDKT97, CFST18],
-  underConstruction: false,
+  beta: true,
   tags: [TAG_AUGMENTED, TAG_ATTACK, TAG_SUPPORT, TAG_COLLECTIVE_RELATIONS],
 }

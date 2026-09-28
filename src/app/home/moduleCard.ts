@@ -37,6 +37,7 @@ export interface ModuleCard<DocumentT> {
   initialCotent: DocumentT
   generateHref?: string
   underConstruction?: boolean
+  beta?: boolean
   publications?: Publication[]
   tags: ModuleCardTag[]
 }

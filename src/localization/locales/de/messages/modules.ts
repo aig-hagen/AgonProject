@@ -52,7 +52,7 @@ const modules: LocaleMessageSchema['modules'] = {
   assumptionBased: {
     name: 'Annahmenbasierte Argumentation',
     description:
-      'Baue eine Theorie aus Regeln über Atomen und widerlegbaren Annahmen auf, bei der Angriffe aus den Kontraren der Annahmen entstehen.',
+      'Argumente werden über Regeln aus widerlegbaren Annahmen hergeleitet und greifen eine Annahme an, indem sie deren Negation herleiten.',
   },
   tags: {
     abstract: {

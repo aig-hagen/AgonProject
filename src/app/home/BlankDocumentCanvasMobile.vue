@@ -22,6 +22,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
+import BetaBadge from '@/app/home/BetaBadge.vue'
 import type { ModuleCard } from '@/app/home/moduleCard'
 import { trackEvent } from '@/app/usage/report'
 import { ANALYTICS_EVENTS } from '@/app/usage/signals'
@@ -91,7 +92,10 @@ function openContent(content: DocumentT, modulePrefix: string) {
           {{ moduleCard.newNamePrefix }}
         </span>
         <span class="flex flex-1 flex-col min-w-0 leading-tight">
-          <span class="font-semibold">{{ moduleCard.displayNameSingular }}</span>
+          <span class="flex items-center gap-1.5">
+            <span class="font-semibold min-w-0">{{ moduleCard.displayNameSingular }}</span>
+            <BetaBadge v-if="moduleCard.beta" />
+          </span>
           <span
             v-if="moduleCard.description"
             class="text-xs text-base-content/60 mt-0.5"

@@ -581,6 +581,7 @@ watch(
 const slots = useSlots()
 const hasRankingSlot = computed(() => !!slots.evaluationRanking)
 const hasSerialisationSlot = computed(() => !!slots.evaluationSerialisation)
+const hasExportSlot = computed(() => !!slots.export)
 
 const enableLinkSwitching = allowLinkSwitching && Object.keys(linkConfigs).length > 1
 const defaultLinkType = (Object.keys(linkConfigs) as LinkType[])[0]
@@ -2049,7 +2050,7 @@ defineExpose({
             :show-save="EntryState.ENABLE"
             :layouts-to-show="GRAPH_EDITOR_LAYOUTS"
             @save="emit('save')"
-            :show-export="isExportOpened ? EntryState.DISABLE : EntryState.ENABLE"
+            :show-export="isExportOpened || !hasExportSlot ? EntryState.DISABLE : EntryState.ENABLE"
             @export="isExportOpened = !isExportOpened"
             @export-file="emit('export-file', $event)"
             :show-share="EntryState.ENABLE"
@@ -2106,6 +2107,7 @@ defineExpose({
           <button
             ref="exportButton"
             class="btn btn-square btn-sm"
+            :disabled="!hasExportSlot"
             @click="isExportOpened = !isExportOpened"
             :title="t('menu.latexStudio')"
           >
@@ -2218,6 +2220,7 @@ defineExpose({
           <button
             ref="mobileExportButton"
             class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            :disabled="!hasExportSlot"
             :aria-label="t('menu.export')"
             :title="t('menu.export')"
             @click="isExportOpened = true"

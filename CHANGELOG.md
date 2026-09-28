@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - ABA frameworks can now be evaluated via TweetyProject's `/aba` endpoint (extensions, credulous, skeptical); flat-only semantics are shown disabled for non-flat theories.
 - The ABA canvas can switch between the editable theory and read-only AF and SetAF views (flat theories only); for non-flat theories the SetAF view becomes a BSAF with set-supports.
 - ABA extensions can now be highlighted in every view: accepted and attacked assumptions, derived atoms (Theory), and AF arguments by their support.
+- Modules can carry a Beta badge on the welcome screen; the ABA module is marked as beta.
 
 ### Changed
 
