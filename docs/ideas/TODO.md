@@ -10,13 +10,19 @@
 - physics doesnt properly respect the rectangle-expandable nodes it seems
 - update glossary entries; show separate for flat/nonflat in eval window
 - several issues where changes to the theory dont update the graph; eg contraries
+  - stale annotations (e.g. `⊤` after deleting a fact, `‾a = x` after the contrary is deleted):
+    graph-component (rc.27) exposes no `deleteAnnotation`, so `applyAnnotationContentUpdates`
+    in common `GraphEditor.vue` can't remove vanished entries. Fix: expose
+    `deleteAnnotation(anchorId)` in the library (wrap `graph.deleteAnnotation` + re-render),
+    then add a removal loop mirroring `applyNodeOutlineUpdates`. Affects all modules.
 - add contraries and derived attacks to theory view
 - issues with switching views; especially on mobile; just weird warping sometimes
-- improve UI of theory panel; also make it collapsable
+- improve UI of theory panel;
 - handle the attack/support from empty set
 - need to allow parallel edges (for the contrary thing but also for BSAF view)
 - better handling of the fact annotation
 - better visuals for the action bar
+- the message after making a theory nonflat in the AF view needs to change and look better
 
 ## Bugs and Issues
 

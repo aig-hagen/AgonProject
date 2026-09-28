@@ -344,6 +344,7 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
           if (d.kind === 'assumption') draft.setKind(id, 'atom')
           else draft.promoteToAssumption(id)
         }),
+const isTheoryCollapsed = useDocumentUIState(db, documentId, 'theory-collapsed', false)
     },
     {
       key: 'fact',
@@ -446,6 +447,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     :allow-hyper-link-creation="true"
     :allow-link-switching="false"
     :read-only="isDerivedView"
+    :side-panel-collapsed="isTheoryCollapsed"
     :canvas-key="isDerivedView ? activeView : undefined"
     @undo="emit('undo')"
     @redo="emit('redo')"
@@ -457,7 +459,11 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     @open-extension-window="addExtensionInstance"
   >
     <template #sidePanel>
-      <TheoryPanel :aba="content" @edit="createNewState($event)" />
+      <TheoryPanel
+        v-model:collapsed="isTheoryCollapsed"
+        :aba="content"
+        @edit="createNewState($event)"
+      />
     </template>
     <template #canvasOverlay>
       <div

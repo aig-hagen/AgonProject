@@ -372,6 +372,7 @@ const {
   state: GraphEditorState
   linkConfigs: LinkConfigs
   historyState: HistoryState
+  sidePanelCollapsed = false,
   nodeWeights?: Map<NodeId, number>
   nodeOutlines?: Map<NodeId, NodeOutline>
   /** Per-node shape; nodes not in the map are circles. */
@@ -418,6 +419,8 @@ const {
 
 const db = inject(DOCUMENTS_DB_INJECTION_KEY)
 if (db === undefined) {
+  /** A collapsed side panel frees the bottom-right corner, so the legend returns there. */
+  sidePanelCollapsed?: boolean
   throw new Error('Documents database not provided.')
 }
 
@@ -791,9 +794,10 @@ watch(snapMode, (enabled) => {
   graphComponentRef.value?.setSnapToGrid(enabled)
   applyGridVisibility(showGrid.value)
 })
-// With a side panel the legend sits beside it, since the panel covers the bottom-right corner.
+// An expanded side panel covers the bottom-right corner, so the legend sits beside it.
 const [DefineLegend, ReuseLegend] = createReusableTemplate()
-const legendBesidePanel = computed(() => layoutMode.value === 'regular' && !!slots.sidePanel)
+const hasSidePanel = computed(() => layoutMode.value === 'regular' && !!slots.sidePanel)
+const legendBesidePanel = computed(() => hasSidePanel.value && !sidePanelCollapsed)
 
 useHighlight({
   highlightRef: toRef(() => highlight),
@@ -2100,10 +2104,10 @@ defineExpose({
     </div>
 
     <div
-      v-if="legendBesidePanel"
+      v-if="hasSidePanel"
       class="absolute top-4 right-4 bottom-4 z-10 flex items-end gap-3 pointer-events-none"
     >
-      <ReuseLegend v-if="highlight?.legend?.length" />
+      <ReuseLegend v-if="legendBesidePanel && highlight?.legend?.length" />
       <div class="flex self-stretch pointer-events-auto">
         <slot name="sidePanel" />
       </div>

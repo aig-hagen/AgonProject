@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import {
   CheckCircleIcon,
+  ChevronDownIcon,
   ExclamationTriangleIcon,
   PlusIcon,
   XMarkIcon,
@@ -36,6 +37,9 @@ const { aba, compact = false } = defineProps<{
   // Fills its container (bottom sheet) instead of rendering as a floating card.
   compact?: boolean
 }>()
+
+// Desktop only: folds the card down to its header.
+const collapsed = defineModel<boolean>('collapsed', { default: false })
 
 const emit = defineEmits<{
   edit: [recipe: (draft: ABAF) => void]
@@ -246,21 +250,41 @@ function commitBuiltRule() {
     :class="
       compact
         ? 'w-full'
-        : 'w-80 max-h-full overflow-hidden rounded-box bg-base-100 border border-base-300 shadow-lg/30'
+        : [
+            'w-80 max-h-full overflow-hidden rounded-box bg-base-100 border border-base-300 shadow-lg/30',
+            { 'self-start': collapsed },
+          ]
     "
   >
     <header
       v-if="!compact"
-      class="flex items-center gap-2 py-1.5 pl-3 pr-2 bg-base-200 border-b border-base-300"
+      class="flex items-center gap-2 py-1.5 pl-3 pr-2 bg-base-200"
+      :class="{ 'border-b border-base-300': !collapsed }"
     >
       <span class="flex-1 truncate font-medium">Theory</span>
       <span class="flex items-center gap-1.5 text-xs text-base-content/70">
         <span class="size-1.5 rounded-full" :class="isFlat ? 'bg-success' : 'bg-warning'"></span>
         <TermTooltip id="abaFlat">{{ isFlat ? 'flat' : 'non-flat' }}</TermTooltip>
       </span>
+      <button
+        type="button"
+        class="btn btn-ghost btn-xs btn-square"
+        :title="collapsed ? 'Expand theory' : 'Collapse theory'"
+        :aria-expanded="!collapsed"
+        @click="collapsed = !collapsed"
+      >
+        <ChevronDownIcon
+          class="size-4 transition-transform"
+          :class="{ 'rotate-180': !collapsed }"
+        />
+      </button>
     </header>
 
-    <div class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4" :class="{ 'p-3': !compact }">
+    <div
+      v-show="compact || !collapsed"
+      class="flex-1 min-h-0 overflow-y-auto flex flex-col gap-4"
+      :class="{ 'p-3': !compact }"
+    >
       <!-- TermDefinitionBlock draws its own inset card in the compact layout. -->
       <div
         :class="{ 'rounded-field bg-inset border border-base-300 px-2.5 pb-2 pt-0.5': !compact }"
