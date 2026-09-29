@@ -84,7 +84,6 @@ import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateRow, getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import type { ExportFileData } from '@/modules/common/export'
-import { serializeGraphSvg } from '@/modules/common/export/renderGraphSvg'
 import TexIcon from '@/modules/common/export/TexIcon.vue'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
@@ -339,13 +338,11 @@ const selectionActions = computed<SelectionAction[]>(() => {
   return actions
 })
 
-// WYSIWYG SVG export: serialize the live graph canvas on demand. Injected by the export UI so
-// it can offer an SVG format that works on any device (no TikZ/WebAssembly). Returns null when
-// the canvas isn't mounted or has no content to render.
-provide(GRAPH_SVG_RENDERER_KEY, () => {
-  const canvas = graphComponentRef.value?.getCanvasElement()
-  return canvas ? serializeGraphSvg(canvas) : null
-})
+// WYSIWYG SVG export for the export UI; works on any device (no TikZ/WebAssembly).
+provide(
+  GRAPH_SVG_RENDERER_KEY,
+  () => graphComponentRef.value?.exportSVG({ textLabels: true, background: 'canvas' }) ?? null,
+)
 
 const {
   state,

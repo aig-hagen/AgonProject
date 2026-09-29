@@ -106,9 +106,8 @@ See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic v
 - **⬜ Label styling API.** Colour and auto font size are still set by finding the label div in
   the DOM (`setNodeLabelColor`, `adjustNodeLabelFontSize` in `graphEditorUtils.ts`).
   - Wish: `setNodeLabelStyle(id, { color, fontSize })`, or a built-in auto-fit.
-- **⬜ SVG export.** There is no `exportSVG`; we still serialise
-  `.graph-controller__graph-canvas` ourselves (~L303).
-  - Wish: an `exportSVG(): string` that inlines the styles.
+- **✅ SVG export** (rc.32). `exportSVG(options)` inlines all computed styles and drops editor
+  chrome; we use it with `textLabels` and the canvas background.
 - **⬜ Live drag events.** `nodesMoved` still fires on drop (and simulation completion), not on
   every drag frame. We watch node containers with a
   `MutationObserver` for in-progress positions (~L930).
