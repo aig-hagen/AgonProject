@@ -765,7 +765,6 @@ const stateRef = toRef(() => state)
 
 const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics } = usePhysics({
   graphComponentRef,
-  getIdMapping: () => idMapping,
   containerRef,
   documentId,
   db,

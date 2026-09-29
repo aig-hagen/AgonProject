@@ -21,10 +21,8 @@ import type { IDBPDatabase } from 'idb'
 import type { Ref } from 'vue'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 
-import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import type { DocumentId, DocumentsDB } from '@/modules/common/documents/db'
 import { getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
-import type { IdMapping } from '@/modules/common/ids'
 import type { PhysicsMode } from '@/modules/common/main-menu/types'
 import { useSettings } from '@/modules/common/settings/useSettings'
 
@@ -33,26 +31,15 @@ const PHYSICS_MODE_STATE_KEY = 'physics-mode'
 interface PhysicsCapable {
   getHostElement(): HTMLDivElement | null
   toggleNodePhysics(enabled: boolean): void
-  getNodePosition(id: number): { x: number; y: number }
-  setNodePosition(pos: { x: number; y: number }, a: undefined, id: number): void
-  centerView(
-    margins: { top: number; right: number; bottom: number; left: number },
-    b: undefined,
-    maxScale: number,
-  ): void
-  setViewport(k: number, x: number, y: number): void
-  getViewport(): { k: number; x: number; y: number }
 }
 
 export function usePhysics({
   graphComponentRef,
-  getIdMapping,
   containerRef,
   documentId,
   db,
 }: {
   graphComponentRef: Ref<PhysicsCapable | null>
-  getIdMapping: () => IdMapping<number, number>
   containerRef: Ref<HTMLDivElement | null>
   documentId?: DocumentId
   db?: IDBPDatabase<DocumentsDB>
@@ -74,58 +61,12 @@ export function usePhysics({
     }
   }
 
-  // Shifts all nodes so their centroid sits at the simulation's centering-force target
-  // (clientWidth/2, clientHeight/2), then compensates the zoom/pan transform so that
-  // no visual jump occurs. Must be called before enabling physics to prevent the
-  // centering force from pulling the entire graph across the canvas.
-  function alignNodesToSimulationCenter() {
-    const gc = graphComponentRef.value
-    if (!gc) return
-    const graphHost = gc.getHostElement()
-    if (!graphHost) return
-    const svgCenterX = graphHost.clientWidth / 2
-    const svgCenterY = graphHost.clientHeight / 2
-    // Iterate idMapping directly so newly created nodes (added to idMapping before
-    // triggerSettle fires but not yet reflected in the state prop) are included.
-    const idMapping = getIdMapping()
-    let sumX = 0,
-      sumY = 0,
-      count = 0
-    for (const internalId of idMapping.inputIds()) {
-      const pos = gc.getNodePosition(internalId)
-      sumX += pos.x
-      sumY += pos.y
-      count++
-    }
-    if (count === 0) return
-    const dx = svgCenterX - sumX / count
-    const dy = svgCenterY - sumY / count
-    for (const internalId of idMapping.inputIds()) {
-      const pos = gc.getNodePosition(internalId)
-      gc.setNodePosition({ x: pos.x + dx, y: pos.y + dy }, undefined, internalId)
-    }
-    // Compensate the zoom/pan so nodes remain at the same visual positions. Route through
-    // setViewport so the library's cached transform (used by pointer-to-graph math) stays
-    // in sync — hand-setting the group transform leaves it stale.
-    const { k, x, y } = gc.getViewport()
-    gc.setViewport(k, x - dx * k, y - dy * k)
-  }
-
-  function enablePhysics() {
-    const gc = graphComponentRef.value!
-    alignNodesToSimulationCenter()
-    gc.toggleNodePhysics(true)
-    const margin = ARGUMENT_RADIUS_IN_PX * 2
-    gc.centerView({ top: margin, right: margin, bottom: margin, left: margin }, undefined, 1)
-  }
-
   function disablePhysics() {
     graphComponentRef.value?.toggleNodePhysics(false)
   }
 
   function triggerSettle() {
     if (physicsMode.value !== 'on') return
-    alignNodesToSimulationCenter()
     graphComponentRef.value?.toggleNodePhysics(true)
     if (settleTimerId !== null) clearTimeout(settleTimerId)
     settleTimerId = setTimeout(() => {
@@ -177,10 +118,9 @@ export function usePhysics({
     let nodePointerDown = false
     const handleSettlePointerDown = (event: PointerEvent) => {
       if (physicsMode.value !== 'on') return
-      if (event.button !== 0) return // right-click starts edge creation — don't shift coordinates mid-gesture
+      if (event.button !== 0) return // right-click starts edge creation — don't move nodes mid-gesture
       if (!(event.target as Element).closest('.graph-controller__node-container')) return
       nodePointerDown = true
-      alignNodesToSimulationCenter()
       graphComponentRef.value?.toggleNodePhysics(true)
       if (settleTimerId !== null) {
         clearTimeout(settleTimerId)
@@ -213,7 +153,5 @@ export function usePhysics({
     toggleNodePhysics,
     triggerSettle,
     disablePhysics,
-    enablePhysics,
-    alignNodesToSimulationCenter,
   }
 }
