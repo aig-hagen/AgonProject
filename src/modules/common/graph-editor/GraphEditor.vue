@@ -1121,6 +1121,7 @@ onMounted(() => {
   graphComponent.setDefaults({
     gestureBindingsEnabled: true,
     interactiveNodeFeedbackEnabled: true,
+    linkStrength: 0.1,
     nodeAutoGrowToLabelSize: false,
     nodeProps: CIRCLE_NODE_PROPS,
     allowNodeCreationViaGUI: true,

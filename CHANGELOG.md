@@ -21,8 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Publication references on the module cards and glossary pages now show title, authors and venue on separate lines.
 - The selection action bar now also appears on desktop: click an argument or link to select it; double-click a label to rename it directly. Replaces the old link type popup; ADF arguments get an Edit condition action.
 - The PAF probability popup now shows a compact `P(a)` / `P((a,b))` header with the value, and opens from the selection bar on desktop.
-- Updated the bundled graph component to 5.0.0-rc.33; uncertain iAF attacks now use its native dashed links.
+- Updated the bundled graph component to 5.0.0-rc.34; uncertain iAF attacks now use its native dashed links.
 - Physics now pulls arguments towards the graph's own center instead of the canvas middle, so settling no longer shifts the graph.
+- With physics on, linked arguments are gently pulled together while settling, and larger arguments get more room.
 - The SVG image export now uses the graph component's exporter: labels are plain SVG text (opens in Inkscape and co.) and the canvas background is kept.
 - Renaming an argument or link now also saves when you click outside the graph (e.g. on a panel); only Escape discards the edit.
 - The serialisation window, the generate view and the mobile LaTeX export options now use the app's standard picker instead of native selects.

@@ -31,6 +31,7 @@ const PHYSICS_MODE_STATE_KEY = 'physics-mode'
 interface PhysicsCapable {
   getHostElement(): HTMLDivElement | null
   toggleNodePhysics(enabled: boolean): void
+  toggleFixedLinkDistance(enabled: boolean): void
 }
 
 export function usePhysics({
@@ -61,13 +62,19 @@ export function usePhysics({
     }
   }
 
+  // links pull together only while physics runs, so manual layouts stay put otherwise
+  function setPhysics(enabled: boolean) {
+    graphComponentRef.value?.toggleNodePhysics(enabled)
+    graphComponentRef.value?.toggleFixedLinkDistance(enabled)
+  }
+
   function disablePhysics() {
-    graphComponentRef.value?.toggleNodePhysics(false)
+    setPhysics(false)
   }
 
   function triggerSettle() {
     if (physicsMode.value !== 'on') return
-    graphComponentRef.value?.toggleNodePhysics(true)
+    setPhysics(true)
     if (settleTimerId !== null) clearTimeout(settleTimerId)
     settleTimerId = setTimeout(() => {
       settleTimerId = null
@@ -121,7 +128,7 @@ export function usePhysics({
       if (event.button !== 0) return // right-click starts edge creation — don't move nodes mid-gesture
       if (!(event.target as Element).closest('.graph-controller__node-container')) return
       nodePointerDown = true
-      graphComponentRef.value?.toggleNodePhysics(true)
+      setPhysics(true)
       if (settleTimerId !== null) {
         clearTimeout(settleTimerId)
         settleTimerId = null
