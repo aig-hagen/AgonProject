@@ -248,11 +248,12 @@ function onSelectionDelete() {
 
 /** Public sources/target of an internal hyperlink id, or `undefined` if any end is unmapped. */
 function hyperLinkPublicEnds(internalHyperLinkId: string) {
-  const { sourceIds, targetId } = parseHyperLinkId(internalHyperLinkId)
+  const { sourceIds, targetId, kind } = parseHyperLinkId(internalHyperLinkId)
   if (!sourceIds.every((id) => idMapping.has(id)) || !idMapping.has(targetId)) return undefined
   return {
     sourceIds: sourceIds.map((id) => idMapping.getOrFail(id)),
     targetId: idMapping.getOrFail(targetId),
+    ...(kind === undefined ? {} : { kind }),
   }
 }
 
@@ -691,12 +692,14 @@ const emit = defineEmits<{
     data: {
       sourceIds: NodeId[]
       targetId: NodeId
+      kind?: string
     },
   ]
   hyperLinkSourceRemoved: [
     data: {
       sourceIds: NodeId[]
       targetId: NodeId
+      kind?: string
       removedSourceId: NodeId
     },
   ]
@@ -1406,12 +1409,26 @@ function buildGraphJson(state: GraphEditorState) {
       arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
     }
   })
-  const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => ({
-    sourceIds: hyperLink.sourceIds,
-    targetId: hyperLink.targetId,
-    color: linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor,
-    arrowType: toArrowType(hyperLink.type),
-  }))
+  const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => {
+    const typeColor = linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor
+    if (hyperLink.kind === undefined) {
+      return {
+        sourceIds: hyperLink.sourceIds,
+        targetId: hyperLink.targetId,
+        color: typeColor,
+        arrowType: toArrowType(hyperLink.type),
+      }
+    }
+    const style = linkKinds?.[hyperLink.kind]
+    return {
+      sourceIds: hyperLink.sourceIds,
+      targetId: hyperLink.targetId,
+      kind: hyperLink.kind,
+      color: style?.color ? resolveCssColor(style.color) : typeColor,
+      arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(hyperLink.type),
+      arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
+    }
+  })
   return { nodes, links, hyperLinks }
 }
 

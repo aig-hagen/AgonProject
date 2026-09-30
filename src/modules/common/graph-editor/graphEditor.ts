@@ -191,6 +191,8 @@ export interface GraphEditorStateHyperLink {
   sourceIds: NodeId[]
   targetId: NodeId
   type: LinkType
+  /** As {@link GraphEditorStateLink.kind}, for hyperlinks with the same sources and target. */
+  kind?: string
 }
 
 export interface GraphEditorState {

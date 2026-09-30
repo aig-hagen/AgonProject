@@ -223,7 +223,7 @@ describe('BSAF view', () => {
     expect(canvas.annotations.get(id('b'))).toEqual({ content: 'always derived' })
   })
 
-  test('canvas: supports are DOUBLE links and win over an attack with the same ends', () => {
+  test('canvas: an attack with the same ends as a DOUBLE support is drawn next to it', () => {
     const { aba, id } = paperExample()
     const { state, note } = bsafCanvas(aba, generateUUID(), {})
     const onE = state.hyperLinks!.filter((l) => l.targetId === id('e'))
@@ -232,8 +232,13 @@ describe('BSAF view', () => {
       targetId: id('e'),
       type: LinkType.DOUBLE,
     })
-    expect(onE.filter((l) => l.sourceIds.join() === [id('a'), id('b')].join())).toHaveLength(1)
-    expect(note).toBe('also: {a, b} attacks e')
+    expect(onE).toContainEqual({
+      sourceIds: [id('a'), id('b')],
+      targetId: id('e'),
+      type: LinkType.SINGLE,
+      kind: 'attack',
+    })
+    expect(note).toBeUndefined()
     expect(state.links).toContainEqual({
       sourceId: id('e'),
       targetId: id('e'),

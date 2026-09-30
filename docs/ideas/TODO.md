@@ -17,8 +17,6 @@
 - add derived attacks to theory view (contraries are drawn since graph-component rc.31)
 - improve UI of theory panel;
 - handle the attack/support from empty set
-- BSAF view: draw an attack and a support between the same nodes as parallel links (link `kind`)
-  instead of listing the attack in the note; collective ones still collide (hyperlinks have no kind)
 - better handling of the fact annotation
 - better visuals for the action bar
 - the message after making a theory nonflat in the AF view needs to change and look better

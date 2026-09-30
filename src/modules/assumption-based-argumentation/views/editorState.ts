@@ -84,21 +84,14 @@ export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): 
   }))
   const links: GraphEditorStateLink[] = []
   const hyperLinks: GraphEditorStateHyperLink[] = []
-  // The graph keeps one edge per (tail, head), so an attack sharing both with a support is
-  // listed in the note instead of drawn.
-  const drawn = new Set<string>()
-  const hidden: string[] = []
+  // An attack with the same tail and head as a support gets a kind, so both are drawn side by side.
+  const supported = new Set(supports.map(({ tail, head }) => `${tail.join(',')}-${head}`))
   const add = (edges: typeof attacks, type: LinkType) => {
     for (const { tail, head } of edges) {
-      const key = `${tail.join(',')}-${head}`
-      if (drawn.has(key)) {
-        const names = tail.map((id) => aba.getNode(id).name).sort()
-        hidden.push(`{${names.join(', ')}} attacks ${aba.getNode(head).name}`)
-        continue
-      }
-      drawn.add(key)
-      if (tail.length === 1) links.push({ sourceId: tail[0]!, targetId: head, type })
-      else hyperLinks.push({ sourceIds: tail, targetId: head, type })
+      const parallel = type === LinkType.SINGLE && supported.has(`${tail.join(',')}-${head}`)
+      const kind = parallel ? { kind: 'attack' } : {}
+      if (tail.length === 1) links.push({ sourceId: tail[0]!, targetId: head, type, ...kind })
+      else hyperLinks.push({ sourceIds: tail, targetId: head, type, ...kind })
     }
   }
   add(supports, LinkType.DOUBLE)
@@ -112,7 +105,6 @@ export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): 
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
     unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
-    note: hidden.length > 0 ? `also: ${hidden.join('; ')}` : undefined,
   }
 }
 

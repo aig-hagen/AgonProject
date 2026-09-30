@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Publication references on the module cards and glossary pages now show title, authors and venue on separate lines.
 - The selection action bar now also appears on desktop: click an argument or link to select it; double-click a label to rename it directly. Replaces the old link type popup; ADF arguments get an Edit condition action.
 - The PAF probability popup now shows a compact `P(a)` / `P((a,b))` header with the value, and opens from the selection bar on desktop.
-- Updated the bundled graph component to 5.0.0-rc.34; uncertain iAF attacks now use its native dashed links.
+- Updated the bundled graph component to 5.0.0-rc.35; uncertain iAF attacks now use its native dashed links.
 - Physics now pulls arguments towards the graph's own center instead of the canvas middle, so settling no longer shifts the graph.
 - With physics on, linked arguments are gently pulled together while settling, and larger arguments get more room.
 - The SVG image export now uses the graph component's exporter: labels are plain SVG text (opens in Inkscape and co.) and the canvas background is kept.
@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- ABA BSAF view: an attack and a support with the same ends (also collective ones) are now both drawn side by side instead of listing the attack in a note.
 - Arrowheads now end exactly on the border of rectangular and diamond arguments, also for curved and angled edges.
 - Graph annotations (e.g. ABA facts `⊤` and contraries) now disappear once they no longer apply instead of lingering.
 - BAF extension highlighting no longer marks supported arguments as rejected, and follows the complex attacks of the chosen support type.
