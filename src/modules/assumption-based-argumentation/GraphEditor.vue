@@ -440,6 +440,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
 <template>
   <GraphEditor
     v-if="isCanvasReady && editorState"
+    :class="{ 'aba-af-graph': shownView === 'af' }"
     :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"

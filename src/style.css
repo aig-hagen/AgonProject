@@ -217,6 +217,11 @@ body {
   font-size: 12px;
 }
 
+/* Tighter gaps in `{a, b} ⊢ c` argument labels, matching the evaluation results. */
+.aba-af-graph .graph-controller__node-label {
+  word-spacing: -0.5ch;
+}
+
 .graph-controller__label-input {
   background-color: var(--graph-node-color, #99b7d5);
   border: var(--graph-node-stroke-width, 1.5px) solid var(--graph-node-stroke-color, #5a87a8);
