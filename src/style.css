@@ -29,15 +29,26 @@
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
   --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
 }
-/* JetBrains Mono lacks ∅, and the system fallback renders it tiny. */
+/* JetBrains Mono lacks these math symbols, and system fallbacks render them tiny or cramped,
+   so they come from the bundled KaTeX fonts instead: ∅, and ← ↑ → ↓ ⇒ ∧ ∨ ⊢ ⊣ ⊤ ⊥. */
 @font-face {
-  font-family: 'Graph Empty Set';
+  font-family: 'Graph Symbols';
   src: url('../node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff2') format('woff2');
+  /* Both faces need the same weight range, or the browser splits them and drops a unicode-range. */
+  font-weight: 100 900;
   unicode-range: U+2205;
   size-adjust: 125%;
 }
+@font-face {
+  font-family: 'Graph Symbols';
+  /* Bold for every weight: the regular cut is too thin next to JetBrains Mono. */
+  src: url('../node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff2') format('woff2');
+  font-weight: 100 900;
+  unicode-range: U+2190-2193, U+21D2, U+2227-2228, U+22A2-22A5;
+  size-adjust: 115%;
+}
 :root {
-  --font-graph: 'Graph Empty Set', var(--font-mono);
+  --font-graph: 'Graph Symbols', var(--font-mono);
 }
 
 /* App colors (base scale, brand, status, selection) are the single source of

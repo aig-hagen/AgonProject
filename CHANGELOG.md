@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Math symbols (← ⊢ ⊤ ⊥ ∧ ∨) in graph labels and the ABA/ADF editors no longer fall back to tiny system glyphs.
 - ABA theory panel, view switcher and canvas notes are now translated instead of always showing English.
 - ABA BSAF view: an attack and a support with the same ends (also collective ones) are now both drawn side by side instead of listing the attack in a note.
 - ABA SetAF/BSAF views: attacks and supports from the empty set are drawn from a ∅ symbol, and attacks involving always-out assumptions are no longer hidden.
