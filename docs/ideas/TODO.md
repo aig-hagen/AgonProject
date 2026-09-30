@@ -11,12 +11,8 @@
 ## ABA
 
 - eval view: display of semantics definitions is incomplete; semantics list should look better
-- physics doesnt properly respect the rectangle-expandable nodes it seems
 - update glossary entries; show separate for flat/nonflat in eval window
-- several issues where changes to the theory dont update the graph; eg contraries
-- add derived attacks to theory view (contraries are drawn since graph-component rc.31)
 - improve UI of theory panel;
-- handle the attack/support from empty set
 - better handling of the fact annotation
 - better visuals for the action bar
 - the message after making a theory nonflat in the AF view needs to change and look better

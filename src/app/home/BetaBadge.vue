@@ -20,10 +20,21 @@
 import { BeakerIcon } from '@heroicons/vue/24/solid'
 import { useI18n } from 'vue-i18n'
 
+defineProps<{ ribbon?: boolean }>()
+
 const { t } = useI18n({ useScope: 'global' })
 </script>
 <template>
+  <!-- Diagonal corner band; parent needs `relative overflow-hidden`. -->
   <span
+    v-if="ribbon"
+    class="absolute top-2 -right-11 z-10 flex w-32 rotate-45 items-center justify-center bg-secondary py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-secondary-content shadow-sm"
+    :title="t('home.picker.betaHint')"
+  >
+    {{ t('home.picker.beta') }}
+  </span>
+  <span
+    v-else
     class="badge badge-sm badge-soft badge-warning shrink-0 gap-1 px-2 text-[0.65rem] font-semibold uppercase tracking-wider"
     :title="t('home.picker.betaHint')"
   >

@@ -68,17 +68,17 @@ function openContent(content: DocumentT, modulePrefix: string) {
         <div class="divider"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
-            class="card grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6 shadow-md"
+            class="card relative overflow-hidden grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6 shadow-md"
             :class="{ 'opacity-50': moduleCard.underConstruction }"
             v-for="(moduleCard, index) in moduleCards"
             :key="index"
           >
             <!-- 3-row subgrid: the title & description bands auto-size to the tallest card in
                  each grid row, so a 2nd title line is reserved only when a title actually wraps. -->
+            <BetaBadge v-if="moduleCard.beta" ribbon />
             <div class="flex items-start justify-between gap-2">
               <h3 class="card-title line-clamp-2">{{ moduleCard.displayNameSingular }}</h3>
               <div class="flex shrink-0 items-center gap-1">
-                <BetaBadge v-if="moduleCard.beta" />
                 <PublicationsTooltip
                   v-if="moduleCard.publications?.length"
                   :publications="moduleCard.publications"
