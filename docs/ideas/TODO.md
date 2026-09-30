@@ -1,6 +1,5 @@
 ## Features
 
-- Rework fonts to be consistent across browsers
 - Localization of definitions, semantics, etc
 - graph style colors need update
 - labeling highlight colors - color blind mode
@@ -16,6 +15,7 @@
 - better handling of the fact annotation
 - better visuals for the action bar
 - the message after making a theory nonflat in the AF view needs to change and look better
+- in AF view: show tree-derivation for each node
 
 ## Bugs and Issues
 

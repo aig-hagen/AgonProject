@@ -68,7 +68,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
         <div class="divider"></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div
-            class="card relative overflow-hidden grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6 shadow-md"
+            class="card relative grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6 shadow-md"
             :class="{ 'opacity-50': moduleCard.underConstruction }"
             v-for="(moduleCard, index) in moduleCards"
             :key="index"

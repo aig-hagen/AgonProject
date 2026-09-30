@@ -25,13 +25,17 @@ defineProps<{ ribbon?: boolean }>()
 const { t } = useI18n({ useScope: 'global' })
 </script>
 <template>
-  <!-- Diagonal corner band; parent needs `relative overflow-hidden`. -->
+  <!-- Diagonal corner band; self-clipping so the card keeps overflow visible (tooltips). Parent needs `relative`. -->
   <span
     v-if="ribbon"
-    class="absolute top-2 -right-11 z-10 flex w-32 rotate-45 items-center justify-center bg-secondary py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-secondary-content shadow-sm"
-    :title="t('home.picker.betaHint')"
+    class="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[inherit]"
   >
-    {{ t('home.picker.beta') }}
+    <span
+      class="pointer-events-auto absolute top-2 -right-11 flex w-32 rotate-45 items-center justify-center bg-secondary py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-secondary-content shadow-sm"
+      :title="t('home.picker.betaHint')"
+    >
+      {{ t('home.picker.beta') }}
+    </span>
   </span>
   <span
     v-else
