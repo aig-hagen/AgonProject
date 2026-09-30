@@ -16,6 +16,7 @@
 - better visuals for the action bar
 - the message after making a theory nonflat in the AF view needs to change and look better
 - in AF view: show tree-derivation for each node
+- when in a AF/SETAF view, when new nodes are created they must be placed better
 
 ## Bugs and Issues
 

@@ -174,6 +174,20 @@ export class ABAF {
     )
   }
 
+  // Rewrites a rule in place (keeping its id and list position). If the result duplicates
+  // another rule, the edited one is dropped instead.
+  updateRule(id: number, head: NodeId, body: NodeId[]) {
+    const rule = this.ruleList.find((r) => r.id === id)
+    if (!rule) return
+    const dup = this.findRule(head, body)
+    if (dup && dup.id !== id) {
+      this.deleteRule(id)
+      return
+    }
+    rule.head = head
+    rule.body = [...new Set(body)]
+  }
+
   deleteRule(id: number) {
     this.ruleList = this.ruleList.filter((r) => r.id !== id)
   }
