@@ -18,6 +18,7 @@
  */
 import type { Component } from 'vue'
 
+import { i18n } from '@/localization'
 import AfViewIcon from '@/modules/assumption-based-argumentation/views/AfViewIcon.vue'
 import type { AbaView } from '@/modules/assumption-based-argumentation/views/editorState'
 import SetAfViewIcon from '@/modules/assumption-based-argumentation/views/SetAfViewIcon.vue'
@@ -33,31 +34,34 @@ export interface ViewOption {
 
 // The third slot is the SETAF for flat theories and the BSAF otherwise (a flat BSAF is a SETAF).
 export function viewOptions(flat: boolean): ViewOption[] {
+  const t = i18n.global.t
   return [
     {
       key: 'theory',
-      label: 'Theory',
+      label: t('editor.aba.theory.title'),
       icon: TheoryViewIcon,
-      description: 'Edit rules and assumptions',
+      description: t('editor.aba.views.theoryDescription'),
       flatOnly: false,
     },
     {
       key: 'af',
       label: 'AF',
       icon: AfViewIcon,
-      description: 'Arguments and attacks, read-only',
+      description: t('editor.aba.views.afDescription'),
       flatOnly: true,
     },
     {
       key: 'setaf',
       label: flat ? 'SetAF' : 'BSAF',
       icon: SetAfViewIcon,
-      description: flat
-        ? 'Assumptions with set-attacks, read-only'
-        : 'Assumptions with set-attacks and set-supports, read-only',
+      description: t(
+        flat ? 'editor.aba.views.setafDescription' : 'editor.aba.views.bsafDescription',
+      ),
       flatOnly: false,
     },
   ]
 }
 
-export const FLAT_ONLY_REASON = 'Only exact for flat theories'
+export function flatOnlyReason(): string {
+  return i18n.global.t('editor.aba.views.flatOnly')
+}

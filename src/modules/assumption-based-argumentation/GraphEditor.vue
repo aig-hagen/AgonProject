@@ -256,7 +256,7 @@ function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   const name = data.label.trim()
   const clash = content.value.findByName(name)
   if (clash !== undefined && clash !== data.id) {
-    addErrorNotification(`Name “${name}” is already used`)
+    addErrorNotification(t('editor.aba.theory.nameTaken', { name }))
     createNewState(() => {})
     return
   }
@@ -348,7 +348,9 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
   return [
     {
       key: 'kind',
-      label: d.kind === 'assumption' ? 'Make atom' : 'Make assumption',
+      label: t(
+        d.kind === 'assumption' ? 'editor.aba.theory.makeAtom' : 'editor.aba.theory.makeAssumption',
+      ),
       keepOpen: true,
       run: () =>
         createNewState((draft) => {
@@ -358,7 +360,7 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
     },
     {
       key: 'fact',
-      label: d.fact ? 'Unset fact' : 'Set fact',
+      label: t(d.fact ? 'editor.aba.theory.unsetFact' : 'editor.aba.theory.setFact'),
       keepOpen: true,
       run: () => createNewState((draft) => draft.setFact(id, !d.fact)),
     },
@@ -492,9 +494,9 @@ const extensionChips = computed<EvaluationChip[]>(() =>
           class="card card-sm bg-base-100 border border-base-300 shadow-md max-w-xs pointer-events-auto"
         >
           <div class="card-body items-center text-center">
-            <p>This view is only exact for flat theories, and this theory derives an assumption.</p>
+            <p>{{ t('editor.aba.views.unavailable') }}</p>
             <button class="btn btn-sm btn-primary" @click="activeView = 'theory'">
-              Back to Theory
+              {{ t('editor.aba.views.backToTheory') }}
             </button>
           </div>
         </div>
@@ -510,13 +512,13 @@ const extensionChips = computed<EvaluationChip[]>(() =>
       <div class="flex items-center gap-2">
         <ViewPicker v-model="activeView" :flat="isFlat" />
         <button class="btn btn-sm btn-neutral shadow-md gap-1.5" @click="isTheoryOpen = true">
-          <BookOpenIcon class="size-4" /> Theory
+          <BookOpenIcon class="size-4" /> {{ t('editor.aba.theory.title') }}
         </button>
       </div>
       <BottomSheet
         v-if="layoutMode === 'compact'"
         v-model:open="isTheoryOpen"
-        title="Theory"
+        :title="t('editor.aba.theory.title')"
         :snap-points="[0.5, 0.9]"
       >
         <TheoryPanel :aba="content" compact @edit="createNewState($event)" />

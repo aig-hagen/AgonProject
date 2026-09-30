@@ -25,6 +25,7 @@ import {
   XMarkIcon,
 } from '@heroicons/vue/24/outline'
 import { computed, ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import { getNextName } from '@/modules/common/nextName'
@@ -45,6 +46,7 @@ const emit = defineEmits<{
   edit: [recipe: (draft: ABAF) => void]
 }>()
 
+const { t } = useI18n({ useScope: 'global' })
 const { addErrorNotification } = useNotifications()
 
 function nodeName(id: NodeId): string {
@@ -95,20 +97,22 @@ const lints = computed(() => {
   const out: string[] = []
   for (const a of aba.assumptions()) {
     const c = aba.getContrary(a)
-    if (c === undefined) out.push(`assumption “${nodeName(a)}” has no contrary`)
-    else if (c === a) out.push(`“${nodeName(a)}” is its own contrary → self-attacker`)
-    else if (isAssm(c)) out.push(`contrary of “${nodeName(a)}” is an assumption (“${nodeName(c)}”)`)
+    const name = nodeName(a)
+    if (c === undefined) out.push(t('editor.aba.checks.noContrary', { name }))
+    else if (c === a) out.push(t('editor.aba.checks.selfContrary', { name }))
+    else if (isAssm(c))
+      out.push(t('editor.aba.checks.contraryIsAssumption', { name, contrary: nodeName(c) }))
   }
   for (const r of aba.rules()) {
     if (r.body.includes(r.head))
-      out.push(`tautological rule ${nodeName(r.head)} ← …, ${nodeName(r.head)}`)
+      out.push(t('editor.aba.checks.tautologicalRule', { head: nodeName(r.head) }))
   }
   for (const [id, d] of aba.nodeEntries()) {
     if (d.kind !== 'atom' || d.fact) continue
     const derived = aba.rules().some((r) => r.head === id)
     const used =
       aba.rules().some((r) => r.body.includes(id)) || aba.contraries().some(([, t]) => t === id)
-    if (!derived && used) out.push(`atom “${d.name}” is used but never derivable (no rule/fact)`)
+    if (!derived && used) out.push(t('editor.aba.checks.underivable', { name: d.name }))
   }
   return out
 })
@@ -168,7 +172,7 @@ function onRename(id: NodeId, e: Event) {
     return
   }
   if (usedNames().includes(val)) {
-    addErrorNotification(`Name “${val}” is already used`)
+    addErrorNotification(t('editor.aba.theory.nameTaken', { name: val }))
     input.value = current
     return
   }
@@ -261,15 +265,17 @@ function commitBuiltRule() {
       class="flex items-center gap-2 py-1.5 pl-3 pr-2 bg-base-200"
       :class="{ 'border-b border-base-300': !collapsed }"
     >
-      <span class="flex-1 truncate font-medium">Theory</span>
+      <span class="flex-1 truncate font-medium">{{ t('editor.aba.theory.title') }}</span>
       <span class="flex items-center gap-1.5 text-xs text-base-content/70">
         <span class="size-1.5 rounded-full" :class="isFlat ? 'bg-success' : 'bg-warning'"></span>
-        <TermTooltip id="abaFlat">{{ isFlat ? 'flat' : 'non-flat' }}</TermTooltip>
+        <TermTooltip id="abaFlat">{{
+          isFlat ? t('editor.aba.theory.flat') : t('editor.aba.theory.nonFlat')
+        }}</TermTooltip>
       </span>
       <button
         type="button"
         class="btn btn-ghost btn-xs btn-square"
-        :title="collapsed ? 'Expand theory' : 'Collapse theory'"
+        :title="collapsed ? t('editor.aba.theory.expand') : t('editor.aba.theory.collapse')"
         :aria-expanded="!collapsed"
         @click="collapsed = !collapsed"
       >
@@ -293,7 +299,7 @@ function commitBuiltRule() {
       </div>
 
       <section class="flex flex-col gap-1.5">
-        <h3 class="section-label">Statements</h3>
+        <h3 class="section-label">{{ t('editor.aba.theory.statements') }}</h3>
         <ul v-if="statements.length" class="grid grid-cols-2 gap-1">
           <li
             v-for="s in statements"
@@ -304,7 +310,11 @@ function commitBuiltRule() {
               <button
                 type="button"
                 class="btn btn-ghost btn-xs btn-square shrink-0"
-                :title="s.kind === 'assumption' ? 'Make atom' : 'Make assumption'"
+                :title="
+                  s.kind === 'assumption'
+                    ? t('editor.aba.theory.makeAtom')
+                    : t('editor.aba.theory.makeAssumption')
+                "
                 @click="toggleKind(s.id)"
               >
                 <span
@@ -316,7 +326,7 @@ function commitBuiltRule() {
                 class="input input-xs min-w-0 flex-1 font-mono"
                 type="text"
                 :value="s.name"
-                :aria-label="`Name of ${s.name}`"
+                :aria-label="t('editor.aba.theory.nameOf', { name: s.name })"
                 @change="onRename(s.id, $event)"
               />
               <button
@@ -326,7 +336,7 @@ function commitBuiltRule() {
                   'lg:opacity-0 lg:group-hover:opacity-60 lg:group-focus-within:opacity-60':
                     !compact,
                 }"
-                :title="`Delete ${s.name}`"
+                :title="t('editor.aba.theory.delete', { name: s.name })"
                 @click="delNode(s.id)"
               >
                 <XMarkIcon class="size-3.5" />
@@ -342,10 +352,10 @@ function commitBuiltRule() {
                 class="select select-xs min-w-0 flex-1 font-mono"
                 :class="{ 'text-warning': s.contrary === undefined }"
                 :value="s.contrary ?? ''"
-                :aria-label="`Contrary of ${s.name}`"
+                :aria-label="t('editor.aba.theory.contraryOf', { name: s.name })"
                 @change="onContraryChange(s.id, $event)"
               >
-                <option value="" disabled>choose…</option>
+                <option value="" disabled>{{ t('editor.aba.theory.chooseContrary') }}</option>
                 <template v-for="o in statements" :key="o.id">
                   <option v-if="o.id !== s.id" :value="o.id">{{ o.name }}</option>
                 </template>
@@ -353,19 +363,21 @@ function commitBuiltRule() {
             </label>
           </li>
         </ul>
-        <p v-else class="text-xs italic text-base-content/60">No statements yet.</p>
+        <p v-else class="text-xs italic text-base-content/60">
+          {{ t('editor.aba.theory.noStatements') }}
+        </p>
         <div class="grid grid-cols-2 gap-1.5">
           <button class="btn btn-sm" type="button" @click="addAtom">
-            <span class="glyph glyph-atom" /> Atom
+            <span class="glyph glyph-atom" /> {{ t('editor.aba.theory.atom') }}
           </button>
           <button class="btn btn-sm" type="button" @click="addAssumption">
-            <span class="glyph glyph-assm" /> Assumption
+            <span class="glyph glyph-assm" /> {{ t('editor.aba.theory.assumption') }}
           </button>
         </div>
       </section>
 
       <section class="flex flex-col gap-1.5">
-        <h3 class="section-label">Rules</h3>
+        <h3 class="section-label">{{ t('editor.aba.theory.rules') }}</h3>
         <ul v-if="ruleRows.length" class="flex flex-col gap-0.5">
           <li
             v-for="r in ruleRows"
@@ -375,28 +387,34 @@ function commitBuiltRule() {
             <span class="flex-1 min-w-0 truncate font-mono text-[0.8125rem]">
               {{ r.head }} ← {{ r.body }}
             </span>
-            <span v-if="r.fact" class="badge badge-xs badge-outline badge-primary">fact</span>
+            <span v-if="r.fact" class="badge badge-xs badge-outline badge-primary">{{
+              t('editor.aba.theory.fact')
+            }}</span>
             <button
               type="button"
               class="btn btn-ghost btn-xs btn-square opacity-60 hover:opacity-100 hover:text-error"
               :class="{ 'lg:opacity-0 lg:group-hover:opacity-60': !compact }"
-              :title="r.fact ? 'Delete fact' : 'Delete rule'"
+              :title="
+                r.fact ? t('editor.aba.theory.deleteFact') : t('editor.aba.theory.deleteRule')
+              "
               @click="deleteRuleRow(r)"
             >
               <XMarkIcon class="size-3.5" />
             </button>
           </li>
         </ul>
-        <p v-else class="text-xs italic text-base-content/60">No rules yet.</p>
+        <p v-else class="text-xs italic text-base-content/60">
+          {{ t('editor.aba.theory.noRules') }}
+        </p>
 
         <div class="rounded-field bg-inset border border-base-300 p-2.5 flex flex-col gap-2">
           <div class="flex items-center gap-1.5">
             <select
               v-model="newHead"
               class="select select-xs w-20 shrink-0 font-mono"
-              aria-label="Rule head"
+              :aria-label="t('editor.aba.theory.ruleHead')"
             >
-              <option :value="null" disabled>head…</option>
+              <option :value="null" disabled>{{ t('editor.aba.theory.headPlaceholder') }}</option>
               <option v-for="s in statements" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
             <span class="font-mono text-base-content/60">←</span>
@@ -405,12 +423,16 @@ function commitBuiltRule() {
               @click="bodyInput?.focus()"
             >
               <span
-                v-for="t in bodyTokens"
-                :key="t"
+                v-for="token in bodyTokens"
+                :key="token"
                 class="badge badge-xs badge-primary badge-soft gap-0.5 font-mono"
               >
-                {{ t }}
-                <button type="button" :aria-label="`Remove ${t}`" @click.stop="removeBodyToken(t)">
+                {{ token }}
+                <button
+                  type="button"
+                  :aria-label="t('editor.aba.theory.remove', { name: token })"
+                  @click.stop="removeBodyToken(token)"
+                >
                   <XMarkIcon class="size-3" />
                 </button>
               </span>
@@ -419,8 +441,8 @@ function commitBuiltRule() {
                 v-model="bodyDraft"
                 class="min-w-10 flex-1 font-mono"
                 type="text"
-                aria-label="Rule body"
-                :placeholder="bodyTokens.length ? '' : 'body…'"
+                :aria-label="t('editor.aba.theory.ruleBody')"
+                :placeholder="bodyTokens.length ? '' : t('editor.aba.theory.bodyPlaceholder')"
                 @keydown="onBodyKeydown"
                 @blur="commitDraftToken"
               />
@@ -445,15 +467,16 @@ function commitBuiltRule() {
             :disabled="newHead === null"
             @click="commitBuiltRule"
           >
-            <PlusIcon class="size-4" /> {{ hasBody ? 'Add rule' : 'Add fact' }}
+            <PlusIcon class="size-4" />
+            {{ hasBody ? t('editor.aba.theory.addRule') : t('editor.aba.theory.addFact') }}
           </button>
         </div>
       </section>
 
       <section class="flex flex-col gap-1.5">
-        <h3 class="section-label">Checks</h3>
+        <h3 class="section-label">{{ t('editor.aba.checks.title') }}</h3>
         <p v-if="!lints.length" class="flex items-center gap-2 text-xs text-success">
-          <CheckCircleIcon class="size-4 shrink-0" /> No warnings — well-formed theory.
+          <CheckCircleIcon class="size-4 shrink-0" /> {{ t('editor.aba.checks.ok') }}
         </p>
         <ul v-else class="flex flex-col gap-1">
           <li v-for="(m, i) in lints" :key="i" class="flex items-start gap-2 text-xs">

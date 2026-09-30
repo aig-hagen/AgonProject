@@ -19,10 +19,11 @@
 <script setup lang="ts">
 import { LockClosedIcon } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import type { AbaView } from '@/modules/assumption-based-argumentation/views/editorState'
 import {
-  FLAT_ONLY_REASON,
+  flatOnlyReason,
   viewOptions,
 } from '@/modules/assumption-based-argumentation/views/viewOptions'
 import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue'
@@ -30,20 +31,26 @@ import SegmentedControl from '@/modules/common/graph-editor/SegmentedControl.vue
 const { flat } = defineProps<{ flat: boolean }>()
 const view = defineModel<AbaView>({ required: true })
 
+const { t } = useI18n({ useScope: 'global' })
+
 const options = computed(() =>
   viewOptions(flat).map(({ key, label, icon, flatOnly }) => ({
     key,
     label,
     icon,
     disabled: flatOnly && !flat,
-    tip: flatOnly && !flat ? FLAT_ONLY_REASON : undefined,
+    tip: flatOnly && !flat ? flatOnlyReason() : undefined,
   })),
 )
 </script>
 
 <template>
   <div class="relative w-fit">
-    <SegmentedControl v-model="view" :options="options" aria-label="Canvas view" />
+    <SegmentedControl
+      v-model="view"
+      :options="options"
+      :aria-label="t('editor.aba.views.ariaLabel')"
+    />
     <!-- Out of flow so the centered bar keeps its width when this appears. -->
     <Transition
       enter-active-class="transition duration-200 ease-out"
@@ -54,9 +61,9 @@ const options = computed(() =>
       <span
         v-if="view !== 'theory'"
         class="absolute top-1/2 left-full ml-2 -mt-4 flex h-8 items-center gap-1 rounded-full border border-base-300 bg-base-100/80 px-2.5 text-xs whitespace-nowrap text-base-content/60 shadow-lg backdrop-blur-md"
-        title="Derived from the theory"
+        :title="t('editor.aba.views.derivedFromTheory')"
       >
-        <LockClosedIcon class="size-3.5" /> read-only
+        <LockClosedIcon class="size-3.5" /> {{ t('editor.aba.views.readOnly') }}
       </span>
     </Transition>
   </div>

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { i18n } from '@/localization'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import { toAF } from '@/modules/assumption-based-argumentation/views/af'
 import { toBSAF } from '@/modules/assumption-based-argumentation/views/bsaf'
@@ -67,7 +68,9 @@ export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions):
   }
   return {
     state: { stateId, nodes, links, hyperLinks, redraw: true },
-    annotations: new Map(alwaysOut.map((id) => [id, { content: 'always out' }])),
+    annotations: new Map(
+      alwaysOut.map((id) => [id, { content: i18n.global.t('editor.aba.views.alwaysOut') }]),
+    ),
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
     unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
@@ -97,8 +100,10 @@ export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): 
   add(supports, LinkType.DOUBLE)
   add(attacks, LinkType.SINGLE)
   const annotations = new Map<NodeId, { content: string }>()
-  for (const id of alwaysDerived) annotations.set(id, { content: 'always derived' })
-  for (const id of alwaysOut) annotations.set(id, { content: 'always out' })
+  const t = i18n.global.t
+  for (const id of alwaysDerived)
+    annotations.set(id, { content: t('editor.aba.views.alwaysDerived') })
+  for (const id of alwaysOut) annotations.set(id, { content: t('editor.aba.views.alwaysOut') })
   return {
     state: { stateId, nodes, links, hyperLinks, redraw: true },
     annotations,
@@ -143,6 +148,9 @@ export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): De
     positionKeys,
     unplaced,
     supports: new Map([...af.arguments()].map(([id, d]) => [id, d.support])),
-    note: total > nodes.length ? `showing ${nodes.length} of ${total} arguments` : undefined,
+    note:
+      total > nodes.length
+        ? i18n.global.t('editor.aba.views.argumentsCapped', { shown: nodes.length, total })
+        : undefined,
   }
 }
