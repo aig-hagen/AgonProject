@@ -1,0 +1,25 @@
+{
+  "apiVersion": "aba/v1",
+  "name": "murder_trial",
+  "description": "The classical courtroom scenario as an ABA theory: the presumption of Innocent, the Alibi and the Evidence are assumptions, while Motive and Fingerprints are established facts.",
+  "nodes": {
+    "0": { "name": "Innocent", "kind": "assumption", "x": 300, "y": -260, "fact": false },
+    "1": { "name": "Alibi", "kind": "assumption", "x": -260, "y": 0, "fact": false },
+    "2": { "name": "Evidence", "kind": "assumption", "x": -260, "y": 240, "fact": false },
+    "3": { "name": "Guilty", "kind": "atom", "x": 300, "y": -120, "fact": false },
+    "4": { "name": "AtScene", "kind": "atom", "x": 40, "y": 180, "fact": false },
+    "5": { "name": "Planted", "kind": "atom", "x": 40, "y": 60, "fact": false },
+    "6": { "name": "Motive", "kind": "atom", "x": -260, "y": -120, "fact": true },
+    "7": { "name": "Fingerprints", "kind": "atom", "x": -260, "y": 120, "fact": true }
+  },
+  "rules": [
+    { "id": 0, "head": 3, "body": [6, 4] },
+    { "id": 1, "head": 4, "body": [7, 2] },
+    { "id": 2, "head": 5, "body": [7, 1] }
+  ],
+  "contraries": {
+    "0": 3,
+    "1": 4,
+    "2": 5
+  }
+}
