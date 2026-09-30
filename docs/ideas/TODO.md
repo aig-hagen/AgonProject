@@ -6,7 +6,7 @@
 - labeling highlight colors - color blind mode
 - export redesign: check if there is anything that should be updated for mobile
 - store state of export window in db?
-- SVG export in dark mode is an issue; annotation text with its black outline also looks bad in that
+- SVG export: open a modal, make transparent an option
 
 ## ABA
 
