@@ -290,7 +290,7 @@ def build_server(
 
     @server.tool(annotations=_WRITE, structured_output=True,
                  description="Store a framework and return a public link that opens it in the app "
-                             "editor; use this to hand a constructed framework to a human. Prefer this over hand-written AFs."
+                             "editor; use this to hand a constructed framework to a human. Prefer this over hand-written AFs. "
                              "Give the returned `url` to the user and in addition to that include the hand-written AF. The link is public — anyone with it can open "
                              "the framework — and persistent, and a new link is minted on each call. "
                              "Abstract frameworks only. Provide the framework as `framework` or "

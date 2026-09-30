@@ -108,6 +108,11 @@
         font-size: 0.85rem;
         color: var(--muted);
       }
+      .credit {
+        margin-top: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
       .brand strong {
         color: var(--accent);
       }
@@ -117,14 +122,18 @@
     <main class="card">
       <h1 data-i18n="heading">This is an API endpoint</h1>
       <p data-i18n="body1">
-        This URL is a <code>POST</code>-only endpoint of the AgonProject argumentation solver, not a
-        page you open in a browser.
+        This URL is a <code>POST</code>-only endpoint of the TweetyProject reasoning API used by
+        AgonProject, not a page you open in a browser.
       </p>
       <a class="cta" href="/" data-i18n="cta">Open the app</a>
       <p>
         <a href="/api" data-i18n="docs">See the API reference</a>
       </p>
       <p class="brand"><strong>AgonProject</strong> &middot; AIG Hagen</p>
+      <p class="credit">
+        <span data-i18n="credit">Reasoning powered by</span>
+        <a href="https://tweetyproject.org" target="_blank" rel="noopener">TweetyProject</a>
+      </p>
     </main>
     <!--
       Self-contained localization: this page is served for browser (GET) visits to the
@@ -139,17 +148,19 @@
             title: 'API endpoint · AgonProject',
             heading: 'This is an API endpoint',
             body1:
-              'This URL is a POST-only endpoint of the AgonProject argumentation solver, not a page you open in a browser.',
+              'This URL is a POST-only endpoint of the TweetyProject reasoning API used by AgonProject, not a page you open in a browser.',
             cta: 'Open the app',
             docs: 'See the API reference',
+            credit: 'Reasoning powered by',
           },
           de: {
             title: 'API-Endpunkt · AgonProject',
             heading: 'Dies ist ein API-Endpunkt',
             body1:
-              'Diese URL ist ein POST-Endpunkt des AgonProject-Argumentationslösers, keine Seite, die du im Browser öffnest.',
+              'Diese URL ist ein POST-Endpunkt der von AgonProject genutzten Reasoning-API von TweetyProject, keine Seite, die du im Browser öffnest.',
             cta: 'App öffnen',
             docs: 'Zur API-Referenz',
+            credit: 'Reasoning bereitgestellt von',
           },
         }
 
