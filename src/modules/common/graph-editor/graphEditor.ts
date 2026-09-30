@@ -169,7 +169,8 @@ export interface SelectionAction {
 
 export type NodeId = number
 
-export type GraphEditorNodeShape = 'circle' | 'diamond' | 'rect'
+// `plain` is a small circle showing only its label: no fill, no stroke, never highlighted.
+export type GraphEditorNodeShape = 'circle' | 'diamond' | 'rect' | 'plain'
 
 export interface GraphEditorStateNode {
   id: NodeId

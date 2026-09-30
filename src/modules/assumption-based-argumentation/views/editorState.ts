@@ -49,6 +49,27 @@ export interface DerivedCanvas {
   supports?: Map<NodeId, NodeId[]>
 }
 
+// Each edge from ∅ starts at its own plain `∅` node next to the head; negative ids never clash
+// with assumptions.
+function addEmptySetNodes(
+  canvas: DerivedCanvas,
+  positions: ViewPositions,
+  heads: NodeId[],
+  type: LinkType,
+) {
+  const isSupport = type === LinkType.DOUBLE
+  for (const head of heads) {
+    const id = -(2 * head + (isSupport ? 2 : 1))
+    const key = `${isSupport ? '∅⇒' : '∅→'}${head}`
+    const position = positions[key]
+    canvas.state.nodes.push({ id, label: '∅', ...(position ?? { x: 0, y: 0 }) })
+    canvas.state.links.push({ sourceId: id, targetId: head, type })
+    canvas.shapes.set(id, 'plain')
+    canvas.positionKeys.set(id, key)
+    if (!position) canvas.unplaced.push(id)
+  }
+}
+
 // SETAF nodes are the assumptions, keyed by id.
 export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
   const { setaf, alwaysOut } = toSETAF(aba)
@@ -66,15 +87,15 @@ export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions):
       hyperLinks.push({ sourceIds: attackers, targetId: target, type: LinkType.SINGLE })
     }
   }
-  return {
+  const canvas: DerivedCanvas = {
     state: { stateId, nodes, links, hyperLinks, redraw: true },
-    annotations: new Map(
-      alwaysOut.map((id) => [id, { content: i18n.global.t('editor.aba.views.alwaysOut') }]),
-    ),
+    annotations: new Map(),
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
     unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
   }
+  addEmptySetNodes(canvas, positions, alwaysOut, LinkType.SINGLE)
+  return canvas
 }
 
 // BSAF shares the SETAF slot and its positions; supports are double arrows, as in the BAF module.
@@ -99,18 +120,16 @@ export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): 
   }
   add(supports, LinkType.DOUBLE)
   add(attacks, LinkType.SINGLE)
-  const annotations = new Map<NodeId, { content: string }>()
-  const t = i18n.global.t
-  for (const id of alwaysDerived)
-    annotations.set(id, { content: t('editor.aba.views.alwaysDerived') })
-  for (const id of alwaysOut) annotations.set(id, { content: t('editor.aba.views.alwaysOut') })
-  return {
+  const canvas: DerivedCanvas = {
     state: { stateId, nodes, links, hyperLinks, redraw: true },
-    annotations,
+    annotations: new Map(),
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
     unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
   }
+  addEmptySetNodes(canvas, positions, alwaysDerived, LinkType.DOUBLE)
+  addEmptySetNodes(canvas, positions, alwaysOut, LinkType.SINGLE)
+  return canvas
 }
 
 // AF nodes are support-unique arguments, labelled `{support} ⊢ claims` by atom name.

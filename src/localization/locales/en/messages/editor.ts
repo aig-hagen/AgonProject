@@ -105,8 +105,6 @@ export default {
         'This view is only exact for flat ABA-theories, and this theory derives an assumption.',
       backToTheory: 'Back to Theory',
       argumentsCapped: 'showing {shown} of {total} arguments',
-      alwaysDerived: 'always derived',
-      alwaysOut: 'always out',
     },
     theory: {
       title: 'ABA-Theory',

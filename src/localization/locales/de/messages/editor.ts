@@ -107,8 +107,6 @@ export default {
         'Diese Ansicht ist nur für flache ABA-Theorien exakt, und diese Theorie leitet eine Annahme ab.',
       backToTheory: 'Zurück zur ABA-Theorie',
       argumentsCapped: '{shown} von {total} Argumenten angezeigt',
-      alwaysDerived: 'immer abgeleitet',
-      alwaysOut: 'immer abgelehnt',
     },
     theory: {
       title: 'ABA-Theorie',

@@ -126,6 +126,11 @@ body {
   stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
+/* Plain (label-only) nodes: the editor gives them a transparent fill. */
+.graph-controller__node[style*='fill: transparent'] {
+  stroke: none;
+}
+
 /* Node hold-to-move charge glow: dark halo on the light canvas, light halo on the dark one. */
 [data-theme='dark'] {
   --node-charge-glow: rgba(255, 255, 255, 0.5);

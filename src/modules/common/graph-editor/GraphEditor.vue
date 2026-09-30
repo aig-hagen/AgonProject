@@ -743,11 +743,16 @@ const RECT_NODE_PROPS = {
   reflexiveEdgeStart: 'MOVABLE',
 } as const
 const RECT_LABEL_FONT_SIZE = '0.8rem'
+const PLAIN_LABEL_FONT_SIZE = '2rem'
+const PLAIN_NODE_PROPS = { shape: NodeShape.CIRCLE, radius: ARGUMENT_RADIUS_IN_PX / 2 } as const
+// Transparent fill also drops the stroke, via a rule in style.css.
+const PLAIN_NODE_COLOR = 'transparent'
 
 function nodePropsFor(id: NodeId) {
   const shape = nodeShapes?.get(id)
   if (shape === 'diamond') return DIAMOND_NODE_PROPS
   if (shape === 'rect') return RECT_NODE_PROPS
+  if (shape === 'plain') return PLAIN_NODE_PROPS
   return CIRCLE_NODE_PROPS
 }
 
@@ -820,6 +825,7 @@ useHighlight({
   getIdMapping: () => idMapping,
   stateRef,
   effectiveStyle,
+  isUncolored: (id) => nodeShapes?.get(id) === 'plain',
 })
 
 function* argumentNames() {
@@ -1382,7 +1388,8 @@ function buildGraphJson(state: GraphEditorState) {
       label: node.label,
       x: live?.x ?? node.x,
       y: live?.y ?? node.y,
-      color: effectiveStyle.value.nodeColor,
+      color:
+        nodeShapes?.get(node.id) === 'plain' ? PLAIN_NODE_COLOR : effectiveStyle.value.nodeColor,
       outline: nodeOutlines?.get(node.id),
       props: nodePropsFor(node.id),
     }
@@ -1451,6 +1458,13 @@ function syncIdMapping() {
   return importedNodes
 }
 
+function labelFontSizeFor(id: NodeId) {
+  const shape = nodeShapes?.get(id)
+  if (shape === 'rect') return RECT_LABEL_FONT_SIZE
+  if (shape === 'plain') return PLAIN_LABEL_FONT_SIZE
+  return undefined
+}
+
 function adjustLabelFontSizes(state: GraphEditorState) {
   for (const node of state.nodes) {
     if (!node.label || !idMapping.hasReverse(node.id)) continue
@@ -1459,7 +1473,7 @@ function adjustLabelFontSizes(state: GraphEditorState) {
       graphComponentId,
       idMapping.getOrFailReverse(node.id),
       node.label,
-      nodeShapes?.get(node.id) === 'rect' ? RECT_LABEL_FONT_SIZE : undefined,
+      labelFontSizeFor(node.id),
     )
   }
 }

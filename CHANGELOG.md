@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - ABA theory panel, view switcher and canvas notes are now translated instead of always showing English.
 - ABA BSAF view: an attack and a support with the same ends (also collective ones) are now both drawn side by side instead of listing the attack in a note.
+- ABA SetAF/BSAF views: attacks and supports from the empty set are drawn from a ∅ symbol, and attacks involving always-out assumptions are no longer hidden.
 - Arrowheads now end exactly on the border of rectangular and diamond arguments, also for curved and angled edges.
 - Graph annotations (e.g. ABA facts `⊤` and contraries) now disappear once they no longer apply instead of lingering.
 - BAF extension highlighting no longer marks supported arguments as rejected, and follows the complex attacks of the chosen support type.
