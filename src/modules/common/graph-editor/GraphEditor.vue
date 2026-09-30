@@ -20,6 +20,7 @@
 import {
   type AnnotationPosition,
   type AnnotationPositionSnapshot,
+  ArrowHead,
   ArrowType,
   EVENT_CAUSE,
   GraphComponent,
@@ -83,7 +84,6 @@ import { ARGUMENT_RADIUS_IN_PX } from '@/modules/common/argumentation/model'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateRow, getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import type { ExportFileData } from '@/modules/common/export'
-import { serializeGraphSvg } from '@/modules/common/export/renderGraphSvg'
 import TexIcon from '@/modules/common/export/TexIcon.vue'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
@@ -95,6 +95,7 @@ import {
   type Highlight,
   type HistoryState,
   type LinkConfigs,
+  type LinkKindStyles,
   LinkType,
   type NodeId,
   type SelectionAction,
@@ -186,7 +187,7 @@ function selectionReferenceRect(): DOMRect | null {
   const sel = selection.value
   if (sel === null) return null
   const anchor = graphComponentRef.value?.getElementAnchor(sel.kind, sel.id)
-  const host = containerRef.value?.querySelector('.graph-controller__graph-host')
+  const host = graphComponentRef.value?.getHostElement()
   if (anchor === undefined || !host) return null
   const h = host.getBoundingClientRect()
   return new DOMRect(h.left + anchor.x, h.top + anchor.y, anchor.width, anchor.height)
@@ -196,10 +197,6 @@ function onSelectionRename() {
   const sel = selection.value
   if (sel === null || sel.kind !== 'node') return
   graphComponentRef.value?.editNodeLabel(sel.id as number)
-  // The library only focuses the label input; preselect its text so the user can
-  // type over the current name immediately (matches desktop double-click behaviour).
-  const input = containerRef.value?.querySelector<HTMLInputElement>('#node-label-input-field')
-  input?.select()
   selection.value = null
 }
 
@@ -218,12 +215,13 @@ function onSelectionDelete() {
   } else if (sel.kind === 'edge') {
     // Same reason as nodes: deleteElement alone emits a PROGRAMMATIC linkDeleted that
     // onLinkDeleted ignores, so drive the document deletion ourselves.
-    const { sourceId, targetId } = parseLinkId(sel.id as string)
+    const { sourceId, targetId, kind } = parseLinkId(sel.id as string)
     graphComponentRef.value?.deleteElement(sel.id)
     if (idMapping.has(sourceId) && idMapping.has(targetId)) {
       emit('linkDeleted', {
         sourceId: idMapping.getOrFail(sourceId),
         targetId: idMapping.getOrFail(targetId),
+        ...(kind === undefined ? {} : { kind }),
       })
     }
     triggerSettle()
@@ -250,11 +248,12 @@ function onSelectionDelete() {
 
 /** Public sources/target of an internal hyperlink id, or `undefined` if any end is unmapped. */
 function hyperLinkPublicEnds(internalHyperLinkId: string) {
-  const { sourceIds, targetId } = parseHyperLinkId(internalHyperLinkId)
+  const { sourceIds, targetId, kind } = parseHyperLinkId(internalHyperLinkId)
   if (!sourceIds.every((id) => idMapping.has(id)) || !idMapping.has(targetId)) return undefined
   return {
     sourceIds: sourceIds.map((id) => idMapping.getOrFail(id)),
     targetId: idMapping.getOrFail(targetId),
+    ...(kind === undefined ? {} : { kind }),
   }
 }
 
@@ -268,7 +267,10 @@ function edgePublicEndpoints(internalLinkId: string) {
 function currentLinkType(internalLinkId: string): LinkType | undefined {
   const ends = edgePublicEndpoints(internalLinkId)
   if (ends === undefined) return undefined
-  return state.links.find((l) => l.sourceId === ends.sourceId && l.targetId === ends.targetId)?.type
+  const { kind } = parseLinkId(internalLinkId)
+  return state.links.find(
+    (l) => l.sourceId === ends.sourceId && l.targetId === ends.targetId && l.kind === kind,
+  )?.type
 }
 
 /**
@@ -304,7 +306,9 @@ const selectionActions = computed<SelectionAction[]>(() => {
   } else if (sel.kind === 'edge') {
     const internalId = sel.id as string
     const keys = Object.keys(linkConfigs) as LinkType[]
-    if (enableLinkSwitching && keys.length > 0) {
+    // Kind links (e.g. ABA contraries) aren't typed attacks/supports: only Delete applies.
+    const isKindLink = parseLinkId(internalId).kind !== undefined
+    if (enableLinkSwitching && keys.length > 0 && !isKindLink) {
       const current = currentLinkType(internalId)
       const next = keys[((current ? keys.indexOf(current) : -1) + 1) % keys.length]!
       const nextName = linkConfigs[next]?.displayName ?? t('editor.selection.linkFallback')
@@ -319,7 +323,7 @@ const selectionActions = computed<SelectionAction[]>(() => {
     }
     const ends = edgePublicEndpoints(internalId)
     const type = currentLinkType(internalId) ?? keys[0]
-    if (edgeSelectionActions && ends !== undefined && type !== undefined) {
+    if (edgeSelectionActions && ends !== undefined && type !== undefined && !isKindLink) {
       actions.push(...edgeSelectionActions({ ...ends, type }))
     }
   }
@@ -335,19 +339,16 @@ const selectionActions = computed<SelectionAction[]>(() => {
   return actions
 })
 
-// WYSIWYG SVG export: serialize the live graph canvas on demand. Injected by the export UI so
-// it can offer an SVG format that works on any device (no TikZ/WebAssembly). Returns null when
-// the canvas isn't mounted or has no content to render.
-provide(GRAPH_SVG_RENDERER_KEY, () => {
-  const canvas = containerRef.value?.querySelector(
-    '.graph-controller__graph-canvas',
-  ) as SVGSVGElement | null
-  return canvas ? serializeGraphSvg(canvas) : null
-})
+// WYSIWYG SVG export for the export UI; works on any device (no TikZ/WebAssembly).
+provide(
+  GRAPH_SVG_RENDERER_KEY,
+  () => graphComponentRef.value?.exportSVG({ textLabels: true, background: 'canvas' }) ?? null,
+)
 
 const {
   state,
   linkConfigs,
+  linkKinds,
   historyState,
   nodeWeights,
   nodeOutlines,
@@ -376,6 +377,8 @@ const {
 } = defineProps<{
   state: GraphEditorState
   linkConfigs: LinkConfigs
+  /** Appearance per link `kind`, see {@link GraphEditorStateLink.kind}. */
+  linkKinds?: LinkKindStyles
   historyState: HistoryState
   nodeWeights?: Map<NodeId, number>
   nodeOutlines?: Map<NodeId, NodeOutline>
@@ -675,6 +678,7 @@ const emit = defineEmits<{
     data: {
       sourceId: NodeId
       targetId: NodeId
+      kind?: string
     },
   ]
   hyperLinkCreated: [
@@ -688,12 +692,14 @@ const emit = defineEmits<{
     data: {
       sourceIds: NodeId[]
       targetId: NodeId
+      kind?: string
     },
   ]
   hyperLinkSourceRemoved: [
     data: {
       sourceIds: NodeId[]
       targetId: NodeId
+      kind?: string
       removedSourceId: NodeId
     },
   ]
@@ -737,11 +743,16 @@ const RECT_NODE_PROPS = {
   reflexiveEdgeStart: 'MOVABLE',
 } as const
 const RECT_LABEL_FONT_SIZE = '0.8rem'
+const PLAIN_LABEL_FONT_SIZE = '1.6rem'
+const PLAIN_NODE_PROPS = { shape: NodeShape.CIRCLE, radius: ARGUMENT_RADIUS_IN_PX / 2 } as const
+// Transparent fill also drops the stroke, via a rule in style.css.
+const PLAIN_NODE_COLOR = 'transparent'
 
 function nodePropsFor(id: NodeId) {
   const shape = nodeShapes?.get(id)
   if (shape === 'diamond') return DIAMOND_NODE_PROPS
   if (shape === 'rect') return RECT_NODE_PROPS
+  if (shape === 'plain') return PLAIN_NODE_PROPS
   return CIRCLE_NODE_PROPS
 }
 
@@ -762,7 +773,6 @@ const stateRef = toRef(() => state)
 
 const { physicsMode, toggleNodePhysics, triggerSettle, disablePhysics } = usePhysics({
   graphComponentRef,
-  getIdMapping: () => idMapping,
   containerRef,
   documentId,
   db,
@@ -815,6 +825,7 @@ useHighlight({
   getIdMapping: () => idMapping,
   stateRef,
   effectiveStyle,
+  isUncolored: (id) => nodeShapes?.get(id) === 'plain',
 })
 
 function* argumentNames() {
@@ -862,6 +873,9 @@ function onNodeCreated(
   emit('nodeCreated', nodeData)
   triggerSettle()
   nextTick(() => {
+    // The library creates a default circle; apply the module's shape before the label editor opens.
+    if (nodeShapes?.has(publicId))
+      graphComponentRef.value!.setNodeProps(nodePropsFor(publicId), node.id)
     graphComponentRef.value!.setLabel(name, node.id)
     graphComponentRef.value!.setColor(effectiveStyle.value.nodeColor, node.id)
     const graphEl = graphComponentRef.value?.$el as Element | undefined
@@ -981,7 +995,7 @@ function onLinkDeleted(
   if (cause === EVENT_CAUSE.PROGRAMMATIC_ACTION) {
     return
   }
-  const { sourceId: internalSourceId, targetId: internalTargetId } = parseLinkId(link.id)
+  const { sourceId: internalSourceId, targetId: internalTargetId, kind } = parseLinkId(link.id)
   // If mapping does not exist,
   // the link deletion is a cascading result of a node deletion..
   if (!idMapping.has(internalSourceId) || !idMapping.has(internalTargetId)) {
@@ -989,7 +1003,11 @@ function onLinkDeleted(
   }
   const publicSourceId = idMapping.getOrFail(internalSourceId)
   const publicTargetId = idMapping.getOrFail(internalTargetId)
-  emit('linkDeleted', { sourceId: publicSourceId, targetId: publicTargetId })
+  emit('linkDeleted', {
+    sourceId: publicSourceId,
+    targetId: publicTargetId,
+    ...(kind === undefined ? {} : { kind }),
+  })
   triggerSettle()
 }
 
@@ -1053,9 +1071,7 @@ function onViewportChanged(viewport: StoredViewport) {
 function setupDragObserver() {
   dragObserver?.disconnect()
 
-  const zoomGroup = containerRef.value?.querySelector(
-    '.graph-controller__graph-canvas > g',
-  ) as SVGGElement | null
+  const zoomGroup = graphComponentRef.value?.getCanvasElement()?.querySelector(':scope > g')
   if (!zoomGroup) return
 
   const nodeIdPrefix = `${graphComponentId}-node-`
@@ -1114,6 +1130,7 @@ onMounted(() => {
   graphComponent.setDefaults({
     gestureBindingsEnabled: true,
     interactiveNodeFeedbackEnabled: true,
+    linkStrength: 0.1,
     nodeAutoGrowToLabelSize: false,
     nodeProps: CIRCLE_NODE_PROPS,
     allowNodeCreationViaGUI: true,
@@ -1152,9 +1169,8 @@ onMounted(() => {
   // from generating synthetic dblclick events from double-tap. We detect double-tap
   // in the capture phase (before d3's stopImmediatePropagation can block it) and
   // dispatch a synthetic MouseEvent so the graph's dblclick → createNode path fires.
-  const graphHost = containerRef.value?.querySelector<HTMLElement>('.graph-controller__graph-host')
-  const svgCanvas = containerRef.value?.querySelector('.graph-controller__graph-canvas')
-  if (graphHost && svgCanvas) {
+  const graphHost = graphComponent.getHostElement()
+  if (graphHost) {
     let lastTap: { time: number; x: number; y: number } | null = null
     const handleDoubleTap = (event: TouchEvent) => {
       if (event.touches.length !== 1) {
@@ -1169,10 +1185,7 @@ onMounted(() => {
         Math.hypot(touch.clientX - lastTap.x, touch.clientY - lastTap.y) < 30
       ) {
         // Query fresh — setGraph recreates the SVG element so a captured reference goes stale.
-        const currentSvgCanvas = containerRef.value?.querySelector(
-          '.graph-controller__graph-canvas',
-        )
-        currentSvgCanvas?.dispatchEvent(
+        graphComponentRef.value?.getCanvasElement()?.dispatchEvent(
           new MouseEvent('dblclick', {
             clientX: touch.clientX,
             clientY: touch.clientY,
@@ -1210,10 +1223,7 @@ onMounted(() => {
     middleClickCleanup = () => graphHost.removeEventListener('auxclick', handleMiddleClick)
   }
 
-  const ctrlSnapGraphHost = containerRef.value?.querySelector<HTMLElement>(
-    '.graph-controller__graph-host',
-  )
-  if (ctrlSnapGraphHost) {
+  if (graphHost) {
     const nodeIdPrefix = `${graphComponentId}-node-`
     let draggingNodeId: number | null = null
 
@@ -1275,77 +1285,42 @@ onMounted(() => {
       disableSnap()
     }
 
-    ctrlSnapGraphHost.addEventListener('pointerdown', handleCtrlSnapPointerDown, true)
-    ctrlSnapGraphHost.addEventListener('pointerup', handleCtrlSnapPointerUp, true)
-    ctrlSnapGraphHost.addEventListener('pointercancel', handleCtrlSnapPointerUp, true)
+    graphHost.addEventListener('pointerdown', handleCtrlSnapPointerDown, true)
+    graphHost.addEventListener('pointerup', handleCtrlSnapPointerUp, true)
+    graphHost.addEventListener('pointercancel', handleCtrlSnapPointerUp, true)
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
     ctrlSnapCleanup = () => {
-      ctrlSnapGraphHost.removeEventListener('pointerdown', handleCtrlSnapPointerDown, true)
-      ctrlSnapGraphHost.removeEventListener('pointerup', handleCtrlSnapPointerUp, true)
-      ctrlSnapGraphHost.removeEventListener('pointercancel', handleCtrlSnapPointerUp, true)
+      graphHost.removeEventListener('pointerdown', handleCtrlSnapPointerDown, true)
+      graphHost.removeEventListener('pointerup', handleCtrlSnapPointerUp, true)
+      graphHost.removeEventListener('pointercancel', handleCtrlSnapPointerUp, true)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
   }
 
-  // The graph-component library only commits a node/link label edit on Enter; clicking
-  // away discards it. We force a commit by simulating the same Enter keyup the library
-  // listens for before the click can blur the input out from under it.
-  const renameCommitGraphHost = containerRef.value?.querySelector<HTMLElement>(
-    '.graph-controller__graph-host',
-  )
-  if (renameCommitGraphHost) {
-    const handleRenameCommitPointerDown = (event: PointerEvent) => {
-      const activeElement = document.activeElement
-      if (!(activeElement instanceof HTMLInputElement)) return
-      if (
-        activeElement.id !== 'node-label-input-field' &&
-        activeElement.id !== 'link-label-input-field'
-      )
-        return
-      if (activeElement.contains(event.target as Node)) return
-      activeElement.dispatchEvent(
-        new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }),
-      )
-    }
-    renameCommitGraphHost.addEventListener('pointerdown', handleRenameCommitPointerDown, true)
-
-    // The library focuses the label input it creates but leaves the caret at the end
-    // instead of selecting the existing text. A bubble-phase 'click' listener can't see
-    // this open: the library's own click handler calls stopPropagation() on the click
-    // that creates the input, so it never reaches an ancestor. 'focusin' is a separate
-    // event fired by the library's T.focus() call and isn't affected by that
-    // stopPropagation(), so it reliably catches the moment the input becomes active.
+  if (graphHost) {
+    // 'focusin' still fires when the library's own click handler stops the click propagating.
     const handleRenameOpenFocus = (event: FocusEvent) => {
       const target = event.target
       if (!(target instanceof HTMLInputElement)) return
       if (target.id !== 'node-label-input-field' && target.id !== 'link-label-input-field') return
       // A double-click rename opens the editor directly; drop the bar its first click opened.
       selection.value = null
-      // Suppress the browser's spellcheck/autocomplete suggestion popover for argument
-      // and link names — they're short labels, not prose, so suggestions are just noise.
-      target.setAttribute('spellcheck', 'false')
-      target.setAttribute('autocomplete', 'off')
-      target.setAttribute('autocorrect', 'off')
-      target.setAttribute('autocapitalize', 'off')
       // On touch devices, focusing the fresh label input pops the on-screen keyboard over
-      // the graph on every node creation. Commit the default label (same simulated Enter the
-      // pointerdown handler uses) so the library tears the input down and the keyboard stays
-      // closed; the user taps the node to rename when they actually want to type.
+      // the graph on every node creation. Commit the default label (the Enter keyup the
+      // library listens for) so the input is torn down and the keyboard stays closed; the
+      // user taps the node to rename when they actually want to type.
       if (window.matchMedia('(pointer: coarse)').matches) {
         target.dispatchEvent(
           new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }),
         )
-        return
       }
-      target.select()
     }
-    renameCommitGraphHost.addEventListener('focusin', handleRenameOpenFocus)
+    graphHost.addEventListener('focusin', handleRenameOpenFocus)
 
     renameCommitCleanup = () => {
-      renameCommitGraphHost.removeEventListener('pointerdown', handleRenameCommitPointerDown, true)
-      renameCommitGraphHost.removeEventListener('focusin', handleRenameOpenFocus)
+      graphHost.removeEventListener('focusin', handleRenameOpenFocus)
     }
   }
 
@@ -1356,7 +1331,7 @@ onMounted(() => {
     if (selection.value === null) return
     const target = event.target as Element | null
     if (target?.closest('.selection-action-bar')) return
-    if (target?.closest('.graph-controller__graph-host')) return
+    if (target && graphComponentRef.value?.getHostElement()?.contains(target)) return
     selection.value = null
   }
   document.addEventListener('pointerdown', handleOutsidePointerDown, true)
@@ -1380,7 +1355,9 @@ function reciprocalStyleFor(
   type: LinkType,
 ): NonNullable<jsonLink['reciprocalStyle']> {
   if (!mergeReciprocalLinks.value) return 'arc'
-  const reverse = links.find((l) => l.sourceId === targetId && l.targetId === sourceId)
+  const reverse = links.find(
+    (l) => l.sourceId === targetId && l.targetId === sourceId && l.kind === undefined,
+  )
   return reverse?.type === type ? 'split' : 'arc'
 }
 
@@ -1411,24 +1388,54 @@ function buildGraphJson(state: GraphEditorState) {
       label: node.label,
       x: live?.x ?? node.x,
       y: live?.y ?? node.y,
-      color: effectiveStyle.value.nodeColor,
+      color:
+        nodeShapes?.get(node.id) === 'plain' ? PLAIN_NODE_COLOR : effectiveStyle.value.nodeColor,
       outline: nodeOutlines?.get(node.id),
       props: nodePropsFor(node.id),
     }
   })
-  const links: jsonLink[] = state.links.map((link) => ({
-    sourceId: link.sourceId,
-    targetId: link.targetId,
-    color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
-    arrowType: toArrowType(link.type),
-    reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
-  }))
-  const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => ({
-    sourceIds: hyperLink.sourceIds,
-    targetId: hyperLink.targetId,
-    color: linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor,
-    arrowType: toArrowType(hyperLink.type),
-  }))
+  const links: jsonLink[] = state.links.map((link) => {
+    if (link.kind === undefined) {
+      return {
+        sourceId: link.sourceId,
+        targetId: link.targetId,
+        color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
+        arrowType: toArrowType(link.type),
+        reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
+      }
+    }
+    const style = linkKinds?.[link.kind]
+    return {
+      sourceId: link.sourceId,
+      targetId: link.targetId,
+      kind: link.kind,
+      color: style?.color
+        ? resolveCssColor(style.color)
+        : (linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor),
+      arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(link.type),
+      arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
+    }
+  })
+  const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => {
+    const typeColor = linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor
+    if (hyperLink.kind === undefined) {
+      return {
+        sourceIds: hyperLink.sourceIds,
+        targetId: hyperLink.targetId,
+        color: typeColor,
+        arrowType: toArrowType(hyperLink.type),
+      }
+    }
+    const style = linkKinds?.[hyperLink.kind]
+    return {
+      sourceIds: hyperLink.sourceIds,
+      targetId: hyperLink.targetId,
+      kind: hyperLink.kind,
+      color: style?.color ? resolveCssColor(style.color) : typeColor,
+      arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(hyperLink.type),
+      arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
+    }
+  })
   return { nodes, links, hyperLinks }
 }
 
@@ -1451,6 +1458,13 @@ function syncIdMapping() {
   return importedNodes
 }
 
+function labelFontSizeFor(id: NodeId) {
+  const shape = nodeShapes?.get(id)
+  if (shape === 'rect') return RECT_LABEL_FONT_SIZE
+  if (shape === 'plain') return PLAIN_LABEL_FONT_SIZE
+  return undefined
+}
+
 function adjustLabelFontSizes(state: GraphEditorState) {
   for (const node of state.nodes) {
     if (!node.label || !idMapping.hasReverse(node.id)) continue
@@ -1459,7 +1473,7 @@ function adjustLabelFontSizes(state: GraphEditorState) {
       graphComponentId,
       idMapping.getOrFailReverse(node.id),
       node.label,
-      nodeShapes?.get(node.id) === 'rect' ? RECT_LABEL_FONT_SIZE : undefined,
+      labelFontSizeFor(node.id),
     )
   }
 }
@@ -1670,6 +1684,11 @@ function applyAnnotationContentUpdates(
     } else {
       graphComponent.setAnnotationContent(internalId, annotation.content)
     }
+  }
+  for (const publicId of previousAnnotationContent.keys()) {
+    if (nextContent.has(publicId)) continue
+    if (!idMapping.hasReverse(publicId)) continue
+    graphComponent.deleteAnnotation(idMapping.getOrFailReverse(publicId))
   }
   previousAnnotationContent = nextContent
 }

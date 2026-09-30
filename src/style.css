@@ -29,8 +29,26 @@
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
   --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
 }
+/* JetBrains Mono lacks these math symbols, and system fallbacks render them tiny or cramped,
+   so they come from the bundled KaTeX fonts instead: ∅, and ← ↑ → ↓ ⇒ ∧ ∨ ⊢ ⊣ ⊤ ⊥. */
+@font-face {
+  font-family: 'Graph Symbols';
+  src: url('../node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff2') format('woff2');
+  /* Both faces need the same weight range, or the browser splits them and drops a unicode-range. */
+  font-weight: 100 900;
+  unicode-range: U+2205;
+  size-adjust: 125%;
+}
+@font-face {
+  font-family: 'Graph Symbols';
+  /* Bold for every weight: the regular cut is too thin next to JetBrains Mono. */
+  src: url('../node_modules/katex/dist/fonts/KaTeX_Main-Bold.woff2') format('woff2');
+  font-weight: 100 900;
+  unicode-range: U+2190-2193, U+21D2, U+2227-2228, U+22A2-22A5;
+  size-adjust: 115%;
+}
 :root {
-  --font-graph: var(--font-mono);
+  --font-graph: 'Graph Symbols', var(--font-mono);
 }
 
 /* App colors (base scale, brand, status, selection) are the single source of
@@ -126,6 +144,11 @@ body {
   stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
+/* Plain (label-only) nodes: the editor gives them a transparent fill. */
+.graph-controller__node[style*='fill: transparent'] {
+  stroke: none;
+}
+
 /* Node hold-to-move charge glow: dark halo on the light canvas, light halo on the dark one. */
 [data-theme='dark'] {
   --node-charge-glow: rgba(255, 255, 255, 0.5);
@@ -192,6 +215,11 @@ body {
 
 .adf-graph .graph-controller__annotation-label {
   font-size: 12px;
+}
+
+/* Tighter gaps in `{a, b} ⊢ c` argument labels, matching the evaluation results. */
+.aba-af-graph .graph-controller__node-label {
+  word-spacing: -0.5ch;
 }
 
 .graph-controller__label-input {

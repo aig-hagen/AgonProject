@@ -1,6 +1,6 @@
 % agoneditorial.sty — an editorial style layer for the AgonProject poster.
 % Flat, borderless sections on a warm off-white ground, a full-bleed blue
-% masthead, an ochre accent and a Source Sans / Source Serif pairing.
+% masthead, a yellow accent and a Source Sans / Source Serif pairing.
 % Built on tikzposter but deliberately bypassing its boxed block styles.
 \ProvidesPackage{agoneditorial}
 
@@ -21,13 +21,7 @@
 % Two brand colours carry every accent; the rest are neutrals.
 \definecolor{aigblue}{RGB}{0,76,151}
 \definecolor{aigyellow}{RGB}{210,149,81}
-% Accent variants folded onto the two brand colours (kept as aliases so the
-% call sites need not change): the ochre family becomes aigyellow, the blue
-% variants become aigblue — bluetint a light tint of it so it stays legible
-% as light text on the blue bands.
-\colorlet{ochre}{aigyellow}
-\colorlet{ochrelt}{aigyellow}
-\colorlet{aigbluedeep}{aigblue}
+% Light blue tint, legible as light text on the blue bands.
 \colorlet{bluetint}{aigblue!30!white}
 % Neutrals (text, background, rules).
 \definecolor{ink}{RGB}{23,35,59}
@@ -145,9 +139,9 @@
 % ---------------------------------------------------------------------------
 % Editorial content helpers
 % ---------------------------------------------------------------------------
-% Small ochre uppercase kicker above a section.
+% Small yellow uppercase kicker above a section.
 \newcommand{\eyebrow}[1]{%
-    {\sffamily\bfseries\color{ochre}\fontsize{24}{28}\selectfont
+    {\sffamily\bfseries\color{aigyellow}\fontsize{24}{28}\selectfont
      \textls[200]{\MakeUppercase{#1}}\par}}
 
 % Thin ink rule spanning the current width.
@@ -157,8 +151,8 @@
 \newcommand{\dsp}{\sffamily}
 \newcommand{\heading}[1]{{\sffamily\bfseries\color{ink}#1}}
 
-% Highlight for scannable stats (counts, quantities) — bold ochre.
-\newcommand{\stat}[1]{{\sffamily\bfseries\color{ochre}#1}}
+% Highlight for scannable stats (counts, quantities) — bold yellow.
+\newcommand{\stat}[1]{{\sffamily\bfseries\color{aigyellow}#1}}
 
 % Framed screenshot: thin border + soft drop shadow.
 \newcommand{\screenshot}[2][\linewidth]{%
@@ -211,7 +205,7 @@
 % One capability: title on the left, FontAwesome icon pushed to the right.
 \newcommand{\featureitem}[3]{%
     \noindent{\sffamily\bfseries\color{ink}\fontsize{33}{37}\selectfont #1}%
-    \hfill{\color{ochre}\fontsize{37}{37}\selectfont #2}\par
+    \hfill{\color{aigyellow}\fontsize{37}{37}\selectfont #2}\par
     \vspace{0.6em}{\color{muted}\fontsize{23}{28}\selectfont #3\par}}
 
 % One formalism entry for the strip: bold blue abbreviation + description.
@@ -219,9 +213,9 @@
     \noindent{\sffamily\bfseries\color{aigblue}\fontsize{30}{34}\selectfont #1}\hspace{0.5em}%
     {\color{inksoft}\fontsize{24}{29}\selectfont #2}\par}
 
-% Cream callout with an ochre left border.
+% Cream callout with a yellow left border.
 \newcommand{\callout}[1]{%
-    \noindent\begin{tcolorbox}[colback=cream, colframe=ochre, boxrule=0pt,
+    \noindent\begin{tcolorbox}[colback=cream, colframe=aigyellow, boxrule=0pt,
         leftrule=6pt, arc=0pt, left=16pt, right=16pt, top=12pt, bottom=12pt,
         boxsep=0pt]{\color{inksoft}\fontsize{24}{30}\selectfont #1}\end{tcolorbox}}
 

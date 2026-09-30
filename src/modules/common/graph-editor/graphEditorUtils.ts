@@ -94,21 +94,32 @@ function hasMoreThanOneEntry<T>(array: T[]): array is [T, T, ...T[]] {
   return array.length > 1
 }
 
-export function parseHyperLinkId(hyperLinkId: string): { sourceIds: number[]; targetId: number } {
-  const dashIdx = hyperLinkId.lastIndexOf('-')
-  const sourcesPart = hyperLinkId.slice(0, dashIdx)
-  const targetPart = hyperLinkId.slice(dashIdx + 1)
+/** Parses a library hyperlink id `s1,s2-target`, or `s1,s2-target:kind` for one with a kind. */
+export function parseHyperLinkId(hyperLinkId: string): {
+  sourceIds: number[]
+  targetId: number
+  kind?: string
+} {
+  const kindIndex = hyperLinkId.indexOf(':')
+  const kind = kindIndex === -1 ? undefined : hyperLinkId.slice(kindIndex + 1)
+  const ends = kindIndex === -1 ? hyperLinkId : hyperLinkId.slice(0, kindIndex)
+  const dashIdx = ends.lastIndexOf('-')
+  const sourcesPart = ends.slice(0, dashIdx)
+  const targetPart = ends.slice(dashIdx + 1)
   const sourceIds = sourcesPart.split(',').map(Number)
   const targetId = parseInt(targetPart)
   if (sourceIds.some((id) => !Number.isSafeInteger(id)))
     throw new Error(`HyperLink with ID \`${hyperLinkId}\` has invalid source IDs.`)
   if (!Number.isSafeInteger(targetId))
     throw new Error(`HyperLink with ID \`${hyperLinkId}\` has invalid target ID ${targetId}.`)
-  return { sourceIds, targetId }
+  return kind === undefined ? { sourceIds, targetId } : { sourceIds, targetId, kind }
 }
 
-export function parseLinkId(linkId: string): { sourceId: number; targetId: number } {
-  const linkParts = linkId.split('-')
+/** Parses a library link id `source-target`, or `source-target:kind` for a link with a kind. */
+export function parseLinkId(linkId: string): { sourceId: number; targetId: number; kind?: string } {
+  const kindIndex = linkId.indexOf(':')
+  const kind = kindIndex === -1 ? undefined : linkId.slice(kindIndex + 1)
+  const linkParts = (kindIndex === -1 ? linkId : linkId.slice(0, kindIndex)).split('-')
   if (!hasMoreThanOneEntry(linkParts)) {
     throw new Error(`Link with ID \`${linkId}\` is not valid: Separator \`-\` is not contained.`)
   }
@@ -123,5 +134,5 @@ export function parseLinkId(linkId: string): { sourceId: number; targetId: numbe
     throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid source node ID ${sourceId}.`)
   if (!Number.isSafeInteger(targetId))
     throw new Error(`Link with ID \`${linkId}\` is not valid: Invalid target node ID ${targetId}.`)
-  return { sourceId, targetId }
+  return kind === undefined ? { sourceId, targetId } : { sourceId, targetId, kind }
 }

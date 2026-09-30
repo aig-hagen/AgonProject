@@ -145,7 +145,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
       <div class="flex items-center gap-1.5">
         <div class="inline-flex h-7 overflow-hidden rounded-lg border border-base-300">
           <button
-            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-(family-name:--font-graph) text-sm transition-colors hover:bg-base-200"
             type="button"
             :title="`${t('editor.condition.keys.negation')} (¬)`"
             @mousedown.prevent
@@ -154,7 +154,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
             ¬
           </button>
           <button
-            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-(family-name:--font-graph) text-sm transition-colors hover:bg-base-200"
             type="button"
             :title="`${t('editor.condition.keys.conjunction')} (∧)`"
             @mousedown.prevent
@@ -163,7 +163,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
             ∧
           </button>
           <button
-            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-(family-name:--font-graph) text-sm transition-colors hover:bg-base-200"
             type="button"
             :title="`${t('editor.condition.keys.disjunction')} (∨)`"
             @mousedown.prevent
@@ -172,7 +172,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
             ∨
           </button>
           <button
-            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-(family-name:--font-graph) text-sm transition-colors hover:bg-base-200"
             type="button"
             :title="`${t('editor.condition.keys.tautology')} (⊤)`"
             @mousedown.prevent
@@ -181,7 +181,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
             ⊤
           </button>
           <button
-            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-mono text-sm transition-colors hover:bg-base-200"
+            class="flex h-full w-8 items-center justify-center border-r border-base-300 font-(family-name:--font-graph) text-sm transition-colors hover:bg-base-200"
             type="button"
             :title="`${t('editor.condition.keys.contradiction')} (⊥)`"
             @mousedown.prevent
@@ -190,7 +190,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
             ⊥
           </button>
           <button
-            class="flex h-full w-8 items-center justify-center font-mono text-sm transition-colors hover:bg-base-200"
+            class="flex h-full w-8 items-center justify-center font-(family-name:--font-graph) text-sm transition-colors hover:bg-base-200"
             type="button"
             :title="t('editor.condition.keys.parentheses')"
             @mousedown.prevent
@@ -215,7 +215,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
           >
             <li v-for="arg in availableArguments" :key="arg.id">
               <button
-                class="btn btn-xs btn-ghost font-mono"
+                class="btn btn-xs btn-ghost font-(family-name:--font-graph)"
                 type="button"
                 @mousedown.prevent
                 @click="insertAtCursor(arg.name)"
@@ -246,7 +246,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
         <input
           ref="input"
           type="text"
-          class="input input-sm input-bordered font-mono w-full"
+          class="input input-sm input-bordered font-(family-name:--font-graph) w-full"
           :class="{ 'input-error': isInvalid, 'pr-8': isInvalid }"
           v-model="inputText"
           @input="parseAndEmit"

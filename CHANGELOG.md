@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- ABA theory view: contraries are drawn as dashed ⊣ edges from the contrary to its assumption, next to any rule between the same nodes.
 - New Assumption-based Argumentation (ABA) module (beta): build a theory from rules, assumptions and contraries, view it as an AF,
   SetAF or BSAF, and compute extensions via TweetyProject, highlighted in every view; includes an ABA glossary.
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
@@ -20,7 +21,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Publication references on the module cards and glossary pages now show title, authors and venue on separate lines.
 - The selection action bar now also appears on desktop: click an argument or link to select it; double-click a label to rename it directly. Replaces the old link type popup; ADF arguments get an Edit condition action.
 - The PAF probability popup now shows a compact `P(a)` / `P((a,b))` header with the value, and opens from the selection bar on desktop.
-- Updated the bundled graph component to 5.0.0-rc.27; uncertain iAF attacks now use its native dashed links.
+- Updated the bundled graph component to 5.0.0-rc.35; uncertain iAF attacks now use its native dashed links.
+- Physics now pulls arguments towards the graph's own center instead of the canvas middle, so settling no longer shifts the graph.
+- With physics on, linked arguments are gently pulled together while settling, and larger arguments get more room.
+- The SVG image export now uses the graph component's exporter: labels are plain SVG text (opens in Inkscape and co.) and the canvas background is kept.
+- Renaming an argument or link now also saves when you click outside the graph (e.g. on a panel); only Escape discards the edit.
 - The serialisation window, the generate view and the mobile LaTeX export options now use the app's standard picker instead of native selects.
 - Export: mobile Save/Copy buttons use the sheet's large touch style with Save as the primary action, and copy/save feedback now shows a check icon for longer.
 - Grouped parameter panels (evaluation, serialisation, LaTeX export options, tutorials, mobile term definitions) now show the same recessed background in light and dark mode.
@@ -30,6 +35,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- The first view or setting change after opening a document is now remembered across reloads (e.g. the ABA SetAF view).
+- Math symbols (← ⊢ ⊤ ⊥ ∧ ∨) in graph labels and the ABA/ADF editors no longer fall back to tiny system glyphs.
+- ABA theory panel, view switcher and canvas notes are now translated instead of always showing English.
+- ABA BSAF view: an attack and a support with the same ends (also collective ones) are now both drawn side by side instead of listing the attack in a note.
+- ABA SetAF/BSAF views: attacks and supports from the empty set are drawn from a ∅ symbol, and attacks involving always-out assumptions are no longer hidden.
+- Arrowheads now end exactly on the border of rectangular and diamond arguments, also for curved and angled edges.
+- Graph annotations (e.g. ABA facts `⊤` and contraries) now disappear once they no longer apply instead of lingering.
 - BAF extension highlighting no longer marks supported arguments as rejected, and follows the complex attacks of the chosen support type.
 - iAF extension highlighting only marks targets of definite attacks as rejected.
 - With several evaluation windows open, only the focused one highlights the canvas, and closing it clears the highlight.

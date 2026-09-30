@@ -20,15 +20,18 @@
 import { CheckIcon, ChevronUpIcon, LockClosedIcon } from '@heroicons/vue/24/outline'
 import { onClickOutside } from '@vueuse/core'
 import { computed, ref, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import type { AbaView } from '@/modules/assumption-based-argumentation/views/editorState'
 import {
-  FLAT_ONLY_REASON,
+  flatOnlyReason,
   viewOptions,
 } from '@/modules/assumption-based-argumentation/views/viewOptions'
 
 const { flat } = defineProps<{ flat: boolean }>()
 const view = defineModel<AbaView>({ required: true })
+
+const { t } = useI18n({ useScope: 'global' })
 
 const open = ref(false)
 const root = useTemplateRef<HTMLElement>('root')
@@ -55,7 +58,7 @@ function select(key: AbaView) {
         v-if="open"
         class="absolute bottom-full left-0 mb-1.5 w-52 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
         role="radiogroup"
-        aria-label="Canvas view"
+        :aria-label="t('editor.aba.views.ariaLabel')"
       >
         <template v-for="(option, index) in options" :key="option.key">
           <div v-if="index === 1" class="mx-2 my-0.5 h-px bg-base-300" />
@@ -80,7 +83,7 @@ function select(key: AbaView) {
             <small
               class="col-start-2 text-[0.6875rem] leading-tight font-normal text-base-content/60"
             >
-              {{ option.flatOnly && !flat ? FLAT_ONLY_REASON : option.description }}
+              {{ option.flatOnly && !flat ? flatOnlyReason() : option.description }}
             </small>
           </button>
         </template>
@@ -90,7 +93,7 @@ function select(key: AbaView) {
       class="flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-base-300 bg-base-100/85 pr-2.5 pl-3 text-sm font-medium shadow-md backdrop-blur-md"
       :aria-expanded="open"
       aria-haspopup="true"
-      :aria-label="`Canvas view: ${active.label}`"
+      :aria-label="t('editor.aba.views.ariaLabelActive', { view: active.label })"
       @click="open = !open"
     >
       <component :is="active.icon" class="size-4 text-primary" />

@@ -103,8 +103,8 @@ describe('argumentLabels', () => {
     const labels = argumentLabels(theoryLabels(aba, new Set([id('a')])), canvas.supports!)
     const label = (i: NodeId) => canvas.state.nodes.find((n) => n.id === i)!.label
     expect(byLabel(labels, label)).toEqual({
-      in: ['({a}, {a, p})'],
-      out: ['({a, b}, {q})', '({b}, {b})'],
+      in: ['{a} ⊢ {a, p}'],
+      out: ['{a, b} ⊢ q', '{b} ⊢ b'],
     })
   })
 })

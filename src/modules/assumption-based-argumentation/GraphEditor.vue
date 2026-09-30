@@ -29,8 +29,13 @@ import {
   argumentLabels,
   theoryLabels,
 } from '@/modules/assumption-based-argumentation/evaluation/labeling'
+import { availableExports } from '@/modules/assumption-based-argumentation/export'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
-import { theoryAnnotations, theoryShapes } from '@/modules/assumption-based-argumentation/layout'
+import {
+  theoryAnnotations,
+  theoryContraries,
+  theoryShapes,
+} from '@/modules/assumption-based-argumentation/layout'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
 import {
@@ -59,7 +64,10 @@ import {
   type GraphEditorStateHyperLink,
   type GraphEditorStateLink,
   type HistoryState,
+  type LinkKindStyles,
   LinkType,
+  QUICK_EXPORT_KEY,
+  type QuickExport,
   type SelectionAction,
 } from '@/modules/common/graph-editor/graphEditor'
 import GraphEditor from '@/modules/common/graph-editor/GraphEditor.vue'
@@ -108,8 +116,14 @@ watch(
   },
 )
 
-// Rules are the only drawn edges: single-body rules become links, collective ones hyperlinks.
-// Contraries are not drawn yet; they show as node annotations.
+// Contraries are drawn as their own kind of link, so they can sit next to a rule between the
+// same nodes: dashed with a ⊣ bar, from the contrary to the assumption it attacks.
+const CONTRARY = 'contrary'
+const linkKinds: LinkKindStyles = {
+  [CONTRARY]: { arrowType: 'DASHED', arrowHead: 'BAR', color: 'var(--color-error)' },
+}
+
+// Single-body rules become links, collective ones hyperlinks; contraries are links too.
 function transformToEditorState(state: DocumentState<ABAF>, redraw: boolean): GraphEditorState {
   const aba = state.current.content
   const nodes = [...aba.nodeEntries()].map(([id, d]) => ({ id, label: d.name, x: d.x, y: d.y }))
@@ -121,6 +135,9 @@ function transformToEditorState(state: DocumentState<ABAF>, redraw: boolean): Gr
     } else {
       hyperLinks.push({ sourceIds: rule.body, targetId: rule.head, type: LinkType.SINGLE })
     }
+  }
+  for (const { contrary, assumption } of theoryContraries(aba)) {
+    links.push({ sourceId: contrary, targetId: assumption, type: LinkType.SINGLE, kind: CONTRARY })
   }
   return { stateId: state.stateId, nodes, links, hyperLinks, redraw }
 }
@@ -239,7 +256,7 @@ function onNodeLabelEdited(data: { id: NodeId; label: string }) {
   const name = data.label.trim()
   const clash = content.value.findByName(name)
   if (clash !== undefined && clash !== data.id) {
-    addErrorNotification(`Name “${name}” is already used`)
+    addErrorNotification(t('editor.aba.theory.nameTaken', { name }))
     createNewState(() => {})
     return
   }
@@ -278,8 +295,15 @@ function onLinkCreated(data: { sourceId: NodeId; targetId: NodeId }) {
   }, false)
 }
 
-function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId }) {
+function onLinkDeleted(data: { sourceId: NodeId; targetId: NodeId; kind?: string }) {
   if (isDerivedView.value) return
+  if (data.kind === CONTRARY) {
+    // The assumption keeps its kind; it just has no contrary until one is set again.
+    createNewState((draft) => {
+      if (draft.getContrary(data.targetId) === data.sourceId) draft.deleteContrary(data.targetId)
+    }, false)
+    return
+  }
   createNewState((draft) => {
     const rule = draft.findRule(data.targetId, [data.sourceId])
     if (rule !== undefined) draft.deleteRule(rule.id)
@@ -324,7 +348,9 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
   return [
     {
       key: 'kind',
-      label: d.kind === 'assumption' ? 'Make atom' : 'Make assumption',
+      label: t(
+        d.kind === 'assumption' ? 'editor.aba.theory.makeAtom' : 'editor.aba.theory.makeAssumption',
+      ),
       keepOpen: true,
       run: () =>
         createNewState((draft) => {
@@ -334,13 +360,17 @@ function abaNodeSelectionActions(id: NodeId): SelectionAction[] {
     },
     {
       key: 'fact',
-      label: d.fact ? 'Unset fact' : 'Set fact',
+      label: t(d.fact ? 'editor.aba.theory.unsetFact' : 'editor.aba.theory.setFact'),
       keepOpen: true,
       run: () => createNewState((draft) => draft.setFact(id, !d.fact)),
     },
   ]
 }
 
+provide(QUICK_EXPORT_KEY, {
+  configs: availableExports as unknown as QuickExport['configs'],
+  getInput: () => state.current.content,
+})
 provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
 
 const isTheoryOpen = ref(false)
@@ -410,6 +440,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
 <template>
   <GraphEditor
     v-if="isCanvasReady && editorState"
+    :class="{ 'aba-af-graph': shownView === 'af' }"
     :document-id="documentId"
     @new="emit('new')"
     @load="emit('load')"
@@ -423,6 +454,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     @hyper-link-deleted="onHyperLinkDeleted"
     @hyper-link-source-removed="onHyperLinkSourceRemoved"
     :link-configs="linkConfig"
+    :link-kinds="linkKinds"
     :highlight="evaluationHighlight"
     :state="editorState"
     :node-shapes="nodeShapes"
@@ -463,9 +495,9 @@ const extensionChips = computed<EvaluationChip[]>(() =>
           class="card card-sm bg-base-100 border border-base-300 shadow-md max-w-xs pointer-events-auto"
         >
           <div class="card-body items-center text-center">
-            <p>This view is only exact for flat theories, and this theory derives an assumption.</p>
+            <p>{{ t('editor.aba.views.unavailable') }}</p>
             <button class="btn btn-sm btn-primary" @click="activeView = 'theory'">
-              Back to Theory
+              {{ t('editor.aba.views.backToTheory') }}
             </button>
           </div>
         </div>
@@ -481,13 +513,13 @@ const extensionChips = computed<EvaluationChip[]>(() =>
       <div class="flex items-center gap-2">
         <ViewPicker v-model="activeView" :flat="isFlat" />
         <button class="btn btn-sm btn-neutral shadow-md gap-1.5" @click="isTheoryOpen = true">
-          <BookOpenIcon class="size-4" /> Theory
+          <BookOpenIcon class="size-4" /> {{ t('editor.aba.theory.title') }}
         </button>
       </div>
       <BottomSheet
         v-if="layoutMode === 'compact'"
         v-model:open="isTheoryOpen"
-        title="Theory"
+        :title="t('editor.aba.theory.title')"
         :snap-points="[0.5, 0.9]"
       >
         <TheoryPanel :aba="content" compact @edit="createNewState($event)" />

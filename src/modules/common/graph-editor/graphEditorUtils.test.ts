@@ -16,19 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import murderTrialJson from '@/modules/assumption-based-argumentation/examples/murder_trial.json'
-import tandemTripJson from '@/modules/assumption-based-argumentation/examples/tandem_trip.json'
-import type { ABAF } from '@/modules/assumption-based-argumentation/model'
-import { loadExampleFromJson } from '@/modules/assumption-based-argumentation/save/saveFormat'
-import type { Example } from '@/modules/common/examples'
+import { describe, expect, test } from 'vitest'
 
-const exampleJsons: unknown[] = [murderTrialJson, tandemTripJson]
+import { parseLinkId } from '@/modules/common/graph-editor/graphEditorUtils'
 
-export const datasets: Example<ABAF>[] = exampleJsons.map((json) => {
-  const { name, description } = loadExampleFromJson(json)
-  return {
-    name: name ?? 'unknown',
-    description,
-    load: () => loadExampleFromJson(json).framework,
-  }
+describe('parseLinkId', () => {
+  test('plain links have no kind', () => {
+    expect(parseLinkId('3-7')).toStrictEqual({ sourceId: 3, targetId: 7 })
+  })
+
+  test('a kind suffix is split off', () => {
+    expect(parseLinkId('3-7:contrary')).toStrictEqual({
+      sourceId: 3,
+      targetId: 7,
+      kind: 'contrary',
+    })
+  })
+
+  test('malformed ids still throw', () => {
+    expect(() => parseLinkId('3:contrary')).toThrow('Separator')
+    expect(() => parseLinkId('3-7-9')).toThrow('more than once')
+  })
 })

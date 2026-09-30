@@ -28,7 +28,7 @@ export interface BSAFView {
   arguments: NodeId[]
   attacks: BSAFEdge[]
   supports: BSAFEdge[]
-  // Heads of edges with an empty tail, which cannot be drawn: ∅ ⊢ ‾a and ∅ ⊢ a.
+  // Heads of edges with an empty tail: ∅ ⊢ ‾a and ∅ ⊢ a.
   alwaysOut: NodeId[]
   alwaysDerived: NodeId[]
 }

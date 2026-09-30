@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { i18n } from '@/localization'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import { toAF } from '@/modules/assumption-based-argumentation/views/af'
 import { toBSAF } from '@/modules/assumption-based-argumentation/views/bsaf'
@@ -48,6 +49,27 @@ export interface DerivedCanvas {
   supports?: Map<NodeId, NodeId[]>
 }
 
+// Each edge from ∅ starts at its own plain `∅` node next to the head; negative ids never clash
+// with assumptions.
+function addEmptySetNodes(
+  canvas: DerivedCanvas,
+  positions: ViewPositions,
+  heads: NodeId[],
+  type: LinkType,
+) {
+  const isSupport = type === LinkType.DOUBLE
+  for (const head of heads) {
+    const id = -(2 * head + (isSupport ? 2 : 1))
+    const key = `${isSupport ? '∅⇒' : '∅→'}${head}`
+    const position = positions[key]
+    canvas.state.nodes.push({ id, label: '∅', ...(position ?? { x: 0, y: 0 }) })
+    canvas.state.links.push({ sourceId: id, targetId: head, type })
+    canvas.shapes.set(id, 'plain')
+    canvas.positionKeys.set(id, key)
+    if (!position) canvas.unplaced.push(id)
+  }
+}
+
 // SETAF nodes are the assumptions, keyed by id.
 export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
   const { setaf, alwaysOut } = toSETAF(aba)
@@ -65,13 +87,15 @@ export function setafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions):
       hyperLinks.push({ sourceIds: attackers, targetId: target, type: LinkType.SINGLE })
     }
   }
-  return {
+  const canvas: DerivedCanvas = {
     state: { stateId, nodes, links, hyperLinks, redraw: true },
-    annotations: new Map(alwaysOut.map((id) => [id, { content: 'always out' }])),
+    annotations: new Map(),
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
     unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
   }
+  addEmptySetNodes(canvas, positions, alwaysOut, LinkType.SINGLE)
+  return canvas
 }
 
 // BSAF shares the SETAF slot and its positions; supports are double arrows, as in the BAF module.
@@ -84,46 +108,40 @@ export function bsafCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): 
   }))
   const links: GraphEditorStateLink[] = []
   const hyperLinks: GraphEditorStateHyperLink[] = []
-  // The graph keeps one edge per (tail, head), so an attack sharing both with a support is
-  // listed in the note instead of drawn.
-  const drawn = new Set<string>()
-  const hidden: string[] = []
+  // An attack with the same tail and head as a support gets a kind, so both are drawn side by side.
+  const supported = new Set(supports.map(({ tail, head }) => `${tail.join(',')}-${head}`))
   const add = (edges: typeof attacks, type: LinkType) => {
     for (const { tail, head } of edges) {
-      const key = `${tail.join(',')}-${head}`
-      if (drawn.has(key)) {
-        const names = tail.map((id) => aba.getNode(id).name).sort()
-        hidden.push(`{${names.join(', ')}} attacks ${aba.getNode(head).name}`)
-        continue
-      }
-      drawn.add(key)
-      if (tail.length === 1) links.push({ sourceId: tail[0]!, targetId: head, type })
-      else hyperLinks.push({ sourceIds: tail, targetId: head, type })
+      const parallel = type === LinkType.SINGLE && supported.has(`${tail.join(',')}-${head}`)
+      const kind = parallel ? { kind: 'attack' } : {}
+      if (tail.length === 1) links.push({ sourceId: tail[0]!, targetId: head, type, ...kind })
+      else hyperLinks.push({ sourceIds: tail, targetId: head, type, ...kind })
     }
   }
   add(supports, LinkType.DOUBLE)
   add(attacks, LinkType.SINGLE)
-  const annotations = new Map<NodeId, { content: string }>()
-  for (const id of alwaysDerived) annotations.set(id, { content: 'always derived' })
-  for (const id of alwaysOut) annotations.set(id, { content: 'always out' })
-  return {
+  const canvas: DerivedCanvas = {
     state: { stateId, nodes, links, hyperLinks, redraw: true },
-    annotations,
+    annotations: new Map(),
     shapes: new Map(),
     positionKeys: new Map(nodes.map((n) => [n.id, String(n.id)])),
     unplaced: nodes.filter((n) => positions[n.id] === undefined).map((n) => n.id),
-    note: hidden.length > 0 ? `also: ${hidden.join('; ')}` : undefined,
   }
+  addEmptySetNodes(canvas, positions, alwaysDerived, LinkType.DOUBLE)
+  addEmptySetNodes(canvas, positions, alwaysOut, LinkType.SINGLE)
+  return canvas
 }
 
-// AF nodes are support-unique arguments, labelled `(support, claims)` by atom name.
+// AF nodes are support-unique arguments, labelled `{support} ⊢ claims` by atom name.
 export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): DerivedCanvas {
   const { af, total } = toAF(aba)
-  const set = (ids: NodeId[]) =>
-    `{${ids
+  const names = (ids: NodeId[]) =>
+    ids
       .map((id) => aba.getNode(id).name)
       .sort()
-      .join(', ')}}`
+      .join(', ')
+  const support = (ids: NodeId[]) => (ids.length === 0 ? '∅' : `{${names(ids)}}`)
+  const claims = (ids: NodeId[]) => (ids.length === 1 ? names(ids) : `{${names(ids)}}`)
   const positionKeys = new Map<NodeId, string>()
   const unplaced: NodeId[] = []
   const nodes = [...af.arguments()].map(([id, d]) => {
@@ -131,7 +149,11 @@ export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): De
     positionKeys.set(id, key)
     const position = positions[key]
     if (!position) unplaced.push(id)
-    return { id, label: `(${set(d.support)}, ${set(d.claims)})`, ...(position ?? { x: 0, y: 0 }) }
+    return {
+      id,
+      label: `${support(d.support)} ⊢ ${claims(d.claims)}`,
+      ...(position ?? { x: 0, y: 0 }),
+    }
   })
   const links = [...af.attacks()].map(([sourceId, targetId]) => ({
     sourceId,
@@ -145,6 +167,9 @@ export function afCanvas(aba: ABAF, stateId: UUID, positions: ViewPositions): De
     positionKeys,
     unplaced,
     supports: new Map([...af.arguments()].map(([id, d]) => [id, d.support])),
-    note: total > nodes.length ? `showing ${nodes.length} of ${total} arguments` : undefined,
+    note:
+      total > nodes.length
+        ? i18n.global.t('editor.aba.views.argumentsCapped', { shown: nodes.length, total })
+        : undefined,
   }
 }

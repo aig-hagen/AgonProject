@@ -19,7 +19,7 @@
 import type { ComputedRef, Ref } from 'vue'
 import { watchEffect } from 'vue'
 
-import type { GraphEditorState, Highlight } from '@/modules/common/graph-editor/graphEditor'
+import type { GraphEditorState, Highlight, NodeId } from '@/modules/common/graph-editor/graphEditor'
 import {
   getContrastingLabelColor,
   setNodeLabelColor,
@@ -39,6 +39,7 @@ export function useHighlight({
   getIdMapping,
   stateRef,
   effectiveStyle,
+  isUncolored = () => false,
 }: {
   highlightRef: Readonly<Ref<Highlight | undefined>>
   graphComponentRef: Ref<HighlightCapable | null>
@@ -46,6 +47,8 @@ export function useHighlight({
   getIdMapping: () => IdMapping<number, number>
   stateRef: Ref<GraphEditorState> | ComputedRef<GraphEditorState>
   effectiveStyle: Ref<GraphStyle> | ComputedRef<GraphStyle>
+  // Nodes that keep their own color, e.g. plain label-only nodes.
+  isUncolored?: (id: NodeId) => boolean
 }) {
   watchEffect(() => {
     const graphComponent = graphComponentRef.value
@@ -60,7 +63,7 @@ export function useHighlight({
     const groupBuckets: number[][] = groups.map(() => [])
     const defaultBucket: number[] = []
     for (const { id } of state.nodes) {
-      if (!idMapping.hasReverse(id)) continue
+      if (!idMapping.hasReverse(id) || isUncolored(id)) continue
       const internalId = idMapping.getOrFailReverse(id)
       let placed = false
       for (let i = 0; i < groups.length; i++) {

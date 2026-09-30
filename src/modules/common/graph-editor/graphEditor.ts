@@ -140,6 +140,17 @@ export type LinkConfigs = Partial<
   >
 >
 
+/** Appearance of links with a given `kind`, overriding their link type's. */
+export type LinkKindStyles = Record<
+  string,
+  {
+    /** May use palette tokens (`var(...)`); resolved per theme. */
+    color?: string
+    arrowType?: 'SINGLE' | 'DOUBLE' | 'DASHED'
+    arrowHead?: 'ARROW' | 'BAR' | 'NONE'
+  }
+>
+
 /**
  * A button in the floating selection action bar. The shared editor composes these for the
  * current selection (common Rename/Delete + generic edge type-switch), and module wrappers
@@ -158,7 +169,8 @@ export interface SelectionAction {
 
 export type NodeId = number
 
-export type GraphEditorNodeShape = 'circle' | 'diamond' | 'rect'
+// `plain` is a small circle showing only its label: no fill, no stroke, never highlighted.
+export type GraphEditorNodeShape = 'circle' | 'diamond' | 'rect' | 'plain'
 
 export interface GraphEditorStateNode {
   id: NodeId
@@ -171,12 +183,17 @@ export interface GraphEditorStateLink {
   sourceId: NodeId
   targetId: NodeId
   type: LinkType
+  /** Tells apart links between the same nodes (e.g. an ABA contrary next to a rule); styled
+      by the editor's `linkKinds` and left out of link-type switching. */
+  kind?: string
 }
 
 export interface GraphEditorStateHyperLink {
   sourceIds: NodeId[]
   targetId: NodeId
   type: LinkType
+  /** As {@link GraphEditorStateLink.kind}, for hyperlinks with the same sources and target. */
+  kind?: string
 }
 
 export interface GraphEditorState {

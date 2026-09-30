@@ -22,7 +22,7 @@ import { SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argu
 
 export interface SETAFView {
   setaf: SetAF<SetAfArgumentData>
-  // Assumptions whose contrary follows from ∅; they stay as nodes but take part in no attack.
+  // Assumptions whose contrary follows from ∅, i.e. attacked by the empty set.
   alwaysOut: NodeId[]
 }
 
@@ -36,7 +36,6 @@ export function toSETAF(abaf: ABAF): SETAFView {
     attackers.set(a, contrary === undefined ? [] : (supports.get(contrary) ?? []))
   }
   const alwaysOut = assumptions.filter((a) => attackers.get(a)!.some((t) => t.length === 0))
-  const dead = new Set(alwaysOut)
 
   const setaf = new SetAF<SetAfArgumentData>()
   for (const a of assumptions) {
@@ -44,10 +43,7 @@ export function toSETAF(abaf: ABAF): SETAFView {
     setaf.addArgument(a, { name, x, y })
   }
   for (const a of assumptions) {
-    if (dead.has(a)) continue
-    for (const tail of attackers.get(a)!) {
-      if (!tail.some((t) => dead.has(t))) setaf.addCollectiveAttack(tail, a)
-    }
+    for (const tail of attackers.get(a)!) if (tail.length > 0) setaf.addCollectiveAttack(tail, a)
   }
   return { setaf, alwaysOut }
 }

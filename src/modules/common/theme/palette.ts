@@ -28,14 +28,14 @@
  * than a separate magic hex, so the brand stays single-sourced.
  */
 
-// Fixed brand anchors (AIG blue / AIG ochre).
+// Fixed brand anchors (AIG blue / AIG yellow).
 const AIG_BLUE = '#004c97'
-const AIG_OCHRE = '#d29551'
+const AIG_YELLOW = '#d29551'
 
 // Dark-mode brand is the fixed anchor lifted toward white so it stays legible
 // on a dark surface. The blue recipe matches the existing `.menu-icon` color.
 const AIG_BLUE_DARK = `color-mix(in oklab, ${AIG_BLUE}, white 55%)`
-const AIG_OCHRE_DARK = `color-mix(in oklab, ${AIG_OCHRE}, white 30%)`
+const AIG_YELLOW_DARK = `color-mix(in oklab, ${AIG_YELLOW}, white 30%)`
 
 /** Palette token names. These map 1:1 onto DaisyUI `--color-*` variables, except
  * `selection`, which drives `::selection`. */
@@ -82,7 +82,7 @@ export const LIGHT_PALETTE: AppPalette = {
   'neutral-content': '#eef2f6',
   primary: AIG_BLUE,
   'primary-content': '#ffffff',
-  secondary: AIG_OCHRE,
+  secondary: AIG_YELLOW,
   'secondary-content': '#2a1b08',
   info: AIG_BLUE,
   'info-content': '#ffffff',
@@ -116,7 +116,7 @@ export const DARK_PALETTE: AppPalette = {
   'neutral-content': '#e7eef4',
   primary: AIG_BLUE_DARK,
   'primary-content': '#08243a',
-  secondary: AIG_OCHRE_DARK,
+  secondary: AIG_YELLOW_DARK,
   'secondary-content': '#2a1b08',
   info: AIG_BLUE_DARK,
   'info-content': '#08243a',

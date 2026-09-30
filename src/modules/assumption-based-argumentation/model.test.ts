@@ -94,6 +94,21 @@ describe('ABAF model', () => {
     expect(aba.rules().length).toBe(count)
   })
 
+  test('updating a rule rewrites it in place', () => {
+    const aba = seed()
+    const [first, second] = aba.rules()
+    aba.updateRule(first!.id, 3, [1])
+    expect(aba.rules()[0]).toEqual({ id: first!.id, head: 3, body: [1] })
+    expect(aba.rules()[1]!.id).toBe(second!.id)
+  })
+
+  test('updating a rule into a duplicate drops it', () => {
+    const aba = seed()
+    const [first, second] = aba.rules()
+    aba.updateRule(first!.id, 3, [1, 0])
+    expect(aba.rules().map((r) => r.id)).toEqual([second!.id])
+  })
+
   test('promoting creates the ¬ contrary atom, or reuses an existing one', () => {
     const aba = seed()
     aba.promoteToAssumption(2)

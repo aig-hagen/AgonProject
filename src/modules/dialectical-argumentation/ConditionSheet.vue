@@ -158,7 +158,7 @@ const operatorKeys = computed(() => [
               ref="input"
               type="text"
               inputmode="none"
-              class="input h-12 w-full rounded-xl border-base-300 bg-base-100 font-mono"
+              class="input h-12 w-full rounded-xl border-base-300 bg-base-100 font-(family-name:--font-graph)"
               :class="{ 'input-error pr-10': isInvalid }"
               v-model="inputText"
               @input="parseAndEmit"
@@ -194,7 +194,7 @@ const operatorKeys = computed(() => [
             v-for="key in operatorKeys"
             :key="key.label"
             type="button"
-            class="flex h-12 items-center justify-center rounded-xl border-2 border-base-300 bg-base-100 font-mono text-lg text-base-content transition-colors hover:bg-base-200 active:bg-base-300"
+            class="flex h-12 items-center justify-center rounded-xl border-2 border-base-300 bg-base-100 font-(family-name:--font-graph) text-lg text-base-content transition-colors hover:bg-base-200 active:bg-base-300"
             :title="key.title"
             :aria-label="key.title"
             @click="insertAtCursor(key.text, key.cursorOffset)"
@@ -214,7 +214,7 @@ const operatorKeys = computed(() => [
             v-for="arg in availableArguments"
             :key="arg.id"
             type="button"
-            class="btn btn-sm rounded-lg btn-soft btn-primary font-mono"
+            class="btn btn-sm rounded-lg btn-soft btn-primary font-(family-name:--font-graph)"
             @click="insertAtCursor(arg.name)"
           >
             {{ arg.name }}

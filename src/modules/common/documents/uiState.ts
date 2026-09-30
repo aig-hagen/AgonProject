@@ -111,6 +111,8 @@ export function useDocumentUIStateWithLoaded<T>(
     const stored = await getUIStateValue<T>(db, documentId, key)
     if (stored === undefined) return
     if (guardAgainstLocalWrite && hasWrittenLocally) return
+    // An unchanged value doesn't trigger the watcher, so arming the skip would swallow the next real write.
+    if (Object.is(state.value, stored)) return
     skipNextPersist = true
     state.value = stored
   }

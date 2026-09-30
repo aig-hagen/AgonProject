@@ -144,7 +144,7 @@ describe('SETAF view', () => {
     expect(alwaysOut).toEqual([])
   })
 
-  test('a contrary derivable from ∅ marks the assumption always out', () => {
+  test('a contrary derivable from ∅ marks the assumption always out; its attacks stay', () => {
     const { aba, id } = build({
       assumptions: { a: 'f', b: 'p' },
       rules: [['p', ['a']]],
@@ -153,7 +153,10 @@ describe('SETAF view', () => {
     const { setaf, alwaysOut } = toSETAF(aba)
     expect(alwaysOut).toEqual([id('a')])
     expect([...setaf.arguments()].map(([i]) => i).sort()).toEqual([id('a'), id('b')].sort())
-    expect(setaf.attacks()).toEqual([])
+    expect(setaf.attacks().map((a) => [a.attackers, a.target])).toEqual([[[id('a')], id('b')]])
+    const { state, shapes } = setafCanvas(aba, generateUUID(), {})
+    const bar = [...shapes].find(([, s]) => s === 'plain')![0]
+    expect(state.links).toContainEqual({ sourceId: bar, targetId: id('a'), type: LinkType.SINGLE })
   })
 
   test('canvas: singleton attacks are links, collective ones hyperlinks', () => {
@@ -209,7 +212,7 @@ describe('BSAF view', () => {
     expect(edges(view.attacks, names)).toEqual(['{a,b}->a', '{a}->b'])
   })
 
-  test('empty tails become annotations', () => {
+  test('empty tails are drawn from a plain ∅ node next to their head', () => {
     const { aba, id } = build({
       assumptions: { a: 'f', b: 'p' },
       rules: [['p', ['a']]],
@@ -219,11 +222,24 @@ describe('BSAF view', () => {
     expect(view.alwaysOut).toEqual([id('a')])
     expect(view.alwaysDerived).toEqual([id('b')])
     const canvas = bsafCanvas(aba, generateUUID(), {})
-    expect(canvas.annotations.get(id('a'))).toEqual({ content: 'always out' })
-    expect(canvas.annotations.get(id('b'))).toEqual({ content: 'always derived' })
+    expect(canvas.annotations.size).toBe(0)
+    const bars = [...canvas.shapes].filter(([, s]) => s === 'plain').map(([i]) => i)
+    expect(bars).toHaveLength(2)
+    expect(bars.every((i) => i < 0)).toBe(true)
+    const fromBar = (head: NodeId) =>
+      canvas.state.links.find((l) => l.targetId === head && l.sourceId < 0)
+    expect(fromBar(id('a'))?.type).toBe(LinkType.SINGLE)
+    expect(fromBar(id('b'))?.type).toBe(LinkType.DOUBLE)
+    expect(canvas.state.links).toContainEqual({
+      sourceId: id('a'),
+      targetId: id('b'),
+      type: LinkType.SINGLE,
+    })
+    expect(canvas.positionKeys.get(fromBar(id('a'))!.sourceId)).toBe(`∅→${id('a')}`)
+    expect(canvas.unplaced).toEqual(expect.arrayContaining(bars))
   })
 
-  test('canvas: supports are DOUBLE links and win over an attack with the same ends', () => {
+  test('canvas: an attack with the same ends as a DOUBLE support is drawn next to it', () => {
     const { aba, id } = paperExample()
     const { state, note } = bsafCanvas(aba, generateUUID(), {})
     const onE = state.hyperLinks!.filter((l) => l.targetId === id('e'))
@@ -232,8 +248,13 @@ describe('BSAF view', () => {
       targetId: id('e'),
       type: LinkType.DOUBLE,
     })
-    expect(onE.filter((l) => l.sourceIds.join() === [id('a'), id('b')].join())).toHaveLength(1)
-    expect(note).toBe('also: {a, b} attacks e')
+    expect(onE).toContainEqual({
+      sourceIds: [id('a'), id('b')],
+      targetId: id('e'),
+      type: LinkType.SINGLE,
+      kind: 'attack',
+    })
+    expect(note).toBeUndefined()
     expect(state.links).toContainEqual({
       sourceId: id('e'),
       targetId: id('e'),
@@ -243,18 +264,24 @@ describe('BSAF view', () => {
 })
 
 describe('AF canvas', () => {
-  test('rect nodes labelled (support, claims); positions keyed by support', () => {
+  test('rect nodes labelled support ⊢ claims; positions keyed by support', () => {
     const { aba, id } = seed()
     const key = [id('a'), id('b')].join(',')
     const canvas = afCanvas(aba, generateUUID(), { [key]: { x: 3, y: 4 } })
     expect(canvas.state.nodes.map((n) => n.label)).toEqual([
-      '({a}, {a, p})',
-      '({b}, {b})',
-      '({a, b}, {q})',
+      '{a} ⊢ {a, p}',
+      '{b} ⊢ b',
+      '{a, b} ⊢ q',
     ])
     expect([...canvas.shapes.values()]).toEqual(['rect', 'rect', 'rect'])
     expect(canvas.state.nodes[2]).toMatchObject({ x: 3, y: 4 })
     expect(canvas.unplaced).toEqual([0, 1])
     expect(canvas.note).toBeUndefined()
+  })
+
+  test('empty support shown as ∅', () => {
+    const { aba } = build({ assumptions: { a: 'p' }, facts: ['p'] })
+    const labels = afCanvas(aba, generateUUID(), {}).state.nodes.map((n) => n.label)
+    expect(labels).toContain('∅ ⊢ p')
   })
 })
