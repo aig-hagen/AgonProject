@@ -50,7 +50,7 @@ initialABAF.setContrary(0, 3)
 initialABAF.setContrary(1, 2)
 
 export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
-  newNamePrefix: 'ABA',
+  newNamePrefix: 'ABAF',
   id: 'assumptionBased',
   is(model: unknown) {
     return model instanceof ABAF
