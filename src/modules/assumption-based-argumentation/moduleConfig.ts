@@ -23,6 +23,7 @@ import { datasets } from '@/modules/assumption-based-argumentation/examples'
 import GraphEditor from '@/modules/assumption-based-argumentation/GraphEditor.vue'
 import { layout } from '@/modules/assumption-based-argumentation/layout'
 import { ABAF, type ABANodeData } from '@/modules/assumption-based-argumentation/model'
+import { iccmaImport } from '@/modules/assumption-based-argumentation/save/iccmaFormat'
 import {
   canLoadFromObject,
   loadFromString,
@@ -104,6 +105,7 @@ export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
+  textImports: [iccmaImport],
   getSaveString(document, name) {
     return saveAsString(document, name)
   },

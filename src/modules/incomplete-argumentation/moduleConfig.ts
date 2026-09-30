@@ -29,6 +29,7 @@ import {
   type IafArgumentData,
   IncompleteArgumentation,
 } from '@/modules/incomplete-argumentation/model'
+import { iccmaImport } from '@/modules/incomplete-argumentation/save/iccmaFormat'
 import {
   canLoadFromObject,
   loadFromString,
@@ -81,6 +82,7 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
     load(dataString, fileName) {
       return loadFromString(dataString, fileName)
     },
+    textImports: [iccmaImport],
     getSaveString(document, name) {
       return saveAsString(document, name)
     },

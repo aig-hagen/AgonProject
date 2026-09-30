@@ -23,6 +23,7 @@ import { datasets } from '@/modules/bipolar-argumentation/examples'
 import GraphEditor from '@/modules/bipolar-argumentation/GraphEditor.vue'
 import { layout } from '@/modules/bipolar-argumentation/layout'
 import { BipoloarArgumentation } from '@/modules/bipolar-argumentation/model'
+import { iccmaImport } from '@/modules/bipolar-argumentation/save/iccmaFormat'
 import {
   canLoadFromObject,
   loadFromString,
@@ -97,6 +98,7 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
+  textImports: [iccmaImport],
   getSaveString(document, name) {
     return saveAsString(document, name)
   },

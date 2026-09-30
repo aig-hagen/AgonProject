@@ -29,6 +29,7 @@ import {
   type PafArgumentData,
   ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
+import { iccmaImport } from '@/modules/probabilistic-argumentation/save/iccmaFormat'
 import {
   canLoadFromObject,
   loadFromString,
@@ -82,6 +83,7 @@ export const probabilisticArgumentationModule: ModuleConfig<
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
+  textImports: [iccmaImport],
   getSaveString(document, name) {
     return saveAsString(document, name)
   },
