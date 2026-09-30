@@ -29,8 +29,15 @@
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
   --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
 }
+/* JetBrains Mono lacks ∅, and the system fallback renders it tiny. */
+@font-face {
+  font-family: 'Graph Empty Set';
+  src: url('../node_modules/katex/dist/fonts/KaTeX_AMS-Regular.woff2') format('woff2');
+  unicode-range: U+2205;
+  size-adjust: 125%;
+}
 :root {
-  --font-graph: var(--font-mono);
+  --font-graph: 'Graph Empty Set', var(--font-mono);
 }
 
 /* App colors (base scale, brand, status, selection) are the single source of

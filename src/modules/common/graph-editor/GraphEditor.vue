@@ -743,7 +743,7 @@ const RECT_NODE_PROPS = {
   reflexiveEdgeStart: 'MOVABLE',
 } as const
 const RECT_LABEL_FONT_SIZE = '0.8rem'
-const PLAIN_LABEL_FONT_SIZE = '2rem'
+const PLAIN_LABEL_FONT_SIZE = '1.6rem'
 const PLAIN_NODE_PROPS = { shape: NodeShape.CIRCLE, radius: ARGUMENT_RADIUS_IN_PX / 2 } as const
 // Transparent fill also drops the stroke, via a rule in style.css.
 const PLAIN_NODE_COLOR = 'transparent'
