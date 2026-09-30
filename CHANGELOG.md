@@ -6,14 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-30
+
 ### Added
 
-- ABA theory view: contraries are drawn as dashed ⊣ edges from the contrary to its assumption, next to any rule between the same nodes.
 - New Assumption-based Argumentation (ABA) module (beta): build a theory from rules, assumptions and contraries, view it as an AF,
-  SetAF or BSAF, and compute extensions via TweetyProject, highlighted in every view; includes an ABA glossary.
+  SetAF or BSAF, and compute extensions via TweetyProject, highlighted in every view; includes a glossary, examples and ICCMA export.
 - Added a glossary hint icon to the Incomplete Argumentation acceptance type selector.
 - Added a color legend to the graph editor while an evaluation result is highlighted.
 - Added a setting to merge mutual edges of the same type into one straight line instead of two arcs.
+- Added an "Outline" graph style.
 
 ### Changed
 
@@ -30,23 +32,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Export: mobile Save/Copy buttons use the sheet's large touch style with Save as the primary action, and copy/save feedback now shows a check icon for longer.
 - Grouped parameter panels (evaluation, serialisation, LaTeX export options, tutorials, mobile term definitions) now show the same recessed background in light and dark mode.
 - Dropdowns and text fields now share one field background that sets them apart from grouped panels in light and dark mode.
-- New typography: Inter for the UI, JetBrains Mono for code/data, graph labels and evaluation results, Fraunces for the app name; all fonts are self-hosted.
+- New typography: Inter for the UI, JetBrains Mono for code/data, graph labels and evaluation results (math symbols from KaTeX), Fraunces for the app name; all fonts are self-hosted.
+- Evaluation results use tighter spacing between argument names.
 - Auto-layouts now respect node shapes, annotations (ADF conditions, PAF probabilities) and collective attacks; generated graphs of every type are laid out force-directed.
 
 ### Fixed
 
-- The first view or setting change after opening a document is now remembered across reloads (e.g. the ABA SetAF view).
-- Math symbols (← ⊢ ⊤ ⊥ ∧ ∨) in graph labels and the ABA/ADF editors no longer fall back to tiny system glyphs.
-- ABA theory panel, view switcher and canvas notes are now translated instead of always showing English.
-- ABA BSAF view: an attack and a support with the same ends (also collective ones) are now both drawn side by side instead of listing the attack in a note.
-- ABA SetAF/BSAF views: attacks and supports from the empty set are drawn from a ∅ symbol, and attacks involving always-out assumptions are no longer hidden.
-- Arrowheads now end exactly on the border of rectangular and diamond arguments, also for curved and angled edges.
-- Graph annotations (e.g. ABA facts `⊤` and contraries) now disappear once they no longer apply instead of lingering.
 - BAF extension highlighting no longer marks supported arguments as rejected, and follows the complex attacks of the chosen support type.
 - iAF extension highlighting only marks targets of definite attacks as rejected.
 - With several evaluation windows open, only the focused one highlights the canvas, and closing it clears the highlight.
 - SetAF extension highlighting now marks targets of collective attacks as rejected when all attackers are accepted.
-- Fixed SVG graph export: node labels are centered again and bent edges no longer show a black fill sliver.
 - Fixed LaTeX export: mobile and desktop now produce identical code — style options always ride on `\begin{af}[…]`, and both share the same defaults and the Node Labels option.
 - Fixed LaTeX export: argument names keep special characters, umlauts and Greek letters (`a_1` → `a_{1}`, `Käse` → `K\"{a}se`, `α` → `\alpha`) instead of stripping them.
 - Fixed LaTeX export: shortened argument names are now unique (e.g. `A_{1}`, `A_{2}`) with the full name as a trailing `% Alibi` comment, and used consistently in ADF conditions; a new "Node Labels" option (Auto/Full/Short) controls shortening.
@@ -176,7 +171,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Earlier versions are available on the
 [GitHub Releases page](https://github.com/aig-hagen/AgonProject/releases).
 
-[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/aig-hagen/AgonProject/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/aig-hagen/AgonProject/compare/v0.11.4...v0.12.0
 [0.11.4]: https://github.com/aig-hagen/AgonProject/compare/v0.11.3...v0.11.4
 [0.11.3]: https://github.com/aig-hagen/AgonProject/compare/v0.11.2...v0.11.3
