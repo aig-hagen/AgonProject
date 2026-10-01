@@ -76,6 +76,7 @@ export interface ExportResult {
 }
 
 export interface ExportFileData {
-  content: string
+  /** Text, or binary data such as a PNG. */
+  content: string | Blob
   ending: string
 }

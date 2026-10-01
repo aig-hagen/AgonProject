@@ -81,6 +81,7 @@ const emit = defineEmits<{
   redo: []
   export: []
   exportFile: [filedata: ExportFileData]
+  exportImage: []
   share: []
   generate: []
   help: []
@@ -152,10 +153,10 @@ function downloadConfig(config: ExportConfig<unknown>) {
     ending: config.extension ?? 'txt',
   })
 }
-function downloadGraphImage() {
-  const svg = graphSvgRenderer?.()
-  if (!svg) return
-  emit('exportFile', { content: svg, ending: 'svg' })
+function openImageExport() {
+  // Drop focus so the focus-driven dropdown closes behind the window.
+  ;(document.activeElement as HTMLElement | null)?.blur()
+  emit('exportImage')
 }
 </script>
 <template>
@@ -324,18 +325,9 @@ function downloadGraphImage() {
                   </div>
                 </li>
                 <li v-if="graphSvgRenderer">
-                  <div class="flex flex-row items-center justify-between gap-6">
-                    <span class="flex items-center">
-                      <PhotoIcon class="size-5 menu-icon mr-2" />{{ t('export.exportImage') }}
-                    </span>
-                    <button
-                      class="btn btn-xs btn-ghost btn-square"
-                      :title="t('export.button.saveBare')"
-                      @click.stop="downloadGraphImage"
-                    >
-                      <ArrowDownTrayIcon class="size-4" />
-                    </button>
-                  </div>
+                  <a @click="openImageExport"
+                    ><PhotoIcon class="size-5 menu-icon" />{{ t('export.exportImage') }}</a
+                  >
                 </li>
               </ul>
             </div>

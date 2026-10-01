@@ -24,9 +24,12 @@ export default {
     image: 'Bild',
     text: 'Text',
   },
-  svg: {
-    title: 'SVG-Bild',
-    description: 'Momentaufnahme des aktuellen Graphen',
+  image: {
+    title: 'Bild',
+    description: 'SVG- oder PNG-Momentaufnahme des aktuellen Graphen',
+    transparent: 'Transparenter Hintergrund',
+    scale: 'Auflösung',
+    rasterError: 'PNG konnte in diesem Browser nicht erstellt werden. Versuche stattdessen SVG.',
   },
   latexFallbackDescription: 'Code & \\usepackage-Zeile kopieren',
   fileFallbackDescription: '.{ext}-Datei',

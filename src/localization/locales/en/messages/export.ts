@@ -24,9 +24,12 @@ export default {
     image: 'Image',
     text: 'Text',
   },
-  svg: {
-    title: 'SVG image',
-    description: 'Snapshot of the current graph',
+  image: {
+    title: 'Image',
+    description: 'SVG or PNG snapshot of the current graph',
+    transparent: 'Transparent background',
+    scale: 'Resolution',
+    rasterError: 'Could not create a PNG in this browser. Try SVG instead.',
   },
   latexFallbackDescription: 'Copy code & \\usepackage line',
   fileFallbackDescription: '.{ext} file',

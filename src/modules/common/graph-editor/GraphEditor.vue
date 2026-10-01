@@ -85,6 +85,7 @@ import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { getUIStateRow, getUIStateValue, setUIStateValue } from '@/modules/common/documents/uiState'
 import type { ExportFileData } from '@/modules/common/export'
 import TexIcon from '@/modules/common/export/TexIcon.vue'
+import WindowImageExport from '@/modules/common/export/WindowImageExport.vue'
 import ArrowDoubleLongRightIcon from '@/modules/common/graph-editor/ArrowDoubleLongRightIcon.vue'
 import {
   GRAPH_EDITOR_LAYOUTS,
@@ -340,10 +341,36 @@ const selectionActions = computed<SelectionAction[]>(() => {
 })
 
 // WYSIWYG SVG export for the export UI; works on any device (no TikZ/WebAssembly).
-provide(
-  GRAPH_SVG_RENDERER_KEY,
-  () => graphComponentRef.value?.exportSVG({ textLabels: true, background: 'canvas' }) ?? null,
-)
+const svgExportObservers = new Set<MutationObserver>()
+provide(GRAPH_SVG_RENDERER_KEY, {
+  render({ transparent = false } = {}) {
+    const svg =
+      graphComponentRef.value?.exportSVG({
+        textLabels: true,
+        background: transparent ? undefined : 'canvas',
+      }) ?? null
+    // Exporting briefly toggles state classes on the canvas; don't report that as a change.
+    for (const observer of svgExportObservers) observer.takeRecords()
+    return svg
+  },
+  observe(onChange) {
+    // The host, not the canvas: rebuilding the graph (e.g. switching views) replaces the <svg>.
+    const host = graphComponentRef.value?.getHostElement()
+    if (!host) return () => {}
+    const observer = new MutationObserver(onChange)
+    observer.observe(host, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      characterData: true,
+    })
+    svgExportObservers.add(observer)
+    return () => {
+      observer.disconnect()
+      svgExportObservers.delete(observer)
+    }
+  },
+})
 
 const {
   state,
@@ -495,6 +522,7 @@ const isExportOpened = ref<boolean>(false)
 // so its close animation still plays. See the `#export` slot consumers.
 const hasExportBeenOpened = ref<boolean>(false)
 const isHelpOpened = ref<boolean>(false)
+const isImageExportOpened = ref<boolean>(false)
 const isTutorialWindowOpen = ref<boolean>(false)
 
 const tutorialMoveCount = ref(0)
@@ -2072,6 +2100,7 @@ defineExpose({
             :show-export="isExportOpened || !hasExportSlot ? EntryState.DISABLE : EntryState.ENABLE"
             @export="isExportOpened = !isExportOpened"
             @export-file="emit('export-file', $event)"
+            @export-image="isImageExportOpened = true"
             :show-share="EntryState.ENABLE"
             @share="emit('share')"
             @layout="doLayout($event)"
@@ -2433,6 +2462,7 @@ defineExpose({
       :node-tap-action="nodeTapAction"
       v-model:open="isHelpOpened"
     />
+    <WindowImageExport v-model:open="isImageExportOpened" @export="emit('export-file', $event)" />
     <WindowSettings ref="settings-dialog" />
   </div>
 </template>
