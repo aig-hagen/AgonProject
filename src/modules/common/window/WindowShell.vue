@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 
 import type { DocumentId } from '@/modules/common/documents/db'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -68,6 +68,11 @@ const emit = defineEmits<{ focus: [] }>()
 
 const { layoutMode } = useLayoutMode()
 
+const floating = useTemplateRef('floating')
+defineExpose({
+  resizeToFitContent: (maxHeight?: number) => floating.value?.resizeToFitContent(maxHeight),
+})
+
 // BottomSheet's open model is typed boolean; the shared model mirrors FloatingWindow's
 // untyped one, so bridge the two through a boolean view.
 const openSheet = computed<boolean>({
@@ -81,6 +86,7 @@ const openSheet = computed<boolean>({
 <template>
   <FloatingWindow
     v-if="layoutMode === 'regular'"
+    ref="floating"
     v-model:open="open"
     v-model:compact="compact"
     v-model:params-open="paramsOpen"

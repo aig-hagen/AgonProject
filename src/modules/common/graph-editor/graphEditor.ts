@@ -113,8 +113,15 @@ export const TUTORIAL_COLLAPSE_KEY: InjectionKey<() => void> = Symbol('tutorial-
 // Serializes the live graph canvas into a standalone SVG string (or null if the canvas
 // isn't mounted). Provided by the common GraphEditor so the export UI can offer a
 // WYSIWYG SVG export without touching the module-agnostic ExportConfig pipeline.
-export const GRAPH_SVG_RENDERER_KEY: InjectionKey<() => string | null> =
-  Symbol('graph-svg-renderer')
+export interface GraphSvgOptions {
+  transparent?: boolean
+}
+export interface GraphSvgRenderer {
+  render(options?: GraphSvgOptions): string | null
+  /** Calls `onChange` whenever the canvas DOM changes; returns a stop function. */
+  observe(onChange: () => void): () => void
+}
+export const GRAPH_SVG_RENDERER_KEY: InjectionKey<GraphSvgRenderer> = Symbol('graph-svg-renderer')
 
 // Provided by each module's GraphEditor so the common MainMenu's quick-export submenu can list
 // the fire-and-forget formats (ICCMA/TGF) and run their export() on demand, without threading the

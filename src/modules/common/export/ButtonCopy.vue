@@ -30,11 +30,14 @@ const hasLabel = computed(() => slots.default !== undefined)
 
 const {
   text,
+  blob,
   iconOnly = false,
   tex = false,
   title,
 } = defineProps<{
-  text: string | undefined
+  text?: string
+  /** Copied as an image (e.g. a PNG) instead of `text`. */
+  blob?: Blob
   /** Renders just the icon, no "Copy" label. */
   iconOnly?: boolean
   /** Use the TeX glyph instead of the clipboard icon (for LaTeX copy actions). */
@@ -48,12 +51,13 @@ const showCopied = ref(false)
 let timeoutId: ReturnType<typeof setTimeout>
 
 async function copyToClipboard() {
-  if (text === undefined) {
-    return
-  }
-  const success = await copy(text)
-
-  if (success === false) {
+  if (blob !== undefined) {
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
+    } catch {
+      return
+    }
+  } else if (text === undefined || (await copy(text)) === false) {
     return
   }
   emit('copied')
@@ -66,7 +70,11 @@ async function copyToClipboard() {
 </script>
 
 <template>
-  <button @click="copyToClipboard" :disabled="text === undefined" :title="title">
+  <button
+    @click="copyToClipboard"
+    :disabled="text === undefined && blob === undefined"
+    :title="title"
+  >
     <template v-if="showCopied">
       <ClipboardDocumentCheckIcon class="size-4"></ClipboardDocumentCheckIcon>
       <template v-if="!iconOnly">{{ t('export.button.copied') }}</template>

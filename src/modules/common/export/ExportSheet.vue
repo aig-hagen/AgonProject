@@ -27,7 +27,7 @@ import {
   PhotoIcon,
   ShareIcon,
 } from '@heroicons/vue/24/outline'
-import { computed, inject, ref, shallowRef, watch } from 'vue'
+import { computed, inject, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
@@ -37,6 +37,7 @@ import {
 } from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
+import ImageExportPanel from '@/modules/common/export/ImageExportPanel.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
@@ -115,23 +116,6 @@ const nodeLabelOptions = computed<PickerOption[]>(() =>
 
 const isLatex = computed(() => codeConfig.value?.id === ExportFormatId.Latex)
 
-// WYSIWYG SVG snapshot of the live graph. Serialized only on the preview screen, and only when
-// a renderer is provided (i.e. inside a graph editor). No TikZ/WebAssembly, so it works on any
-// phone — unlike the old rendered preview, which could hang on mobile. Re-serialized on document
-// changes via a post-flush watch so the snapshot reflects edits (e.g. moved nodes), reading the
-// canvas after it has re-rendered rather than the pre-edit positions.
-const svgText = shallowRef<string | undefined>(undefined)
-watch(
-  [screen, () => input],
-  ([currentScreen]) => {
-    svgText.value = currentScreen === 'svg' ? (graphSvgRenderer?.() ?? undefined) : undefined
-  },
-  { immediate: true, flush: 'post' },
-)
-
-const svgFiledata = computed<ExportFileData | undefined>(() =>
-  svgText.value === undefined ? undefined : { content: svgText.value, ending: 'svg' },
-)
 const codeFiledata = computed<ExportFileData | undefined>(() =>
   codeResult.value === undefined
     ? undefined
@@ -174,9 +158,9 @@ function download(config: ExportConfig<DocumentT>) {
             <PhotoIcon class="size-5 text-primary" />
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
-            <b class="text-sm font-semibold">{{ t('export.svg.title') }}</b>
+            <b class="text-sm font-semibold">{{ t('export.image.title') }}</b>
             <span class="text-xs text-base-content/60 truncate">{{
-              t('export.svg.description')
+              t('export.image.description')
             }}</span>
           </span>
           <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
@@ -229,21 +213,7 @@ function download(config: ExportConfig<DocumentT>) {
         <ChevronLeftIcon class="size-4" /> {{ t('export.formats') }}
       </button>
 
-      <div class="overflow-auto rounded border border-base-300 p-2">
-        <div v-if="svgText" v-html="svgText" class="wysiwyg-svg-preview w-fit"></div>
-        <div v-else role="alert" class="alert alert-warning alert-soft">
-          <span>{{ t('export.noGraph') }}</span>
-        </div>
-      </div>
-
-      <div class="flex gap-2">
-        <ButtonSave
-          class="btn btn-primary h-12 flex-1 rounded-2xl"
-          :filedata="svgFiledata"
-          @export="emit('export', $event)"
-        />
-        <ButtonCopy class="btn btn-soft h-12 flex-1 rounded-2xl" :text="svgText">SVG</ButtonCopy>
-      </div>
+      <ImageExportPanel @export="emit('export', $event)" />
     </div>
 
     <!-- LaTeX code -->
@@ -338,14 +308,3 @@ function download(config: ExportConfig<DocumentT>) {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Cap the WYSIWYG SVG preview: the serialized svg has intrinsic px dimensions that grow with
-   the graph, so clamp it (its viewBox keeps the aspect ratio) instead of letting it scale up. */
-.wysiwyg-svg-preview :deep(svg) {
-  max-width: 100%;
-  max-height: 60vh;
-  width: auto;
-  height: auto;
-}
-</style>
