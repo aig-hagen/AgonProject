@@ -20,12 +20,13 @@ export default {
   file: {
     loadFailedTitle: 'Failed loading',
     uploadFailed: 'Failed to upload file',
-    notJson: 'Uploaded file is not JSON',
+    unsupportedFormat: 'Uploaded file has an unsupported format',
     unsupportedJson: 'Uploaded file contains unsupported JSON',
     loaded: 'Data loaded',
   },
   import: {
     jsonSyntax: 'The file "{fileName}" is not a valid JSON file: {detail}',
+    textSyntax: 'The file "{fileName}" could not be read: {detail}',
     schemaMismatch: 'Data does not match the expected schema: {detail}',
     invalidData: 'The file "{fileName}" contains invalid data: {detail}',
     validation: 'The file "{fileName}" contains invalid data:\n\n{detail}',

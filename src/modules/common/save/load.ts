@@ -17,7 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /** Stable code for a localized import-error message under `errors.import.*`. */
-export type ImportErrorCode = 'jsonSyntax' | 'schemaMismatch' | 'invalidData' | 'validation'
+export type ImportErrorCode =
+  | 'jsonSyntax'
+  | 'textSyntax'
+  | 'schemaMismatch'
+  | 'invalidData'
+  | 'validation'
 
 /**
  * A structured import failure. Carries a stable `code` plus interpolation `params`
@@ -32,6 +37,16 @@ export abstract class ImportError {
 
 export class JsonSyntaxError extends ImportError {
   code = 'jsonSyntax' as const
+  params: { fileName: string }
+  constructor(cause: string, fileName: string) {
+    super()
+    this.params = { fileName }
+    this.detail = cause
+  }
+}
+
+export class TextSyntaxError extends ImportError {
+  code = 'textSyntax' as const
   params: { fileName: string }
   constructor(cause: string, fileName: string) {
     super()
@@ -81,4 +96,13 @@ export interface DeserializationError {
   success: false
   data?: never
   errors: ImportError[]
+}
+
+/** A plain-text import format (e.g. ICCMA) a module can load besides its own JSON save format. */
+export interface TextImportConfig<DocumentT> {
+  /** File extension without the leading dot, offered in the file picker. */
+  extension: string
+  /** Cheap sniff (e.g. of a header line) whether `text` is meant for this format. */
+  canLoad(text: string): boolean
+  load(text: string, fileName: string): DeserializationResult<DocumentT>
 }

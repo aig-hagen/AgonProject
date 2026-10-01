@@ -22,7 +22,7 @@ import type { EvaluationKind } from '@/modules/common/evaluation/types'
 import type { Example } from '@/modules/common/examples'
 import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
 import type { Layout } from '@/modules/common/main-menu/layouting'
-import type { DeserializationResult } from '@/modules/common/save/load'
+import type { DeserializationResult, TextImportConfig } from '@/modules/common/save/load'
 import type { TagId } from '@/modules/common/tags'
 import type { Publication } from '@/modules/common/tooltip/publications'
 
@@ -89,6 +89,11 @@ export interface ModuleConfig<DocumentT extends Objectish> {
    * @param dataObject
    */
   load(dataString: string, fileName: string): DeserializationResult<DocumentT>
+  /**
+   * Plain-text formats (e.g. ICCMA) this module can import besides its JSON save format.
+   * They carry no positions, so imported documents are laid out afterwards.
+   */
+  textImports?: TextImportConfig<DocumentT>[]
   /**
    * Save model as data string.
    * This is used to save data to disk and to be loaded later.

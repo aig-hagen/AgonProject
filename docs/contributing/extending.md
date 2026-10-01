@@ -13,7 +13,7 @@ Each argumentation type implements [`ModuleConfig`](/src/app/home/moduleConfig.t
 - [Probabilistic argumentation](/src/modules/probabilistic-argumentation/moduleConfig.ts)
 - [Collective attacks](/src/modules/collective-attacks-argumentation/moduleConfig.ts)
 
-A module config connects the application shell to the module's domain model. It supplies a stable `id`, document creation and internal IndexedDB serialization, examples, an editor component, portable save/load functions, and the supported evaluation kinds. Optional fields enable generation, publications, tags, and an under-construction state.
+A module config connects the application shell to the module's domain model. It supplies a stable `id`, document creation and internal IndexedDB serialization, examples, an editor component, portable save/load functions, and the supported evaluation kinds. Optional fields enable plain-text imports (`textImports`, e.g. ICCMA via `save/iccmaFormat.ts`), generation, publications, tags, and an under-construction state.
 
 To register a module:
 
