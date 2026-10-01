@@ -29,6 +29,7 @@ export default {
     description: 'SVG- oder PNG-Momentaufnahme des aktuellen Graphen',
     transparent: 'Transparenter Hintergrund',
     scale: 'Auflösung',
+    quickSave: 'SVG speichern (transparenter Hintergrund)',
     rasterError: 'PNG konnte in diesem Browser nicht erstellt werden. Versuche stattdessen SVG.',
   },
   latexFallbackDescription: 'Code & \\usepackage-Zeile kopieren',

@@ -42,7 +42,11 @@ import { useTheme } from '@/modules/common/theme/useTheme'
 
 import type { ExportFileData } from '.'
 
-const emit = defineEmits<{ export: [filedata: ExportFileData] }>()
+const { fill = false } = defineProps<{
+  /** Fill the parent's height: the preview flexes and the buttons stay at the bottom. */
+  fill?: boolean
+}>()
+const emit = defineEmits<{ export: [filedata: ExportFileData]; previewLoaded: [] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 const graphSvgRenderer = inject(GRAPH_SVG_RENDERER_KEY, undefined)
@@ -104,7 +108,7 @@ const copyBlob = computed(() =>
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col gap-3" :class="{ 'h-full': fill }">
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
       <div class="join" role="group" :aria-label="t('export.format')">
         <button
@@ -150,9 +154,15 @@ const copyBlob = computed(() =>
 
     <div
       class="overflow-auto rounded border border-base-300 p-2"
-      :class="{ 'svg-preview-checker': transparent }"
+      :class="{ 'svg-preview-checker': transparent, 'preview-fill flex flex-1 min-h-0': fill }"
     >
-      <img v-if="hasGraph && previewUrl" :src="previewUrl" alt="" class="svg-preview mx-auto" />
+      <img
+        v-if="hasGraph && previewUrl"
+        :src="previewUrl"
+        @load="emit('previewLoaded')"
+        alt=""
+        class="svg-preview m-auto"
+      />
       <div v-else-if="!hasGraph" role="alert" class="alert alert-warning alert-soft">
         <span>{{ t('export.noGraph') }}</span>
       </div>
@@ -187,6 +197,10 @@ const copyBlob = computed(() =>
   max-height: 60vh;
   width: auto;
   height: auto;
+}
+
+.preview-fill .svg-preview {
+  max-height: 100%;
 }
 
 .svg-preview-checker {

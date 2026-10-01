@@ -17,6 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import ImageExportPanel from '@/modules/common/export/ImageExportPanel.vue'
@@ -28,18 +29,29 @@ const open = defineModel<boolean>('open', { required: true })
 const emit = defineEmits<{ export: [filedata: ExportFileData] }>()
 
 const { t } = useI18n({ useScope: 'global' })
+
+// Fit the height to the first preview of each opening; later live updates keep the size.
+const shell = useTemplateRef('shell')
+let fitted = false
+watch(open, () => (fitted = false))
+function fitToPreview() {
+  if (fitted) return
+  fitted = true
+  shell.value?.resizeToFitContent()
+}
 </script>
 
 <template>
   <WindowShell
+    ref="shell"
     v-model:open="open"
     :title="t('export.exportImage')"
     :initial-position="{ x: 96, y: 96 }"
     :intitalSize="{ width: 560, height: 600 }"
   >
     <!-- Mounted only while open, so the canvas isn't observed in the background. -->
-    <div v-if="open" class="p-4">
-      <ImageExportPanel @export="emit('export', $event)" />
+    <div v-if="open" class="h-full p-4">
+      <ImageExportPanel fill @export="emit('export', $event)" @preview-loaded="fitToPreview" />
     </div>
   </WindowShell>
 </template>
