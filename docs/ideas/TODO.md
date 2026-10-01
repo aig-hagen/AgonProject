@@ -20,6 +20,8 @@
 
 ## Bugs and Issues
 
+- ADF center view on mobile may cut of conditions
+
 ### desktop/general
 
 - need a ranking tutorial for AF
