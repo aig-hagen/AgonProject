@@ -69,6 +69,7 @@ const {
   historyState,
   handleEditorShortcut,
   loadFromFileInput,
+  acceptedFileTypes,
   loadedDocuments,
   quickShareDocument,
   saveAsFile,
@@ -459,7 +460,7 @@ function loadFile() {
     ref="file-input"
     type="file"
     v-show="false"
-    accept="application/json"
+    :accept="acceptedFileTypes"
     @change="loadFromFileInput($event)"
   />
 </template>

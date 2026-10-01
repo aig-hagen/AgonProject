@@ -23,6 +23,7 @@ import { datasets } from '@/modules/collective-attacks-argumentation/examples'
 import GraphEditor from '@/modules/collective-attacks-argumentation/GraphEditor.vue'
 import { layout } from '@/modules/collective-attacks-argumentation/layout'
 import { SetAF, type SetAfArgumentData } from '@/modules/collective-attacks-argumentation/model'
+import { iccmaImport } from '@/modules/collective-attacks-argumentation/save/iccmaFormat'
 import {
   canLoadFromObject,
   loadFromString,
@@ -92,6 +93,7 @@ export const collectiveAttacksArgumentationModule: ModuleConfig<SetAF<SetAfArgum
   load(dataString, fileName) {
     return loadFromString(dataString, fileName)
   },
+  textImports: [iccmaImport],
   getSaveString(document, name) {
     return saveAsString(document, name)
   },

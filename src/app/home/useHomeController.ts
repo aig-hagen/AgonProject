@@ -34,7 +34,9 @@ import {
 import type { ExportFileData } from '@/modules/common/export'
 import { saveToFile } from '@/modules/common/export/saveFile'
 import type { HistoryState } from '@/modules/common/graph-editor/graphEditor'
+import { Layout } from '@/modules/common/main-menu/layouting'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
+import type { DeserializationResult } from '@/modules/common/save/load'
 import { canNativeShare } from '@/modules/common/share/nativeShare'
 import { uploadShare } from '@/modules/common/share/useShare'
 import { isShortcut, REDO_SHORTCUT, UNDO_SHORTCUT } from '@/modules/common/shortcuts'
@@ -226,11 +228,21 @@ export function useHomeController<DocumentT extends Objectish>(
       return
     }
 
+    for (const module of modules) {
+      const textImport = module.textImports?.find((config) => config.canLoad(dataStr))
+      if (textImport === undefined) continue
+      const result = textImport.load(dataStr, fileName)
+      if (result.data !== undefined) await module.applyLayout?.(result.data, Layout.ForceDirected)
+      const suffix = `.${textImport.extension}`
+      finishLoad(result, fileName.endsWith(suffix) ? fileName.slice(0, -suffix.length) : fileName)
+      return
+    }
+
     let unvalidatedData: unknown
     try {
       unvalidatedData = JSON.parse(dataStr)
     } catch {
-      addErrorNotification(t('errors.file.notJson'))
+      addErrorNotification(t('errors.file.unsupportedFormat'))
       return
     }
 
@@ -248,8 +260,18 @@ export function useHomeController<DocumentT extends Objectish>(
       return
     }
 
-    const result = importModule.load(dataStr, fileName)
+    const nameFromJson = (unvalidatedData as Record<string, unknown>).name
+    finishLoad(
+      importModule.load(dataStr, fileName),
+      typeof nameFromJson === 'string'
+        ? nameFromJson
+        : fileName.endsWith('.json')
+          ? fileName.slice(0, -5)
+          : fileName,
+    )
+  }
 
+  function finishLoad(result: DeserializationResult<DocumentT>, documentName: string) {
     if (result.errors !== undefined) {
       for (const error of result.errors) {
         addErrorNotification(
@@ -259,17 +281,18 @@ export function useHomeController<DocumentT extends Objectish>(
       }
     }
     if (result.data !== undefined) {
-      const nameFromJson = (unvalidatedData as Record<string, unknown>).name
-      const documentName =
-        typeof nameFromJson === 'string'
-          ? nameFromJson
-          : fileName.endsWith('.json')
-            ? fileName.slice(0, -5)
-            : fileName
       createDocumentWithContent(result.data, documentName)
       addSuccessNotification(t('errors.file.loaded'))
     }
   }
+
+  const acceptedFileTypes = [
+    'application/json',
+    '.json',
+    ...modules.flatMap(
+      (module) => module.textImports?.map(({ extension }) => `.${extension}`) ?? [],
+    ),
+  ].join(',')
 
   async function loadTextData(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -398,6 +421,7 @@ export function useHomeController<DocumentT extends Objectish>(
     historyState,
     handleEditorShortcut,
     loadFromFileInput,
+    acceptedFileTypes,
     shareUrl,
     shareDocument,
     isSharing,

@@ -65,6 +65,7 @@ const {
   historyState,
   handleEditorShortcut,
   loadFromFileInput,
+  acceptedFileTypes,
   shareUrl,
   shareDocument,
   isSharing,
@@ -169,7 +170,7 @@ function loadFile() {
     ref="file-input"
     type="file"
     v-show="false"
-    accept="application/json"
+    :accept="acceptedFileTypes"
     @change="loadFromFileInput($event)"
   />
 </template>
