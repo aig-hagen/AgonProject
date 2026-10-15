@@ -98,13 +98,15 @@ picks" and the chosen highlight / derived candidates.
 
 ## Phase 2 — color resolution plumbing
 
-- [ ] Run every color handed to the graph library through `resolveCssColor`: link configs,
-      hyperlinks, highlight groups (`useHighlight`), not just preset node/link colors.
-- [ ] Re-resolve on theme toggle (`isDark`) for all of the above.
-- [ ] Label color: use the `--graph-*-content` tokens, or make `getContrastingLabelColor`
-      accept any resolved color (rgb / color()) instead of hex only.
-- [ ] Move `resolveCssColor` out of `GraphEditor.vue` into `graphEditorUtils.ts` if it's
-      now shared.
+- [x] Run every color handed to the graph library through `resolveCssColor`: link-type colors
+      (`linkTypeColor()` in `GraphEditor.vue`, all six call sites), link kinds, hyperlinks and
+      highlight groups (`useHighlight`).
+- [x] Theme-safe resolution: the probe carries its own `data-theme`, so results don't depend on
+      when the document attribute flips; resolved values are cached per theme. Mixes that the
+      browser serializes as `oklab()` / `color()` are normalized to hex/rgba via a canvas pixel.
+- [x] Label color: `getContrastingLabelColor` reads hex and rgb(a) and picks whichever of
+      near-black / white contrasts more (fixes white-on-`#ff7766`).
+- [x] Moved `resolveCssColor` into `graphEditorUtils.ts`, with tests.
 
 ## Phase 3 — presets on tokens
 

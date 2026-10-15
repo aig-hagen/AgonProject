@@ -107,8 +107,10 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import {
   adjustNodeLabelFontSize,
+  type ColorTheme,
   parseHyperLinkId,
   parseLinkId,
+  resolveCssColor,
 } from '@/modules/common/graph-editor/graphEditorUtils'
 import {
   GRAPH_STYLE_DARK,
@@ -485,32 +487,22 @@ function pickStyle(): GraphStyle {
   }
 }
 
-// Resolve a CSS color that may reference palette tokens (`var(...)` / `color-mix(...)`) to a
-// concrete color, so it can be handed to the graph library (which can't parse either). Plain
-// hex/named colors pass through untouched.
-function resolveCssColor(value: string): string {
-  if (typeof document === 'undefined') return value
-  if (!value.includes('var(') && !value.includes('color-mix')) return value
-  const probe = document.createElement('span')
-  probe.style.color = value
-  probe.style.position = 'absolute'
-  probe.style.pointerEvents = 'none'
-  document.body.appendChild(probe)
-  const resolved = getComputedStyle(probe).color
-  probe.remove()
-  return resolved || value
-}
+const colorTheme = computed<ColorTheme>(() => (isDark.value ? 'dark' : 'light'))
+const resolveColor = (value: string) => resolveCssColor(value, colorTheme.value)
 
 const effectiveStyle = computed<GraphStyle>(() => {
-  // Referenced so token-based colors re-resolve when the theme toggles.
-  void isDark.value
   const base = pickStyle()
   return {
     ...base,
-    nodeColor: resolveCssColor(base.nodeColor),
-    linkColor: resolveCssColor(base.linkColor),
+    nodeColor: resolveColor(base.nodeColor),
+    linkColor: resolveColor(base.linkColor),
   }
 })
+
+function linkTypeColor(type: LinkType): string {
+  const color = linkConfigs[type]?.color
+  return color ? resolveColor(color) : effectiveStyle.value.linkColor
+}
 
 const linkNames = computed(() =>
   Object.values(linkConfigs)
@@ -853,6 +845,7 @@ useHighlight({
   getIdMapping: () => idMapping,
   stateRef,
   effectiveStyle,
+  colorTheme,
   isUncolored: (id) => nodeShapes?.get(id) === 'plain',
 })
 
@@ -941,8 +934,7 @@ function onHyperLinkCreated(link: { id: string; label?: string }, cause: EVENT_C
   })
   triggerSettle()
   void nextTick(() => {
-    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
-    graphComponentRef.value!.setColor(linkColor, link.id)
+    graphComponentRef.value!.setColor(linkTypeColor(selectedLinkType.value), link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
   })
 }
@@ -1006,8 +998,7 @@ function onLinkCreated(
   })
   triggerSettle()
   void nextTick(() => {
-    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
-    graphComponentRef.value!.setColor(linkColor, link.id)
+    graphComponentRef.value!.setColor(linkTypeColor(selectedLinkType.value), link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
     applyReciprocalStyle(link.id, selectedLinkType.value)
   })
@@ -1427,7 +1418,7 @@ function buildGraphJson(state: GraphEditorState) {
       return {
         sourceId: link.sourceId,
         targetId: link.targetId,
-        color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
+        color: linkTypeColor(link.type),
         arrowType: toArrowType(link.type),
         reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
       }
@@ -1437,15 +1428,13 @@ function buildGraphJson(state: GraphEditorState) {
       sourceId: link.sourceId,
       targetId: link.targetId,
       kind: link.kind,
-      color: style?.color
-        ? resolveCssColor(style.color)
-        : (linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor),
+      color: style?.color ? resolveColor(style.color) : linkTypeColor(link.type),
       arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(link.type),
       arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
     }
   })
   const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => {
-    const typeColor = linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor
+    const typeColor = linkTypeColor(hyperLink.type)
     if (hyperLink.kind === undefined) {
       return {
         sourceIds: hyperLink.sourceIds,
@@ -1459,7 +1448,7 @@ function buildGraphJson(state: GraphEditorState) {
       sourceIds: hyperLink.sourceIds,
       targetId: hyperLink.targetId,
       kind: hyperLink.kind,
-      color: style?.color ? resolveCssColor(style.color) : typeColor,
+      color: style?.color ? resolveColor(style.color) : typeColor,
       arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(hyperLink.type),
       arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
     }
@@ -1581,8 +1570,7 @@ function updateLinkType(linkId: string, linkType: LinkType) {
   const publicTargetId = idMapping.getOrFail(internalTargetId)
   emit('linkChanged', { sourceId: publicSourceId, targetId: publicTargetId, type: linkType })
   const arrowType = toArrowType(linkType)
-  const linkColor = linkConfigs[linkType]?.color ?? effectiveStyle.value.linkColor
-  graphComponentRef.value!.setColor(linkColor, linkId)
+  graphComponentRef.value!.setColor(linkTypeColor(linkType), linkId)
   graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
   applyReciprocalStyle(linkId, linkType)
 }

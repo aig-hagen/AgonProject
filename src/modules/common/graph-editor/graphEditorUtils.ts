@@ -58,23 +58,84 @@ export function setNodeLabelColor(
   }
 }
 
-/** Returns near-black or white — whichever reads better on `background` (hex only). */
+export type ColorTheme = 'light' | 'dark'
+
+const resolvedColors = new Map<string, string>()
+
+/**
+ * Resolve a CSS color that may reference palette tokens (`var(...)` / `color-mix(...)`) to a
+ * hex/rgba color the graph library can parse. The probe carries its own `data-theme`, so the
+ * result doesn't depend on when the document's theme attribute flips. Plain colors pass through.
+ */
+export function resolveCssColor(value: string, theme: ColorTheme): string {
+  if (typeof document === 'undefined') return value
+  if (!value.includes('var(') && !value.includes('color-mix')) return value
+  const key = `${theme}|${value}`
+  const cached = resolvedColors.get(key)
+  if (cached !== undefined) return cached
+  const probe = document.createElement('span')
+  probe.dataset.theme = theme
+  probe.style.color = value
+  probe.style.position = 'absolute'
+  probe.style.pointerEvents = 'none'
+  document.body.appendChild(probe)
+  const computed = getComputedStyle(probe).color
+  probe.remove()
+  const resolved = normalizeColor(computed) || value
+  resolvedColors.set(key, resolved)
+  return resolved
+}
+
+// Browsers may serialize mixes as `oklab(...)` or `color(srgb ...)`; a canvas pixel turns any
+// of them into plain channels.
+function normalizeColor(color: string): string {
+  if (!color || parseRgb(color)) return color
+  const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true })
+  if (!ctx) return color
+  ctx.fillStyle = color
+  ctx.fillRect(0, 0, 1, 1)
+  const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data as unknown as [
+    number,
+    number,
+    number,
+    number,
+  ]
+  if (a === 255) return `#${[r, g, b].map((c) => c.toString(16).padStart(2, '0')).join('')}`
+  return `rgba(${r}, ${g}, ${b}, ${+(a / 255).toFixed(3)})`
+}
+
+/** Parse `#rgb`, `#rrggbb` or `rgb()/rgba()` into 0–1 sRGB channels. */
+function parseRgb(color: string): [number, number, number] | null {
+  const value = color.trim()
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value)?.[1]
+  if (hex) {
+    const full = hex.length === 3 ? [...hex].map((c) => c + c).join('') : hex
+    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255) as [
+      number,
+      number,
+      number,
+    ]
+  }
+  const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i.exec(value)
+  if (rgb) return [rgb[1], rgb[2], rgb[3]].map((c) => Number(c) / 255) as [number, number, number]
+  return null
+}
+
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  const lin = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+}
+
+const LABEL_DARK = '#1a1a1a'
+const LABEL_LIGHT = '#ffffff'
+
+/** Near-black or white, whichever contrasts more with `background` (hex or rgb). */
 export function getContrastingLabelColor(background: string): string {
-  const hex = background.trim().replace('#', '')
-  const full =
-    hex.length === 3
-      ? hex
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : hex
-  if (full.length !== 6 || /[^0-9a-fA-F]/.test(full)) return ''
-  const channels = [0, 2, 4].map((i) => {
-    const s = parseInt(full.slice(i, i + 2), 16) / 255
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
-  }) as [number, number, number]
-  const luminance = 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
-  return luminance > 0.4 ? '#1a1a1a' : '#ffffff'
+  const rgb = parseRgb(background)
+  if (!rgb) return ''
+  const bg = relativeLuminance(rgb)
+  const dark = relativeLuminance(parseRgb(LABEL_DARK)!)
+  return (bg + 0.05) / (dark + 0.05) >= 1.05 / (bg + 0.05) ? LABEL_DARK : LABEL_LIGHT
 }
 
 export function adjustNodeLabelFontSize(

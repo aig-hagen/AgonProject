@@ -21,7 +21,9 @@ import { watchEffect } from 'vue'
 
 import type { GraphEditorState, Highlight, NodeId } from '@/modules/common/graph-editor/graphEditor'
 import {
+  type ColorTheme,
   getContrastingLabelColor,
+  resolveCssColor,
   setNodeLabelColor,
 } from '@/modules/common/graph-editor/graphEditorUtils'
 import type { GraphStyle } from '@/modules/common/graph-editor/graphStyle'
@@ -39,6 +41,7 @@ export function useHighlight({
   getIdMapping,
   stateRef,
   effectiveStyle,
+  colorTheme,
   isUncolored = () => false,
 }: {
   highlightRef: Readonly<Ref<Highlight | undefined>>
@@ -47,6 +50,7 @@ export function useHighlight({
   getIdMapping: () => IdMapping<number, number>
   stateRef: Ref<GraphEditorState> | ComputedRef<GraphEditorState>
   effectiveStyle: Ref<GraphStyle> | ComputedRef<GraphStyle>
+  colorTheme: Ref<ColorTheme> | ComputedRef<ColorTheme>
   // Nodes that keep their own color, e.g. plain label-only nodes.
   isUncolored?: (id: NodeId) => boolean
 }) {
@@ -80,8 +84,9 @@ export function useHighlight({
     // background so white-on-pastel highlights stay readable in dark mode.
     const graphEl = graphComponent.$el
     const applyColors = (color: string, ids: number[]) => {
-      graphComponent.setColor(color, ids)
-      const labelColor = getContrastingLabelColor(color)
+      const resolved = resolveCssColor(color, colorTheme.value)
+      graphComponent.setColor(resolved, ids)
+      const labelColor = getContrastingLabelColor(resolved)
       for (const id of ids) setNodeLabelColor(graphEl, graphComponentId, id, labelColor)
     }
     for (let i = 0; i < groups.length; i++) {
