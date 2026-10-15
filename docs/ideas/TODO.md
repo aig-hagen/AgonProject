@@ -13,13 +13,6 @@ Numbers are fixed IDs: never renumber, and give a new item the next free number 
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
   `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
 
-## Export and sharing
-
-- **4. [S] Remember export options.** The export window resets every time it opens. Store the
-  last-used format and options (e.g. LaTeX style) in the db.
-- **5. [S] Mobile export parity.** Check that the mobile `ExportSheet.vue` has everything the
-  desktop `WindowExport.vue` got in the export redesign.
-
 ## Mobile
 
 - **7. [S] Publications on module cards.** Desktop shows a `PublicationsTooltip` on each home card

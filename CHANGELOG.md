@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Glossary, generator, privacy and attributions pages share one header bar with a centered title and a back button.
 - Privacy and third-party links in Help open in the same tab, so back returns to the editor instead of a second app instance.
 - Glossary search uses one search field style on desktop and mobile, with a visible keyboard focus ring.
+- Export options (LaTeX style, image format, scale and background) are remembered across sessions and shared between desktop and mobile.
+- Mobile LaTeX export shows the `argumentation` package note with its link, like desktop.
 - Floating windows, sheets and menus cast palette-tinted shadows; muted icons and code highlighting use the app palette.
 - Graph style presets come from the app palette: every preset now has a proper dark mode, High contrast
   reaches 11:1 labels in light mode, Minimal is quieter, and Library uses the AIG brand colors.
