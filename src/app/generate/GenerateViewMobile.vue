@@ -178,7 +178,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 
         <!-- Type-specific parameters -->
         <template v-if="selectedFrameworkType && selectedFrameworkType.params.length > 0">
-          <div class="text-xs font-bold text-base-content/40 tracking-wide uppercase">
+          <div class="section-label">
             {{ t('generate.typeOptions') }}
           </div>
           <template v-for="p in selectedFrameworkType.params" :key="p.name">
@@ -245,7 +245,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 
       <!-- Result -->
       <div v-if="stats !== null" class="rounded-box border border-primary/25 bg-primary/5 p-4">
-        <div class="text-xs font-semibold text-primary/80 tracking-wide mb-2 uppercase">
+        <div class="section-label text-primary/80 mb-2">
           {{ t('generate.lastGenerated') }}
         </div>
         <i18n-t

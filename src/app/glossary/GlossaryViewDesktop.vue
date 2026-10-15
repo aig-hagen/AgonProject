@@ -164,7 +164,7 @@ watch(
             </template>
           </p>
           <section v-if="activeDefinition.reference" class="mt-6 pt-4 border-t border-base-300">
-            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+            <h3 class="section-label mb-2">
               {{ t('glossary.source') }}
             </h3>
             <PublicationCitation :publication="activeDefinition.reference" />

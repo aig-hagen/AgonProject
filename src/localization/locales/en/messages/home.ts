@@ -37,6 +37,7 @@ export default {
     soon: 'Soon',
     beta: 'Beta',
     betaHint: 'Early version: usable, but some features are still missing.',
+    publications: 'Publications',
     openExample: 'Open example',
     newHeading: 'New',
     createNew: 'Create new',

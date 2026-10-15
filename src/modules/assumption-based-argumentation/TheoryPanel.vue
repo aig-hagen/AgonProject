@@ -486,13 +486,6 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
 </template>
 
 <style scoped>
-.section-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  opacity: 0.6;
-}
 /* Keeps the name and contrary columns aligned across assumption rows. */
 .assm-grid {
   display: grid;

@@ -98,9 +98,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
                   :class="moduleCard.examples.length > 4 ? 'overflow-y-auto min-h-0' : ''"
                 >
                   <template v-if="moduleCard.examples.length !== 0">
-                    <h4
-                      class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2"
-                    >
+                    <h4 class="section-label mt-2">
                       {{ t('home.picker.openExample') }}
                     </h4>
                     <ul
@@ -128,7 +126,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
                     </ul>
                   </template>
                 </div>
-                <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
+                <h4 class="section-label mt-2">
                   {{ t('home.picker.newHeading') }}
                 </h4>
                 <div class="flex flex-row gap-4 pl-2 mt-1">

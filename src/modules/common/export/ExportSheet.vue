@@ -147,7 +147,7 @@ function download(config: ExportConfig<DocumentT>) {
       </button>
 
       <section v-if="graphSvgRenderer" class="flex flex-col gap-2">
-        <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
+        <h3 class="section-label px-1">
           {{ t('export.sections.image') }}
         </h3>
         <button
@@ -168,7 +168,7 @@ function download(config: ExportConfig<DocumentT>) {
       </section>
 
       <section class="flex flex-col gap-2">
-        <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
+        <h3 class="section-label px-1">
           {{ t('export.sections.text') }}
         </h3>
         <button

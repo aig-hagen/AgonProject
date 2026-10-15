@@ -2295,7 +2295,7 @@ defineExpose({
       <BottomSheet v-model:open="isMenuOpen" :title="t('menu.label')">
         <div class="flex flex-col gap-4 pb-4">
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ t('menu.sections.framework') }}
             </h3>
             <button
@@ -2324,7 +2324,7 @@ defineExpose({
             </button>
           </section>
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ t('menu.sections.edit') }}
             </h3>
             <button
@@ -2343,7 +2343,7 @@ defineExpose({
             </button>
           </section>
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ t('menu.sections.app') }}
             </h3>
             <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openSettings)">
@@ -2373,7 +2373,7 @@ defineExpose({
       <BottomSheet v-model:open="isRelayoutOpen" :title="t('menu.relayout')">
         <div class="flex flex-col gap-5 pb-4">
           <section v-for="group in relayoutGroups" :key="group.label" class="flex flex-col gap-2">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ group.label }}
             </h3>
             <div class="grid grid-cols-2 gap-2.5">

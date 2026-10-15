@@ -115,7 +115,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
       <!-- Expanded body: examples + create/generate -->
       <div v-if="expanded === index && !moduleCard.underConstruction" class="px-3.5 pb-3.5">
         <template v-if="moduleCard.examples.length !== 0">
-          <div class="text-[0.7rem] font-bold uppercase tracking-wide text-base-content/40 mb-2">
+          <div class="section-label mb-2">
             {{ t('home.picker.openExample') }}
           </div>
           <div class="flex flex-wrap gap-2 mb-3.5">

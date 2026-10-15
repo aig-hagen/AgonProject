@@ -381,7 +381,7 @@ onBeforeUnmount(() => {
       <div class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
         <section class="flex min-w-0 flex-col gap-1.5">
           <div class="flex items-center gap-2">
-            <span class="section-cap">{{ t('export.formatLabels.code') }}</span>
+            <span class="section-label whitespace-nowrap">{{ t('export.formatLabels.code') }}</span>
             <span class="hairline"></span>
             <span v-if="mode === 'synced'" class="badge badge-xs badge-ghost gap-1 text-success">
               <CheckCircleIcon class="size-3.5" />{{ t('export.badge.synced') }}
@@ -397,7 +397,7 @@ onBeforeUnmount(() => {
         </section>
         <section class="flex min-w-0 flex-col gap-1.5">
           <div class="flex items-center gap-2">
-            <span class="section-cap">{{ t('export.preview') }}</span>
+            <span class="section-label whitespace-nowrap">{{ t('export.preview') }}</span>
             <span class="hairline"></span>
             <span class="badge badge-xs badge-primary badge-soft gap-1">
               <ArrowPathIcon class="size-3.5" :class="{ 'animate-spin': previewLoading }" />{{
@@ -490,16 +490,7 @@ onBeforeUnmount(() => {
   </WindowShell>
 </template>
 <style scoped>
-/* Small uppercase section cap with a hairline rule filling the rest of the row. */
-.section-cap {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-base-content);
-  opacity: 0.55;
-  white-space: nowrap;
-}
+/* Hairline rule filling the rest of a section-label row. */
 .hairline {
   flex: 1 1 auto;
   height: 1px;

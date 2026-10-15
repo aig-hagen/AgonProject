@@ -54,7 +54,7 @@ const router = useRouter()
       <p class="text-sm text-base-content/70 leading-relaxed">{{ t('thirdParty.intro') }}</p>
 
       <!-- TeX packages -->
-      <div class="text-xs font-bold text-base-content/40 tracking-wide uppercase">
+      <div class="section-label">
         {{ t('thirdParty.texPackages') }}
       </div>
       <p class="text-xs text-base-content/60 leading-relaxed -mt-2">
@@ -117,7 +117,7 @@ const router = useRouter()
       </details>
 
       <!-- Libraries & projects -->
-      <div class="text-xs font-bold text-base-content/40 tracking-wide mt-1 uppercase">
+      <div class="section-label mt-1">
         {{ t('thirdParty.librariesProjects') }}
       </div>
       <details

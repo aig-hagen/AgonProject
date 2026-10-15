@@ -186,9 +186,7 @@ const operatorKeys = computed(() => [
 
       <!-- Operator keypad -->
       <div class="flex flex-col gap-1.5">
-        <span class="text-xs font-semibold uppercase opacity-60">{{
-          t('editor.condition.operators')
-        }}</span>
+        <span class="section-label">{{ t('editor.condition.operators') }}</span>
         <div class="grid grid-cols-3 gap-2">
           <button
             v-for="key in operatorKeys"
@@ -206,9 +204,7 @@ const operatorKeys = computed(() => [
 
       <!-- Argument atom chips -->
       <div class="flex flex-col gap-1.5">
-        <span class="text-xs font-semibold uppercase opacity-60">{{
-          t('editor.condition.arguments')
-        }}</span>
+        <span class="section-label">{{ t('editor.condition.arguments') }}</span>
         <div v-if="availableArguments.length > 0" class="flex flex-wrap gap-1.5">
           <button
             v-for="arg in availableArguments"

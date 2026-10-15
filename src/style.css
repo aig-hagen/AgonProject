@@ -67,6 +67,16 @@
    truth in @/modules/common/theme/palette.ts, injected as --color-* custom
    properties before mount. Graph colors are handled separately. */
 
+/* Shared caps labels: section headings, and field labels above a control. */
+@layer components {
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-wide text-base-content/50;
+  }
+  .field-label {
+    @apply text-[0.65rem] font-medium uppercase tracking-wide text-base-content/50;
+  }
+}
+
 /* Menu entry icons use the brand blue; dark mode's primary is already lifted for
    legibility, so no per-mode override is needed here. */
 .menu-icon {

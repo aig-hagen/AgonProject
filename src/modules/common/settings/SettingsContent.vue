@@ -77,7 +77,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
   <div class="flex flex-col gap-6">
     <!-- Language -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.language') }}
       </h4>
       <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
@@ -99,7 +99,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
 
     <!-- Appearance -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.appearance') }}
       </h4>
       <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
@@ -134,7 +134,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
 
     <!-- Graph defaults -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.graphDefaults') }}
       </h4>
       <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
@@ -189,7 +189,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
 
     <!-- Tutorials -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.tutorials') }}
       </h4>
       <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
