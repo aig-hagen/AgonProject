@@ -82,12 +82,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
         @click="toggle(index)"
       >
         <span
-          class="grid place-items-center size-11 shrink-0 rounded-field text-xs font-bold"
-          :class="
-            expanded === index && !moduleCard.underConstruction
-              ? 'bg-primary text-primary-content'
-              : 'bg-base-200 text-primary'
-          "
+          class="grid place-items-center size-11 shrink-0 rounded-field bg-base-200 text-primary text-xs font-bold"
         >
           {{ moduleCard.newNamePrefix }}
         </span>

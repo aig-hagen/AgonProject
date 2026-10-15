@@ -58,17 +58,14 @@ function openContent(content: DocumentT, modulePrefix: string) {
   <div class="h-full w-full overflow-y-auto bg-base-200">
     <div class="min-h-full flex items-center justify-center">
       <div class="max-w-5xl w-full p-4 sm:p-8 sm:pt-14">
-        <h2 class="text-2xl sm:text-4xl font-bold mb-2">
-          <span class="font-display">AgonProject</span>
-          <div class="text-lg font-normal text-base-content/70">
-            {{ t('home.tagline') }}
-          </div>
-        </h2>
+        <h1 class="font-display text-2xl sm:text-4xl font-bold">AgonProject</h1>
+        <p class="text-lg text-base-content/70 mb-2">
+          {{ t('home.tagline') }}
+        </p>
         <HelpLinks />
-        <div class="divider"></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           <div
-            class="card relative grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6 shadow-md"
+            class="card relative grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6"
             :class="{ 'opacity-50': moduleCard.underConstruction }"
             v-for="(moduleCard, index) in moduleCards"
             :key="index"
