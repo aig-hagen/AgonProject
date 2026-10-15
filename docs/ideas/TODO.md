@@ -5,7 +5,6 @@
 - labeling highlight colors - color blind mode
 - export redesign: check if there is anything that should be updated for mobile
 - store state of export window in db?
-- SVG export: open a modal, make transparent an option
 
 ## ABA
 
@@ -43,10 +42,6 @@
   (title = framework name, description = arg/attack counts) — the share server currently only
   serves JSON. Stretch goal: a dynamic `og:image` rendering the actual graph (server-side
   SVG→PNG). Crawlers don't run JS, so this can't be done from the SPA.
-
-#### Settings and visual design
-
-- **[Design]** could update the creation-mode-switchers in the bottom left. visual style doesnt really fit well
 
 #### Other
 
