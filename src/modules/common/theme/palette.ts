@@ -17,11 +17,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Single source of truth for the application color palette (non-graph).
+ * Single source of truth for the application color palette.
  *
- * Every app UI color is defined here once, for both light and dark mode, and
- * emitted to CSS custom properties that DaisyUI and app styles consume. Graph
- * colors are intentionally kept out of this file and are handled separately.
+ * Every app UI and graph color is defined here once, for both light and dark
+ * mode, and emitted to CSS custom properties: `--color-*` for DaisyUI and app
+ * styles, `--graph-*` for the graph style presets and evaluation highlights.
  *
  * The two brand anchors are fixed in light mode; their dark variants are
  * derived from the same fixed value via a documented `color-mix` recipe rather
@@ -135,21 +135,96 @@ export const DARK_PALETTE: AppPalette = {
 
 export const APP_PALETTE = { light: LIGHT_PALETTE, dark: DARK_PALETTE } as const
 
+/** Graph style presets; ids match the graph style setting. */
+export type GraphPresetId = 'default' | 'high-contrast' | 'minimal' | 'library' | 'outline'
+type GraphPresetRole = 'node' | 'stroke' | 'link' | 'label'
+
+/** Graph token names, emitted as `--graph-*`. Values may reference `--color-*` tokens. */
+export type GraphColorToken =
+  | `graph-${GraphPresetId}-${GraphPresetRole}`
+  | 'graph-accepted'
+  | 'graph-derived'
+  | 'graph-rejected'
+
+export type GraphPalette = Record<GraphColorToken, string>
+
+const INK = 'var(--color-base-content)'
+const inkMix = (percent: number) =>
+  `color-mix(in srgb, var(--color-base-content) ${percent}%, var(--color-base-100))`
+
+// Evaluation highlights are the same in both modes; rejected is darker than accepted so
+// lightness, not just hue, separates them for red-green color blindness.
+const GRAPH_HIGHLIGHTS = {
+  'graph-accepted': '#66ff99',
+  'graph-derived': '#d6f5dc',
+  'graph-rejected': '#ff7766',
+} as const
+
+// Token recipes that resolve per mode on their own.
+const GRAPH_SHARED = {
+  'graph-minimal-stroke': inkMix(55),
+  'graph-minimal-link': inkMix(75),
+  'graph-minimal-label': INK,
+  // Brand colors; yellow nodes take the dark on-yellow ink in both modes.
+  'graph-library-node': 'var(--color-secondary)',
+  'graph-library-stroke': 'transparent',
+  'graph-library-link': 'var(--color-primary)',
+  'graph-library-label': 'var(--color-secondary-content)',
+  'graph-outline-node': 'color-mix(in srgb, var(--color-secondary) 22%, var(--color-base-100))',
+  'graph-outline-stroke': 'var(--color-secondary)',
+  'graph-outline-link': 'var(--color-primary)',
+  'graph-outline-label': INK,
+} as const
+
+export const LIGHT_GRAPH_PALETTE: GraphPalette = {
+  ...GRAPH_HIGHLIGHTS,
+  ...GRAPH_SHARED,
+  // Brand blue at 40% over white, the long-standing node color.
+  'graph-default-node': 'color-mix(in srgb, var(--color-primary) 40%, var(--color-base-100))',
+  'graph-default-stroke': '#5a87a8',
+  'graph-default-link': '#000000',
+  'graph-default-label': INK,
+  'graph-high-contrast-node': '#c9dcec',
+  'graph-high-contrast-stroke': '#0b2a44',
+  'graph-high-contrast-link': '#000000',
+  'graph-high-contrast-label': INK,
+  'graph-minimal-node': 'var(--color-base-200)',
+}
+
+export const DARK_GRAPH_PALETTE: GraphPalette = {
+  ...GRAPH_HIGHLIGHTS,
+  ...GRAPH_SHARED,
+  'graph-default-node': '#3d6a89',
+  'graph-default-stroke': '#82b5d0',
+  'graph-default-link': '#c8dce8',
+  'graph-default-label': INK,
+  'graph-high-contrast-node': '#173a55',
+  'graph-high-contrast-stroke': '#e7eef4',
+  'graph-high-contrast-link': '#ffffff',
+  'graph-high-contrast-label': INK,
+  'graph-minimal-node': 'var(--color-base-300)',
+}
+
+export const GRAPH_PALETTE = { light: LIGHT_GRAPH_PALETTE, dark: DARK_GRAPH_PALETTE } as const
+
 // Tokens that map onto DaisyUI variables (everything except `selection`).
 const DAISYUI_TOKENS = (Object.keys(LIGHT_PALETTE) as AppColorToken[]).filter(
   (token) => token !== 'selection',
 )
 
-function paletteRules(palette: AppPalette): string {
+function paletteRules(palette: AppPalette, graph: GraphPalette): string {
   const daisy = DAISYUI_TOKENS.map((token) => `  --color-${token}: ${palette[token]};`)
-  return [...daisy, `  --color-selection: ${palette.selection};`].join('\n')
+  const graphRules = (Object.keys(graph) as GraphColorToken[]).map(
+    (token) => `  --${token}: ${graph[token]};`,
+  )
+  return [...daisy, `  --color-selection: ${palette.selection};`, ...graphRules].join('\n')
 }
 
 /** Build the CSS that binds the palette to `[data-theme]` for both modes. */
 export function buildPaletteCss(): string {
   return [
-    `[data-theme='light'] {\n${paletteRules(LIGHT_PALETTE)}\n}`,
-    `[data-theme='dark'] {\n${paletteRules(DARK_PALETTE)}\n}`,
+    `[data-theme='light'] {\n${paletteRules(LIGHT_PALETTE, LIGHT_GRAPH_PALETTE)}\n}`,
+    `[data-theme='dark'] {\n${paletteRules(DARK_PALETTE, DARK_GRAPH_PALETTE)}\n}`,
     `::selection {\n  background-color: var(--color-selection);\n}`,
   ].join('\n\n')
 }

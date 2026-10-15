@@ -82,18 +82,19 @@ picks" and the chosen highlight / derived candidates.
 
 ## Phase 1 — graph tokens in the palette
 
-- [ ] Add `GraphColorToken` + `LIGHT_GRAPH_PALETTE` / `DARK_GRAPH_PALETTE` to
+- [x] Add `GraphColorToken` + `LIGHT_GRAPH_PALETTE` / `DARK_GRAPH_PALETTE` to
       [`palette.ts`](../../src/modules/common/theme/palette.ts), emitted by
       `buildPaletteCss()`. Names must not collide with the runtime vars the editor already sets
       (`--graph-node-color`, `--graph-node-stroke-color`, `--graph-node-stroke-width`):
   ```
-  --graph-<preset>-node / -stroke / -link / -label     per preset (default, contrast, minimal, library, outline)
+  --graph-<preset>-node / -stroke / -link / -label     per preset (default, high-contrast, minimal, library, outline)
   --graph-accepted  --graph-derived  --graph-rejected   highlights (same value in both themes)
   ```
-- [ ] Derive from existing anchors where it fits instead of new hex (e.g. Default light fill =
+- [x] Derive from existing anchors where it fits instead of new hex (e.g. Default light fill =
       `primary` 40% over `base-100`, which is exactly today's `#99b7d5`).
-- [ ] Update the header comment ("graph colors are kept out of this file").
-- [ ] Unit test: light and dark define the same token set.
+- [x] Update the header comment ("graph colors are kept out of this file").
+- [x] Unit test (`palette.test.ts`): both modes emit every graph token, and every `var()` in a
+      value points at a token defined in the same mode. Same key set is enforced by the types.
 
 ## Phase 2 — color resolution plumbing
 
