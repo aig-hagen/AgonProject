@@ -279,7 +279,7 @@ Every secondary page uses the same **header bar shell**:
 
 ```text
 ┌──────────────────────────────────┐
-│ ‹  Page title              [acts]│  base-200 bar, base-300 hairline below
+│ ‹ Back      Page title     [acts]│  base-200 bar, base-300 hairline below
 ├──────────────────────────────────┤
 │                                  │
 │  content: sidebar + pane, or a   │  base-100
@@ -288,8 +288,10 @@ Every secondary page uses the same **header bar shell**:
 └──────────────────────────────────┘
 ```
 
-The bar holds a ghost back button (chevron), the page title in Headline type, and optional actions
-on the right. It is the same component on desktop and mobile; only padding and touch size differ.
+The bar holds a ghost back button (chevron) on the left, the page title centered in Headline type,
+and optional actions on the right. It is the same component on desktop and mobile; only padding and
+touch size differ. Secondary pages are in-app routes and open in the same tab, so back always
+returns to the editor; only external sites open in a new tab (marked with ↗).
 
 ### Named Rules
 
@@ -297,7 +299,8 @@ on the right. It is the same component on desktop and mobile; only padding and t
 back links above a big title, no margin-only layouts.
 
 **The Same Bones Rule.** A desktop view and its mobile twin use the same components (header bar,
-input, tabs, labels). Mobile may stack, enlarge touch targets and reflow, but not restyle.
+search, tabs, labels). Mobile may stack, enlarge touch targets and reflow, but not restyle. The one
+sanctioned difference: page tabs become pills on compact screens (see Tabs).
 
 ## Elevation & Depth
 
@@ -357,8 +360,10 @@ Quiet by default, blue when it matters.
 
 ### Header bar
 
-The ruled top of every secondary page (see Layout). Paper shade background, hairline below, ghost
-chevron back button, Headline title.
+The ruled top of every secondary page (see Layout), implemented once as
+[`PageHeader.vue`](src/modules/common/layout/PageHeader.vue). Paper shade background, hairline
+below, ghost chevron back button (with its label on desktop, a 44px icon button on compact), and the
+page title centered in Headline type. Pages pass extra actions through its `actions` slot.
 
 ### Cards / Containers
 
@@ -373,7 +378,10 @@ chevron back button, Headline title.
 ### Inputs / Fields
 
 - **Style:** DaisyUI `.input` / `.select` with field radius and `base-300` border; `input-sm` on
-  desktop, full-height (44px) on mobile. No hand-rolled input wrappers.
+  desktop, full-height (44px) on mobile. No other hand-rolled input wrappers.
+- **Search:** always [`SearchInput.vue`](src/modules/common/forms/SearchInput.vue): a filled paper
+  shade field with a hairline border, a leading magnifier in ink `/40`, 36px tall on desktop and
+  44px on compact.
 - **Focus:** the shared brand focus ring.
 - **Labels:** `.field-label` above the control.
 
@@ -389,8 +397,9 @@ Two roles, one shape logic: the selected segment is always the strongest element
 ### Tabs
 
 - **Editor tabs:** DaisyUI lifted tabs on the paper shade strip, one per open document.
-- **Page tabs:** underline tabs below the header bar. On compact screens the same tabs scroll
-  horizontally rather than turning into pills.
+- **Page tabs:** underline tabs below the header bar on desktop. On compact screens they become a
+  horizontally scrolling row of 32px pills: brand fill when selected, paper shade with ink `/80`
+  otherwise.
 
 ### Navigation and menus
 

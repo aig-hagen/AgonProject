@@ -20,6 +20,7 @@
 import { ArrowUpRightIcon, ShieldCheckIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
 import { type Component, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 
 import GithubMarkIcon from '@/modules/common/help/GithubMarkIcon.vue'
 
@@ -40,24 +41,33 @@ const links = computed<Link[]>(() => [
   { label: t('help.links.privacy'), href: '/privacy', icon: ShieldCheckIcon, legal: true },
 ])
 
+// In-app pages navigate in the same tab; everything else opens a new one.
+const isInternal = (link: Link) => link.href.startsWith('/')
+
 const shownLinks = computed(() => (legalOnly ? links.value.filter((l) => l.legal) : links.value))
 </script>
 <template>
   <div class="my-4">
     <div class="flex flex-wrap gap-x-4 gap-y-1.5">
-      <a
+      <component
+        :is="isInternal(link) ? RouterLink : 'a'"
         v-for="link in shownLinks"
         :key="link.label"
+        v-bind="
+          isInternal(link)
+            ? { to: link.href }
+            : { href: link.href, target: '_blank', rel: 'noopener' }
+        "
         class="group inline-flex items-center gap-1.5 text-sm text-base-content/65 hover:text-base-content transition-colors"
-        target="_blank"
-        rel="noopener"
-        :href="link.href"
       >
         <img v-if="link.img" :src="link.img" class="size-4" alt="" />
         <component :is="link.icon" v-else class="size-4" />
         {{ link.label }}
-        <ArrowUpRightIcon class="size-3 opacity-40 group-hover:opacity-70" />
-      </a>
+        <ArrowUpRightIcon
+          v-if="!isInternal(link)"
+          class="size-3 opacity-40 group-hover:opacity-70"
+        />
+      </component>
     </div>
   </div>
 </template>

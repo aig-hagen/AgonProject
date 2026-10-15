@@ -17,11 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ChevronLeftIcon, MagnifyingGlassIcon, MapPinIcon } from '@heroicons/vue/24/outline'
+import { MapPinIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
 import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
+import SearchInput from '@/modules/common/forms/SearchInput.vue'
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
@@ -36,26 +37,11 @@ const {
   selectModule,
   followRef,
 } = useGlossary()
-
-const router = useRouter()
 </script>
 
 <template>
   <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
-    <!-- Top bar -->
-    <header
-      class="flex-none flex items-center gap-1 px-2 pr-3 border-b border-base-300 bg-base-200"
-      style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
-    >
-      <button
-        class="btn btn-square btn-ghost btn-sm"
-        :aria-label="t('glossary.backToEditor')"
-        @click="router.push('/')"
-      >
-        <ChevronLeftIcon class="size-6 opacity-70" />
-      </button>
-      <span class="flex-1 text-lg font-bold py-2.5">{{ t('glossary.title') }}</span>
-    </header>
+    <PageHeader :title="t('glossary.title')" :back-label="t('glossary.backToEditor')" />
 
     <!-- Module selector -->
     <div class="flex-none overflow-x-auto px-3 py-2 border-b border-base-200">
@@ -78,17 +64,7 @@ const router = useRouter()
 
     <!-- Search -->
     <div class="flex-none px-4 pt-3 pb-1">
-      <label
-        class="flex items-center gap-2 h-11 px-3.5 rounded-field border border-base-300 bg-base-200"
-      >
-        <MagnifyingGlassIcon class="size-5 text-base-content/40 shrink-0" />
-        <input
-          v-model="searchQuery"
-          type="search"
-          class="flex-1 bg-transparent outline-none text-sm placeholder:text-base-content/65"
-          :placeholder="t('glossary.searchPlaceholder')"
-        />
-      </label>
+      <SearchInput v-model="searchQuery" :placeholder="t('glossary.searchPlaceholder')" />
     </div>
 
     <!-- Entry list -->

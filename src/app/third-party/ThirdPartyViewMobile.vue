@@ -17,34 +17,17 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ChevronLeftIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
 import { attributions, ctanAttributions, getAttributionId } from '@/app/third-party/attributions'
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 
 const { t } = useI18n({ useScope: 'global' })
-const router = useRouter()
 </script>
 
 <template>
   <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
-    <!-- Top bar -->
-    <header
-      class="flex-none flex items-center gap-1 px-2 pr-3 border-b border-base-300 bg-base-200"
-      style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
-    >
-      <button
-        class="btn btn-square btn-ghost btn-sm"
-        :aria-label="t('home.backToEditor')"
-        @click="router.push('/')"
-      >
-        <ChevronLeftIcon class="size-6 opacity-70" />
-      </button>
-      <span class="flex-1 text-lg font-bold py-2.5 leading-tight">{{
-        t('thirdParty.titleShort')
-      }}</span>
-    </header>
+    <PageHeader :title="t('thirdParty.titleShort')" :back-label="t('home.backToEditor')" />
 
     <!-- Single-column disclosure list -->
     <div

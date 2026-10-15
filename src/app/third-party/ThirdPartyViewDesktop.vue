@@ -20,124 +20,130 @@
 import { useI18n } from 'vue-i18n'
 
 import { attributions, ctanAttributions, getAttributionId } from '@/app/third-party/attributions'
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <div class="m-auto flex flex-nowrap justify-center my-4 gap-4">
-    <aside class="w-3xs">
-      <ul class="menu">
-        <h2 class="menu-title">{{ t('thirdParty.title') }}</h2>
-        <li>
-          <a href="tex-packages">{{ t('thirdParty.texPackages') }}</a>
-          <ul>
-            <li v-for="attribution of ctanAttributions" :key="getAttributionId(attribution)">
-              <a :href="'#' + getAttributionId(attribution)"
-                ><template v-if="attribution.scope !== undefined"
-                  >@{{ attribution.scope }}/</template
-                >{{ attribution.name }}</a
+  <div class="h-screen flex flex-col bg-base-100 overflow-hidden">
+    <PageHeader :title="t('thirdParty.title')" :back-label="t('home.backToEditor')" />
+    <div class="flex-1 overflow-y-auto flex flex-nowrap justify-center gap-4 px-6 py-6">
+      <nav class="w-3xs shrink-0" :aria-label="t('thirdParty.title')">
+        <ul class="menu">
+          <li>
+            <a href="#tex-packages">{{ t('thirdParty.texPackages') }}</a>
+            <ul>
+              <li v-for="attribution of ctanAttributions" :key="getAttributionId(attribution)">
+                <a :href="'#' + getAttributionId(attribution)"
+                  ><template v-if="attribution.scope !== undefined"
+                    >@{{ attribution.scope }}/</template
+                  >{{ attribution.name }}</a
+                >
+              </li>
+            </ul>
+          </li>
+          <li v-for="attribution of attributions" :key="getAttributionId(attribution)">
+            <a :href="'#' + getAttributionId(attribution)"
+              ><template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
+              >{{ attribution.name }}</a
+            >
+          </li>
+        </ul>
+      </nav>
+      <main class="max-w-3xl">
+        <p class="m-1 mb-4">{{ t('thirdParty.intro') }}</p>
+        <h2 id="tex-packages" class="m-1 font-bold text-lg">{{ t('thirdParty.texPackages') }}</h2>
+        <p class="m-1 mb-4">{{ t('thirdParty.texIntro') }}</p>
+        <template v-for="attribution of ctanAttributions" :key="getAttributionId(attribution)">
+          <h3 class="m-1 font-bold" :id="getAttributionId(attribution)">
+            <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
+            >{{ attribution.name
+            }}<template v-if="attribution.version !== undefined"
+              >@{{ attribution.version }}</template
+            >
+          </h3>
+
+          <p class="m-1">
+            <i18n-t
+              v-if="attribution.publisher"
+              keypath="thirdParty.publishedWithPublisher"
+              tag="span"
+              scope="global"
+            >
+              <template #publisher
+                ><em>{{ attribution.publisher }}</em></template
               >
-            </li>
-          </ul>
-        </li>
-        <li v-for="attribution of attributions" :key="getAttributionId(attribution)">
-          <a :href="'#' + getAttributionId(attribution)"
-            ><template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
-            >{{ attribution.name }}</a
-          >
-        </li>
-      </ul>
-    </aside>
-    <main class="max-w-3xl">
-      <h1 class="m-1 font-bold text-xl">{{ t('thirdParty.title') }}</h1>
-      <p class="m-1 mb-4">{{ t('thirdParty.intro') }}</p>
-      <h2 id="tex-packages" class="m-1 font-bold text-lg">{{ t('thirdParty.texPackages') }}</h2>
-      <p class="m-1 mb-4">{{ t('thirdParty.texIntro') }}</p>
-      <template v-for="attribution of ctanAttributions" :key="getAttributionId(attribution)">
-        <h3 class="m-1 font-bold" :id="getAttributionId(attribution)">
-          <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
-          >{{ attribution.name
-          }}<template v-if="attribution.version !== undefined">@{{ attribution.version }}</template>
-        </h3>
+              <template #license
+                ><em>{{ attribution.license }}</em></template
+              >
+              <template #repository
+                ><a class="link link-primary" :href="attribution.repository">{{
+                  attribution.repository
+                }}</a></template
+              >
+            </i18n-t>
+            <i18n-t v-else keypath="thirdParty.publishedNoPublisher" tag="span" scope="global">
+              <template #license
+                ><em>{{ attribution.license }}</em></template
+              >
+              <template #repository
+                ><a class="link link-primary" :href="attribution.repository">{{
+                  attribution.repository
+                }}</a></template
+              >
+            </i18n-t>
+          </p>
+          <blockquote class="m-1 alert whitespace-pre-wrap w-fit" v-if="attribution.licenseText">
+            {{ attribution.licenseText }}
+          </blockquote>
+          <p class="m-1" v-else>{{ t('thirdParty.noLicenseText') }}</p>
+        </template>
+        <template v-for="attribution of attributions" :key="getAttributionId(attribution)">
+          <h2 class="m-1 font-bold" :id="getAttributionId(attribution)">
+            <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
+            >{{ attribution.name
+            }}<template v-if="attribution.version !== undefined"
+              >@{{ attribution.version }}</template
+            >
+          </h2>
 
-        <p class="m-1">
-          <i18n-t
-            v-if="attribution.publisher"
-            keypath="thirdParty.publishedWithPublisher"
-            tag="span"
-            scope="global"
-          >
-            <template #publisher
-              ><em>{{ attribution.publisher }}</em></template
+          <p class="m-1">
+            <i18n-t
+              v-if="attribution.publisher"
+              keypath="thirdParty.publishedWithPublisher"
+              tag="span"
+              scope="global"
             >
-            <template #license
-              ><em>{{ attribution.license }}</em></template
-            >
-            <template #repository
-              ><a class="link link-primary" :href="attribution.repository">{{
-                attribution.repository
-              }}</a></template
-            >
-          </i18n-t>
-          <i18n-t v-else keypath="thirdParty.publishedNoPublisher" tag="span" scope="global">
-            <template #license
-              ><em>{{ attribution.license }}</em></template
-            >
-            <template #repository
-              ><a class="link link-primary" :href="attribution.repository">{{
-                attribution.repository
-              }}</a></template
-            >
-          </i18n-t>
-        </p>
-        <blockquote class="m-1 alert whitespace-pre-wrap w-fit" v-if="attribution.licenseText">
-          {{ attribution.licenseText }}
-        </blockquote>
-        <p class="m-1" v-else>{{ t('thirdParty.noLicenseText') }}</p>
-      </template>
-      <template v-for="attribution of attributions" :key="getAttributionId(attribution)">
-        <h2 class="m-1 font-bold" :id="getAttributionId(attribution)">
-          <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
-          >{{ attribution.name
-          }}<template v-if="attribution.version !== undefined">@{{ attribution.version }}</template>
-        </h2>
-
-        <p class="m-1">
-          <i18n-t
-            v-if="attribution.publisher"
-            keypath="thirdParty.publishedWithPublisher"
-            tag="span"
-            scope="global"
-          >
-            <template #publisher
-              ><em>{{ attribution.publisher }}</em></template
-            >
-            <template #license
-              ><em>{{ attribution.license }}</em></template
-            >
-            <template #repository
-              ><a class="link link-primary" :href="attribution.repository">{{
-                attribution.repository
-              }}</a></template
-            >
-          </i18n-t>
-          <i18n-t v-else keypath="thirdParty.publishedNoPublisher" tag="span" scope="global">
-            <template #license
-              ><em>{{ attribution.license }}</em></template
-            >
-            <template #repository
-              ><a class="link link-primary" :href="attribution.repository">{{
-                attribution.repository
-              }}</a></template
-            >
-          </i18n-t>
-        </p>
-        <blockquote class="m-1 alert whitespace-pre-wrap w-fit" v-if="attribution.licenseText">
-          {{ attribution.licenseText }}
-        </blockquote>
-        <p class="m-1" v-else>{{ t('thirdParty.noLicenseText') }}</p>
-      </template>
-    </main>
+              <template #publisher
+                ><em>{{ attribution.publisher }}</em></template
+              >
+              <template #license
+                ><em>{{ attribution.license }}</em></template
+              >
+              <template #repository
+                ><a class="link link-primary" :href="attribution.repository">{{
+                  attribution.repository
+                }}</a></template
+              >
+            </i18n-t>
+            <i18n-t v-else keypath="thirdParty.publishedNoPublisher" tag="span" scope="global">
+              <template #license
+                ><em>{{ attribution.license }}</em></template
+              >
+              <template #repository
+                ><a class="link link-primary" :href="attribution.repository">{{
+                  attribution.repository
+                }}</a></template
+              >
+            </i18n-t>
+          </p>
+          <blockquote class="m-1 alert whitespace-pre-wrap w-fit" v-if="attribution.licenseText">
+            {{ attribution.licenseText }}
+          </blockquote>
+          <p class="m-1" v-else>{{ t('thirdParty.noLicenseText') }}</p>
+        </template>
+      </main>
+    </div>
   </div>
 </template>

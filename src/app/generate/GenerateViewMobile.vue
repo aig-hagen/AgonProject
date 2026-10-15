@@ -17,12 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowDownTrayIcon, BoltIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownTrayIcon, BoltIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
 import type { GenerateController } from '@/app/generate/useGenerate'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -55,8 +55,6 @@ const {
   formatParamLabel,
 } = controller
 
-const router = useRouter()
-
 function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): number {
   const raw = (e.target as HTMLInputElement).value
   return type === 'int' ? parseInt(raw) : parseFloat(raw)
@@ -65,22 +63,10 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 
 <template>
   <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
-    <!-- Top bar -->
-    <header
-      class="flex-none flex items-center gap-1 px-2 pr-3 border-b border-base-300 bg-base-200"
-      style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
-    >
-      <button
-        class="btn btn-square btn-ghost btn-sm"
-        :aria-label="t('generate.backToEditor')"
-        @click="router.push('/')"
-      >
-        <ChevronLeftIcon class="size-6 opacity-70" />
-      </button>
-      <span class="flex-1 text-lg font-bold py-2.5">{{
-        t('generate.title', { name: shortName })
-      }}</span>
-    </header>
+    <PageHeader
+      :title="t('generate.title', { name: shortName })"
+      :back-label="t('generate.backToEditor')"
+    />
 
     <!-- Scrollable form -->
     <div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5">
