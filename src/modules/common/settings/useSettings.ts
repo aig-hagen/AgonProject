@@ -21,8 +21,9 @@ import { createSharedComposable } from '@vueuse/shared'
 
 import type { GridVisibility, PhysicsMode } from '@/modules/common/main-menu/types'
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
+import type { GraphPresetId } from '@/modules/common/theme/palette'
 
-export type GraphStyleName = 'default' | 'high-contrast' | 'minimal' | 'library' | 'outline'
+export type GraphStyleName = GraphPresetId
 export type GridType = 'square' | 'rhombus'
 
 export const useSettings = createSharedComposable(() => {

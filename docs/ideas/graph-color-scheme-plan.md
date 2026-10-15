@@ -110,14 +110,17 @@ picks" and the chosen highlight / derived candidates.
 
 ## Phase 3 — presets on tokens
 
-- [ ] Rewrite [`graphStyle.ts`](../../src/modules/common/graph-editor/graphStyle.ts) presets
-      as token references / `color-mix` recipes with Phase 0 values.
-- [ ] Drop `GRAPH_STYLE_DARK` and the `isDark` branch in `pickStyle()` once default is
-      token-based.
-- [ ] Library preset references the brand token instead of `#004c97`.
-- [ ] Replace hex fallbacks in [`style.css`](../../src/style.css) with tokens; move the dark
-      `--node-charge-glow` into the palette.
-- [ ] Check the legend dots and `StatementGlyph.vue` still pick up `--graph-node-*`.
+- [x] [`graphStyle.ts`](../../src/modules/common/graph-editor/graphStyle.ts): one `GRAPH_STYLES`
+      map; every preset references `--graph-<preset>-*` tokens, only stroke widths stay local.
+- [x] Dropped `GRAPH_STYLE_DARK` and the `isDark` branch in `pickStyle()`; a stale stored setting
+      falls back to default. `GraphStyleName` is now an alias of `GraphPresetId`.
+- [x] Library references the brand tokens (`secondary` / `primary` / `secondary-content`).
+- [x] `nodeLabelColor` on `GraphStyle`, applied via `--graph-node-label-color`; plain
+      (label-only) nodes keep the theme text color via a `:has()` rule.
+- [x] [`style.css`](../../src/style.css) has no hex/rgba left: fallbacks point at default-preset
+      tokens; `--node-charge-glow` comes from the new `graph-charge-glow` token.
+- [x] Legend dots and `StatementGlyph.vue` still read `--graph-node-color` /
+      `--graph-node-stroke-color`, which the editor keeps setting.
 
 ## Phase 4 — highlights on tokens
 

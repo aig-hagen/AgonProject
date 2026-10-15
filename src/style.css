@@ -162,7 +162,7 @@ body {
 }
 
 .graph-controller__grid-line {
-  stroke: var(--color-base-300, #ddd);
+  stroke: var(--color-base-300);
 }
 
 .graph-controller__link,
@@ -178,7 +178,7 @@ body {
 }
 
 .graph-controller__node {
-  stroke: var(--graph-node-stroke-color, #5a87a8);
+  stroke: var(--graph-node-stroke-color, var(--graph-default-stroke));
   stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
@@ -188,8 +188,8 @@ body {
 }
 
 /* Node hold-to-move charge glow: dark halo on the light canvas, light halo on the dark one. */
-[data-theme='dark'] {
-  --node-charge-glow: rgba(255, 255, 255, 0.5);
+:root {
+  --node-charge-glow: var(--graph-charge-glow);
 }
 
 /* App-wide scrollbars are chrome, not graph: palette base-300 thumbs that adapt per
@@ -227,11 +227,18 @@ body {
 /* Node names render bold, matching the ABA editor's node labels. */
 .graph-controller__node-label {
   font-weight: 700;
+  color: var(--graph-node-label-color, inherit);
+}
+
+/* Plain (label-only) nodes sit on the canvas, so their label keeps the theme text color. */
+.graph-controller__node-container:has(.graph-controller__node[style*='fill: transparent'])
+  .graph-controller__node-label {
+  color: var(--color-base-content);
 }
 
 .graph-controller__badge {
   fill: var(--color-base-100);
-  stroke: var(--graph-node-color, #5a87a8);
+  stroke: var(--graph-node-color, var(--graph-default-node));
 }
 
 .graph-controller__badge-label {
@@ -261,8 +268,9 @@ body {
 }
 
 .graph-controller__label-input {
-  background-color: var(--graph-node-color, #99b7d5);
-  border: var(--graph-node-stroke-width, 1.5px) solid var(--graph-node-stroke-color, #5a87a8);
+  background-color: var(--graph-node-color, var(--graph-default-node));
+  border: var(--graph-node-stroke-width, 1.5px) solid
+    var(--graph-node-stroke-color, var(--graph-default-stroke));
   border-radius: 50vh;
   padding: 1px 8px;
   font-size: 0.875rem;

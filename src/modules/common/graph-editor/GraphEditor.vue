@@ -112,15 +112,7 @@ import {
   parseLinkId,
   resolveCssColor,
 } from '@/modules/common/graph-editor/graphEditorUtils'
-import {
-  GRAPH_STYLE_DARK,
-  GRAPH_STYLE_DEFAULT,
-  GRAPH_STYLE_HIGH_CONTRAST,
-  GRAPH_STYLE_LIBRARY,
-  GRAPH_STYLE_MINIMAL,
-  GRAPH_STYLE_OUTLINE,
-  type GraphStyle,
-} from '@/modules/common/graph-editor/graphStyle'
+import { GRAPH_STYLES, type GraphStyle } from '@/modules/common/graph-editor/graphStyle'
 import {
   editorStateToLayoutGraph,
   layoutGraph,
@@ -472,19 +464,8 @@ const {
   mergeReciprocalLinks,
 } = useSettings()
 function pickStyle(): GraphStyle {
-  if (graphStyle !== undefined) return graphStyle
-  switch (graphStyleSetting.value) {
-    case 'high-contrast':
-      return GRAPH_STYLE_HIGH_CONTRAST
-    case 'minimal':
-      return GRAPH_STYLE_MINIMAL
-    case 'library':
-      return GRAPH_STYLE_LIBRARY
-    case 'outline':
-      return GRAPH_STYLE_OUTLINE
-    default:
-      return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
-  }
+  // A stale stored setting falls back to the default preset.
+  return graphStyle ?? GRAPH_STYLES[graphStyleSetting.value] ?? GRAPH_STYLES.default
 }
 
 const colorTheme = computed<ColorTheme>(() => (isDark.value ? 'dark' : 'light'))
@@ -2000,6 +1981,7 @@ defineExpose({
       '--graph-node-color': effectiveStyle.nodeColor,
       '--graph-node-stroke-color': effectiveStyle.nodeStrokeColor,
       '--graph-node-stroke-width': `${effectiveStyle.nodeStrokeWidth}px`,
+      '--graph-node-label-color': effectiveStyle.nodeLabelColor,
       '--graph-link-stroke-width': `${effectiveStyle.linkStrokeWidth}px`,
     }"
   >

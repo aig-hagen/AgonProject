@@ -145,6 +145,7 @@ export type GraphColorToken =
   | 'graph-accepted'
   | 'graph-derived'
   | 'graph-rejected'
+  | 'graph-charge-glow'
 
 export type GraphPalette = Record<GraphColorToken, string>
 
@@ -189,6 +190,8 @@ export const LIGHT_GRAPH_PALETTE: GraphPalette = {
   'graph-high-contrast-link': '#000000',
   'graph-high-contrast-label': INK,
   'graph-minimal-node': 'var(--color-base-200)',
+  // Hold-to-move halo: dark on the light canvas, light on the dark one.
+  'graph-charge-glow': 'rgba(0, 0, 0, 0.35)',
 }
 
 export const DARK_GRAPH_PALETTE: GraphPalette = {
@@ -203,6 +206,7 @@ export const DARK_GRAPH_PALETTE: GraphPalette = {
   'graph-high-contrast-link': '#ffffff',
   'graph-high-contrast-label': INK,
   'graph-minimal-node': 'var(--color-base-300)',
+  'graph-charge-glow': 'rgba(255, 255, 255, 0.5)',
 }
 
 export const GRAPH_PALETTE = { light: LIGHT_GRAPH_PALETTE, dark: DARK_GRAPH_PALETTE } as const
