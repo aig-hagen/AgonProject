@@ -134,24 +134,64 @@ picks" and the chosen highlight / derived candidates.
 
 ## Phase 5 — cleanup
 
-- [ ] Delete dead exports in `colors.ts` (likely the whole file) and unused
-      `ARGUMENT_COLOR` / `ATTACK_COLOR`.
+- [x] Deleted `colors.ts` and the unused `ARGUMENT_COLOR` / `ATTACK_COLOR` in `argumentation/model.ts`.
 - [ ] Optional: ranking score chips (`WindowRanking.vue` `hsl()` ramp) onto palette tokens.
-- [ ] Grep for leftover hex in `src/` outside `palette.ts`.
+- [x] Leftover literals in `src/` outside `palette.ts`, all deliberate:
+  - `graphEditorUtils.ts`: label inks `#1a1a1a` / `#ffffff` and the rgba/hex normalizer output.
+  - `WindowExport.vue`: white "paper" behind the export preview.
+
+## Phase 5b — color-blind support
+
+- [x] Label inks come from the palette (`GRAPH_LABEL_INKS`: `base-content` / `base-100`).
+- [x] **Regression guard**: shared color math in `theme/colorMath.ts` (luminance, contrast,
+      OKLab, color-blind simulation, ΔE). `palette.test.ts` resolves every graph token like the
+      browser would and checks shapes ≥ 3:1, labels ≥ 4.5:1, accepted vs. rejected ≥ ΔE 15 and
+      each preset vs. both highlights ≥ ΔE 10, across normal + protan/deutan/tritan vision.
+      Trade-offs (Library, Outline light) are listed with their own floor. Verified it fails
+      when the old `#ff9999` rejected is put back.
+- [x] ~~Color-blind patterns setting~~ — built, then dropped (2026-10-15): the intended
+      "color blind mode" is an alternative **color scheme**, not border patterns. Derived keeps
+      its dotted border in every mode.
+- [x] **Color-vision schemes** (see Phase 7).
 
 ## Phase 6 — docs and release notes
 
-- [ ] [`DESIGN.md`](../../DESIGN.md): graph color section (tokens, presets, highlight
-      rules, color-blind targets).
-- [ ] [`conventions.md`](../contributing/conventions.md): "graph colors come from
-      `--graph-*`, never hex".
-- [ ] `CHANGELOG.md` under `[Unreleased]`: dark variants for all presets; new highlight
-      colors.
-- [ ] Tick `docs/ideas/TODO.md` items "graph style colors need update" and "labeling
-      highlight colors - color blind mode".
+- [x] [`DESIGN.md`](../../DESIGN.md): "Graph" color section (preset purposes, highlight roles),
+      a Color-Blind Rule, and graph colors dropped from the Single Source Rule's exceptions.
+- [x] [`conventions.md`](../contributing/conventions.md): `--graph-*` tokens, keep
+      `palette.test.ts` passing; graph rendering is no longer a palette exception.
+- [x] `CHANGELOG.md`: presets, highlights, and the color-blind patterns setting.
+- [x] Removed the two finished items from `docs/ideas/TODO.md`.
+
+## Phase 7 — color-vision schemes
+
+A setting that swaps the evaluation colors for a set tuned for color vision deficiencies, instead
+of the default compromise.
+
+- [x] Design round in the lab (2026-10-15): one scheme is enough. The blue vs. red/orange axis
+      holds for red-green **and** blue-yellow vision; tritan-tuned green/red sets collapse for
+      red-green viewers (ΔE 3–8). Picked **Blue / vermilion**:
+
+  | Label    | Light     | Dark      |
+  | -------- | --------- | --------- |
+  | accepted | `#4b56da` | `#28a4e6` |
+  | derived  | `#f5c270` | `#e8d3fa` |
+  | rejected | `#841214` | `#ba5c13` |
+
+  Worst ΔE vs. every preset, light / dark: red-green 28 / 16, blue-yellow 24 / 20, normal
+  29 / 19 (default neon: 2 / 7 for red-green). No preset colors change. Dark rejected labels
+  are 4.54:1 (white); a darker orange would cost red-green separation (16 → 14).
+- [x] Tokens: `COLOR_BLIND_HIGHLIGHTS` in `palette.ts`, emitted for
+      `[data-theme][data-graph-colors='color-blind']`. `resolveCssColor` takes the scheme and
+      puts it on its probe (cache key includes it), so resolution stays timing-safe.
+- [x] Setting `colorBlindColors` (Settings, under graph style) → `graphColorScheme`, which sets
+      the root attribute and feeds the editor and `useHighlight`; en/de strings.
+- [x] `palette.test.ts`: the scheme clears ΔE 15 against every preset with no exceptions, plus
+      labels; verified it fails when the neon salmon is put back as rejected.
+- [x] Docs: DESIGN.md (Graph section + Color-Blind Rule), CHANGELOG.
 
 ## Open questions
 
-- Should highlight colors vary per preset, or stay one set per theme? (Plan assumes one set.)
+- ~~Should highlight colors vary per preset?~~ No: one set, the same in both modes.
 - Image export: does it serialize the live (theme-dependent) colors? If so, should a dark-mode
   export come out dark, or always light?
