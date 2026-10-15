@@ -246,7 +246,7 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
       compact
         ? 'w-full'
         : [
-            'w-88 max-h-full overflow-hidden rounded-box bg-base-100 border border-base-300 shadow-lg/30',
+            'w-88 max-h-full overflow-hidden rounded-box bg-base-100 border border-base-300 shadow-lg shadow-float',
             { 'self-start': collapsed },
           ]
     "

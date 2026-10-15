@@ -160,7 +160,10 @@ function openImageExport() {
     <div tabindex="0" role="button" class="btn btn-square btn-sm" :title="t('menu.label')">
       <Bars3Icon class="size-6" />
     </div>
-    <ul tabindex="-1" class="dropdown-content w-max menu bg-base-100 rounded-box z-1 shadow-md/30">
+    <ul
+      tabindex="-1"
+      class="dropdown-content w-max menu bg-base-100 rounded-box z-1 shadow-md shadow-float"
+    >
       <li>
         <a @click="emit('new')"
           ><DocumentPlusIcon class="size-5 menu-icon" />{{ t('menu.newFramework') }}</a
@@ -244,10 +247,10 @@ function openImageExport() {
                 <RectangleGroupIcon class="inline size-5 menu-icon mr-2" />
                 <span>{{ t('menu.relayout') }}</span>
               </div>
-              <ChevronRightIcon class="size-5 opacity-40" />
+              <ChevronRightIcon class="size-5 text-base-content/40" />
             </a>
             <div tabindex="-1" class="dropdown-content p-0">
-              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
+              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm shadow-float">
                 <li v-if="hasDirectedLayouts">
                   <div class="dropdown dropdown-hover dropdown-right">
                     <a class="flex flex-row justify-between">
@@ -255,10 +258,12 @@ function openImageExport() {
                         <ArrowsUpDownIcon class="inline size-5 menu-icon mr-2" />
                         <span>{{ t('menu.directed') }}</span>
                       </div>
-                      <ChevronRightIcon class="size-5 opacity-40" />
+                      <ChevronRightIcon class="size-5 text-base-content/40" />
                     </a>
                     <div tabindex="-1" class="dropdown-content p-0">
-                      <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
+                      <ul
+                        class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm shadow-float"
+                      >
                         <li
                           v-for="(layoutData, layoutType) in directedLayoutDatasToShow"
                           :key="layoutType"
@@ -294,10 +299,10 @@ function openImageExport() {
                 <ArrowUpTrayIcon class="inline size-5 menu-icon mr-2" />
                 <span>{{ t('menu.export') }}</span>
               </div>
-              <ChevronRightIcon class="size-5 opacity-40" />
+              <ChevronRightIcon class="size-5 text-base-content/40" />
             </a>
             <div tabindex="-1" class="dropdown-content p-0">
-              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm/30">
+              <ul class="menu bg-base-100 rounded-box z-1 mt-0 ml-0 w-max shadow-sm shadow-float">
                 <li v-for="config in nonLatexConfigs" :key="config.id">
                   <a
                     class="flex flex-row items-center justify-between gap-6"

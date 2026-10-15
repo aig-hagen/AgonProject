@@ -2198,7 +2198,7 @@ defineExpose({
           <span class="text-sm font-semibold truncate max-w-38">{{
             documentName || t('home.untitled')
           }}</span>
-          <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
+          <ChevronDownIcon class="size-4 shrink-0 text-base-content/65" />
         </button>
         <span class="font-display text-base font-bold text-base-content/80 text-center truncate">
           AgonProject

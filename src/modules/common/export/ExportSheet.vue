@@ -163,7 +163,7 @@ function download(config: ExportConfig<DocumentT>) {
               t('export.image.description')
             }}</span>
           </span>
-          <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
+          <ChevronRightIcon class="size-4 shrink-0 text-base-content/40" />
         </button>
       </section>
 
@@ -185,7 +185,7 @@ function download(config: ExportConfig<DocumentT>) {
               codeConfig.description ?? t('export.latexFallbackDescription')
             }}</span>
           </span>
-          <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
+          <ChevronRightIcon class="size-4 shrink-0 text-base-content/40" />
         </button>
         <button
           v-for="config in dataConfigs"
@@ -202,7 +202,7 @@ function download(config: ExportConfig<DocumentT>) {
               config.description ?? t('export.fileFallbackDescription', { ext: config.extension })
             }}</span>
           </span>
-          <ArrowDownTrayIcon class="size-5 shrink-0 opacity-40" />
+          <ArrowDownTrayIcon class="size-5 shrink-0 text-base-content/65" />
         </button>
       </section>
     </div>

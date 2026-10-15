@@ -65,7 +65,7 @@ const shownLinks = computed(() => (legalOnly ? links.value.filter((l) => l.legal
         {{ link.label }}
         <ArrowUpRightIcon
           v-if="!isInternal(link)"
-          class="size-3 opacity-40 group-hover:opacity-70"
+          class="size-3 text-base-content/40 group-hover:text-base-content/65"
         />
       </component>
     </div>

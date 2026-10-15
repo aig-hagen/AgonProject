@@ -137,6 +137,20 @@
 .shadow-xl {
   --tw-shadow: 0 20px 25px -5px var(--app-shadow-color), 0 8px 10px -6px var(--app-shadow-color);
 }
+/* Float tier: pair with a size (`shadow-lg shadow-float`) for surfaces floating over the canvas.
+   Compound selectors rather than a variable override, so the stronger tint doesn't inherit. */
+:root {
+  --app-shadow-float: color-mix(in srgb, var(--color-shadow) 30%, transparent);
+}
+.shadow-sm.shadow-float {
+  --tw-shadow: 0 1px 3px 0 var(--app-shadow-float), 0 1px 2px -1px var(--app-shadow-float);
+}
+.shadow-md.shadow-float {
+  --tw-shadow: 0 4px 6px -1px var(--app-shadow-float), 0 2px 4px -2px var(--app-shadow-float);
+}
+.shadow-lg.shadow-float {
+  --tw-shadow: 0 10px 15px -3px var(--app-shadow-float), 0 4px 6px -4px var(--app-shadow-float);
+}
 
 html,
 body {

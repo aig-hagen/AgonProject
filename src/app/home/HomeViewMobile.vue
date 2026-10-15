@@ -212,7 +212,7 @@ function loadFile() {
         :aria-label="t('home.backToEditor')"
         @click="goTo('editor')"
       >
-        <XMarkIcon class="size-5 opacity-70" />
+        <XMarkIcon class="size-5" />
       </button>
       <h1 class="font-display text-2xl font-bold tracking-tight">AgonProject</h1>
       <p class="text-sm text-base-content/65 mt-1 max-w-64 leading-snug">
@@ -319,7 +319,7 @@ function loadFile() {
                 "
                 @click="menuDocId = document.id"
               >
-                <EllipsisHorizontalIcon class="size-5 opacity-60" />
+                <EllipsisHorizontalIcon class="size-5 text-base-content/65" />
               </button>
             </div>
           </li>

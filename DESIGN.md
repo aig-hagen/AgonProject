@@ -314,9 +314,9 @@ pure black; the tint is applied by overriding Tailwind's shadow scale in `style.
 - **Rest** (`shadow-sm`, 10% tint): small floating buttons resting on the canvas, cascading menus.
 - **Raised** (`shadow-md` / `shadow-lg`, 10% tint): dropdowns, the floating segmented control,
   toolbar pills.
-- **Float** (stronger palette-tinted tier, to be added to `style.css` alongside the existing
-  overrides): floating windows, bottom sheets, the main menu, the ABA theory panel. Replaces the
-  current `shadow-*/30` usages, which bypass the tint.
+- **Float** (`shadow-float` paired with a size, 30% tint): floating windows, bottom sheets and the
+  ABA theory panel (`shadow-lg shadow-float`), the main menu and its submenus (`shadow-md` /
+  `shadow-sm shadow-float`).
 - **Popover** (`shadow-xl`, 10% tint): tooltips with rich content, glossary term popovers.
 - **Footer** (`.shadow-footer`): upward shadow under sticky sheet footers.
 
@@ -404,8 +404,8 @@ Two roles, one shape logic: the selected segment is always the strongest element
 ### Navigation and menus
 
 DaisyUI `.menu` lists on paper with box radius. Entry icons use `.menu-icon` (brand blue); every
-other icon is ink or ink `/65`. Back is always a chevron-left; close is always an X (16px in
-small buttons, 20px in 44px buttons).
+other icon is ink or ink `/65`. Back is always a chevron-left; close is always an X (16px in small buttons, 20px in 44px buttons). Inline remove buttons on chips and
+list rows use a smaller X (12–14px).
 
 ### Floating windows and sheets
 

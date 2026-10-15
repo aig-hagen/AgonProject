@@ -332,7 +332,7 @@ const isActive = computed(() => !suppressed && currentHighlight.value !== undefi
         :aria-expanded="paramsOpen"
         @click="paramsOpen = !paramsOpen"
       >
-        <AdjustmentsHorizontalIcon class="size-4 shrink-0 opacity-70" />
+        <AdjustmentsHorizontalIcon class="size-4 shrink-0 text-base-content/65" />
         <span class="flex-1 min-w-0 truncate font-medium">{{ windowTitle }}</span>
         <span class="text-micro text-base-content/65">{{
           paramsOpen ? t('evaluation.status.hideParams') : t('evaluation.status.editParams')

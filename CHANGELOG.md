@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Glossary, generator, privacy and attributions pages share one header bar with a centered title and a back button.
 - Privacy and third-party links in Help open in the same tab, so back returns to the editor instead of a second app instance.
 - Glossary search uses one search field style on desktop and mobile, with a visible keyboard focus ring.
+- Floating windows, sheets and menus cast palette-tinted shadows; muted icons and code highlighting use the app palette.
 
 ### Fixed
 

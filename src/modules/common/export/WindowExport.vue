@@ -59,7 +59,7 @@ const studioHighlightStyle = HighlightStyle.define([
   },
   {
     tag: [tags.tagName, tags.name, tags.labelName, tags.className, tags.typeName],
-    color: 'var(--color-accent)',
+    color: 'color-mix(in oklab, var(--color-secondary), var(--color-base-content) 45%)',
   },
   { tag: [tags.string, tags.special(tags.string)], color: 'var(--color-success)' },
   { tag: [tags.number, tags.literal, tags.unit], color: 'var(--color-info)' },

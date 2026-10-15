@@ -447,7 +447,7 @@ watch(
               class="flex items-center gap-2 px-2 h-11 w-full text-left"
               @click="panelMode = 'list'"
             >
-              <ChevronLeftIcon class="size-5 shrink-0 opacity-60" />
+              <ChevronLeftIcon class="size-5 shrink-0 text-base-content/65" />
               <span class="text-sm font-semibold">{{ t('evaluation.addEvaluation') }}</span>
             </button>
             <div class="h-px bg-base-200 mx-3"></div>
@@ -460,7 +460,7 @@ watch(
             >
               <KindIcon :kind="kind" class="size-[1.05rem] shrink-0 text-primary" />
               <span class="flex-1 text-sm font-medium">{{ kindLabel[kind] }}</span>
-              <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
+              <ChevronRightIcon class="size-4 shrink-0 text-base-content/40" />
             </button>
           </template>
         </div>

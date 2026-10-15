@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
+import { ChevronLeftIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
@@ -30,7 +30,7 @@ const { t } = useI18n({ useScope: 'global' })
     <h1 class="text-xl font-bold text-center">{{ t('notFound.heading') }}</h1>
     <p class="max-w-sm text-center text-base-content/80">{{ t('notFound.description') }}</p>
     <RouterLink to="/" class="btn btn-primary btn-sm gap-1 mt-2">
-      <ArrowLeftIcon class="size-4" />
+      <ChevronLeftIcon class="size-4" />
       {{ t('notFound.backToEditor') }}
     </RouterLink>
   </div>
