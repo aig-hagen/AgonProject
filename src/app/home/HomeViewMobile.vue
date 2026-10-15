@@ -195,7 +195,7 @@ function loadFile() {
     <header
       v-if="surface !== 'editor'"
       class="flex-none relative flex flex-col items-center text-center px-6 pb-3"
-      style="padding-top: calc(env(safe-area-inset-top) + 1rem)"
+      style="padding-top: calc(env(safe-area-inset-top) + 3.5rem)"
     >
       <button
         class="btn btn-square btn-ghost btn-sm absolute left-2"
@@ -214,19 +214,6 @@ function loadFile() {
       >
         <XMarkIcon class="size-5 opacity-70" />
       </button>
-      <span class="grid place-items-center size-13 rounded-box bg-base-200 text-primary mb-2.5">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.9"
-          class="size-7"
-        >
-          <circle cx="7" cy="7" r="3" />
-          <circle cx="17" cy="17" r="3" />
-          <path d="M9.5 9.5 14.5 14.5" />
-        </svg>
-      </span>
       <h1 class="font-display text-2xl font-bold tracking-tight">AgonProject</h1>
       <p class="text-sm text-base-content/60 mt-1 max-w-64 leading-snug">
         {{ t('home.tagline') }}

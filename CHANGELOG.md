@@ -14,8 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Image export now opens in a floating window with a live preview, a transparent-background toggle, and PNG export (1×–3×) alongside SVG; fonts are embedded so labels look the same outside the app.
 - Export menu: text formats download in one click and show their file extension; the image entry gets a quick transparent-SVG download.
-- Visual polish: consistent corner radii across mobile screens, solid mobile toolbars, no glowing buttons, a clearer
+- Visual polish: softer, consistent corner radii app-wide, solid mobile toolbars, no glowing buttons, a clearer
   "Relayout" icon, and full-strength toolbar icons.
+- Mobile: the editor's document chip shows the framework type (AF, BAF, …) as a badge; the home header drops its icon.
 
 ## [0.13.0] - 2026-09-30
 

@@ -2190,28 +2190,14 @@ defineExpose({
           @click="openDocumentSwitcher"
         >
           <span
-            class="grid place-items-center size-7 shrink-0 rounded-field bg-primary/25 text-primary"
+            v-if="typeBadge"
+            class="grid place-items-center h-7 min-w-7 px-1 shrink-0 rounded-field bg-base-200 text-primary text-[0.65rem] font-bold"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="size-[1.1rem]"
-            >
-              <circle cx="7" cy="7" r="3" />
-              <circle cx="17" cy="17" r="3" />
-              <path d="M9.5 9.5 14.5 14.5" />
-            </svg>
+            {{ typeBadge }}
           </span>
-          <span class="flex flex-col items-start min-w-0 leading-tight">
-            <span class="text-sm font-semibold truncate max-w-38">{{
-              documentName || 'Untitled'
-            }}</span>
-            <span v-if="typeBadge" class="text-[0.7rem] text-base-content/60 truncate max-w-38">{{
-              typeBadge
-            }}</span>
-          </span>
+          <span class="text-sm font-semibold truncate max-w-38">{{
+            documentName || t('home.untitled')
+          }}</span>
           <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
         </button>
         <span class="font-display text-base font-bold text-base-content/80 text-center truncate">
