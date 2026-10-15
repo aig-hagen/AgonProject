@@ -26,15 +26,20 @@ import { computed } from 'vue'
  */
 export const COMPACT_MAX_WIDTH = 768
 
+/** Viewport height below which the compact shell is used, e.g. phones in landscape. */
+export const COMPACT_MAX_HEIGHT = 500
+
+export const COMPACT_QUERY = `(max-width: ${COMPACT_MAX_WIDTH - 1}px), (max-height: ${COMPACT_MAX_HEIGHT - 1}px)`
+
 export type LayoutMode = 'compact' | 'regular'
 
 /**
- * Which presentation shell to render, decided by viewport width alone.
+ * Which presentation shell to render, decided by viewport size alone.
  * Kept separate from input capability so narrow mouse windows and wide touch
  * devices are both handled correctly.
  */
 export const useLayoutMode = createSharedComposable(() => {
-  const isCompact = useMediaQuery(`(max-width: ${COMPACT_MAX_WIDTH - 1}px)`)
+  const isCompact = useMediaQuery(COMPACT_QUERY)
   const layoutMode = computed<LayoutMode>(() => (isCompact.value ? 'compact' : 'regular'))
   return { layoutMode, isCompact }
 })

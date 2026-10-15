@@ -2161,8 +2161,11 @@ defineExpose({
     <template v-if="layoutMode === 'compact'">
       <header
         ref="mobileTopBar"
-        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 h-14 bg-base-200 border-b border-base-300"
-        style="padding-top: env(safe-area-inset-top)"
+        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 bg-base-200 border-b border-base-300"
+        style="
+          padding-top: env(safe-area-inset-top);
+          height: calc(3.5rem + env(safe-area-inset-top));
+        "
       >
         <!-- Switcher chip: back to home / document picker -->
         <button

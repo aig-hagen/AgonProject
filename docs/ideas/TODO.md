@@ -1,13 +1,5 @@
 # TODO
 
-Small issues, ideas and ABA polish. Long-term goals are tracked in
-[GitHub issues](https://github.com/aig-hagen/AgonProject/issues); larger plans live in their own
-docs in this folder.
-
-Effort: **S** = an afternoon or less, **M** = a few days, **L** = a larger project.
-
-Numbers are fixed IDs: never renumber, and give a new item the next free number (next: 26).
-
 ## General
 
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
@@ -19,9 +11,8 @@ Numbers are fixed IDs: never renumber, and give a new item the next free number 
   (`BlankDocumentCanvas.vue`); the mobile cards show none.
 - **8. [S] Clear extension highlighting.** The only way to turn highlighting off is to tap the
   selected extension again. Add an explicit clear action.
-- **9. [S] Web app manifest.** There's no manifest yet. Add one with `display: standalone` so "Add
-  to Home Screen" opens without browser chrome. Forcing fullscreen isn't an option: iOS Safari
-  doesn't support the Fullscreen API for pages.
+- **26. [M] Landscape layout.** Phones in landscape now get the compact shell, but its top and
+  bottom bars leave little canvas height. Consider moving the command bar to a side rail.
 
 ## Assumption-based argumentation (ABA)
 

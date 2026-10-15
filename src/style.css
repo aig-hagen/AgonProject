@@ -157,6 +157,11 @@ body {
   background-color: var(--color-base-100);
 }
 
+/* Keep landscape content clear of the notch (viewport-fit=cover). */
+#app {
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+}
+
 .graph-controller__graph-canvas {
   background-color: var(--color-base-100);
 }

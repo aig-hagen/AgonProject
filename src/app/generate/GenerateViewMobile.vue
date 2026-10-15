@@ -62,7 +62,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
+  <div class="flex flex-col h-dvh w-full bg-base-100 overflow-hidden">
     <PageHeader
       :title="t('generate.title', { name: shortName })"
       :back-label="t('generate.backToEditor')"

@@ -189,7 +189,7 @@ function loadFile() {
 <template>
   <!-- Dynamic viewport height so the bottom command bar tracks iOS/Android browser chrome
        showing/hiding, instead of sitting behind it as 100vh would. -->
-  <div class="flex flex-col h-dvh w-screen m-0 bg-base-100 overflow-hidden">
+  <div class="flex flex-col h-dvh w-full m-0 bg-base-100 overflow-hidden">
     <!-- Persistent brand hero (Documents/New surfaces); the editor surface uses
          GraphEditor's own top bar. Name + tagline stay visible while switching tabs. -->
     <header

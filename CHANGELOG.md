@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - "Color-blind friendly colors" setting: evaluation results switch to blue and red-orange, which stay apart for
   red-green and blue-yellow color blindness on every graph style.
 - Load ICCMA text files (`.af`, `.baf`, `.setaf`, `.iaf`, `.paf`, `.aba`) from the file menu; imported graphs are laid out automatically.
+- Web app manifest and home-screen icons: "Add to Home Screen" now opens AgonProject full-window, without browser bars.
 
 ### Changed
 
@@ -23,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - New blank and generated documents are numbered from the start (AF1, AF2, …) instead of starting with a bare "AF".
 - One type scale on desktop and mobile, and muted text is darker so it meets WCAG AA contrast in light mode.
 - Glossary, generator, privacy and attributions pages share one header bar with a centered title and a back button.
+- Mobile: phones in landscape keep the mobile layout instead of switching to the desktop one.
 - Privacy and third-party links in Help open in the same tab, so back returns to the editor instead of a second app instance.
 - Glossary search uses one search field style on desktop and mobile, with a visible keyboard focus ring.
 - Export options (LaTeX style, image format, scale and background) are remembered across sessions and shared between desktop and mobile.

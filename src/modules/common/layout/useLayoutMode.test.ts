@@ -20,7 +20,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { effectScope, nextTick } from 'vue'
 
 import {
-  COMPACT_MAX_WIDTH,
+  COMPACT_QUERY,
   useInputCapability,
   useLayoutMode,
 } from '@/modules/common/layout/useLayoutMode'
@@ -65,7 +65,8 @@ afterEach(() => {
 })
 
 test('layout mode is compact only below the compact breakpoint', async () => {
-  const query = `(max-width: ${COMPACT_MAX_WIDTH - 1}px)`
+  expect(COMPACT_QUERY).toBe('(max-width: 767px), (max-height: 499px)')
+  const query = COMPACT_QUERY
   const scope = effectScope()
   scope.run(() => {
     const { layoutMode, isCompact } = useLayoutMode()

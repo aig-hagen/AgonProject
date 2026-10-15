@@ -25,7 +25,7 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <div class="h-dvh w-screen flex flex-col items-center justify-center gap-4 bg-base-100 px-6">
+  <div class="h-dvh w-full flex flex-col items-center justify-center gap-4 bg-base-100 px-6">
     <p class="text-6xl font-bold text-base-content/40">404</p>
     <h1 class="text-xl font-bold text-center">{{ t('notFound.heading') }}</h1>
     <p class="max-w-sm text-center text-base-content/80">{{ t('notFound.description') }}</p>
