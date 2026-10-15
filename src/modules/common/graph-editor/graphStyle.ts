@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { LINK_BLACK, NODE_BLUE } from '@/modules/common/colors'
+import type { GraphPresetId } from '@/modules/common/theme/palette'
 
 export interface GraphStyle {
   nodeColor: string
@@ -24,58 +24,30 @@ export interface GraphStyle {
   nodeStrokeWidth: number
   linkColor: string
   linkStrokeWidth: number
+  nodeLabelColor: string
 }
 
-export const GRAPH_STYLE_DEFAULT: GraphStyle = {
-  nodeColor: NODE_BLUE,
-  nodeStrokeColor: '#5a87a8',
-  nodeStrokeWidth: 1.5,
-  linkColor: LINK_BLACK,
-  linkStrokeWidth: 2.5,
+// Colors are palette tokens (see palette.ts), resolved per theme by the graph editor.
+function presetStyle(
+  id: GraphPresetId,
+  widths: Pick<GraphStyle, 'nodeStrokeWidth' | 'linkStrokeWidth'>,
+): GraphStyle {
+  return {
+    nodeColor: `var(--graph-${id}-node)`,
+    nodeStrokeColor: `var(--graph-${id}-stroke)`,
+    linkColor: `var(--graph-${id}-link)`,
+    nodeLabelColor: `var(--graph-${id}-label)`,
+    ...widths,
+  }
 }
 
-export const GRAPH_STYLE_HIGH_CONTRAST: GraphStyle = {
-  nodeColor: '#5a87a8',
-  nodeStrokeColor: '#2c5470',
-  nodeStrokeWidth: 2.5,
-  linkColor: '#000000',
-  linkStrokeWidth: 3.5,
-}
-
-export const GRAPH_STYLE_MINIMAL: GraphStyle = {
-  nodeColor: '#e8f0f7',
-  nodeStrokeColor: '#8aa0b4',
-  nodeStrokeWidth: 1,
-  linkColor: '#444444',
-  linkStrokeWidth: 1.5,
-}
-
-export const GRAPH_STYLE_DARK: GraphStyle = {
-  nodeColor: '#4a7a9b',
-  nodeStrokeColor: '#82b5d0',
-  nodeStrokeWidth: 1.5,
-  linkColor: '#c8dce8',
-  linkStrokeWidth: 2.5,
-}
-
-// Matches the graph-component library's built-in defaults:
-// orange nodes (#eb9850), navy edges (#004c97), no node border.
-export const GRAPH_STYLE_LIBRARY: GraphStyle = {
-  nodeColor: '#eb9850',
-  nodeStrokeColor: 'transparent',
-  nodeStrokeWidth: 0,
-  linkColor: '#004c97',
-  linkStrokeWidth: 2.5,
-}
-
-// Amber outline over a faint amber-tinted fill: the ABA assumption-node scheme, with the
-// identity in the border so the fill stays free for evaluation shading. Every color is a live
-// palette token — the graph editor resolves these to concrete colors per theme before use, so a
-// single definition covers light and dark and nothing drifts from the palette.
-export const GRAPH_STYLE_OUTLINE: GraphStyle = {
-  nodeColor: 'color-mix(in srgb, var(--color-secondary) 22%, var(--color-base-100))',
-  nodeStrokeColor: 'var(--color-secondary)',
-  nodeStrokeWidth: 2,
-  linkColor: 'var(--color-primary)',
-  linkStrokeWidth: 2.5,
+export const GRAPH_STYLES: Record<GraphPresetId, GraphStyle> = {
+  default: presetStyle('default', { nodeStrokeWidth: 1.5, linkStrokeWidth: 2.5 }),
+  'high-contrast': presetStyle('high-contrast', { nodeStrokeWidth: 2.5, linkStrokeWidth: 3.5 }),
+  minimal: presetStyle('minimal', { nodeStrokeWidth: 1, linkStrokeWidth: 1.5 }),
+  // AIG yellow nodes and AIG blue links, without a node border.
+  library: presetStyle('library', { nodeStrokeWidth: 0, linkStrokeWidth: 2.5 }),
+  // The ABA assumption-node scheme: identity in the amber border, so the fill stays free for
+  // evaluation shading.
+  outline: presetStyle('outline', { nodeStrokeWidth: 2, linkStrokeWidth: 2.5 }),
 }

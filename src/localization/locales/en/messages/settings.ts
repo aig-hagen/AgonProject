@@ -56,6 +56,9 @@ export default {
   gridCellSize: {
     label: 'Grid cell size',
   },
+  colorBlindColors: {
+    label: 'Color-blind friendly colors',
+  },
   mergeReciprocalLinks: {
     label: 'Merge mutual edges',
   },

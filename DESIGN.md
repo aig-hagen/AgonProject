@@ -176,8 +176,8 @@ Desktop and mobile are one system at two densities, not two designs.
 
 A cool, low-saturation paper palette with one confident institutional blue. All values, for both
 light and dark mode, live only in [`palette.ts`](src/modules/common/theme/palette.ts), which emits
-each token as a `--color-*` custom property. This document names the tokens and their roles; it
-never restates their values.
+each token as a `--color-*` (app) or `--graph-*` (graph) custom property. This document names the
+tokens and their roles; it never restates their values.
 
 ### Primary
 
@@ -187,8 +187,9 @@ never restates their values.
 
 ### Secondary
 
-- **AIG Yellow** (`secondary`): the beta ribbon and badge, and nothing structural. It is a warm
-  highlight, not a second accent; text on it uses `secondary-content`.
+- **AIG Yellow** (`secondary`): the beta ribbon and badge, and the Library and Outline graph
+  presets; nothing structural in the app chrome. It is a warm highlight, not a second accent; text
+  on it uses `secondary-content`.
 
 ### Neutral
 
@@ -209,11 +210,37 @@ never restates their values.
   dot on a floating window. Each has a matching `*-content` on-color.
 - **Selection** (`selection`): text selection only.
 
+### Graph
+
+Each graph style preset has a purpose and its own `--graph-<preset>-node / -stroke / -link /
+-label` tokens, defined per mode. Presets in `graphStyle.ts` only reference tokens; the graph
+editor resolves them per theme before handing them to the graph library.
+
+- **Default** (`graph-default-*`): the everyday look, a brand-blue tint.
+- **High contrast** (`graph-high-contrast-*`): heavy borders and links, labels at 7:1 or more.
+- **Minimal** (`graph-minimal-*`): quiet ink mixes over the paper tones.
+- **Library** (`graph-library-*`): the brand colors, yellow nodes and blue links, no border.
+- **Outline** (`graph-outline-*`): the ABA scheme; identity in the amber border, fill left free
+  for evaluation colors.
+- **Evaluation highlights** (`graph-accepted`, `graph-derived`, `graph-rejected`): neon green
+  and salmon, the same in both modes. Undecided nodes keep the preset's node color. Labels on
+  highlights take whichever palette ink (`GRAPH_LABEL_INKS`) contrasts more.
+- **Color-blind friendly highlights** (`COLOR_BLIND_HIGHLIGHTS`): blue accepted and red/orange
+  rejected, per mode, switched by the setting via `data-graph-colors='color-blind'` on the root.
+
 ### Named Rules
 
 **The Single Source Rule.** No raw hex, `rgb()` or Tailwind primitive colors (`gray-500`,
-`text-black`) in app code. Every color comes from a palette token. Graph rendering, export output
-and the standalone maintenance page are the documented exceptions.
+`text-black`) in app code. Every color comes from a palette token, graph colors included. Export
+output and the standalone maintenance page are the documented exceptions.
+
+**The Color-Blind Rule.** Evaluation results must stay apart for red-green and blue-yellow color
+blindness, not just normal vision: accepted and rejected differ by at least ΔE 15 (OKLab ×100,
+under simulated protan, deutan and tritan vision), and each preset's node color by at least 10
+from both. Lightness, not hue alone, carries the difference. Derived nodes also get a dotted
+border, since their pale green sits close to some presets' fills. The default highlights carry a
+few listed trade-offs (Library, Outline light); the color-blind friendly scheme has none and clears
+ΔE 15 against every preset. `palette.test.ts` enforces both.
 
 **The Three Inks Rule.** Muted text and icons use exactly three ink strengths over `base-content`:
 `/80` for secondary body text, `/65` for meta, captions, labels, placeholders, empty states and

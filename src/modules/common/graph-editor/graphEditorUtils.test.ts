@@ -18,7 +18,12 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { parseLinkId } from '@/modules/common/graph-editor/graphEditorUtils'
+import {
+  getContrastingLabelColor,
+  parseLinkId,
+  resolveCssColor,
+} from '@/modules/common/graph-editor/graphEditorUtils'
+import { GRAPH_LABEL_INKS } from '@/modules/common/theme/palette'
 
 describe('parseLinkId', () => {
   test('plain links have no kind', () => {
@@ -36,5 +41,32 @@ describe('parseLinkId', () => {
   test('malformed ids still throw', () => {
     expect(() => parseLinkId('3:contrary')).toThrow('Separator')
     expect(() => parseLinkId('3-7-9')).toThrow('more than once')
+  })
+})
+
+describe('getContrastingLabelColor', () => {
+  test('picks whichever palette ink contrasts more', () => {
+    expect(getContrastingLabelColor('#66ff99')).toBe(GRAPH_LABEL_INKS.dark)
+    // Mid salmon: a fixed luminance threshold used to pick white here (2.6:1).
+    expect(getContrastingLabelColor('#ff7766')).toBe(GRAPH_LABEL_INKS.dark)
+    expect(getContrastingLabelColor('#004c97')).toBe(GRAPH_LABEL_INKS.light)
+  })
+
+  test('accepts resolved rgb colors and short hex', () => {
+    expect(getContrastingLabelColor('rgb(0, 76, 151)')).toBe(GRAPH_LABEL_INKS.light)
+    expect(getContrastingLabelColor('rgba(102, 255, 153, 1)')).toBe(GRAPH_LABEL_INKS.dark)
+    expect(getContrastingLabelColor('#fff')).toBe(GRAPH_LABEL_INKS.dark)
+  })
+
+  test('returns an empty string for colors it cannot read', () => {
+    expect(getContrastingLabelColor('var(--graph-accepted)')).toBe('')
+    expect(getContrastingLabelColor('not a color')).toBe('')
+  })
+})
+
+describe('resolveCssColor', () => {
+  test('passes plain colors through untouched', () => {
+    expect(resolveCssColor('#5a87a8', 'light')).toBe('#5a87a8')
+    expect(resolveCssColor('transparent', 'dark')).toBe('transparent')
   })
 })

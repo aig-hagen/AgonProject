@@ -1,8 +1,6 @@
 ## Features
 
 - Localization of definitions, semantics, etc
-- graph style colors need update — see [`graph-color-scheme-plan.md`](graph-color-scheme-plan.md)
-- labeling highlight colors - color blind mode — see [`graph-color-scheme-plan.md`](graph-color-scheme-plan.md)
 - export redesign: check if there is anything that should be updated for mobile
 - store state of export window in db?
 

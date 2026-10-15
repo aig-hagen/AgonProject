@@ -16,9 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { NodeOutline } from '@aig-hagen/graph-component/lib'
 import { describe, expect, test } from 'vitest'
 
-import { NODE_GREEN, NODE_LIGHT_GREEN, NODE_RED } from '@/modules/common/colors'
 import {
   binaryAttacks,
   extensionLabels,
@@ -65,12 +65,24 @@ describe('labelsToHighlight', () => {
       [4, 'undec'],
     ])
     const h = labelsToHighlight(generateUUID(), labels, t)
-    expect(h.groups.map((g) => [[...g.nodes], g.color])).toEqual([
-      [[1], NODE_GREEN],
-      [[2], NODE_LIGHT_GREEN],
-      [[3], NODE_RED],
+    expect(h.groups.map((g) => [[...g.nodes], g.color, g.outline])).toEqual([
+      [[1], 'var(--graph-accepted)', undefined],
+      [[2], 'var(--graph-derived)', NodeOutline.DOTTED],
+      [[3], 'var(--graph-rejected)', undefined],
     ])
     expect(h.legend?.map((l) => l.label)).toEqual(['accepted', 'derived', 'rejected', 'undecided'])
+  })
+
+  test('derived nodes and their legend entry are dotted', () => {
+    const labels = new Map<number, NodeLabel>([
+      [1, 'in'],
+      [2, 'derived'],
+      [3, 'out'],
+    ])
+    const h = labelsToHighlight(generateUUID(), labels, t)
+    const expected = [undefined, NodeOutline.DOTTED, undefined]
+    expect(h.groups.map((g) => g.outline)).toEqual(expected)
+    expect(h.legend?.map((l) => l.outline)).toEqual(expected)
   })
 
   test('legend lists undecided only when asked or present', () => {

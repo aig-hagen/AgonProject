@@ -82,68 +82,116 @@ picks" and the chosen highlight / derived candidates.
 
 ## Phase 1 — graph tokens in the palette
 
-- [ ] Add `GraphColorToken` + `LIGHT_GRAPH_PALETTE` / `DARK_GRAPH_PALETTE` to
+- [x] Add `GraphColorToken` + `LIGHT_GRAPH_PALETTE` / `DARK_GRAPH_PALETTE` to
       [`palette.ts`](../../src/modules/common/theme/palette.ts), emitted by
       `buildPaletteCss()`. Names must not collide with the runtime vars the editor already sets
       (`--graph-node-color`, `--graph-node-stroke-color`, `--graph-node-stroke-width`):
   ```
-  --graph-<preset>-node / -stroke / -link / -label     per preset (default, contrast, minimal, library, outline)
+  --graph-<preset>-node / -stroke / -link / -label     per preset (default, high-contrast, minimal, library, outline)
   --graph-accepted  --graph-derived  --graph-rejected   highlights (same value in both themes)
   ```
-- [ ] Derive from existing anchors where it fits instead of new hex (e.g. Default light fill =
+- [x] Derive from existing anchors where it fits instead of new hex (e.g. Default light fill =
       `primary` 40% over `base-100`, which is exactly today's `#99b7d5`).
-- [ ] Update the header comment ("graph colors are kept out of this file").
-- [ ] Unit test: light and dark define the same token set.
+- [x] Update the header comment ("graph colors are kept out of this file").
+- [x] Unit test (`palette.test.ts`): both modes emit every graph token, and every `var()` in a
+      value points at a token defined in the same mode. Same key set is enforced by the types.
 
 ## Phase 2 — color resolution plumbing
 
-- [ ] Run every color handed to the graph library through `resolveCssColor`: link configs,
-      hyperlinks, highlight groups (`useHighlight`), not just preset node/link colors.
-- [ ] Re-resolve on theme toggle (`isDark`) for all of the above.
-- [ ] Label color: use the `--graph-*-content` tokens, or make `getContrastingLabelColor`
-      accept any resolved color (rgb / color()) instead of hex only.
-- [ ] Move `resolveCssColor` out of `GraphEditor.vue` into `graphEditorUtils.ts` if it's
-      now shared.
+- [x] Run every color handed to the graph library through `resolveCssColor`: link-type colors
+      (`linkTypeColor()` in `GraphEditor.vue`, all six call sites), link kinds, hyperlinks and
+      highlight groups (`useHighlight`).
+- [x] Theme-safe resolution: the probe carries its own `data-theme`, so results don't depend on
+      when the document attribute flips; resolved values are cached per theme. Mixes that the
+      browser serializes as `oklab()` / `color()` are normalized to hex/rgba via a canvas pixel.
+- [x] Label color: `getContrastingLabelColor` reads hex and rgb(a) and picks whichever of
+      near-black / white contrasts more (fixes white-on-`#ff7766`).
+- [x] Moved `resolveCssColor` into `graphEditorUtils.ts`, with tests.
 
 ## Phase 3 — presets on tokens
 
-- [ ] Rewrite [`graphStyle.ts`](../../src/modules/common/graph-editor/graphStyle.ts) presets
-      as token references / `color-mix` recipes with Phase 0 values.
-- [ ] Drop `GRAPH_STYLE_DARK` and the `isDark` branch in `pickStyle()` once default is
-      token-based.
-- [ ] Library preset references the brand token instead of `#004c97`.
-- [ ] Replace hex fallbacks in [`style.css`](../../src/style.css) with tokens; move the dark
-      `--node-charge-glow` into the palette.
-- [ ] Check the legend dots and `StatementGlyph.vue` still pick up `--graph-node-*`.
+- [x] [`graphStyle.ts`](../../src/modules/common/graph-editor/graphStyle.ts): one `GRAPH_STYLES`
+      map; every preset references `--graph-<preset>-*` tokens, only stroke widths stay local.
+- [x] Dropped `GRAPH_STYLE_DARK` and the `isDark` branch in `pickStyle()`; a stale stored setting
+      falls back to default. `GraphStyleName` is now an alias of `GraphPresetId`.
+- [x] Library references the brand tokens (`secondary` / `primary` / `secondary-content`).
+- [x] `nodeLabelColor` on `GraphStyle`, applied via `--graph-node-label-color`; plain
+      (label-only) nodes keep the theme text color via a `:has()` rule.
+- [x] [`style.css`](../../src/style.css) has no hex/rgba left: fallbacks point at default-preset
+      tokens; `--node-charge-glow` comes from the new `graph-charge-glow` token.
+- [x] Legend dots and `StatementGlyph.vue` still read `--graph-node-color` /
+      `--graph-node-stroke-color`, which the editor keeps setting.
 
 ## Phase 4 — highlights on tokens
 
-- [ ] [`labeling.ts`](../../src/modules/common/evaluation/labeling.ts) uses
-      `var(--graph-in)` / `--graph-derived` / `--graph-out`.
-- [ ] Update `labeling.test.ts` expectations.
-- [ ] Derived cue: let highlight groups carry an optional node outline (`Highlight.groups[].outline`)
-      and have `useHighlight` apply `NodeOutline.DOTTED` to derived nodes (restore on clear).
+- [x] [`labeling.ts`](../../src/modules/common/evaluation/labeling.ts) uses
+      `var(--graph-accepted)` / `--graph-derived` / `--graph-rejected` (the only highlight producer).
+- [x] Updated `labeling.test.ts` expectations.
+- [x] Derived cue: highlight groups carry an optional `outline`; derived uses
+      `NodeOutline.DOTTED`. `useHighlight` re-applies it to overridden nodes each run and restores
+      the module's own outline (e.g. IAF's dashed) once a node leaves the group. `setNodeOutline`
+      reheats the layout, so calls are limited to overridden nodes and batched per outline.
 
 ## Phase 5 — cleanup
 
-- [ ] Delete dead exports in `colors.ts` (likely the whole file) and unused
-      `ARGUMENT_COLOR` / `ATTACK_COLOR`.
+- [x] Deleted `colors.ts` and the unused `ARGUMENT_COLOR` / `ATTACK_COLOR` in `argumentation/model.ts`.
 - [ ] Optional: ranking score chips (`WindowRanking.vue` `hsl()` ramp) onto palette tokens.
-- [ ] Grep for leftover hex in `src/` outside `palette.ts`.
+- [x] Leftover literals in `src/` outside `palette.ts`, all deliberate:
+  - `graphEditorUtils.ts`: label inks `#1a1a1a` / `#ffffff` and the rgba/hex normalizer output.
+  - `WindowExport.vue`: white "paper" behind the export preview.
+
+## Phase 5b — color-blind support
+
+- [x] Label inks come from the palette (`GRAPH_LABEL_INKS`: `base-content` / `base-100`).
+- [x] **Regression guard**: shared color math in `theme/colorMath.ts` (luminance, contrast,
+      OKLab, color-blind simulation, ΔE). `palette.test.ts` resolves every graph token like the
+      browser would and checks shapes ≥ 3:1, labels ≥ 4.5:1, accepted vs. rejected ≥ ΔE 15 and
+      each preset vs. both highlights ≥ ΔE 10, across normal + protan/deutan/tritan vision.
+      Trade-offs (Library, Outline light) are listed with their own floor. Verified it fails
+      when the old `#ff9999` rejected is put back.
+- [x] ~~Color-blind patterns setting~~ — built, then dropped (2026-10-15): the intended
+      "color blind mode" is an alternative **color scheme**, not border patterns. Derived keeps
+      its dotted border in every mode.
+- [x] **Color-vision schemes** (see Phase 7).
 
 ## Phase 6 — docs and release notes
 
-- [ ] [`DESIGN.md`](../../DESIGN.md): graph color section (tokens, presets, highlight
-      rules, color-blind targets).
-- [ ] [`conventions.md`](../contributing/conventions.md): "graph colors come from
-      `--graph-*`, never hex".
-- [ ] `CHANGELOG.md` under `[Unreleased]`: dark variants for all presets; new highlight
-      colors.
-- [ ] Tick `docs/ideas/TODO.md` items "graph style colors need update" and "labeling
-      highlight colors - color blind mode".
+- [x] [`DESIGN.md`](../../DESIGN.md): "Graph" color section (preset purposes, highlight roles),
+      a Color-Blind Rule, and graph colors dropped from the Single Source Rule's exceptions.
+- [x] [`conventions.md`](../contributing/conventions.md): `--graph-*` tokens, keep
+      `palette.test.ts` passing; graph rendering is no longer a palette exception.
+- [x] `CHANGELOG.md`: presets, highlights, and the color-blind patterns setting.
+- [x] Removed the two finished items from `docs/ideas/TODO.md`.
+
+## Phase 7 — color-vision schemes
+
+A setting that swaps the evaluation colors for a set tuned for color vision deficiencies, instead
+of the default compromise.
+
+- [x] Design round in the lab (2026-10-15): one scheme is enough. The blue vs. red/orange axis
+      holds for red-green **and** blue-yellow vision; tritan-tuned green/red sets collapse for
+      red-green viewers (ΔE 3–8). Picked **Blue / vermilion**:
+
+  | Label    | Light     | Dark      |
+  | -------- | --------- | --------- |
+  | accepted | `#4b56da` | `#28a4e6` |
+  | derived  | `#f5c270` | `#e8d3fa` |
+  | rejected | `#841214` | `#ba5c13` |
+
+  Worst ΔE vs. every preset, light / dark: red-green 28 / 16, blue-yellow 24 / 20, normal
+  29 / 19 (default neon: 2 / 7 for red-green). No preset colors change. Dark rejected labels
+  are 4.54:1 (white); a darker orange would cost red-green separation (16 → 14).
+- [x] Tokens: `COLOR_BLIND_HIGHLIGHTS` in `palette.ts`, emitted for
+      `[data-theme][data-graph-colors='color-blind']`. `resolveCssColor` takes the scheme and
+      puts it on its probe (cache key includes it), so resolution stays timing-safe.
+- [x] Setting `colorBlindColors` (Settings, under graph style) → `graphColorScheme`, which sets
+      the root attribute and feeds the editor and `useHighlight`; en/de strings.
+- [x] `palette.test.ts`: the scheme clears ΔE 15 against every preset with no exceptions, plus
+      labels; verified it fails when the neon salmon is put back as rejected.
+- [x] Docs: DESIGN.md (Graph section + Color-Blind Rule), CHANGELOG.
 
 ## Open questions
 
-- Should highlight colors vary per preset, or stay one set per theme? (Plan assumes one set.)
+- ~~Should highlight colors vary per preset?~~ No: one set, the same in both modes.
 - Image export: does it serialize the live (theme-dependent) colors? If so, should a dark-mode
   export come out dark, or always light?

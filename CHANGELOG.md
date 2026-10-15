@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- "Color-blind friendly colors" setting: evaluation results switch to blue and red-orange, which stay apart for
+  red-green and blue-yellow color blindness on every graph style.
 - Load ICCMA text files (`.af`, `.baf`, `.setaf`, `.iaf`, `.paf`, `.aba`) from the file menu; imported graphs are laid out automatically.
 
 ### Changed
@@ -24,6 +26,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Privacy and third-party links in Help open in the same tab, so back returns to the editor instead of a second app instance.
 - Glossary search uses one search field style on desktop and mobile, with a visible keyboard focus ring.
 - Floating windows, sheets and menus cast palette-tinted shadows; muted icons and code highlighting use the app palette.
+- Graph style presets come from the app palette: every preset now has a proper dark mode, High contrast
+  reaches 11:1 labels in light mode, Minimal is quieter, and Library uses the AIG brand colors.
+- Evaluation highlights are easier to tell apart with red-green color blindness, labels on them always pick
+  the more readable text color, and derived nodes get a dotted border.
 
 ### Fixed
 
