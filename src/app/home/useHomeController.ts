@@ -140,9 +140,11 @@ export function useHomeController<DocumentT extends Objectish>(
   }
 
   function getNextName(newNamePrefix: string) {
+    // Type prefixes get a number so the name differs from the type badge; example names don't.
     return nextDocumentName(
       documents.value.map((document) => document.name),
       newNamePrefix,
+      modules.some((module) => module.newNamePrefix === newNamePrefix),
     )
   }
 

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Visual polish: softer, consistent corner radii app-wide, solid mobile toolbars, no glowing buttons, a clearer
   "Relayout" icon, and full-strength toolbar icons.
 - Mobile: the editor's document chip shows the framework type (AF, BAF, …) as a badge; the home header drops its icon.
+- New blank and generated documents are numbered from the start (AF1, AF2, …) instead of starting with a bare "AF".
 
 ## [0.13.0] - 2026-09-30
 

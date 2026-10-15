@@ -22,6 +22,7 @@ import { computed, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import { nextDocumentName } from '@/app/home/homeControllerHelpers'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { trackEvent } from '@/app/usage/report'
 import { ANALYTICS_EVENTS } from '@/app/usage/signals'
@@ -113,12 +114,11 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
   ] as unknown as ModuleConfig<Objectish>[])
 
   function getNextName(prefix: string): string {
-    const allNames = new Set(documents.value.map((d) => d.name))
-    if (!allNames.has(prefix)) return prefix
-    for (let i = 1; ; i++) {
-      const name = prefix + i.toString(10)
-      if (!allNames.has(name)) return name
-    }
+    return nextDocumentName(
+      documents.value.map((d) => d.name),
+      prefix,
+      true,
+    )
   }
 
   // --- Framework type from URL ---
