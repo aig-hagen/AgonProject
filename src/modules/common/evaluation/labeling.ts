@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { NODE_GREEN, NODE_LIGHT_GREEN, NODE_RED } from '@/modules/common/colors'
+import { NodeOutline } from '@aig-hagen/graph-component/lib'
+
 import type { Highlight, NodeId } from '@/modules/common/graph-editor/graphEditor'
 import type { UUID } from '@/modules/common/ids'
 
@@ -50,12 +51,18 @@ export function extensionLabels(
 
 const LABEL_ORDER: NodeLabel[] = ['in', 'derived', 'out', 'undec']
 
-const LABEL_STYLE: Record<NodeLabel, { legendKey: string; color?: string }> = {
-  in: { legendKey: 'evaluation.legend.accepted', color: NODE_GREEN },
-  derived: { legendKey: 'evaluation.legend.derived', color: NODE_LIGHT_GREEN },
-  out: { legendKey: 'evaluation.legend.rejected', color: NODE_RED },
-  undec: { legendKey: 'evaluation.legend.undecided' },
-}
+// Derived also gets a dotted border: on some presets its pale green is close to the node fill.
+const LABEL_STYLE: Record<NodeLabel, { legendKey: string; color?: string; outline?: NodeOutline }> =
+  {
+    in: { legendKey: 'evaluation.legend.accepted', color: 'var(--graph-accepted)' },
+    derived: {
+      legendKey: 'evaluation.legend.derived',
+      color: 'var(--graph-derived)',
+      outline: NodeOutline.DOTTED,
+    },
+    out: { legendKey: 'evaluation.legend.rejected', color: 'var(--graph-rejected)' },
+    undec: { legendKey: 'evaluation.legend.undecided' },
+  }
 
 // The legend always lists accepted/rejected; `undecided` when the caller says the rest of the
 // graph is undecided (an enumerated extension) rather than just unmentioned.
@@ -69,10 +76,10 @@ export function labelsToHighlight(
   if (undecided) present.add('undec')
   const groups = []
   for (const label of LABEL_ORDER) {
-    const color = LABEL_STYLE[label].color
+    const { color, outline } = LABEL_STYLE[label]
     if (color === undefined) continue
     const nodes = new Set([...labels].filter(([, l]) => l === label).map(([id]) => id))
-    if (nodes.size > 0) groups.push({ nodes, color })
+    if (nodes.size > 0) groups.push({ nodes, color, ...(outline && { outline }) })
   }
   return {
     stateId,

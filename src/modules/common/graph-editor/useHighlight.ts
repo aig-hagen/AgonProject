@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import type { NodeOutline } from '@aig-hagen/graph-component/lib'
 import type { ComputedRef, Ref } from 'vue'
 import { watchEffect } from 'vue'
 
@@ -31,6 +32,7 @@ import type { IdMapping } from '@/modules/common/ids'
 
 interface HighlightCapable {
   setColor(color: string, ids: number | number[]): void
+  setNodeOutline(outline: NodeOutline | undefined, ids: number | number[]): void
   $el?: Element
 }
 
@@ -42,6 +44,7 @@ export function useHighlight({
   stateRef,
   effectiveStyle,
   colorTheme,
+  getNodeOutline = () => undefined,
   isUncolored = () => false,
 }: {
   highlightRef: Readonly<Ref<Highlight | undefined>>
@@ -51,9 +54,14 @@ export function useHighlight({
   stateRef: Ref<GraphEditorState> | ComputedRef<GraphEditorState>
   effectiveStyle: Ref<GraphStyle> | ComputedRef<GraphStyle>
   colorTheme: Ref<ColorTheme> | ComputedRef<ColorTheme>
+  // The module's own outline for a node, restored once a highlight outline is lifted.
+  getNodeOutline?: (id: NodeId) => NodeOutline | undefined
   // Nodes that keep their own color, e.g. plain label-only nodes.
   isUncolored?: (id: NodeId) => boolean
 }) {
+  // Nodes whose border the highlight replaced last run, restored once they leave their group.
+  let overridden = new Set<number>()
+
   watchEffect(() => {
     const graphComponent = graphComponentRef.value
     if (graphComponent === null) return
@@ -66,18 +74,16 @@ export function useHighlight({
     // Categorize all graph nodes into their output buckets
     const groupBuckets: number[][] = groups.map(() => [])
     const defaultBucket: number[] = []
+    const outlines = new Map<number, NodeOutline | undefined>()
+    const moduleOutlines = new Map<number, NodeOutline | undefined>()
     for (const { id } of state.nodes) {
       if (!idMapping.hasReverse(id) || isUncolored(id)) continue
       const internalId = idMapping.getOrFailReverse(id)
-      let placed = false
-      for (let i = 0; i < groups.length; i++) {
-        if (groups[i]!.nodes.has(id)) {
-          groupBuckets[i]!.push(internalId)
-          placed = true
-          break
-        }
-      }
-      if (!placed) defaultBucket.push(internalId)
+      const group = groups.findIndex((g) => g.nodes.has(id))
+      if (group === -1) defaultBucket.push(internalId)
+      else groupBuckets[group]!.push(internalId)
+      moduleOutlines.set(internalId, getNodeOutline(id))
+      outlines.set(internalId, groups[group]?.outline ?? moduleOutlines.get(internalId))
     }
 
     // Apply colors, and give each node a label color that contrasts with its
@@ -92,8 +98,20 @@ export function useHighlight({
     for (let i = 0; i < groups.length; i++) {
       applyColors(groups[i]!.color, groupBuckets[i]!)
     }
-    // Reset the default bucket's label color to inherit the theme color.
+    // Reset the default bucket's label color to inherit the preset's label color.
     graphComponent.setColor(effectiveStyle.value.nodeColor, defaultBucket)
     for (const id of defaultBucket) setNodeLabelColor(graphEl, graphComponentId, id, '')
+
+    // setNodeOutline reheats the layout, so only touch overridden nodes, batched per outline.
+    const batches = new Map<NodeOutline | undefined, number[]>()
+    const nextOverridden = new Set<number>()
+    for (const [id, outline] of outlines) {
+      const own = moduleOutlines.get(id)
+      if (outline !== own) nextOverridden.add(id)
+      else if (!overridden.has(id)) continue
+      batches.set(outline, [...(batches.get(outline) ?? []), id])
+    }
+    for (const [outline, ids] of batches) graphComponent.setNodeOutline(outline, ids)
+    overridden = nextOverridden
   })
 }

@@ -827,6 +827,7 @@ useHighlight({
   stateRef,
   effectiveStyle,
   colorTheme,
+  getNodeOutline: (id) => nodeOutlines?.get(id),
   isUncolored: (id) => nodeShapes?.get(id) === 'plain',
 })
 

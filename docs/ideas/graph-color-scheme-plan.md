@@ -124,11 +124,13 @@ picks" and the chosen highlight / derived candidates.
 
 ## Phase 4 — highlights on tokens
 
-- [ ] [`labeling.ts`](../../src/modules/common/evaluation/labeling.ts) uses
-      `var(--graph-in)` / `--graph-derived` / `--graph-out`.
-- [ ] Update `labeling.test.ts` expectations.
-- [ ] Derived cue: let highlight groups carry an optional node outline (`Highlight.groups[].outline`)
-      and have `useHighlight` apply `NodeOutline.DOTTED` to derived nodes (restore on clear).
+- [x] [`labeling.ts`](../../src/modules/common/evaluation/labeling.ts) uses
+      `var(--graph-accepted)` / `--graph-derived` / `--graph-rejected` (the only highlight producer).
+- [x] Updated `labeling.test.ts` expectations.
+- [x] Derived cue: highlight groups carry an optional `outline`; derived uses
+      `NodeOutline.DOTTED`. `useHighlight` re-applies it to overridden nodes each run and restores
+      the module's own outline (e.g. IAF's dashed) once a node leaves the group. `setNodeOutline`
+      reheats the layout, so calls are limited to overridden nodes and batched per outline.
 
 ## Phase 5 — cleanup
 
