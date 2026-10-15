@@ -234,9 +234,7 @@ function handleStartNext() {
       class="absolute inset-x-2 z-30 pointer-events-auto"
       style="top: calc(env(safe-area-inset-top) + 3.75rem)"
     >
-      <div
-        class="rounded-2xl bg-base-100 border border-primary/20 shadow-xl shadow-primary/10 p-3.5"
-      >
+      <div class="rounded-box bg-base-100 border border-primary/20 shadow-xl p-3.5">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-xs font-semibold text-base-content/60 shrink-0">
             Step {{ activeStepIndex + 1 }} of {{ stepCount }}

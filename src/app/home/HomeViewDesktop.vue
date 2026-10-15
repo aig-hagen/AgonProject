@@ -158,7 +158,7 @@ function loadFile() {
           :aria-label="t('settings.title')"
           @click="settingsDialog?.open()"
         >
-          <Cog6ToothIcon class="size-5 opacity-70" />
+          <Cog6ToothIcon class="size-5" />
         </button>
       </div>
     </main>

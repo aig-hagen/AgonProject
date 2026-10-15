@@ -570,7 +570,7 @@ function onPopupKeydown(event: KeyboardEvent) {
           :title="t('editor.probabilities.title')"
           @click="isProbabilitiesOpen = !isProbabilitiesOpen"
         >
-          <AdjustmentsHorizontalIcon class="size-6 opacity-70" />
+          <AdjustmentsHorizontalIcon class="size-6" />
         </button>
       </template>
 
@@ -618,7 +618,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       <template v-if="editingLabel !== null">
         <div class="fixed inset-0 z-40" @click="closeEditor" @keydown="onPopupKeydown" />
         <div
-          class="fixed z-50 bg-base-100 border border-base-300 rounded-lg shadow-xl p-3 flex flex-col gap-2 w-48"
+          class="fixed z-50 bg-base-100 border border-base-300 rounded-box shadow-xl p-3 flex flex-col gap-2 w-48"
           :style="{ left: `${editingLabel.screenX + 8}px`, top: `${editingLabel.screenY + 8}px` }"
           @click.stop
           @keydown="onPopupKeydown"

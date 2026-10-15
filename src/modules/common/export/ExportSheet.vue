@@ -137,7 +137,7 @@ function download(config: ExportConfig<DocumentT>) {
       <!-- One-tap share, kept apart from the format flow. -->
       <button
         v-if="quickShare"
-        class="flex items-center gap-3 h-14 px-4 rounded-2xl bg-primary text-primary-content shadow-md shadow-primary/30"
+        class="flex items-center gap-3 h-14 px-4 rounded-box bg-primary text-primary-content"
         @click="shareAndClose()"
       >
         <ShareIcon class="size-5" />
@@ -151,10 +151,10 @@ function download(config: ExportConfig<DocumentT>) {
           {{ t('export.sections.image') }}
         </h3>
         <button
-          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-box border border-base-300 bg-base-100 text-left"
           @click="screen = 'svg'"
         >
-          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+          <span class="grid place-items-center size-9 shrink-0 rounded-field bg-base-200">
             <PhotoIcon class="size-5 text-primary" />
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
@@ -173,10 +173,10 @@ function download(config: ExportConfig<DocumentT>) {
         </h3>
         <button
           v-if="codeConfig"
-          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-box border border-base-300 bg-base-100 text-left"
           @click="screen = 'code'"
         >
-          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+          <span class="grid place-items-center size-9 shrink-0 rounded-field bg-base-200">
             <CodeBracketIcon class="size-5 text-primary" />
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
@@ -190,10 +190,10 @@ function download(config: ExportConfig<DocumentT>) {
         <button
           v-for="config in dataConfigs"
           :key="config.id"
-          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-box border border-base-300 bg-base-100 text-left"
           @click="download(config)"
         >
-          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+          <span class="grid place-items-center size-9 shrink-0 rounded-field bg-base-200">
             <DocumentTextIcon class="size-5 text-primary" />
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
@@ -229,16 +229,16 @@ function download(config: ExportConfig<DocumentT>) {
           :title="codeConfig.references[0].label"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn btn-ghost btn-square size-12 rounded-2xl"
+          class="btn btn-ghost btn-square size-12"
         >
           <ArrowTopRightOnSquareIcon class="size-5" />
         </a>
         <ButtonSave
-          class="btn btn-primary h-12 flex-1 rounded-2xl"
+          class="btn btn-primary h-12 flex-1"
           :filedata="codeFiledata"
           @export="emit('export', $event)"
         />
-        <ButtonCopy tex class="btn btn-soft h-12 flex-1 rounded-2xl" :text="codeResult?.text">{{
+        <ButtonCopy tex class="btn btn-soft h-12 flex-1" :text="codeResult?.text">{{
           t('export.formatLabels.code')
         }}</ButtonCopy>
       </div>

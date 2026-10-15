@@ -174,13 +174,13 @@ const copyBlob = computed(() =>
 
     <div class="flex gap-2">
       <ButtonSave
-        class="btn btn-primary h-12 flex-1 rounded-2xl"
+        class="btn btn-primary h-12 flex-1"
         :filedata="filedata"
         @export="emit('export', $event)"
       />
       <ButtonCopy
         v-if="format === 'svg' || canCopyImage"
-        class="btn btn-soft h-12 flex-1 rounded-2xl"
+        class="btn btn-soft h-12 flex-1"
         :text="copyText"
         :blob="copyBlob"
         >{{ format.toUpperCase() }}</ButtonCopy

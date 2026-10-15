@@ -22,6 +22,18 @@
     light --default,
     dark;
 }
+/* Softer than DaisyUI's 4px/8px defaults; merged into the built-in themes. */
+@plugin "daisyui/theme" {
+  name: 'light';
+  default: true;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+}
+@plugin "daisyui/theme" {
+  name: 'dark';
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+}
 
 /* Font roles: single source of truth for typefaces (self-hosted, imported in main.ts). */
 @theme {

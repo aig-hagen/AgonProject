@@ -290,7 +290,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
             <div
               v-for="entry in numericalDisplayData"
               :key="entry.id"
-              class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm min-w-18 max-w-full"
+              class="flex items-center justify-between gap-2 rounded-field px-3 py-1.5 border text-sm min-w-18 max-w-full"
               :style="{
                 backgroundColor: entry.bgColor,
                 borderColor: entry.borderColor,

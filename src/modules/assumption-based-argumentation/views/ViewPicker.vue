@@ -56,14 +56,14 @@ function select(key: AbaView) {
     >
       <div
         v-if="open"
-        class="absolute bottom-full left-0 mb-1.5 w-52 rounded-xl border border-base-300 bg-base-100 p-1 shadow-xl"
+        class="absolute bottom-full left-0 mb-1.5 w-52 rounded-box border border-base-300 bg-base-100 p-1 shadow-xl"
         role="radiogroup"
         :aria-label="t('editor.aba.views.ariaLabel')"
       >
         <template v-for="(option, index) in options" :key="option.key">
           <div v-if="index === 1" class="mx-2 my-0.5 h-px bg-base-300" />
           <button
-            class="grid w-full cursor-pointer grid-cols-[1rem_1fr_auto] items-center gap-x-2 rounded-lg px-2 py-1.5 text-left text-[0.8125rem] font-medium disabled:cursor-not-allowed disabled:opacity-45"
+            class="grid w-full cursor-pointer grid-cols-[1rem_1fr_auto] items-center gap-x-2 rounded-field px-2 py-1.5 text-left text-[0.8125rem] font-medium disabled:cursor-not-allowed disabled:opacity-45"
             :class="view === option.key ? 'bg-primary/10' : 'enabled:hover:bg-base-200'"
             role="radio"
             :aria-checked="view === option.key"

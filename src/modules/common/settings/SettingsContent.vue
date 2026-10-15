@@ -80,7 +80,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
       <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
         {{ t('settings.sections.language') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.language.label') }}</span>
           <select
@@ -102,7 +102,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
       <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
         {{ t('settings.sections.appearance') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.theme.label') }}</span>
           <SegmentedControl
@@ -137,7 +137,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
       <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
         {{ t('settings.sections.graphDefaults') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.physicsMode.label') }}</span>
           <SegmentedControl
@@ -192,7 +192,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
       <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
         {{ t('settings.sections.tutorials') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.showTutorials.label') }}</span>
           <SegmentedControl

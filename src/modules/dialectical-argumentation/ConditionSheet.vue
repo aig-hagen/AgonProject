@@ -158,7 +158,7 @@ const operatorKeys = computed(() => [
               ref="input"
               type="text"
               inputmode="none"
-              class="input h-12 w-full rounded-xl border-base-300 bg-base-100 font-(family-name:--font-graph)"
+              class="input h-12 w-full border-base-300 bg-base-100 font-(family-name:--font-graph)"
               :class="{ 'input-error pr-10': isInvalid }"
               v-model="inputText"
               @input="parseAndEmit"
@@ -173,7 +173,7 @@ const operatorKeys = computed(() => [
           </div>
           <button
             type="button"
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-base-300 bg-base-200 text-base-content transition-colors hover:bg-base-300"
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-field border-2 border-base-300 bg-base-200 text-base-content transition-colors hover:bg-base-300"
             :aria-label="t('editor.condition.backspace')"
             :title="t('editor.condition.backspace')"
             @click="deleteAtCursor"
@@ -194,7 +194,7 @@ const operatorKeys = computed(() => [
             v-for="key in operatorKeys"
             :key="key.label"
             type="button"
-            class="flex h-12 items-center justify-center rounded-xl border-2 border-base-300 bg-base-100 font-(family-name:--font-graph) text-lg text-base-content transition-colors hover:bg-base-200 active:bg-base-300"
+            class="flex h-12 items-center justify-center rounded-field border-2 border-base-300 bg-base-100 font-(family-name:--font-graph) text-lg text-base-content transition-colors hover:bg-base-200 active:bg-base-300"
             :title="key.title"
             :aria-label="key.title"
             @click="insertAtCursor(key.text, key.cursorOffset)"
@@ -214,7 +214,7 @@ const operatorKeys = computed(() => [
             v-for="arg in availableArguments"
             :key="arg.id"
             type="button"
-            class="btn btn-sm rounded-lg btn-soft btn-primary font-(family-name:--font-graph)"
+            class="btn btn-sm btn-soft btn-primary font-(family-name:--font-graph)"
             @click="insertAtCursor(arg.name)"
           >
             {{ arg.name }}

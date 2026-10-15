@@ -26,7 +26,6 @@ export default {
   },
   documents: {
     empty: 'Noch keine Argumentationsgraphen.',
-    openNow: 'Jetzt geöffnet',
     edited: 'Bearbeitet {time}',
     actionsFor: 'Aktionen für {name}',
     deleteAll: 'Alle löschen',

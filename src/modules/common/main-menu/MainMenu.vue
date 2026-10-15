@@ -33,8 +33,8 @@ import {
   FolderOpenIcon,
   PhotoIcon,
   QuestionMarkCircleIcon,
+  RectangleGroupIcon,
   ShareIcon,
-  SparklesIcon,
   Squares2X2Icon,
 } from '@heroicons/vue/24/outline'
 import { computed, inject } from 'vue'
@@ -158,7 +158,7 @@ function openImageExport() {
 <template>
   <div class="dropdown pointer-events-auto">
     <div tabindex="0" role="button" class="btn btn-square btn-sm" :title="t('menu.label')">
-      <Bars3Icon class="size-6 opacity-70" />
+      <Bars3Icon class="size-6" />
     </div>
     <ul tabindex="-1" class="dropdown-content w-max menu bg-base-100 rounded-box z-1 shadow-md/30">
       <li>
@@ -241,7 +241,7 @@ function openImageExport() {
           <div class="dropdown dropdown-hover dropdown-right">
             <a class="flex flex-row justify-between">
               <div>
-                <SparklesIcon class="inline size-5 menu-icon mr-2" />
+                <RectangleGroupIcon class="inline size-5 menu-icon mr-2" />
                 <span>{{ t('menu.relayout') }}</span>
               </div>
               <ChevronRightIcon class="size-5 opacity-40" />

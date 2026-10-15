@@ -203,7 +203,7 @@ function loadFile() {
         :aria-label="t('settings.title')"
         @click="settingsOpen = true"
       >
-        <Cog6ToothIcon class="size-5 opacity-70" />
+        <Cog6ToothIcon class="size-5" />
       </button>
       <button
         v-if="selectedDocumentId !== undefined && documentState !== undefined"
@@ -214,7 +214,7 @@ function loadFile() {
       >
         <XMarkIcon class="size-5 opacity-70" />
       </button>
-      <span class="grid place-items-center size-13 rounded-2xl bg-base-200 text-primary mb-2.5">
+      <span class="grid place-items-center size-13 rounded-box bg-base-200 text-primary mb-2.5">
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -235,16 +235,16 @@ function loadFile() {
 
     <!-- Documents | New segmented control (both non-editor surfaces). -->
     <div v-if="surface !== 'editor'" class="flex-none px-4 pt-1 pb-1">
-      <div class="grid grid-cols-2 p-1 rounded-xl bg-base-200">
+      <div class="grid grid-cols-2 p-1 rounded-field bg-base-200">
         <button
-          class="h-9 rounded-lg text-sm font-semibold transition-colors"
+          class="h-9 rounded-field text-sm font-semibold transition-colors"
           :class="surface === 'documents' ? 'bg-base-100 shadow-sm' : 'opacity-60'"
           @click="goTo('documents')"
         >
           {{ t('home.surfaces.frameworks') }}
         </button>
         <button
-          class="h-9 rounded-lg text-sm font-semibold transition-colors"
+          class="h-9 rounded-field text-sm font-semibold transition-colors"
           :class="surface === 'new' ? 'bg-base-100 shadow-sm' : 'opacity-60'"
           @click="goTo('new')"
         >
@@ -258,7 +258,7 @@ function loadFile() {
       <div v-show="surface === 'documents'" class="absolute inset-0 overflow-y-auto px-3 pb-3 pt-1">
         <div
           v-if="confirmDeleteAll"
-          class="flex items-center gap-2 rounded-xl border border-error px-3 py-2 my-2"
+          class="flex items-center gap-2 rounded-box border border-error px-3 py-2 my-2"
         >
           <span class="flex-1 text-sm">{{ t('home.documents.confirmDeleteAll') }}</span>
           <button class="btn btn-ghost btn-sm" @click="confirmDeleteAll = false">
@@ -278,7 +278,7 @@ function loadFile() {
             <!-- Rename mode -->
             <div
               v-if="renamingId === document.id"
-              class="flex items-center gap-2 rounded-xl border border-primary px-3 py-2 my-1"
+              class="flex items-center gap-2 rounded-box border border-primary px-3 py-2 my-1"
             >
               <input
                 v-model="renameText"
@@ -297,7 +297,7 @@ function loadFile() {
             <!-- Default row -->
             <div
               v-else
-              class="flex items-center gap-3 rounded-xl px-2.5 py-2.5"
+              class="flex items-center gap-3 rounded-box px-2.5 py-2.5"
               :class="
                 document.id === selectedDocumentId
                   ? 'bg-primary/10 border border-primary/30'
@@ -309,12 +309,7 @@ function loadFile() {
                 @click="openDocument(document.id)"
               >
                 <span
-                  class="grid place-items-center size-11 shrink-0 rounded-xl text-xs font-bold"
-                  :class="
-                    document.id === selectedDocumentId
-                      ? 'bg-primary text-primary-content'
-                      : 'bg-base-200 text-primary'
-                  "
+                  class="grid place-items-center size-11 shrink-0 rounded-field bg-base-200 text-primary text-xs font-bold"
                 >
                   <template v-if="document.type">{{ document.type }}</template>
                   <DocumentTextIcon v-else class="size-6" />
@@ -324,21 +319,12 @@ function loadFile() {
                     document.name || t('home.untitled')
                   }}</span>
                   <span
-                    v-if="document.id === selectedDocumentId"
-                    class="text-xs text-base-content/60"
-                    >{{ t('home.documents.openNow') }}</span
-                  >
-                  <span
-                    v-else-if="document.lastEdited !== undefined"
+                    v-if="document.lastEdited !== undefined"
                     class="text-xs text-base-content/60"
                     >{{ formatEdited(document.lastEdited) }}</span
                   >
                 </span>
               </button>
-              <span
-                v-if="document.id === selectedDocumentId"
-                class="size-2 shrink-0 rounded-full bg-success"
-              />
               <button
                 class="btn btn-square btn-ghost size-11"
                 :aria-label="
@@ -424,7 +410,7 @@ function loadFile() {
       class="flex-none px-4 pt-2.5 border-t border-base-200"
       style="padding-bottom: max(env(safe-area-inset-bottom), 0.75rem)"
     >
-      <button class="btn btn-primary w-full h-13 rounded-2xl gap-2 text-base" @click="goTo('new')">
+      <button class="btn btn-primary w-full h-13 gap-2 text-base" @click="goTo('new')">
         <PlusIcon class="size-5" /> {{ t('menu.newFramework') }}
       </button>
     </footer>

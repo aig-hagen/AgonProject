@@ -79,7 +79,7 @@ const router = useRouter()
     <!-- Search -->
     <div class="flex-none px-4 pt-3 pb-1">
       <label
-        class="flex items-center gap-2 h-11 px-3.5 rounded-xl border border-base-300 bg-base-200"
+        class="flex items-center gap-2 h-11 px-3.5 rounded-field border border-base-300 bg-base-200"
       >
         <MagnifyingGlassIcon class="size-5 text-base-content/40 shrink-0" />
         <input
@@ -102,7 +102,7 @@ const router = useRouter()
       >
         {{ t('glossary.noResults') }}
       </p>
-      <article v-if="pinnedTerm" class="rounded-2xl border border-primary/40 bg-primary/5 p-3.5">
+      <article v-if="pinnedTerm" class="rounded-box border border-primary/40 bg-primary/5 p-3.5">
         <div class="flex items-start gap-2.5">
           <div class="flex-1 min-w-0">
             <h3 class="flex items-center gap-1.5 text-[15px] font-semibold leading-snug">
@@ -142,7 +142,7 @@ const router = useRouter()
         <article
           v-for="[key, def] in group.terms"
           :key="key"
-          class="rounded-2xl border border-base-300 p-3.5"
+          class="rounded-box border border-base-300 p-3.5"
         >
           <div class="flex items-start gap-2.5">
             <div class="flex-1 min-w-0">

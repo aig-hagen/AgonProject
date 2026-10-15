@@ -51,8 +51,8 @@ import {
   PlayIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
+  RectangleGroupIcon,
   ShareIcon,
-  SparklesIcon,
   Squares2X2Icon,
   TrashIcon,
 } from '@heroicons/vue/24/outline'
@@ -2058,7 +2058,7 @@ defineExpose({
     </div>
     <DefineLegend>
       <ul
-        class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
+        class="flex flex-col gap-1 rounded-box border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
       >
         <li v-for="entry in highlight?.legend" :key="entry.label" class="flex items-center gap-2">
           <span
@@ -2133,7 +2133,7 @@ defineExpose({
               @click="emit('open-extension-window')"
               :title="t('editor.toolbar.extensionSemantics')"
             >
-              <SigmaIcon class="size-6 opacity-70" />
+              <SigmaIcon class="size-6" />
             </button>
             <button
               v-if="hasRankingSlot"
@@ -2141,7 +2141,7 @@ defineExpose({
               @click="emit('open-ranking-window')"
               :title="t('editor.toolbar.rankingSemantics')"
             >
-              <SucceqIcon class="size-6 opacity-70" />
+              <SucceqIcon class="size-6" />
             </button>
             <button
               v-if="hasSerialisationSlot"
@@ -2149,7 +2149,7 @@ defineExpose({
               @click="emit('open-serialisation-window')"
               :title="t('editor.toolbar.serialisationSequences')"
             >
-              <SerialisationIcon class="size-6 opacity-70" />
+              <SerialisationIcon class="size-6" />
             </button>
           </div>
           <button
@@ -2159,7 +2159,7 @@ defineExpose({
             @click="isExportOpened = !isExportOpened"
             :title="t('menu.latexStudio')"
           >
-            <TexIcon class="size-6 opacity-70" />
+            <TexIcon class="size-6" />
           </button>
         </div>
       </div>
@@ -2180,17 +2180,17 @@ defineExpose({
     <template v-if="layoutMode === 'compact'">
       <header
         ref="mobileTopBar"
-        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 h-14 bg-base-200/95 backdrop-blur border-b border-base-300"
+        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 h-14 bg-base-200 border-b border-base-300"
         style="padding-top: env(safe-area-inset-top)"
       >
         <!-- Switcher chip: back to home / document picker -->
         <button
-          class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
+          class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-field bg-base-100 border border-base-300 shadow-sm"
           :aria-label="t('editor.toolbar.backToFrameworks')"
           @click="openDocumentSwitcher"
         >
           <span
-            class="grid place-items-center size-7 shrink-0 rounded-lg bg-primary/25 text-primary"
+            class="grid place-items-center size-7 shrink-0 rounded-field bg-primary/25 text-primary"
           >
             <svg
               viewBox="0 0 24 24"
@@ -2223,41 +2223,41 @@ defineExpose({
           :aria-label="t('menu.label')"
           @click="isMenuOpen = true"
         >
-          <Bars3Icon class="size-6 opacity-70" />
+          <Bars3Icon class="size-6" />
         </button>
       </header>
 
       <!-- Fixed 5-button command bar: distribute every action across the available width. -->
       <nav
         ref="mobileBottomBar"
-        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
+        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200 border-t border-base-300"
         style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
       >
         <div class="contents">
           <button
             ref="mobileFitToViewButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :aria-label="t('editor.toolbar.fitToView')"
             :title="t('editor.toolbar.fitToView')"
             @click="(tutorialCenterCount++, fitToView())"
           >
-            <ArrowsPointingInIcon class="size-6 opacity-70" />
+            <ArrowsPointingInIcon class="size-6" />
           </button>
           <button
             ref="mobileRelayoutButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :aria-label="t('menu.relayout')"
             :title="t('menu.relayout')"
             @click="isRelayoutOpen = true"
           >
-            <SparklesIcon class="size-6 opacity-70" />
+            <RectangleGroupIcon class="size-6" />
           </button>
         </div>
 
         <button
           v-if="showEvaluation"
           ref="mobileEvaluateButton"
-          class="btn btn-primary h-13 min-w-0 shrink rounded-2xl px-4 gap-2 text-base font-semibold shadow-md shadow-primary/30"
+          class="btn btn-primary h-13 min-w-0 shrink px-4 gap-2 text-base font-semibold"
           @click="evaluationOpen = true"
         >
           <PlayIcon class="size-6 shrink-0" />
@@ -2267,23 +2267,23 @@ defineExpose({
         <div class="contents">
           <button
             ref="mobileExportButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :disabled="!hasExportSlot"
             :aria-label="t('menu.export')"
             :title="t('menu.export')"
             @click="isExportOpened = true"
           >
-            <ShareIcon class="size-6 opacity-70" />
+            <ShareIcon class="size-6" />
           </button>
           <button
             ref="mobileUndoButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :disabled="!historyState.canUndo"
             :aria-label="t('menu.undo')"
             :title="t('menu.undo')"
             @click="emit('undo')"
           >
-            <ArrowUturnLeftIcon class="size-6 opacity-70" />
+            <ArrowUturnLeftIcon class="size-6" />
           </button>
         </div>
       </nav>
@@ -2394,11 +2394,11 @@ defineExpose({
               <button
                 v-for="option in group.options"
                 :key="option.layout"
-                class="flex items-center gap-3 h-14 px-3.5 rounded-xl border border-base-300 bg-base-100 text-sm font-medium text-left"
+                class="flex items-center gap-3 h-14 px-3.5 rounded-field border border-base-300 bg-base-100 text-sm font-medium text-left"
                 @click="relayoutTo(option.layout)"
               >
                 <span
-                  class="grid place-items-center size-8 shrink-0 rounded-lg bg-base-200 menu-icon"
+                  class="grid place-items-center size-8 shrink-0 rounded-field bg-base-200 menu-icon"
                 >
                   <component :is="option.icon" class="size-5" />
                 </span>

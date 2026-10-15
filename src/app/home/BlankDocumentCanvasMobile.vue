@@ -67,7 +67,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
     <div
       v-for="(moduleCard, index) in moduleCards"
       :key="index"
-      class="rounded-2xl border bg-base-100 transition-colors"
+      class="rounded-box border bg-base-100 transition-colors"
       :class="
         expanded === index && !moduleCard.underConstruction
           ? 'border-primary/30 shadow-sm'
@@ -82,7 +82,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
         @click="toggle(index)"
       >
         <span
-          class="grid place-items-center size-11 shrink-0 rounded-xl text-xs font-bold"
+          class="grid place-items-center size-11 shrink-0 rounded-field text-xs font-bold"
           :class="
             expanded === index && !moduleCard.underConstruction
               ? 'bg-primary text-primary-content'
@@ -137,7 +137,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
 
         <div class="flex gap-2.5">
           <button
-            class="btn btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+            class="btn btn-primary h-12 flex-1 gap-1.5"
             @click="openContent(moduleCard.initialCotent, moduleCard.newNamePrefix)"
           >
             <PlusIcon class="size-5" /> {{ t('home.picker.createNew') }}
@@ -149,7 +149,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
                 ? moduleCard.generateHref + '&source=' + sourceDocumentId
                 : moduleCard.generateHref
             "
-            class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+            class="btn btn-outline btn-primary h-12 flex-1 gap-1.5"
           >
             <Squares2X2Icon class="size-5" /> {{ t('home.picker.generate') }}
           </RouterLink>

@@ -116,14 +116,14 @@ function openContent(content: DocumentT, modulePrefix: string) {
                           :data-tip="example.description"
                         >
                           <a
-                            class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
+                            class="block px-2 py-1 rounded-field text-sm hover:bg-base-300 cursor-pointer"
                             @click="openExample(example, moduleCard.newNamePrefix)"
                             >{{ example.name }}</a
                           >
                         </span>
                         <a
                           v-else
-                          class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
+                          class="block px-2 py-1 rounded-field text-sm hover:bg-base-300 cursor-pointer"
                           @click="openExample(example, moduleCard.newNamePrefix)"
                           >{{ example.name }}</a
                         >

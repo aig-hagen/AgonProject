@@ -59,7 +59,7 @@ const definition = computed(() => registry[id])
         rel="noopener noreferrer"
         :class="
           isCompact
-            ? 'grid place-items-center size-5 rounded-md bg-primary/10 text-primary hover:bg-primary/20'
+            ? 'grid place-items-center size-5 rounded-field bg-primary/10 text-primary hover:bg-primary/20'
             : 'text-base-content/40 hover:text-base-content/70'
         "
       >

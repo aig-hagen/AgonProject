@@ -63,7 +63,7 @@ const router = useRouter()
       <details
         v-for="attribution of ctanAttributions"
         :key="getAttributionId(attribution)"
-        class="rounded-2xl border border-base-300 px-3.5 py-3"
+        class="rounded-box border border-base-300 px-3.5 py-3"
       >
         <summary class="text-sm font-semibold cursor-pointer marker:text-base-content/40">
           <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
@@ -107,7 +107,7 @@ const router = useRouter()
           </p>
           <pre
             v-if="attribution.licenseText"
-            class="text-[11px] whitespace-pre-wrap rounded-lg bg-base-200 p-2.5 overflow-x-auto"
+            class="text-[11px] whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
             >{{ attribution.licenseText }}</pre
           >
           <p v-else class="text-xs text-base-content/50">
@@ -123,7 +123,7 @@ const router = useRouter()
       <details
         v-for="attribution of attributions"
         :key="getAttributionId(attribution)"
-        class="rounded-2xl border border-base-300 px-3.5 py-3"
+        class="rounded-box border border-base-300 px-3.5 py-3"
       >
         <summary class="text-sm font-semibold cursor-pointer marker:text-base-content/40">
           <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
@@ -167,7 +167,7 @@ const router = useRouter()
           </p>
           <pre
             v-if="attribution.licenseText"
-            class="text-[11px] whitespace-pre-wrap rounded-lg bg-base-200 p-2.5 overflow-x-auto"
+            class="text-[11px] whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
             >{{ attribution.licenseText }}</pre
           >
           <p v-else class="text-xs text-base-content/50">

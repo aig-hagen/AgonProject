@@ -317,7 +317,7 @@ watch(
       <button
         ref="trigger"
         type="button"
-        class="flex-1 min-w-0 flex items-center gap-2 h-10 px-3 rounded-xl border text-left transition-colors"
+        class="flex-1 min-w-0 flex items-center gap-2 h-10 px-3 rounded-field border text-left transition-colors"
         :class="listOpen ? 'border-primary bg-primary/5' : 'border-base-300 bg-inset'"
         :aria-expanded="listOpen"
         @click="togglePanel"
@@ -365,14 +365,14 @@ watch(
               v-for="kind in addKinds"
               :key="kind"
               type="button"
-              class="btn btn-outline btn-primary h-12 w-56 justify-start gap-3 rounded-2xl px-4"
+              class="btn btn-outline btn-primary h-12 w-56 justify-start gap-3 px-4"
               @click="chooseKind(kind)"
             >
               <KindIcon :kind="kind" class="size-5 shrink-0" />
               <span class="flex-1 text-left">{{ kindLabel[kind] }}</span>
             </button>
           </template>
-          <button v-else class="btn btn-primary h-12 gap-2 rounded-2xl px-5" @click="onAddClick">
+          <button v-else class="btn btn-primary h-12 gap-2 px-5" @click="onAddClick">
             <PlusIcon class="size-5" /> {{ t('evaluation.addEvaluation') }}
           </button>
         </div>
@@ -393,7 +393,7 @@ watch(
         <div
           ref="panel"
           :style="[floatingStyles, { zIndex: 61 }]"
-          class="w-[min(20rem,calc(100vw-1.5rem))] max-h-[70dvh] overflow-y-auto rounded-2xl border border-base-300 bg-base-100 shadow-xl"
+          class="w-[min(20rem,calc(100vw-1.5rem))] max-h-[70dvh] overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-xl"
           role="menu"
         >
           <template v-if="panelMode === 'list'">

@@ -130,7 +130,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
             <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
             <input
               type="text"
-              class="input w-full h-12 rounded-xl bg-base-100 border-base-300 font-mono"
+              class="input w-full h-12 bg-base-100 border-base-300 font-mono"
               :placeholder="p.description"
               :value="String(paramValues[p.name] ?? '')"
               @input="paramValues[p.name] = ($event.target as HTMLInputElement).value"
@@ -142,7 +142,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
               <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
               <input
                 type="number"
-                class="input input-sm w-20 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                class="input input-sm w-20 text-right bg-base-100 border-base-300 font-mono"
                 :min="p.min"
                 :max="p.max"
                 :step="p.step ?? (p.type === 'int' ? 1 : 0.01)"
@@ -166,7 +166,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
               <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
               <input
                 type="number"
-                class="input input-sm w-24 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                class="input input-sm w-24 text-right bg-base-100 border-base-300 font-mono"
                 :step="p.step ?? (p.type === 'int' ? '1' : 'any')"
                 :value="paramValues[p.name] as number"
                 @input="paramValues[p.name] = numberFromEvent($event, p.type)"
@@ -187,7 +187,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
                 <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
                 <input
                   type="number"
-                  class="input input-sm w-20 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                  class="input input-sm w-20 text-right bg-base-100 border-base-300 font-mono"
                   :min="p.min"
                   :max="p.max"
                   :step="p.step ?? (p.type === 'int' ? 1 : 0.01)"
@@ -211,7 +211,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
                 <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
                 <input
                   type="number"
-                  class="input input-sm w-24 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                  class="input input-sm w-24 text-right bg-base-100 border-base-300 font-mono"
                   :step="p.step ?? (p.type === 'int' ? '1' : 'any')"
                   :value="typeParamValues[p.name] as number"
                   @input="typeParamValues[p.name] = numberFromEvent($event, p.type)"
@@ -229,7 +229,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
             <input
               v-if="seedEnabled"
               type="number"
-              class="input input-sm w-24 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+              class="input input-sm w-24 text-right bg-base-100 border-base-300 font-mono"
               step="1"
               v-model.number="seedValue"
             />
@@ -244,7 +244,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
       </div>
 
       <!-- Result -->
-      <div v-if="stats !== null" class="rounded-2xl border border-primary/25 bg-primary/5 p-4">
+      <div v-if="stats !== null" class="rounded-box border border-primary/25 bg-primary/5 p-4">
         <div class="text-xs font-semibold text-primary/80 tracking-wide mb-2 uppercase">
           {{ t('generate.lastGenerated') }}
         </div>
@@ -315,7 +315,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
         </p>
         <div class="flex flex-col gap-2 mt-3">
           <button
-            class="btn btn-primary h-12 w-full rounded-2xl"
+            class="btn btn-primary h-12 w-full"
             :disabled="tooManyEdgesForEditor"
             @click="openInEditor"
           >
@@ -324,15 +324,12 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
           <div v-if="frameworkTypeId !== 'adf' && frameworkTypeId !== 'setaf'" class="flex gap-2">
             <button
               v-if="frameworkTypeId === 'abstract'"
-              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5"
               @click="downloadICCMA"
             >
               <ArrowDownTrayIcon class="size-5" /> {{ t('generate.downloadIccma') }}
             </button>
-            <button
-              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
-              @click="downloadTGF"
-            >
+            <button class="btn btn-outline btn-primary h-12 flex-1 gap-1.5" @click="downloadTGF">
               <ArrowDownTrayIcon class="size-5" /> {{ t('generate.downloadTgf') }}
             </button>
           </div>
@@ -346,7 +343,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
       <button
-        class="btn btn-primary w-full h-13 rounded-2xl text-base"
+        class="btn btn-primary w-full h-13 text-base"
         :disabled="isLoading || algorithms.length === 0"
         @click="generate"
       >
