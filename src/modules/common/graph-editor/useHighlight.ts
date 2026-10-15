@@ -29,6 +29,7 @@ import {
 } from '@/modules/common/graph-editor/graphEditorUtils'
 import type { GraphStyle } from '@/modules/common/graph-editor/graphStyle'
 import type { IdMapping } from '@/modules/common/ids'
+import type { GraphColorScheme } from '@/modules/common/theme/palette'
 
 interface HighlightCapable {
   setColor(color: string, ids: number | number[]): void
@@ -44,6 +45,7 @@ export function useHighlight({
   stateRef,
   effectiveStyle,
   colorTheme,
+  colorScheme,
   getNodeOutline = () => undefined,
   isUncolored = () => false,
 }: {
@@ -54,6 +56,7 @@ export function useHighlight({
   stateRef: Ref<GraphEditorState> | ComputedRef<GraphEditorState>
   effectiveStyle: Ref<GraphStyle> | ComputedRef<GraphStyle>
   colorTheme: Ref<ColorTheme> | ComputedRef<ColorTheme>
+  colorScheme: Readonly<Ref<GraphColorScheme>>
   // The module's own outline for a node, restored once a highlight outline is lifted.
   getNodeOutline?: (id: NodeId) => NodeOutline | undefined
   // Nodes that keep their own color, e.g. plain label-only nodes.
@@ -90,7 +93,7 @@ export function useHighlight({
     // background so white-on-pastel highlights stay readable in dark mode.
     const graphEl = graphComponent.$el
     const applyColors = (color: string, ids: number[]) => {
-      const resolved = resolveCssColor(color, colorTheme.value)
+      const resolved = resolveCssColor(color, colorTheme.value, colorScheme.value)
       graphComponent.setColor(resolved, ids)
       const labelColor = getContrastingLabelColor(resolved)
       for (const id of ids) setNodeLabelColor(graphEl, graphComponentId, id, labelColor)

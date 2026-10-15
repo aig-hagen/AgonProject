@@ -135,6 +135,13 @@ export const DARK_PALETTE: AppPalette = {
 
 export const APP_PALETTE = { light: LIGHT_PALETTE, dark: DARK_PALETTE } as const
 
+// Text inks for highlighted graph nodes. Highlights look the same in both modes, so the inks do
+// too: the light-mode text color and page white.
+export const GRAPH_LABEL_INKS = {
+  dark: LIGHT_PALETTE['base-content'],
+  light: LIGHT_PALETTE['base-100'],
+} as const
+
 /** Graph style presets; ids match the graph style setting. */
 export type GraphPresetId = 'default' | 'high-contrast' | 'minimal' | 'library' | 'outline'
 type GraphPresetRole = 'node' | 'stroke' | 'link' | 'label'
@@ -211,6 +218,17 @@ export const DARK_GRAPH_PALETTE: GraphPalette = {
 
 export const GRAPH_PALETTE = { light: LIGHT_GRAPH_PALETTE, dark: DARK_GRAPH_PALETTE } as const
 
+/** Evaluation color schemes; `color-blind` is switched on via `data-graph-colors` on the root. */
+export type GraphColorScheme = 'default' | 'color-blind'
+type HighlightToken = 'graph-accepted' | 'graph-derived' | 'graph-rejected'
+
+// Blue vs. red/orange stays apart for red-green and blue-yellow color blindness alike, and
+// against every preset's node color.
+export const COLOR_BLIND_HIGHLIGHTS: Record<'light' | 'dark', Record<HighlightToken, string>> = {
+  light: { 'graph-accepted': '#4b56da', 'graph-derived': '#f5c270', 'graph-rejected': '#841214' },
+  dark: { 'graph-accepted': '#28a4e6', 'graph-derived': '#e8d3fa', 'graph-rejected': '#ba5c13' },
+}
+
 // Tokens that map onto DaisyUI variables (everything except `selection`).
 const DAISYUI_TOKENS = (Object.keys(LIGHT_PALETTE) as AppColorToken[]).filter(
   (token) => token !== 'selection',
@@ -229,6 +247,10 @@ export function buildPaletteCss(): string {
   return [
     `[data-theme='light'] {\n${paletteRules(LIGHT_PALETTE, LIGHT_GRAPH_PALETTE)}\n}`,
     `[data-theme='dark'] {\n${paletteRules(DARK_PALETTE, DARK_GRAPH_PALETTE)}\n}`,
+    ...(['light', 'dark'] as const).map((mode) => {
+      const rules = Object.entries(COLOR_BLIND_HIGHLIGHTS[mode]).map(([k, v]) => `  --${k}: ${v};`)
+      return `[data-theme='${mode}'][data-graph-colors='color-blind'] {\n${rules.join('\n')}\n}`
+    }),
     `::selection {\n  background-color: var(--color-selection);\n}`,
   ].join('\n\n')
 }

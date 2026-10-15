@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { contrastRatio, parseRgb } from '@/modules/common/theme/colorMath'
+import { GRAPH_LABEL_INKS, type GraphColorScheme } from '@/modules/common/theme/palette'
 
 export function computeLabelFontSize(label: string): string {
   const len = label.length
@@ -64,17 +66,23 @@ const resolvedColors = new Map<string, string>()
 
 /**
  * Resolve a CSS color that may reference palette tokens (`var(...)` / `color-mix(...)`) to a
- * hex/rgba color the graph library can parse. The probe carries its own `data-theme`, so the
- * result doesn't depend on when the document's theme attribute flips. Plain colors pass through.
+ * hex/rgba color the graph library can parse. The probe carries its own `data-theme` and
+ * `data-graph-colors`, so the result doesn't depend on when the document's attributes flip.
+ * Plain colors pass through.
  */
-export function resolveCssColor(value: string, theme: ColorTheme): string {
+export function resolveCssColor(
+  value: string,
+  theme: ColorTheme,
+  scheme: GraphColorScheme = 'default',
+): string {
   if (typeof document === 'undefined') return value
   if (!value.includes('var(') && !value.includes('color-mix')) return value
-  const key = `${theme}|${value}`
+  const key = `${theme}|${scheme}|${value}`
   const cached = resolvedColors.get(key)
   if (cached !== undefined) return cached
   const probe = document.createElement('span')
   probe.dataset.theme = theme
+  probe.dataset.graphColors = scheme
   probe.style.color = value
   probe.style.position = 'absolute'
   probe.style.pointerEvents = 'none'
@@ -104,38 +112,13 @@ function normalizeColor(color: string): string {
   return `rgba(${r}, ${g}, ${b}, ${+(a / 255).toFixed(3)})`
 }
 
-/** Parse `#rgb`, `#rrggbb` or `rgb()/rgba()` into 0–1 sRGB channels. */
-function parseRgb(color: string): [number, number, number] | null {
-  const value = color.trim()
-  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(value)?.[1]
-  if (hex) {
-    const full = hex.length === 3 ? [...hex].map((c) => c + c).join('') : hex
-    return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255) as [
-      number,
-      number,
-      number,
-    ]
-  }
-  const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i.exec(value)
-  if (rgb) return [rgb[1], rgb[2], rgb[3]].map((c) => Number(c) / 255) as [number, number, number]
-  return null
-}
-
-function relativeLuminance([r, g, b]: [number, number, number]): number {
-  const lin = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
-  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
-}
-
-const LABEL_DARK = '#1a1a1a'
-const LABEL_LIGHT = '#ffffff'
-
-/** Near-black or white, whichever contrasts more with `background` (hex or rgb). */
+/** The palette's dark or light label ink, whichever contrasts more with `background` (hex or rgb). */
 export function getContrastingLabelColor(background: string): string {
-  const rgb = parseRgb(background)
-  if (!rgb) return ''
-  const bg = relativeLuminance(rgb)
-  const dark = relativeLuminance(parseRgb(LABEL_DARK)!)
-  return (bg + 0.05) / (dark + 0.05) >= 1.05 / (bg + 0.05) ? LABEL_DARK : LABEL_LIGHT
+  const bg = parseRgb(background)
+  if (!bg) return ''
+  const dark = contrastRatio(bg, parseRgb(GRAPH_LABEL_INKS.dark)!)
+  const light = contrastRatio(bg, parseRgb(GRAPH_LABEL_INKS.light)!)
+  return dark >= light ? GRAPH_LABEL_INKS.dark : GRAPH_LABEL_INKS.light
 }
 
 export function adjustNodeLabelFontSize(

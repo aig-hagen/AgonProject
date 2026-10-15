@@ -217,5 +217,5 @@ export interface Highlight {
   // `outline` overrides the node border while highlighted (e.g. dotted for derived).
   groups: ReadonlyArray<{ nodes: ReadonlySet<NodeId>; color: string; outline?: NodeOutline }>
   // Entries without a color use the default node color.
-  legend?: ReadonlyArray<{ label: string; color?: string }>
+  legend?: ReadonlyArray<{ label: string; color?: string; outline?: NodeOutline }>
 }

@@ -73,6 +73,18 @@ describe('labelsToHighlight', () => {
     expect(h.legend?.map((l) => l.label)).toEqual(['accepted', 'derived', 'rejected', 'undecided'])
   })
 
+  test('derived nodes and their legend entry are dotted', () => {
+    const labels = new Map<number, NodeLabel>([
+      [1, 'in'],
+      [2, 'derived'],
+      [3, 'out'],
+    ])
+    const h = labelsToHighlight(generateUUID(), labels, t)
+    const expected = [undefined, NodeOutline.DOTTED, undefined]
+    expect(h.groups.map((g) => g.outline)).toEqual(expected)
+    expect(h.legend?.map((l) => l.outline)).toEqual(expected)
+  })
+
   test('legend lists undecided only when asked or present', () => {
     const labels = new Map<number, NodeLabel>([[1, 'in']])
     const legend = (undecided: boolean) =>

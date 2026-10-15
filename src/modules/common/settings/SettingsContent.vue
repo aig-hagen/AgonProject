@@ -42,6 +42,7 @@ const {
   snapMode,
   showHints,
   mergeReciprocalLinks,
+  colorBlindColors,
 } = useSettings()
 const { resetAllTutorials } = useTutorial()
 
@@ -120,6 +121,14 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
             <option value="library">{{ t('settings.graphStyle.library') }}</option>
             <option value="outline">{{ t('settings.graphStyle.outline') }}</option>
           </select>
+        </div>
+        <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
+          <span class="text-sm">{{ t('settings.colorBlindColors.label') }}</span>
+          <SegmentedControl
+            v-model="colorBlindColors"
+            :options="booleanOptions"
+            :aria-label="t('settings.colorBlindColors.label')"
+          />
         </div>
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.mergeReciprocalLinks.label') }}</span>

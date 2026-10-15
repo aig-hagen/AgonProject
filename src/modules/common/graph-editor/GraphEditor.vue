@@ -462,6 +462,7 @@ const {
   snapMode,
   showHints,
   mergeReciprocalLinks,
+  graphColorScheme,
 } = useSettings()
 function pickStyle(): GraphStyle {
   // A stale stored setting falls back to the default preset.
@@ -469,7 +470,8 @@ function pickStyle(): GraphStyle {
 }
 
 const colorTheme = computed<ColorTheme>(() => (isDark.value ? 'dark' : 'light'))
-const resolveColor = (value: string) => resolveCssColor(value, colorTheme.value)
+const resolveColor = (value: string) =>
+  resolveCssColor(value, colorTheme.value, graphColorScheme.value)
 
 const effectiveStyle = computed<GraphStyle>(() => {
   const base = pickStyle()
@@ -479,6 +481,10 @@ const effectiveStyle = computed<GraphStyle>(() => {
     linkColor: resolveColor(base.linkColor),
   }
 })
+
+function legendBorder(outline: NodeOutline | undefined) {
+  return outline ? { borderStyle: outline.toLowerCase(), borderWidth: '2px' } : {}
+}
 
 function linkTypeColor(type: LinkType): string {
   const color = linkConfigs[type]?.color
@@ -827,6 +833,7 @@ useHighlight({
   stateRef,
   effectiveStyle,
   colorTheme,
+  colorScheme: graphColorScheme,
   getNodeOutline: (id) => nodeOutlines?.get(id),
   isUncolored: (id) => nodeShapes?.get(id) === 'plain',
 })
@@ -2034,7 +2041,10 @@ defineExpose({
         <li v-for="entry in highlight?.legend" :key="entry.label" class="flex items-center gap-2">
           <span
             class="size-3 rounded-full border border-base-content/30"
-            :style="{ backgroundColor: entry.color ?? 'var(--graph-node-color)' }"
+            :style="{
+              backgroundColor: entry.color ?? 'var(--graph-node-color)',
+              ...legendBorder(entry.outline),
+            }"
           ></span>
           {{ entry.label }}
         </li>

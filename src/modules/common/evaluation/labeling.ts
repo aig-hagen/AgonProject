@@ -64,6 +64,11 @@ const LABEL_STYLE: Record<NodeLabel, { legendKey: string; color?: string; outlin
     undec: { legendKey: 'evaluation.legend.undecided' },
   }
 
+function outlineOf(label: NodeLabel): { outline?: NodeOutline } {
+  const outline = LABEL_STYLE[label].outline
+  return outline ? { outline } : {}
+}
+
 // The legend always lists accepted/rejected; `undecided` when the caller says the rest of the
 // graph is undecided (an enumerated extension) rather than just unmentioned.
 export function labelsToHighlight(
@@ -76,10 +81,10 @@ export function labelsToHighlight(
   if (undecided) present.add('undec')
   const groups = []
   for (const label of LABEL_ORDER) {
-    const { color, outline } = LABEL_STYLE[label]
+    const color = LABEL_STYLE[label].color
     if (color === undefined) continue
     const nodes = new Set([...labels].filter(([, l]) => l === label).map(([id]) => id))
-    if (nodes.size > 0) groups.push({ nodes, color, ...(outline && { outline }) })
+    if (nodes.size > 0) groups.push({ nodes, color, ...outlineOf(label) })
   }
   return {
     stateId,
@@ -87,6 +92,7 @@ export function labelsToHighlight(
     legend: LABEL_ORDER.filter((l) => present.has(l)).map((l) => ({
       label: t(LABEL_STYLE[l].legendKey),
       color: LABEL_STYLE[l].color,
+      ...outlineOf(l),
     })),
   }
 }
