@@ -48,7 +48,7 @@ const shownLinks = computed(() => (legalOnly ? links.value.filter((l) => l.legal
       <a
         v-for="link in shownLinks"
         :key="link.label"
-        class="group inline-flex items-center gap-1.5 text-sm text-base-content/60 hover:text-base-content transition-colors"
+        class="group inline-flex items-center gap-1.5 text-sm text-base-content/65 hover:text-base-content transition-colors"
         target="_blank"
         rel="noopener"
         :href="link.href"

@@ -60,7 +60,7 @@ function onMouseLeave() {
   <div class="shrink-0" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <button
       ref="buttonEl"
-      class="btn btn-ghost btn-xs btn-circle text-base-content/40 hover:text-base-content/70"
+      class="btn btn-ghost btn-xs btn-circle text-base-content/65 hover:text-base-content"
     >
       <BookOpenIcon class="w-4 h-4" />
     </button>

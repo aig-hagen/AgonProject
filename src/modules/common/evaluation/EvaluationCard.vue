@@ -107,7 +107,7 @@ onUnmounted(() => {
     >
       <AdjustmentsHorizontalIcon class="size-4 shrink-0 opacity-70" />
       <span class="flex-1 min-w-0 truncate font-medium">{{ title }}</span>
-      <span class="text-[0.65rem] opacity-60">{{
+      <span class="text-micro text-base-content/65">{{
         paramsOpen ? t('evaluation.status.hideParams') : t('evaluation.status.editParams')
       }}</span>
     </button>
@@ -141,7 +141,7 @@ onUnmounted(() => {
 
     <slot v-if="!isPending || isLoading" name="results" />
 
-    <p v-if="isLoading" class="text-base-content/50">
+    <p v-if="isLoading" class="text-base-content/65">
       {{ t('evaluation.status.evaluatingCountdown', { seconds: remainingSeconds }) }}
     </p>
   </div>

@@ -31,7 +31,7 @@ const termId = computed(() => (type === 'nec' ? 'necessaryAcceptance' : 'possibl
 <template>
   <TermTooltip :id="termId" trigger-class="cursor-help inline-flex">
     <InformationCircleIcon
-      class="size-3.5 text-base-content/40 hover:text-base-content/70 transition-colors"
+      class="size-3.5 text-base-content/65 hover:text-base-content transition-colors"
     />
   </TermTooltip>
 </template>

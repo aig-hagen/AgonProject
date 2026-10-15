@@ -116,10 +116,10 @@ watch(
       <button
         class="relative flex cursor-pointer items-center justify-center gap-1.5 rounded-full font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         :class="[
-          option.label ? 'h-8 px-3.5 text-[0.8125rem]' : 'size-7',
+          option.label ? 'h-8 px-3.5 text-sm' : 'size-7',
           selected === option.key
             ? 'text-primary-content'
-            : 'text-base-content/60 enabled:hover:text-base-content',
+            : 'text-base-content/65 enabled:hover:text-base-content',
         ]"
         role="radio"
         :aria-checked="selected === option.key"

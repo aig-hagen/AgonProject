@@ -439,7 +439,7 @@ watchEffect(async () => {
       </span>
       <span
         v-if="loading"
-        class="loading loading-spinner loading-xs text-base-content/50 shrink-0"
+        class="loading loading-spinner loading-xs text-base-content/65 shrink-0"
         :title="t('window.evaluating')"
       ></span>
       <span
@@ -456,7 +456,7 @@ watchEffect(async () => {
       >
         <span class="truncate font-medium">{{ title }}</span>
         <ChevronRightIcon
-          class="size-3 shrink-0 text-base-content/40 transition-transform"
+          class="size-3 shrink-0 text-base-content/65 transition-transform"
           :class="{ 'rotate-90': paramsOpen }"
         />
       </button>

@@ -143,7 +143,7 @@ const rows = computed<GestureRow[]>(() => {
       </span>
       <span class="min-w-0">
         <span class="block text-sm font-semibold">{{ row.title }}</span>
-        <span class="block text-xs text-base-content/60 mt-0.5">{{ row.desc }}</span>
+        <span class="block text-xs text-base-content/65 mt-0.5">{{ row.desc }}</span>
       </span>
     </li>
   </ul>

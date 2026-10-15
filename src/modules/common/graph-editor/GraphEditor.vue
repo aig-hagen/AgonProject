@@ -2191,7 +2191,7 @@ defineExpose({
         >
           <span
             v-if="typeBadge"
-            class="grid place-items-center h-7 min-w-7 px-1 shrink-0 rounded-field bg-base-200 text-primary text-[0.65rem] font-bold"
+            class="grid place-items-center h-7 min-w-7 px-1 shrink-0 rounded-field bg-base-200 text-primary text-micro font-bold"
           >
             {{ typeBadge }}
           </span>

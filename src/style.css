@@ -40,6 +40,8 @@
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
   --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+  /* The one step below text-xs: field labels and badges. */
+  --text-micro: 0.65rem;
 }
 /* JetBrains Mono lacks these math symbols, and system fallbacks render them tiny or cramped,
    so they come from the bundled KaTeX fonts instead: ∅, and ← ↑ → ↓ ⇒ ∧ ∨ ⊢ ⊣ ⊤ ⊥. */
@@ -70,10 +72,10 @@
 /* Shared caps labels: section headings, and field labels above a control. */
 @layer components {
   .section-label {
-    @apply text-xs font-semibold uppercase tracking-wide text-base-content/50;
+    @apply text-xs font-semibold uppercase tracking-wide text-base-content/65;
   }
   .field-label {
-    @apply text-[0.65rem] font-medium uppercase tracking-wide text-base-content/50;
+    @apply text-micro font-medium uppercase tracking-wide text-base-content/65;
   }
 }
 

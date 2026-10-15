@@ -159,7 +159,7 @@ function download(config: ExportConfig<DocumentT>) {
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">{{ t('export.image.title') }}</b>
-            <span class="text-xs text-base-content/60 truncate">{{
+            <span class="text-xs text-base-content/65 truncate">{{
               t('export.image.description')
             }}</span>
           </span>
@@ -181,7 +181,7 @@ function download(config: ExportConfig<DocumentT>) {
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">{{ codeConfig.name }}</b>
-            <span class="text-xs text-base-content/60 truncate">{{
+            <span class="text-xs text-base-content/65 truncate">{{
               codeConfig.description ?? t('export.latexFallbackDescription')
             }}</span>
           </span>
@@ -198,7 +198,7 @@ function download(config: ExportConfig<DocumentT>) {
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">{{ config.name }}</b>
-            <span class="text-xs text-base-content/60 truncate">{{
+            <span class="text-xs text-base-content/65 truncate">{{
               config.description ?? t('export.fileFallbackDescription', { ext: config.extension })
             }}</span>
           </span>
@@ -244,7 +244,7 @@ function download(config: ExportConfig<DocumentT>) {
       </div>
 
       <div v-if="isLatex" class="flex items-center gap-2">
-        <code class="flex-1 min-w-0 truncate rounded bg-base-200 px-2 py-1.5 text-[0.7rem]">{{
+        <code class="flex-1 min-w-0 truncate rounded bg-base-200 px-2 py-1.5 text-xs">{{
           LATEX_PREAMBLE
         }}</code>
         <ButtonCopy
@@ -256,7 +256,7 @@ function download(config: ExportConfig<DocumentT>) {
       </div>
 
       <pre
-        class="overflow-auto rounded bg-base-200 p-2 text-[0.7rem] leading-relaxed max-h-64"
+        class="overflow-auto rounded bg-base-200 p-2 text-xs leading-relaxed max-h-64"
       ><code>{{ codeResult?.text }}</code></pre>
 
       <details v-if="isLatex" class="collapse collapse-arrow bg-inset rounded-field">
@@ -300,7 +300,9 @@ function download(config: ExportConfig<DocumentT>) {
                 step="0.25"
                 v-model.number="nodeDistance"
               />
-              <span class="w-8 text-right font-mono text-xs opacity-70">{{ nodeDistance }}</span>
+              <span class="w-8 text-right font-mono text-xs text-base-content/80">{{
+                nodeDistance
+              }}</span>
             </div>
           </ParameterField>
         </div>

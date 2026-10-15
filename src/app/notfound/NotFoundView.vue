@@ -26,9 +26,9 @@ const { t } = useI18n({ useScope: 'global' })
 
 <template>
   <div class="h-dvh w-screen flex flex-col items-center justify-center gap-4 bg-base-100 px-6">
-    <p class="text-6xl font-bold text-base-content/20">404</p>
+    <p class="text-6xl font-bold text-base-content/40">404</p>
     <h1 class="text-xl font-bold text-center">{{ t('notFound.heading') }}</h1>
-    <p class="max-w-sm text-center text-base-content/70">{{ t('notFound.description') }}</p>
+    <p class="max-w-sm text-center text-base-content/80">{{ t('notFound.description') }}</p>
     <RouterLink to="/" class="btn btn-primary btn-sm gap-1 mt-2">
       <ArrowLeftIcon class="size-4" />
       {{ t('notFound.backToEditor') }}

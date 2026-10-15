@@ -60,7 +60,7 @@ const options = computed(() =>
     >
       <span
         v-if="view !== 'theory'"
-        class="absolute top-1/2 left-full ml-2 -mt-4 flex h-8 items-center gap-1 rounded-full border border-base-300 bg-base-100/80 px-2.5 text-xs whitespace-nowrap text-base-content/60 shadow-lg backdrop-blur-md"
+        class="absolute top-1/2 left-full ml-2 -mt-4 flex h-8 items-center gap-1 rounded-full border border-base-300 bg-base-100/80 px-2.5 text-xs whitespace-nowrap text-base-content/65 shadow-lg backdrop-blur-md"
         :title="t('editor.aba.views.derivedFromTheory')"
       >
         <LockClosedIcon class="size-3.5" /> {{ t('editor.aba.views.readOnly') }}

@@ -54,7 +54,7 @@ const definition = computed(() => registry[id])
           :title="formatCitation(definition.reference)"
           target="_blank"
           rel="noopener noreferrer"
-          class="ml-auto text-base-content/40 hover:text-base-content/70 shrink-0"
+          class="ml-auto text-base-content/65 hover:text-base-content shrink-0"
         >
           <BookOpenIcon class="size-3" />
         </a>

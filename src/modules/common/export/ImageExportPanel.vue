@@ -140,7 +140,7 @@ const copyBlob = computed(() =>
             <span
               v-for="option in SCALES"
               :key="option"
-              :class="scale === option ? 'font-semibold' : 'text-base-content/60'"
+              :class="scale === option ? 'font-semibold' : 'text-base-content/65'"
               >{{ option }}×</span
             >
           </div>

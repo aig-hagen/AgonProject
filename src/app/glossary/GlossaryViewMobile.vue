@@ -67,7 +67,7 @@ const router = useRouter()
           :class="
             m.prefix === activeModulePrefix
               ? 'bg-primary text-primary-content'
-              : 'bg-base-200 text-base-content/70'
+              : 'bg-base-200 text-base-content/80'
           "
           @click="selectModule(m.prefix)"
         >
@@ -85,7 +85,7 @@ const router = useRouter()
         <input
           v-model="searchQuery"
           type="search"
-          class="flex-1 bg-transparent outline-none text-sm placeholder:text-base-content/40"
+          class="flex-1 bg-transparent outline-none text-sm placeholder:text-base-content/65"
           :placeholder="t('glossary.searchPlaceholder')"
         />
       </label>
@@ -98,18 +98,18 @@ const router = useRouter()
     >
       <p
         v-if="groupedTerms.length === 0 && !pinnedTerm"
-        class="text-sm text-base-content/40 px-1 py-4"
+        class="text-sm text-base-content/65 px-1 py-4"
       >
         {{ t('glossary.noResults') }}
       </p>
       <article v-if="pinnedTerm" class="rounded-box border border-primary/40 bg-primary/5 p-3.5">
         <div class="flex items-start gap-2.5">
           <div class="flex-1 min-w-0">
-            <h3 class="flex items-center gap-1.5 text-[15px] font-semibold leading-snug">
+            <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
               <MapPinIcon class="size-4 text-primary shrink-0" />
               <KatexInlineElement :text="pinnedTerm[1].title ?? pinnedTerm[1].label" />
             </h3>
-            <p class="mt-1.5 text-[13px] leading-relaxed text-base-content/70">
+            <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
               <template v-for="(part, i) in pinnedTerm[1].content" :key="i">
                 <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
                 <button
@@ -121,7 +121,7 @@ const router = useRouter()
                     :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
                   />
                 </button>
-                <span v-else class="text-base-content/60">
+                <span v-else class="text-base-content/65">
                   <KatexInlineElement :text="part.label ?? part.ref" />
                 </span>
               </template>
@@ -146,10 +146,10 @@ const router = useRouter()
         >
           <div class="flex items-start gap-2.5">
             <div class="flex-1 min-w-0">
-              <h3 class="text-[15px] font-semibold leading-snug">
+              <h3 class="text-base font-semibold leading-snug">
                 <KatexInlineElement :text="def.title ?? def.label" />
               </h3>
-              <p class="mt-1.5 text-[13px] leading-relaxed text-base-content/70">
+              <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
                 <template v-for="(part, i) in def.content" :key="i">
                   <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
                   <button
@@ -161,7 +161,7 @@ const router = useRouter()
                       :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
                     />
                   </button>
-                  <span v-else class="text-base-content/60">
+                  <span v-else class="text-base-content/65">
                     <KatexInlineElement :text="part.label ?? part.ref" />
                   </span>
                 </template>

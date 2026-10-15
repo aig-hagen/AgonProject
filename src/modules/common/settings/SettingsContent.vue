@@ -173,7 +173,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
               step="0.5"
               v-model.number="gridCellScale"
             />
-            <span class="w-6 text-right text-sm text-base-content/60">{{ gridCellScale }}×</span>
+            <span class="w-6 text-right text-sm text-base-content/65">{{ gridCellScale }}×</span>
           </div>
         </div>
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">

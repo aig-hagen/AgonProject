@@ -68,7 +68,7 @@ const {
       </div>
 
       <h1 class="text-2xl font-bold mb-1">{{ t('generate.title', { name: shortName }) }}</h1>
-      <p v-if="selectedFrameworkType" class="text-base-content/60 mb-6 text-sm">
+      <p v-if="selectedFrameworkType" class="text-base-content/65 mb-6 text-sm">
         {{ selectedFrameworkType.description }}
       </p>
 
@@ -101,7 +101,7 @@ const {
                 algorithms.map((algo) => ({ value: algo.id, label: formatAlgorithmName(algo.id) }))
               "
             />
-            <p v-if="selectedAlgorithm" class="text-xs text-base-content/50 mt-1">
+            <p v-if="selectedAlgorithm" class="text-xs text-base-content/65 mt-1">
               {{ selectedAlgorithm.description }}
             </p>
           </div>
@@ -144,7 +144,7 @@ const {
                   :data-tip="p.description"
                   >{{ formatParamLabel(p.name) }}</span
                 >
-                <span class="text-sm font-mono text-base-content/60">{{
+                <span class="text-sm font-mono text-base-content/65">{{
                   formatParamValue(p, paramValues)
                 }}</span>
               </div>
@@ -162,7 +162,7 @@ const {
                       : parseFloat(($event.target as HTMLInputElement).value)
                 "
               />
-              <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
+              <div class="flex justify-between text-xs text-base-content/65 mt-0.5">
                 <span>{{ p.min }}</span
                 ><span>{{ p.max }}</span>
               </div>
@@ -188,13 +188,13 @@ const {
                       : parseFloat(($event.target as HTMLInputElement).value)
                 "
               />
-              <p class="text-xs text-base-content/50 mt-0.5">{{ p.description }}</p>
+              <p class="text-xs text-base-content/65 mt-0.5">{{ p.description }}</p>
             </div>
           </template>
 
           <!-- Type-specific parameters -->
           <template v-if="selectedFrameworkType && selectedFrameworkType.params.length > 0">
-            <div class="divider text-xs text-base-content/40 my-0">
+            <div class="divider text-xs text-base-content/65 my-0">
               {{ t('generate.typeOptions') }}
             </div>
             <template v-for="p in selectedFrameworkType.params" :key="p.name">
@@ -205,7 +205,7 @@ const {
                     :data-tip="p.description"
                     >{{ formatParamLabel(p.name) }}</span
                   >
-                  <span class="text-sm font-mono text-base-content/60">{{
+                  <span class="text-sm font-mono text-base-content/65">{{
                     formatParamValue(p, typeParamValues)
                   }}</span>
                 </div>
@@ -223,7 +223,7 @@ const {
                         : parseFloat(($event.target as HTMLInputElement).value)
                   "
                 />
-                <div class="flex justify-between text-xs text-base-content/40 mt-0.5">
+                <div class="flex justify-between text-xs text-base-content/65 mt-0.5">
                   <span>{{ p.min }}</span
                   ><span>{{ p.max }}</span>
                 </div>
@@ -249,7 +249,7 @@ const {
                         : parseFloat(($event.target as HTMLInputElement).value)
                   "
                 />
-                <p class="text-xs text-base-content/50 mt-0.5">{{ p.description }}</p>
+                <p class="text-xs text-base-content/65 mt-0.5">{{ p.description }}</p>
               </div>
             </template>
           </template>
@@ -291,7 +291,7 @@ const {
             keypath="generate.result.generatedBipolar"
             tag="p"
             scope="global"
-            class="text-sm text-base-content/70"
+            class="text-sm text-base-content/80"
           >
             <template #args
               ><strong>{{ stats.nArgs }}</strong>
@@ -311,7 +311,7 @@ const {
             keypath="generate.result.generatedIncomplete"
             tag="p"
             scope="global"
-            class="text-sm text-base-content/70"
+            class="text-sm text-base-content/80"
           >
             <template #args
               ><strong>{{ stats.nArgs }}</strong>
@@ -335,7 +335,7 @@ const {
             keypath="generate.result.generated"
             tag="p"
             scope="global"
-            class="text-sm text-base-content/70"
+            class="text-sm text-base-content/80"
           >
             <template #args
               ><strong>{{ stats.nArgs }}</strong>

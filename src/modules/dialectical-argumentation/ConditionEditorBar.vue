@@ -225,7 +225,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
             </li>
             <li
               v-if="availableArguments.length === 0"
-              class="text-xs text-base-content/50 px-2 py-1"
+              class="text-xs text-base-content/65 px-2 py-1"
             >
               {{ t('editor.condition.noArguments') }}
             </li>
@@ -233,7 +233,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
         </div>
 
         <button
-          class="ml-auto flex h-7 w-7 items-center justify-center rounded-field text-base-content/60 transition-colors hover:bg-base-200 hover:text-base-content"
+          class="ml-auto flex h-7 w-7 items-center justify-center rounded-field text-base-content/65 transition-colors hover:bg-base-200 hover:text-base-content"
           type="button"
           :aria-label="t('common.actions.close')"
           @click="emit('close')"

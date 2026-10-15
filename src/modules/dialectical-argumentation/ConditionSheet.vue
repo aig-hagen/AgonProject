@@ -181,7 +181,7 @@ const operatorKeys = computed(() => [
             <BackspaceIcon class="size-5" />
           </button>
         </div>
-        <p class="text-xs opacity-50">{{ t('editor.condition.hint') }}</p>
+        <p class="text-xs text-base-content/65">{{ t('editor.condition.hint') }}</p>
       </div>
 
       <!-- Operator keypad -->
@@ -216,7 +216,9 @@ const operatorKeys = computed(() => [
             {{ arg.name }}
           </button>
         </div>
-        <p v-else class="text-xs opacity-50">{{ t('editor.condition.referenceEmpty') }}</p>
+        <p v-else class="text-xs text-base-content/65">
+          {{ t('editor.condition.referenceEmpty') }}
+        </p>
       </div>
 
       <!-- Clear: always present so clearing doesn't shift the sheet -->

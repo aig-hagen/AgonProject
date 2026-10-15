@@ -128,7 +128,7 @@ onUnmounted(() => {
 
     <slot v-if="!isPending || isLoading" name="results" />
 
-    <p v-if="isLoading" class="text-base-content/50">
+    <p v-if="isLoading" class="text-base-content/65">
       {{ t('evaluation.status.evaluatingCountdown', { seconds: remainingSeconds }) }}
     </p>
   </div>

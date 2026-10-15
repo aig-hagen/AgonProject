@@ -358,7 +358,7 @@ watch(
     <div ref="content" class="relative flex flex-col gap-3 min-h-full">
       <div class="flex-1 min-h-0 flex flex-col gap-3">
         <div v-if="chips.length === 0" class="flex flex-col items-center gap-3 py-10 text-center">
-          <p class="opacity-60 text-sm">{{ t('evaluation.noEvaluationYet') }}</p>
+          <p class="text-base-content/65 text-sm">{{ t('evaluation.noEvaluationYet') }}</p>
           <!-- Multi-kind modules offer a button per kind directly; single-kind keeps one. -->
           <template v-if="addKinds.length > 1">
             <button

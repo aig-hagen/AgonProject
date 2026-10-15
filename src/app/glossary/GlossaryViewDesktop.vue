@@ -81,7 +81,7 @@ watch(
         :class="
           m.prefix === activeModulePrefix
             ? 'border-primary text-primary font-medium'
-            : 'border-transparent text-base-content/60 hover:text-base-content'
+            : 'border-transparent text-base-content/65 hover:text-base-content'
         "
         @click="navigate(m.prefix, '')"
       >
@@ -104,7 +104,7 @@ watch(
         <div class="overflow-y-auto flex-1 py-2">
           <p
             v-if="groupedTerms.length === 0 && !pinnedTerm"
-            class="text-sm text-base-content/40 px-4 py-2"
+            class="text-sm text-base-content/65 px-4 py-2"
           >
             {{ t('glossary.noResults') }}
           </p>
@@ -120,9 +120,7 @@ watch(
             </span>
           </button>
           <template v-for="group in groupedTerms" :key="group.letter">
-            <div
-              class="px-4 pt-2 pb-0.5 text-xs font-semibold text-secondary uppercase tracking-wide"
-            >
+            <div class="section-label px-4 pt-2 pb-0.5">
               {{ group.letter }}
             </div>
             <button
@@ -158,7 +156,7 @@ watch(
                   :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
                 />
               </button>
-              <span v-else class="text-base-content/60">
+              <span v-else class="text-base-content/65">
                 <KatexInlineElement :text="part.label ?? part.ref" />
               </span>
             </template>
@@ -170,7 +168,7 @@ watch(
             <PublicationCitation :publication="activeDefinition.reference" />
           </section>
         </div>
-        <p v-else class="text-sm text-base-content/40">{{ t('glossary.selectTerm') }}</p>
+        <p v-else class="text-sm text-base-content/65">{{ t('glossary.selectTerm') }}</p>
       </div>
     </div>
   </div>

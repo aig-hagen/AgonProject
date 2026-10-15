@@ -41,7 +41,7 @@ defineProps<{
       :class="
         model === opt.value
           ? 'bg-base-100 font-medium text-base-content shadow-sm'
-          : 'text-base-content/55'
+          : 'text-base-content/65'
       "
       @click="model = opt.value"
     >

@@ -66,6 +66,9 @@ typography:
     fontSize: '0.75rem'
     fontWeight: 400
     lineHeight: 1.5
+  graph-label:
+    fontFamily: 'Graph Symbols, JetBrains Mono Variable, ui-monospace, monospace'
+    fontWeight: 700
 rounded:
   chip: '0.25rem'
   field: '0.5rem'
@@ -213,9 +216,13 @@ never restates their values.
 and the standalone maintenance page are the documented exceptions.
 
 **The Three Inks Rule.** Muted text and icons use exactly three ink strengths over `base-content`:
-`/80` for secondary body text, `/60` for meta, captions, labels and muted icons, `/40` for
-placeholders, empty states and disabled hints. Full-strength ink is the default. No `/50`, `/55`,
-`/70`, `/85`, and no `opacity-*` on icons to fake a tier.
+`/80` for secondary body text, `/65` for meta, captions, labels, placeholders, empty states and
+muted icons, `/40` only for disabled controls and decorative glyphs that carry no information.
+Full-strength ink is the default. No other steps, and no `opacity-*` to fake a tier.
+
+**The Readable Floor Rule.** `/65` is the lightest ink for text anyone needs to read: it clears WCAG
+AA (4.5:1) on paper and paper shade in both modes, `/60` does not in light mode. Never set readable
+text at `/40`.
 
 **The One Pen Rule.** Brand blue marks the one thing you're about to act on or have selected. If a
 screen has more than a handful of blue elements at rest, something is shouting.
@@ -240,10 +247,10 @@ fonts are self-hosted through Fontsource and referenced only through the font ro
 - **Body** (400, 0.875rem, 1.5): the default UI text: lists, menus, buttons, window content.
 - **Body Reading** (400, 1rem, 1.625, max ~70ch): long-form pages such as privacy and attributions.
 - **Meta** (400, 0.75rem): captions, hints, evaluation details, timestamps.
-- **Label** (600, 0.75rem, uppercase, 0.025em tracking, ink `/60`): section headings via the shared
+- **Label** (600, 0.75rem, uppercase, 0.025em tracking, ink `/65`): section headings via the shared
   `.section-label` class.
-- **Label Micro** (500, 0.65rem, uppercase, 0.025em tracking, ink `/60`): field labels above a
-  control via `.field-label`, and badges. The only step below 12px.
+- **Label Micro** (500, 0.65rem as `text-micro`, uppercase, 0.025em tracking, ink `/65`): field
+  labels above a control via `.field-label`, and badges. The only step below 12px.
 - **Mono** (400, 0.75rem): inline code, serialisations, TeX snippets.
 
 ### Named Rules
@@ -388,7 +395,7 @@ Two roles, one shape logic: the selected segment is always the strongest element
 ### Navigation and menus
 
 DaisyUI `.menu` lists on paper with box radius. Entry icons use `.menu-icon` (brand blue); every
-other icon is ink or ink `/60`. Back is always a chevron-left; close is always an X (16px in
+other icon is ink or ink `/65`. Back is always a chevron-left; close is always an X (16px in
 small buttons, 20px in 44px buttons).
 
 ### Floating windows and sheets
@@ -407,7 +414,7 @@ DaisyUI badges in `badge-sm` / `badge-xs`, soft variants preferred. Text uses La
 ### Do
 
 - **Do** take every color from a palette token and every typeface from a font role.
-- **Do** use ink, ink `/80`, ink `/60` and ink `/40`, and nothing in between.
+- **Do** use ink, ink `/80`, ink `/65` and (for disabled or decorative only) ink `/40`.
 - **Do** build every secondary page on the header bar shell.
 - **Do** use `.section-label` and `.field-label` for all small caps text.
 - **Do** separate in-flow regions with `base-300` hairlines and reserve shadows for floating

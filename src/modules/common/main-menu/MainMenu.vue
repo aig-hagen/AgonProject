@@ -306,7 +306,9 @@ function openImageExport() {
                     <span class="flex items-center gap-2">
                       <DocumentTextIcon class="size-5 menu-icon" />{{ config.name }}
                     </span>
-                    <span class="text-xs opacity-50">.{{ config.extension ?? 'txt' }}</span>
+                    <span class="text-xs text-base-content/65"
+                      >.{{ config.extension ?? 'txt' }}</span
+                    >
                   </a>
                 </li>
                 <li v-if="graphSvgRenderer">

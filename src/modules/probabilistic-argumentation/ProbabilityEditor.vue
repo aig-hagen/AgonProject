@@ -180,7 +180,7 @@ watch(
         </div>
       </fieldset>
 
-      <p v-if="argumentList.length === 0" class="text-sm text-base-content/50">
+      <p v-if="argumentList.length === 0" class="text-sm text-base-content/65">
         {{ t('editor.probabilities.empty') }}
       </p>
     </div>

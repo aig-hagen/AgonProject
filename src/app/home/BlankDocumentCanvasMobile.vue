@@ -93,7 +93,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
           </span>
           <span
             v-if="moduleCard.description"
-            class="text-xs text-base-content/60 mt-0.5"
+            class="text-xs text-base-content/65 mt-0.5"
             :class="{ 'line-clamp-2': expanded !== index }"
           >
             {{ moduleCard.description }}
@@ -101,7 +101,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
         </span>
         <span
           v-if="moduleCard.underConstruction"
-          class="text-xs italic text-base-content/50 shrink-0"
+          class="text-xs italic text-base-content/65 shrink-0"
         >
           {{ t('home.picker.soon') }}
         </span>

@@ -51,13 +51,13 @@ const router = useRouter()
       class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4"
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
-      <p class="text-sm text-base-content/70 leading-relaxed">{{ t('thirdParty.intro') }}</p>
+      <p class="text-sm text-base-content/80 leading-relaxed">{{ t('thirdParty.intro') }}</p>
 
       <!-- TeX packages -->
       <div class="section-label">
         {{ t('thirdParty.texPackages') }}
       </div>
-      <p class="text-xs text-base-content/60 leading-relaxed -mt-2">
+      <p class="text-xs text-base-content/65 leading-relaxed -mt-2">
         {{ t('thirdParty.texIntroShort') }}
       </p>
       <details
@@ -69,13 +69,13 @@ const router = useRouter()
           <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
           >{{ attribution.name
           }}<template v-if="attribution.version !== undefined"
-            ><span class="text-base-content/50 font-normal">
+            ><span class="text-base-content/65 font-normal">
               @{{ attribution.version }}</span
             ></template
           >
         </summary>
         <div class="mt-2.5 flex flex-col gap-2">
-          <p class="text-xs text-base-content/70 leading-relaxed">
+          <p class="text-xs text-base-content/80 leading-relaxed">
             <i18n-t
               v-if="attribution.publisher"
               keypath="thirdParty.publishedWithPublisher"
@@ -107,10 +107,10 @@ const router = useRouter()
           </p>
           <pre
             v-if="attribution.licenseText"
-            class="text-[11px] whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
+            class="text-xs whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
             >{{ attribution.licenseText }}</pre
           >
-          <p v-else class="text-xs text-base-content/50">
+          <p v-else class="text-xs text-base-content/65">
             {{ t('thirdParty.noLicenseText') }}
           </p>
         </div>
@@ -129,13 +129,13 @@ const router = useRouter()
           <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
           >{{ attribution.name
           }}<template v-if="attribution.version !== undefined"
-            ><span class="text-base-content/50 font-normal">
+            ><span class="text-base-content/65 font-normal">
               @{{ attribution.version }}</span
             ></template
           >
         </summary>
         <div class="mt-2.5 flex flex-col gap-2">
-          <p class="text-xs text-base-content/70 leading-relaxed">
+          <p class="text-xs text-base-content/80 leading-relaxed">
             <i18n-t
               v-if="attribution.publisher"
               keypath="thirdParty.publishedWithPublisher"
@@ -167,10 +167,10 @@ const router = useRouter()
           </p>
           <pre
             v-if="attribution.licenseText"
-            class="text-[11px] whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
+            class="text-xs whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
             >{{ attribution.licenseText }}</pre
           >
-          <p v-else class="text-xs text-base-content/50">
+          <p v-else class="text-xs text-base-content/65">
             {{ t('thirdParty.noLicenseText') }}
           </p>
         </div>
