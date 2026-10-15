@@ -17,8 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { AdjustmentsHorizontalIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/vue/24/outline'
-import { createReusableTemplate } from '@vueuse/core'
+import { ArrowRightCircleIcon, CheckCircleIcon } from '@heroicons/vue/24/outline'
 import { computed, onMounted, provide, ref, shallowRef, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -27,6 +26,8 @@ import {
   fetchIsTerminal,
   fetchSelection,
   SELECTION_FUNCTIONS,
+  type SequenceStep,
+  SERIALISATION_TIMEOUT_IN_MS,
   type SerialisationFunction,
   TERMINATION_FUNCTIONS,
   useSerialisationEvaluationQuery,
@@ -35,19 +36,23 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
+import BaseEvaluationWindow, {
+  type EvaluationWindowQuery,
+} from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
+import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
 import {
   binaryAttacks,
   extensionLabels,
   labelsToHighlight,
 } from '@/modules/common/evaluation/labeling'
 import type { Input } from '@/modules/common/evaluation/types'
+import { escapeTexText } from '@/modules/common/export/texEscape'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
-import { IdMapping } from '@/modules/common/ids'
+import { IdMapping, type UUID } from '@/modules/common/ids'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
-import WindowShell from '@/modules/common/window/WindowShell.vue'
 
 const {
   input,
@@ -66,10 +71,6 @@ const {
   suppressed?: boolean
   hosted?: boolean
 }>()
-
-// Body defined once, rendered either inside WindowShell (desktop) or bare in the
-// compact evaluation host.
-const [DefineBody, ReuseBody] = createReusableTemplate()
 
 const emit = defineEmits<{
   'update:instanceState': [state: SerialisationWindowInstanceState]
@@ -111,14 +112,6 @@ watch([selectedSelectionFunction, selectedTerminationFunction, selectedMode], ()
   emit('update:instanceState', state)
 })
 
-// --- FloatingWindow state ---
-const isOpen = ref(true)
-watch(isOpen, (v) => {
-  if (!v) emit('close')
-})
-// In the compact host the sheet is short, so params start collapsed to a summary header.
-const paramsOpen = ref(!hosted)
-
 const windowTitle = computed(() => {
   const sel = selectedSelectionFunction.value.displayName
   const term = selectedTerminationFunction.value.displayName
@@ -142,8 +135,42 @@ const query = useSerialisationEvaluationQuery(
   computed(() => selectedTerminationFunction.value.key),
   sequencesEnabled,
 )
-const { error, isLoading, isError, refetch, data } = query
-const isTimeout = computed(() => error.value?.name === 'EvaluationTimeoutError')
+const { data } = query
+
+const selectedSequence = ref<number | undefined>(undefined)
+watch(data, () => (selectedSequence.value = undefined))
+
+function formatStep(step: SequenceStep): string {
+  return step.length === 0 ? '∅' : `{${step.map((a) => a.name).join(', ')}}`
+}
+function formatStepTex(step: SequenceStep): string {
+  return step.length === 0
+    ? '\\emptyset'
+    : `\\{${step.map((a) => escapeTexText(a.name)).join(', ')}\\}`
+}
+
+const copyText = computed(() =>
+  data.value?.sequences.length
+    ? data.value.sequences.map((seq) => seq.map(formatStep).join(' → ')).join('\n')
+    : undefined,
+)
+const copyTextTex = computed(() =>
+  data.value?.sequences.length
+    ? data.value.sequences.map((seq) => seq.map(formatStepTex).join(' \\to ')).join('\n')
+    : undefined,
+)
+
+const sequencesStatusLine = computed(() => {
+  if (data.value === undefined) return undefined
+  const parts: string[] = []
+  const count = data.value.sequences.length
+  if (count > 0) {
+    parts.push(t('evaluation.counts.sequences', count))
+    parts.push(t('evaluation.serialisation.selectSequenceHint'))
+  }
+  parts.push(`${data.value.evaluationDurationInMs}ms`)
+  return parts.join(' · ')
+})
 
 // ──────────────────────────────────────────────────────────────
 // INTERACTIVE MODE
@@ -299,8 +326,45 @@ onMounted(() => {
   if (selectedMode.value === 'interactive') resetInteractive()
 })
 
+// Both modes feed the shared card's status strip, skeleton and loading timer.
+const isSequences = computed(() => selectedMode.value === 'sequences')
+const evaluationQuery: EvaluationWindowQuery = {
+  status: computed(() => (isSequences.value ? query.status.value : 'success')),
+  error: computed(() => (isSequences.value ? query.error.value : interactiveError.value)),
+  isPending: computed(() =>
+    isSequences.value ? query.isPending.value : interactiveIsTerminal.value === null,
+  ),
+  isLoading: computed(() =>
+    isSequences.value ? query.isLoading.value : interactiveIsLoading.value,
+  ),
+  isError: computed(() =>
+    isSequences.value ? query.isError.value : interactiveError.value !== null,
+  ),
+  refetch: () => (isSequences.value ? void query.refetch() : void fetchInteractiveStep()),
+  timeoutMs: SERIALISATION_TIMEOUT_IN_MS,
+}
+
+function highlightFor(nodes: Set<ArgumentId>, stateId: UUID): Highlight {
+  return labelsToHighlight(
+    stateId,
+    extensionLabels(nodes, binaryAttacks(input.content.attacks())),
+    t,
+    {
+      undecided: true,
+    },
+  )
+}
+
 const currentHighlight = computed<Highlight | undefined>(() => {
-  if (selectedMode.value !== 'interactive' || currentExtension.value.length === 0) return undefined
+  if (isSequences.value) {
+    const sequence =
+      selectedSequence.value === undefined
+        ? undefined
+        : data.value?.sequences[selectedSequence.value]
+    if (sequence === undefined || data.value === undefined) return undefined
+    return highlightFor(new Set(sequence.flat().map((a) => a.id)), data.value.stateId)
+  }
+  if (currentExtension.value.length === 0) return undefined
   const nodes = new Set(
     currentExtension.value.map((serverId) => {
       const entry = argumentIdAndData.value[serverId - 1]
@@ -308,12 +372,7 @@ const currentHighlight = computed<Highlight | undefined>(() => {
       return entry[0]
     }),
   )
-  return labelsToHighlight(
-    input.stateId,
-    extensionLabels(nodes, binaryAttacks(input.content.attacks())),
-    t,
-    { undecided: true },
-  )
+  return highlightFor(nodes, input.stateId)
 })
 
 // Always reported; the host's useEvaluationFocus picks which window paints the canvas.
@@ -322,189 +381,135 @@ const isActive = computed(() => !suppressed && currentHighlight.value !== undefi
 </script>
 
 <template>
-  <DefineBody>
-    <div class="px-3 pb-3 pt-1 flex flex-col gap-2.5 text-xs">
-      <!-- Compact host: a summary header so the config stays visible while params collapse. -->
-      <button
-        v-if="hosted"
-        type="button"
-        class="flex items-center gap-2 rounded-field bg-inset border border-base-300 px-2.5 py-2 text-left"
-        :aria-expanded="paramsOpen"
-        @click="paramsOpen = !paramsOpen"
-      >
-        <AdjustmentsHorizontalIcon class="size-4 shrink-0 text-base-content/65" />
-        <span class="flex-1 min-w-0 truncate font-medium">{{ windowTitle }}</span>
-        <span class="text-micro text-base-content/65">{{
-          paramsOpen ? t('evaluation.status.hideParams') : t('evaluation.status.editParams')
-        }}</span>
-      </button>
-
-      <div
-        v-show="paramsOpen"
-        class="rounded-field bg-inset border border-base-300 p-2.5 flex flex-col gap-2"
-      >
-        <div class="flex flex-wrap gap-3">
-          <ParameterField :label="t('evaluation.fields.selection')" min-width="9rem">
-            <PickerSelect
-              :model-value="selectedSelectionFunction.key"
-              :options="selectionOptions"
-              @update:model-value="
-                selectedSelectionFunction = resolveFunction(SELECTION_FUNCTIONS, $event)
-              "
-            />
-          </ParameterField>
-          <ParameterField :label="t('evaluation.fields.termination')" min-width="9rem">
-            <PickerSelect
-              :model-value="selectedTerminationFunction.key"
-              :options="terminationOptions"
-              @update:model-value="
-                selectedTerminationFunction = resolveFunction(TERMINATION_FUNCTIONS, $event)
-              "
-            />
-          </ParameterField>
-          <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
-            <PickerSelect
-              :model-value="selectedMode"
-              :options="[
-                { value: 'sequences', label: t('evaluation.serialisation.modeSequences') },
-                { value: 'interactive', label: t('evaluation.serialisation.modeInteractive') },
-              ]"
-              @update:model-value="selectedMode = $event as 'sequences' | 'interactive'"
-            />
-          </ParameterField>
-        </div>
-        <TermDefinitionBlock :id="selectedSelectionFunction.tooltipId" />
-        <TermDefinitionBlock :id="selectedTerminationFunction.tooltipId" />
-      </div>
-
-      <!-- ── SEQUENCES RESULTS ── -->
-      <template v-if="selectedMode === 'sequences'">
-        <div
-          v-if="isError"
-          role="alert"
-          class="alert alert-soft py-1.5"
-          :class="isTimeout ? 'alert-warning' : 'alert-error'"
-        >
-          <span>{{
-            isTimeout ? t('evaluation.serialisation.timedOut') : t('evaluation.status.failed')
-          }}</span>
-          <button class="btn btn-xs btn-ghost ml-auto" @click="() => refetch()">
-            {{ t('evaluation.status.retry') }}
-          </button>
-        </div>
+  <BaseEvaluationWindow
+    :title="windowTitle"
+    :hosted="hosted"
+    :instance-offset="instanceOffset"
+    :initial-position-base="{ x: 256, y: 96 }"
+    :initial-size="{ width: 576, height: 480 }"
+    :query="evaluationQuery"
+    :document-id="documentId"
+    :state-key="stateKey"
+    :active="isActive"
+    @close="emit('close')"
+    @focus="emit('focus')"
+  >
+    <template #parameters>
+      <ParameterField :label="t('evaluation.fields.selection')" min-width="9rem">
+        <PickerSelect
+          :model-value="selectedSelectionFunction.key"
+          :options="selectionOptions"
+          @update:model-value="
+            selectedSelectionFunction = resolveFunction(SELECTION_FUNCTIONS, $event)
+          "
+        />
+      </ParameterField>
+      <ParameterField :label="t('evaluation.fields.termination')" min-width="9rem">
+        <PickerSelect
+          :model-value="selectedTerminationFunction.key"
+          :options="terminationOptions"
+          @update:model-value="
+            selectedTerminationFunction = resolveFunction(TERMINATION_FUNCTIONS, $event)
+          "
+        />
+      </ParameterField>
+      <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
+        <PickerSelect
+          :model-value="selectedMode"
+          :options="[
+            { value: 'sequences', label: t('evaluation.serialisation.modeSequences') },
+            { value: 'interactive', label: t('evaluation.serialisation.modeInteractive') },
+          ]"
+          @update:model-value="selectedMode = $event as 'sequences' | 'interactive'"
+        />
+      </ParameterField>
+    </template>
+    <template #parameters-footer>
+      <TermDefinitionBlock :id="selectedSelectionFunction.tooltipId" />
+      <TermDefinitionBlock :id="selectedTerminationFunction.tooltipId" />
+    </template>
+    <template #results>
+      <template v-if="isSequences">
         <template v-if="data !== undefined">
-          <div v-if="data.sequences.length === 0" class="text-sm text-base-content/65">
-            {{ t('evaluation.serialisation.noSequences') }}
+          <div
+            v-if="data.sequences.length === 0"
+            data-evaluation-results
+            role="alert"
+            class="alert alert-info alert-soft"
+          >
+            <span>{{ t('evaluation.serialisation.noSequences') }}</span>
           </div>
-          <ol v-else class="flex flex-col gap-2">
-            <li
-              v-for="(sequence, seqIndex) in data.sequences"
-              :key="seqIndex"
-              class="flex flex-wrap items-center gap-1 text-sm"
-            >
-              <template v-for="(step, stepIndex) in sequence" :key="stepIndex">
-                <span v-if="stepIndex > 0" class="select-none opacity-50">&#x2192;</span>
-                <span class="rounded border px-1.5 py-0.5 font-mono">
-                  <template v-if="step.length === 0">&#x2205;</template>
-                  <template v-else>{{ step.map((a) => a.name).join(', ') }}</template>
-                </span>
-              </template>
+          <ol v-else data-evaluation-results class="flex flex-col gap-1">
+            <li v-for="(sequence, seqIndex) in data.sequences" :key="seqIndex">
+              <button
+                type="button"
+                class="btn btn-sm h-auto min-h-8 py-1 justify-start flex-wrap gap-1 font-normal text-sm outline-none focus:outline-none"
+                :class="selectedSequence === seqIndex ? 'btn-soft' : 'btn-ghost'"
+                @click="selectedSequence = selectedSequence === seqIndex ? undefined : seqIndex"
+              >
+                <template v-for="(step, stepIndex) in sequence" :key="stepIndex">
+                  <span v-if="stepIndex > 0" class="select-none opacity-50">&#x2192;</span>
+                  <span class="rounded border px-1.5 py-0.5 font-mono">{{ formatStep(step) }}</span>
+                </template>
+              </button>
             </li>
           </ol>
-          <p class="label">
-            {{ data.evaluationDurationInMs }}ms · {{ data.sequences.length }}
-            {{ t('evaluation.serialisation.sequenceCount', data.sequences.length) }}
-          </p>
+          <EvaluationStatusFooter
+            :status-line="sequencesStatusLine"
+            :copy-text="copyText"
+            :copy-text-tex="copyTextTex"
+            :result-noun="t('evaluation.nouns.sequences')"
+          />
         </template>
-        <p v-if="isLoading" class="text-base-content/65">{{ t('evaluation.status.evaluating') }}</p>
       </template>
 
-      <!-- ── INTERACTIVE RESULTS ── -->
-      <template v-if="selectedMode === 'interactive'">
-        <div v-if="interactiveError" role="alert" class="alert alert-error alert-soft py-1.5">
-          <span>{{ t('evaluation.status.failed') }}</span>
-          <button class="btn btn-xs btn-ghost ml-auto" @click="fetchInteractiveStep()">
-            {{ t('evaluation.status.retry') }}
-          </button>
+      <template v-else>
+        <div v-if="builtSequence.length > 0" class="flex flex-wrap items-center gap-1 text-sm">
+          <template v-for="(step, i) in builtSequence" :key="i">
+            <span v-if="i > 0" class="select-none opacity-50">&#x2192;</span>
+            <span class="rounded border px-1.5 py-0.5 font-mono">{{ formatStep(step) }}</span>
+          </template>
         </div>
 
-        <template v-else>
-          <!-- Built sequence so far -->
-          <div v-if="builtSequence.length > 0" class="flex flex-wrap items-center gap-1 text-sm">
-            <template v-for="(step, i) in builtSequence" :key="i">
-              <span v-if="i > 0" class="select-none opacity-50">&#x2192;</span>
-              <span class="rounded border px-1.5 py-0.5 font-mono">
-                <template v-if="step.length === 0">&#x2205;</template>
-                <template v-else>{{ step.map((a) => a.name).join(', ') }}</template>
-              </span>
-            </template>
-          </div>
+        <div v-if="interactiveIsTerminal !== null" class="flex items-center gap-1.5 text-sm">
+          <CheckCircleIcon v-if="interactiveIsTerminal" class="size-4 text-success" />
+          <ArrowRightCircleIcon v-else class="size-4 text-base-content/65" />
+          <span>{{
+            interactiveIsTerminal
+              ? t('evaluation.serialisation.terminal')
+              : t('evaluation.serialisation.notTerminal')
+          }}</span>
+        </div>
 
-          <!-- Terminal status -->
-          <div v-if="interactiveIsTerminal !== null" class="flex items-center gap-1.5 text-sm">
-            <CheckCircleIcon v-if="interactiveIsTerminal" class="size-4 text-success" />
-            <XCircleIcon v-else class="size-4 text-error" />
-            <span>{{
-              interactiveIsTerminal
-                ? t('evaluation.serialisation.terminal')
-                : t('evaluation.serialisation.notTerminal')
-            }}</span>
-          </div>
-
-          <!-- Step selection -->
-          <div
-            v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading"
-            class="text-sm text-base-content/65"
-          >
-            {{ t('evaluation.serialisation.noInitialSets') }}
-          </div>
-          <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">
-            <p class="text-base-content/65">
-              {{ t('evaluation.serialisation.selectNextInitialSet') }}
-            </p>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="(step, i) in selectableStepsDisplay"
-                :key="i"
-                class="btn btn-sm btn-outline font-mono"
-                @click="pickStep(i)"
-              >
-                <template v-if="step.length === 0">&#x2205;</template>
-                <template v-else>{{ '{' + step.map((a) => a.name).join(', ') + '}' }}</template>
-              </button>
-            </div>
-          </div>
-          <p v-if="interactiveIsLoading" class="text-base-content/65">
-            {{ t('evaluation.status.evaluating') }}
+        <div
+          v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading"
+          class="text-sm text-base-content/65"
+        >
+          {{ t('evaluation.serialisation.noInitialSets') }}
+        </div>
+        <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">
+          <p class="text-base-content/65">
+            {{ t('evaluation.serialisation.selectNextInitialSet') }}
           </p>
-        </template>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="(step, i) in selectableStepsDisplay"
+              :key="i"
+              class="btn btn-sm btn-outline font-mono"
+              :disabled="interactiveIsLoading"
+              @click="pickStep(i)"
+            >
+              {{ formatStep(step) }}
+            </button>
+          </div>
+        </div>
 
-        <div class="flex">
+        <div v-if="builtSequence.length > 0" class="flex">
           <button class="btn btn-xs btn-soft" @click="resetInteractive()">
             {{ t('common.actions.reset') }}
           </button>
         </div>
       </template>
-    </div>
-  </DefineBody>
-
-  <ReuseBody v-if="hosted" />
-  <WindowShell
-    v-else
-    v-model:open="isOpen"
-    v-model:params-open="paramsOpen"
-    card
-    :title="windowTitle"
-    :loading="selectedMode === 'sequences' ? isLoading : interactiveIsLoading"
-    :initial-position="{ x: 256 + instanceOffset * 24, y: 96 + instanceOffset * 24 }"
-    :intital-size="{ width: 576, height: 480 }"
-    :instance-offset="instanceOffset"
-    :document-id="documentId"
-    :state-key="stateKey"
-    :active="isActive"
-    :minimizable="false"
-    @focus="emit('focus')"
-  >
-    <ReuseBody />
-  </WindowShell>
+    </template>
+  </BaseEvaluationWindow>
 </template>

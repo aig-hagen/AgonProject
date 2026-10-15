@@ -17,18 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  computed,
-  inject,
-  onUnmounted,
-  provide,
-  ref,
-  shallowRef,
-  toRef,
-  useTemplateRef,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, provide, ref, shallowRef, toRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
@@ -36,11 +25,14 @@ import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
+import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
+import { modeLabel, modeOptions } from '@/modules/common/evaluation/modes'
 import type { Input } from '@/modules/common/evaluation/types'
+import { useEvaluationTutorialRefs } from '@/modules/common/evaluation/useEvaluationTutorialRefs'
+import { escapeTexText } from '@/modules/common/export/texEscape'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
-import { TUTORIAL_REF_REGISTRY_KEY } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
@@ -128,26 +120,13 @@ const query = usePafEvaluationQuery(
 
 const { data } = query
 
-// Register the semantics selector and the results panel as tutorial-spotlight targets while this
-// window is the active one, so the evaluation tutorial can highlight them.
-const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
 const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect')
 const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
-watchEffect(() => {
-  if (!registerTutorialRef || suppressed) return
-  registerTutorialRef('semanticsSelector', semanticsSelectRef.value?.$el ?? null)
-})
-watch(
-  [resultsAreaRef, () => data.value?.entries.length, () => suppressed],
-  () => {
-    if (!registerTutorialRef) return
-    registerTutorialRef('resultArea', suppressed ? null : (resultsAreaRef.value ?? null))
-  },
-  { flush: 'post', immediate: true },
-)
-onUnmounted(() => {
-  registerTutorialRef?.('semanticsSelector', null)
-  registerTutorialRef?.('resultArea', null)
+useEvaluationTutorialRefs({
+  selectors: { semanticsSelector: semanticsSelectRef },
+  resultsArea: resultsAreaRef,
+  resultsVersion: () => data.value?.entries.length,
+  suppressed: () => suppressed,
 })
 
 // Suppressed instances (all but the active one in the compact host) own no node weights.
@@ -158,13 +137,18 @@ const emittedWeights = computed(() =>
 )
 watch(emittedWeights, (w) => emit('setWeights', w))
 
+const copyText = computed(() =>
+  data.value?.entries.map((e) => `${e.name}: ${e.probability.toFixed(3)}`).join('\n'),
+)
+const copyTextTex = computed(() =>
+  data.value?.entries
+    .map((e) => `${escapeTexText(e.name)}: ${e.probability.toFixed(3)}`)
+    .join('\n'),
+)
+
 const windowTitle = computed(() => {
-  const modeLabel =
-    selectedMode.value === 'skeptical'
-      ? t('evaluation.modes.skeptical')
-      : t('evaluation.modes.credulous')
   const solverLabel = isApproximate.value ? ` · ${t('evaluation.inference.approxShort')}` : ''
-  return `${selectedSemantic.value.displayName} · ${modeLabel}${solverLabel}`
+  return `${selectedSemantic.value.displayName} · ${modeLabel(t, selectedMode.value)}${solverLabel}`
 })
 
 // The compact host labels its switcher pill with this title (not the raw key).
@@ -194,12 +178,12 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
         />
       </ParameterField>
       <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
+        <template #label-suffix>
+          <ModeHint :mode="selectedMode" />
+        </template>
         <PickerSelect
           v-model="selectedMode"
-          :options="[
-            { value: 'credulous', label: t('evaluation.modes.credulous') },
-            { value: 'skeptical', label: t('evaluation.modes.skeptical') },
-          ]"
+          :options="modeOptions(t, ['credulous', 'skeptical'])"
         />
       </ParameterField>
       <ParameterField :label="t('evaluation.inference.label')" min-width="100%" max-width="100%">
@@ -228,7 +212,12 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
             {{ entry.name }}: {{ entry.probability.toFixed(3) }}
           </span>
         </div>
-        <EvaluationStatusFooter :status-line="`${data.evaluationDurationInMs}ms`" />
+        <EvaluationStatusFooter
+          :status-line="`${t('evaluation.probabilityHint')} · ${data.evaluationDurationInMs}ms`"
+          :copy-text="copyText"
+          :copy-text-tex="copyTextTex"
+          :result-noun="t('evaluation.nouns.probabilities')"
+        />
       </template>
     </template>
   </BaseEvaluationWindow>

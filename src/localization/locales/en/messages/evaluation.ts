@@ -40,6 +40,8 @@ export default {
     termination: 'Termination',
   },
   metaSemantics: 'Meta Semantics',
+  requiresFlat: 'requires a flat theory',
+  probabilityHint: 'Node labels show probabilities',
   // Bipolar support-interpretation selector.
   support: {
     label: 'Support',
@@ -66,6 +68,15 @@ export default {
     extensions: 'extensions',
     ranking: 'ranking',
     interpretations: 'interpretations',
+    probabilities: 'probabilities',
+    sequences: 'sequences',
+  },
+  // Result counts in the status footer.
+  counts: {
+    extensions: '{n} extension | {n} extensions',
+    arguments: '{n} argument | {n} arguments',
+    models: '{n} model | {n} models',
+    sequences: '{n} sequence | {n} sequences',
   },
   status: {
     copyPlain: 'Copy as plain text',
@@ -78,8 +89,7 @@ export default {
     timedOut: 'Timed out after {seconds}s',
     failed: 'Evaluation failed',
     retry: 'Retry',
-    evaluating: 'Evaluating…',
-    evaluatingCountdown: 'Evaluating… {seconds}s',
+    evaluatingElapsed: 'Evaluating… {seconds}s',
     hideParams: 'Hide',
     editParams: 'Edit',
   },
@@ -107,9 +117,8 @@ export default {
   serialisation: {
     modeSequences: 'Sequences',
     modeInteractive: 'Interactive',
-    timedOut: 'Evaluation timed out',
     noSequences: 'No serialisation sequences found.',
-    sequenceCount: 'sequence | sequences',
+    selectSequenceHint: 'Select sequence to highlight its extension',
     terminal: 'Terminal',
     notTerminal: 'Not terminal',
     noInitialSets: 'No initial sets available.',

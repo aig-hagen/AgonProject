@@ -17,18 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  computed,
-  inject,
-  onUnmounted,
-  provide,
-  ref,
-  shallowRef,
-  toRef,
-  useTemplateRef,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, provide, ref, shallowRef, toRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { ExtensionWindowInstanceState } from '@/modules/abstract-argumentation/evaluation/extensionWindowState'
@@ -47,15 +36,14 @@ import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWind
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import { binaryAttacks, extensionLabels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
+import { modeLabel, modeOptions } from '@/modules/common/evaluation/modes'
 import type { Input } from '@/modules/common/evaluation/types'
+import { useEvaluationTutorialRefs } from '@/modules/common/evaluation/useEvaluationTutorialRefs'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
-import {
-  type Highlight,
-  TUTORIAL_REF_REGISTRY_KEY,
-} from '@/modules/common/graph-editor/graphEditor'
+import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -94,22 +82,9 @@ const emit = defineEmits<{
   modeInteract: []
 }>()
 
-// Register the semantics/mode selectors and the result area as tutorial-spotlight targets while
-// this window is the active one, so the evaluation tutorial can highlight them.
-const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
 const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect')
 const modeSelectRef = useTemplateRef<{ $el: HTMLElement }>('modeSelect')
 const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
-watchEffect(() => {
-  if (!registerTutorialRef || suppressed) return
-  registerTutorialRef('semanticsSelector', semanticsSelectRef.value?.$el ?? null)
-  registerTutorialRef('modeSelector', modeSelectRef.value?.$el ?? null)
-})
-onUnmounted(() => {
-  registerTutorialRef?.('semanticsSelector', null)
-  registerTutorialRef?.('modeSelector', null)
-  registerTutorialRef?.('resultArea', null)
-})
 
 provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
 
@@ -212,6 +187,7 @@ const {
   emptyMessage,
   dataExtensionsFormatedAndSorted,
   resultItems,
+  countLabel,
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query, (extension) =>
   extensionLabels(extension, binaryAttacks(input.content.attacks())),
@@ -223,32 +199,21 @@ const {
 // showing exactly 3 columns.
 const hasFourParamFields = computed(() => (selectedSemantic.value.parameters?.length ?? 0) >= 2)
 
-// Spotlight just the extensions grid (not the duration footer) for the tutorial's results step;
-// re-resolve after each render since the grid element appears once results are computed.
-watch(
-  [resultsAreaRef, () => resultItems.value.length, () => suppressed],
-  () => {
-    if (!registerTutorialRef) return
-    const grid = suppressed
-      ? null
-      : (resultsAreaRef.value?.querySelector<HTMLElement>('.evaluation-result-grid') ?? null)
-    registerTutorialRef('resultArea', grid)
-  },
-  { flush: 'post', immediate: true },
-)
+useEvaluationTutorialRefs({
+  selectors: { semanticsSelector: semanticsSelectRef, modeSelector: modeSelectRef },
+  resultsArea: resultsAreaRef,
+  resultsVersion: () => resultItems.value.length,
+  suppressed: () => suppressed,
+  grid: true,
+})
 
 // Always reported; the host's useEvaluationFocus picks which window paints the canvas.
 watch(currentHighlight, (h) => emit('highlight', h), { immediate: true })
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
 const windowTitle = computed(() => {
-  const modeLabel =
-    selectedMode.value === 'enumerate'
-      ? t('evaluation.modes.enumerate')
-      : selectedMode.value === 'credulous'
-        ? t('evaluation.modes.credulous')
-        : t('evaluation.modes.skeptical')
-  return `${titleSemanticName.value} · ${modeLabel}`
+  const modeText = modeLabel(t, selectedMode.value)
+  return `${titleSemanticName.value} · ${modeText}`
 })
 
 // The compact host labels its switcher pill with this title (not the raw key).
@@ -288,11 +253,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
             <PickerSelect
               ref="modeSelect"
               v-model="selectedMode"
-              :options="[
-                { value: 'enumerate', label: t('evaluation.modes.enumerate') },
-                { value: 'credulous', label: t('evaluation.modes.credulous') },
-                { value: 'skeptical', label: t('evaluation.modes.skeptical') },
-              ]"
+              :options="modeOptions(t)"
               @update:model-value="emit('modeInteract')"
             />
           </ParameterField>
@@ -323,6 +284,7 @@ watch(windowTitle, (t) => emit('title', t), { immediate: true })
           :items="resultItems"
           :empty-message="emptyMessage"
           :selection-hint="selectionHint"
+          :count-label="countLabel"
           :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
         />
       </div>

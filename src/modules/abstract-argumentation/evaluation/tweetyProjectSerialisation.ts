@@ -31,7 +31,7 @@ import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_SERIALISATION = '/serialisation'
 
-const TIMEOUT_IN_MS = 10000
+export const SERIALISATION_TIMEOUT_IN_MS = 10000
 const TIMEOUT_UNIT_MS = 'ms'
 
 export interface SerialisationFunction {
@@ -94,7 +94,7 @@ export async function fetchSelection(
     nr_of_arguments: numberOfArguments,
     attacks,
     selectionFunction,
-    timeout: TIMEOUT_IN_MS,
+    timeout: SERIALISATION_TIMEOUT_IN_MS,
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_SERIALISATION, body, SerialisationResponseSchema)
@@ -118,7 +118,7 @@ export async function fetchIsTerminal(
     attacks,
     extension,
     terminationFunction,
-    timeout: TIMEOUT_IN_MS,
+    timeout: SERIALISATION_TIMEOUT_IN_MS,
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_SERIALISATION, body, SerialisationResponseSchema)
@@ -142,7 +142,7 @@ async function fetchSequences(
     attacks,
     selectionFunction,
     terminationFunction,
-    timeout: TIMEOUT_IN_MS,
+    timeout: SERIALISATION_TIMEOUT_IN_MS,
     unit_timeout: TIMEOUT_UNIT_MS,
   }
 

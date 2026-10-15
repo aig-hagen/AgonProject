@@ -36,6 +36,8 @@ export interface EvaluationWindowQuery {
   isLoading: Readonly<Ref<boolean>>
   isError: Readonly<Ref<boolean>>
   refetch: () => void
+  /** Reasoner timeout, if it differs from the Tweety default. */
+  timeoutMs?: number
 }
 
 const props = defineProps<{

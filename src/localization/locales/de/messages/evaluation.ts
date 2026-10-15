@@ -40,6 +40,8 @@ export default {
     termination: 'Terminierung',
   },
   metaSemantics: 'Meta-Semantiken',
+  requiresFlat: 'erfordert eine flache Theorie',
+  probabilityHint: 'Knotenbeschriftungen zeigen Wahrscheinlichkeiten',
   // Bipolar support-interpretation selector.
   support: {
     label: 'Unterstützung',
@@ -66,6 +68,15 @@ export default {
     extensions: 'Extensionen',
     ranking: 'Ranking',
     interpretations: 'Interpretationen',
+    probabilities: 'Wahrscheinlichkeiten',
+    sequences: 'Sequenzen',
+  },
+  // Result counts in the status footer.
+  counts: {
+    extensions: '{n} Extension | {n} Extensionen',
+    arguments: '{n} Argument | {n} Argumente',
+    models: '{n} Modell | {n} Modelle',
+    sequences: '{n} Sequenz | {n} Sequenzen',
   },
   status: {
     copyPlain: 'Als Text kopieren',
@@ -78,8 +89,7 @@ export default {
     timedOut: 'Zeitüberschreitung nach {seconds}s',
     failed: 'Auswertung fehlgeschlagen',
     retry: 'Erneut versuchen',
-    evaluating: 'Wird ausgewertet…',
-    evaluatingCountdown: 'Wird ausgewertet… {seconds}s',
+    evaluatingElapsed: 'Wird ausgewertet… {seconds}s',
     hideParams: 'Ausblenden',
     editParams: 'Bearbeiten',
   },
@@ -107,9 +117,8 @@ export default {
   serialisation: {
     modeSequences: 'Sequenzen',
     modeInteractive: 'Interaktiv',
-    timedOut: 'Zeitüberschreitung bei der Auswertung',
     noSequences: 'Keine Serialisierungssequenzen gefunden.',
-    sequenceCount: 'Sequenz | Sequenzen',
+    selectSequenceHint: 'Sequenz auswählen, um ihre Extension hervorzuheben',
     terminal: 'Terminal',
     notTerminal: 'Nicht terminal',
     noInitialSets: 'Keine initialen Mengen verfügbar.',
