@@ -12,7 +12,7 @@ Status (checked against the local `../aig_graph_component` worktree at `d975b92`
 
 ## Needed for the ABA semantic views
 
-See [`aba-graph-representation.md`](aba-graph-representation.md) → _Semantic views_.
+See [`aba-roadmap.md`](aba-roadmap.md) → _Semantic views_.
 
 - **✅ Hyperlink arrow type.** `jsonHyperLink` and `createHyperLink` now accept `arrowType`, and
   `setLinkArrowType` targets both links and hyperlinks. Hyperlink arrow styles also survive JSON
