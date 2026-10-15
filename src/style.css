@@ -40,6 +40,8 @@
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
   --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+  /* The one step below text-xs: field labels and badges. */
+  --text-micro: 0.65rem;
 }
 /* JetBrains Mono lacks these math symbols, and system fallbacks render them tiny or cramped,
    so they come from the bundled KaTeX fonts instead: ∅, and ← ↑ → ↓ ⇒ ∧ ∨ ⊢ ⊣ ⊤ ⊥. */
@@ -70,10 +72,10 @@
 /* Shared caps labels: section headings, and field labels above a control. */
 @layer components {
   .section-label {
-    @apply text-xs font-semibold uppercase tracking-wide text-base-content/50;
+    @apply text-xs font-semibold uppercase tracking-wide text-base-content/65;
   }
   .field-label {
-    @apply text-[0.65rem] font-medium uppercase tracking-wide text-base-content/50;
+    @apply text-micro font-medium uppercase tracking-wide text-base-content/65;
   }
 }
 
@@ -134,6 +136,20 @@
 }
 .shadow-xl {
   --tw-shadow: 0 20px 25px -5px var(--app-shadow-color), 0 8px 10px -6px var(--app-shadow-color);
+}
+/* Float tier: pair with a size (`shadow-lg shadow-float`) for surfaces floating over the canvas.
+   Compound selectors rather than a variable override, so the stronger tint doesn't inherit. */
+:root {
+  --app-shadow-float: color-mix(in srgb, var(--color-shadow) 30%, transparent);
+}
+.shadow-sm.shadow-float {
+  --tw-shadow: 0 1px 3px 0 var(--app-shadow-float), 0 1px 2px -1px var(--app-shadow-float);
+}
+.shadow-md.shadow-float {
+  --tw-shadow: 0 4px 6px -1px var(--app-shadow-float), 0 2px 4px -2px var(--app-shadow-float);
+}
+.shadow-lg.shadow-float {
+  --tw-shadow: 0 10px 15px -3px var(--app-shadow-float), 0 4px 6px -4px var(--app-shadow-float);
 }
 
 html,

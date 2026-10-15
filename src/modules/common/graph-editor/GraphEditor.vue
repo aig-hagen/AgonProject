@@ -2191,14 +2191,14 @@ defineExpose({
         >
           <span
             v-if="typeBadge"
-            class="grid place-items-center h-7 min-w-7 px-1 shrink-0 rounded-field bg-base-200 text-primary text-[0.65rem] font-bold"
+            class="grid place-items-center h-7 min-w-7 px-1 shrink-0 rounded-field bg-base-200 text-primary text-micro font-bold"
           >
             {{ typeBadge }}
           </span>
           <span class="text-sm font-semibold truncate max-w-38">{{
             documentName || t('home.untitled')
           }}</span>
-          <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
+          <ChevronDownIcon class="size-4 shrink-0 text-base-content/65" />
         </button>
         <span class="font-display text-base font-bold text-base-content/80 text-center truncate">
           AgonProject

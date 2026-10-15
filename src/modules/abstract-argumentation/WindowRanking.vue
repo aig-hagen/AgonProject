@@ -298,7 +298,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
               }"
             >
               <span class="font-medium truncate" :title="entry.name">{{ entry.name }}</span>
-              <span class="font-mono text-xs tabular-nums opacity-60 shrink-0">{{
+              <span class="font-mono text-xs tabular-nums text-base-content/65 shrink-0">{{
                 formatScore(entry.score)
               }}</span>
             </div>

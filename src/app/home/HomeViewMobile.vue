@@ -212,10 +212,10 @@ function loadFile() {
         :aria-label="t('home.backToEditor')"
         @click="goTo('editor')"
       >
-        <XMarkIcon class="size-5 opacity-70" />
+        <XMarkIcon class="size-5" />
       </button>
       <h1 class="font-display text-2xl font-bold tracking-tight">AgonProject</h1>
-      <p class="text-sm text-base-content/60 mt-1 max-w-64 leading-snug">
+      <p class="text-sm text-base-content/65 mt-1 max-w-64 leading-snug">
         {{ t('home.tagline') }}
       </p>
     </header>
@@ -256,7 +256,7 @@ function loadFile() {
           </button>
         </div>
 
-        <p v-if="documents.length === 0" class="text-center opacity-60 py-10">
+        <p v-if="documents.length === 0" class="text-center text-base-content/65 py-10">
           {{ t('home.documents.empty') }}
         </p>
 
@@ -302,12 +302,12 @@ function loadFile() {
                   <DocumentTextIcon v-else class="size-6" />
                 </span>
                 <span class="flex flex-col min-w-0 leading-tight">
-                  <span class="truncate text-[0.95rem] font-semibold">{{
+                  <span class="truncate text-base font-semibold">{{
                     document.name || t('home.untitled')
                   }}</span>
                   <span
                     v-if="document.lastEdited !== undefined"
-                    class="text-xs text-base-content/60"
+                    class="text-xs text-base-content/65"
                     >{{ formatEdited(document.lastEdited) }}</span
                   >
                 </span>
@@ -319,7 +319,7 @@ function loadFile() {
                 "
                 @click="menuDocId = document.id"
               >
-                <EllipsisHorizontalIcon class="size-5 opacity-60" />
+                <EllipsisHorizontalIcon class="size-5 text-base-content/65" />
               </button>
             </div>
           </li>

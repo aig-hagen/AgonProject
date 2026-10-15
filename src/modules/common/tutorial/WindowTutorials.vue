@@ -58,7 +58,7 @@ function launch(tutorial: Tutorial) {
     :intitalSize="{ width: 360, height: 300 }"
   >
     <div class="p-4 flex flex-col gap-3">
-      <p class="text-sm text-base-content/60">
+      <p class="text-sm text-base-content/65">
         {{ t('tutorial.intro') }}
       </p>
       <div
@@ -75,7 +75,7 @@ function launch(tutorial: Tutorial) {
               :title="t('tutorial.completed')"
             />
           </div>
-          <p class="text-xs text-base-content/50 mt-0.5">{{ tutorial.description }}</p>
+          <p class="text-xs text-base-content/65 mt-0.5">{{ tutorial.description }}</p>
         </div>
         <button class="btn btn-primary btn-xs shrink-0" @click="launch(tutorial)">
           {{

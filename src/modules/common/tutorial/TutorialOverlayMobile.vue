@@ -236,7 +236,7 @@ function handleStartNext() {
     >
       <div class="rounded-box bg-base-100 border border-primary/20 shadow-xl p-3.5">
         <div class="flex items-center gap-2 mb-2">
-          <span class="text-xs font-semibold text-base-content/60 shrink-0">
+          <span class="text-xs font-semibold text-base-content/65 shrink-0">
             Step {{ activeStepIndex + 1 }} of {{ stepCount }}
           </span>
           <progress
@@ -260,8 +260,8 @@ function handleStartNext() {
             </svg>
           </button>
         </div>
-        <h3 class="text-[15px] font-semibold mb-1">{{ currentStep.title }}</h3>
-        <div class="text-[13px] text-base-content/80 leading-relaxed">
+        <h3 class="text-base font-semibold mb-1">{{ currentStep.title }}</h3>
+        <div class="text-sm text-base-content/80 leading-relaxed">
           <template v-for="(part, i) in bodyParts" :key="i">
             <TermTooltip v-if="typeof part === 'object'" :id="part.tooltipId">{{
               part.text
@@ -272,7 +272,7 @@ function handleStartNext() {
         <div class="flex items-center justify-between gap-2 mt-3">
           <button
             v-if="activeStepIndex > 0"
-            class="btn btn-ghost btn-sm gap-1 text-base-content/70"
+            class="btn btn-ghost btn-sm gap-1 text-base-content/80"
             @click="handlePrev"
           >
             <svg
@@ -318,7 +318,7 @@ function handleStartNext() {
             </button>
             <span
               v-else
-              class="flex items-center gap-2 text-[13px] font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full"
+              class="flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full"
             >
               <span class="size-2 rounded-full bg-primary animate-pulse"></span>
               {{ t('tutorial.controls.waiting') }}

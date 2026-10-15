@@ -103,7 +103,7 @@ function commit() {
         <option :value="null" disabled>{{ t('editor.aba.theory.headPlaceholder') }}</option>
         <option v-for="s in statements" :key="s.id" :value="s.id">{{ s.name }}</option>
       </select>
-      <span class="font-(family-name:--font-graph) text-base-content/60">←</span>
+      <span class="font-(family-name:--font-graph) text-base-content/65">←</span>
       <div
         class="input input-xs h-auto min-h-6 min-w-0 flex-1 flex-wrap gap-1 py-0.5 cursor-text"
         @click="bodyInput?.focus()"

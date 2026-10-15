@@ -423,7 +423,7 @@ watchEffect(async () => {
     v-show="open"
     ref="floating"
     tabindex="0"
-    class="absolute top-0 left-0 rounded-box bg-base-100 flex flex-col shadow-lg/30 border border-base-300 min-w-3xs floating-window"
+    class="absolute top-0 left-0 rounded-box bg-base-100 flex flex-col shadow-lg shadow-float border border-base-300 min-w-3xs floating-window"
     :class="{ 'max-h-[min(80vh,44rem)]': card }"
     :style="{
       transform: `translate(${position.x}px, ${position.y}px)`,
@@ -434,12 +434,12 @@ watchEffect(async () => {
       ref="header"
       class="floating-window-header flex items-center gap-2 py-1.5 pl-2.5 pr-1.5"
     >
-      <span aria-hidden="true" class="grid grid-cols-2 gap-0.5 shrink-0 opacity-40 cursor-grab">
-        <span v-for="i in 6" :key="i" class="size-0.75 rounded-full bg-base-content"></span>
+      <span aria-hidden="true" class="grid grid-cols-2 gap-0.5 shrink-0 cursor-grab">
+        <span v-for="i in 6" :key="i" class="size-0.75 rounded-full bg-base-content/40"></span>
       </span>
       <span
         v-if="loading"
-        class="loading loading-spinner loading-xs text-base-content/50 shrink-0"
+        class="loading loading-spinner loading-xs text-base-content/65 shrink-0"
         :title="t('window.evaluating')"
       ></span>
       <span
@@ -456,7 +456,7 @@ watchEffect(async () => {
       >
         <span class="truncate font-medium">{{ title }}</span>
         <ChevronRightIcon
-          class="size-3 shrink-0 text-base-content/40 transition-transform"
+          class="size-3 shrink-0 text-base-content/65 transition-transform"
           :class="{ 'rotate-90': paramsOpen }"
         />
       </button>

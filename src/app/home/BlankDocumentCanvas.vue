@@ -59,7 +59,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
     <div class="min-h-full flex items-center justify-center">
       <div class="max-w-5xl w-full p-4 sm:p-8 sm:pt-14">
         <h1 class="font-display text-2xl sm:text-4xl font-bold">AgonProject</h1>
-        <p class="text-lg text-base-content/70 mb-2">
+        <p class="text-lg text-base-content/80 mb-2">
           {{ t('home.tagline') }}
         </p>
         <HelpLinks />
@@ -82,13 +82,13 @@ function openContent(content: DocumentT, modulePrefix: string) {
                 />
               </div>
             </div>
-            <p class="text-sm text-base-content/60">
+            <p class="text-sm text-base-content/65">
               {{ moduleCard.description }}
             </p>
             <div class="flex flex-col min-h-32">
               <template v-if="moduleCard.underConstruction">
                 <div class="flex-1"></div>
-                <p class="text-sm text-base-content/50 italic">
+                <p class="text-sm text-base-content/65 italic">
                   {{ t('home.picker.underConstruction') }}
                 </p>
               </template>

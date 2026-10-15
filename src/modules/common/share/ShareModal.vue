@@ -68,7 +68,7 @@ function onClose() {
         </button>
       </form>
       <h3 class="text-base font-bold mb-1 pr-8">{{ t('share.title') }}</h3>
-      <p class="text-xs text-base-content/70 mb-3">
+      <p class="text-xs text-base-content/80 mb-3">
         {{ t('share.description') }}
       </p>
       <div class="flex gap-2">

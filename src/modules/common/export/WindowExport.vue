@@ -59,13 +59,13 @@ const studioHighlightStyle = HighlightStyle.define([
   },
   {
     tag: [tags.tagName, tags.name, tags.labelName, tags.className, tags.typeName],
-    color: 'var(--color-accent)',
+    color: 'color-mix(in oklab, var(--color-secondary), var(--color-base-content) 45%)',
   },
   { tag: [tags.string, tags.special(tags.string)], color: 'var(--color-success)' },
   { tag: [tags.number, tags.literal, tags.unit], color: 'var(--color-info)' },
   {
     tag: [tags.comment, tags.lineComment, tags.blockComment],
-    color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+    color: 'color-mix(in oklch, var(--color-base-content) 65%, transparent)',
     fontStyle: 'italic',
   },
   {
@@ -361,7 +361,7 @@ onBeforeUnmount(() => {
           </ParameterField>
         </div>
         <div class="flex items-center gap-3 text-sm" :class="{ 'opacity-40': mode === 'detached' }">
-          <span class="text-base-content/70">{{ t('export.style.nodeDistance') }}</span>
+          <span class="text-base-content/80">{{ t('export.style.nodeDistance') }}</span>
           <input
             type="range"
             class="range range-xs range-primary grow max-w-xs"
@@ -371,7 +371,7 @@ onBeforeUnmount(() => {
             :disabled="mode === 'detached'"
             v-model.number="selectedNodeDistance"
           />
-          <span class="w-8 text-right font-mono text-xs opacity-70">{{
+          <span class="w-8 text-right font-mono text-xs text-base-content/80">{{
             selectedNodeDistance
           }}</span>
         </div>
@@ -447,7 +447,7 @@ onBeforeUnmount(() => {
         keypath="export.packageNote"
         tag="p"
         scope="global"
-        class="-mt-1.5 text-xs text-base-content/50"
+        class="-mt-1.5 text-xs text-base-content/65"
       >
         <template #package>
           <a
@@ -551,11 +551,11 @@ onBeforeUnmount(() => {
 }
 .preamble-tag {
   flex-shrink: 0;
-  font-size: 0.6rem;
+  font-size: var(--text-micro);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.025em;
   text-transform: uppercase;
-  color: color-mix(in oklch, var(--color-base-content) 55%, transparent);
+  color: color-mix(in oklch, var(--color-base-content) 65%, transparent);
   background: var(--color-base-100);
   border: 1px solid var(--color-base-300);
   padding: 0.05rem 0.375rem;

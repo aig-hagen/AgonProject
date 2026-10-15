@@ -17,12 +17,13 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowLeftIcon, MapPinIcon } from '@heroicons/vue/24/outline'
+import { MapPinIcon } from '@heroicons/vue/24/outline'
 import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
 
 import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
+import SearchInput from '@/modules/common/forms/SearchInput.vue'
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
@@ -62,14 +63,7 @@ watch(
 
 <template>
   <div class="h-screen flex flex-col bg-base-100 overflow-hidden">
-    <!-- Header -->
-    <div class="flex items-center gap-4 px-6 py-3 border-b border-base-300 shrink-0">
-      <RouterLink to="/" class="btn btn-sm btn-ghost gap-1">
-        <ArrowLeftIcon class="size-4" />
-        {{ t('glossary.backToEditor') }}
-      </RouterLink>
-      <h1 class="text-lg font-bold">{{ t('glossary.title') }}</h1>
-    </div>
+    <PageHeader :title="t('glossary.title')" :back-label="t('glossary.backToEditor')" />
 
     <!-- Module tabs -->
     <div role="tablist" class="flex gap-0 px-6 border-b border-base-300 shrink-0 overflow-x-auto">
@@ -81,7 +75,7 @@ watch(
         :class="
           m.prefix === activeModulePrefix
             ? 'border-primary text-primary font-medium'
-            : 'border-transparent text-base-content/60 hover:text-base-content'
+            : 'border-transparent text-base-content/65 hover:text-base-content'
         "
         @click="navigate(m.prefix, '')"
       >
@@ -94,17 +88,12 @@ watch(
       <!-- Left: term list -->
       <div class="w-64 shrink-0 flex flex-col border-r border-base-300 overflow-hidden">
         <div class="p-3 border-b border-base-300">
-          <input
-            v-model="searchQuery"
-            type="search"
-            class="input input-sm w-full"
-            :placeholder="t('glossary.searchPlaceholder')"
-          />
+          <SearchInput v-model="searchQuery" :placeholder="t('glossary.searchPlaceholder')" />
         </div>
         <div class="overflow-y-auto flex-1 py-2">
           <p
             v-if="groupedTerms.length === 0 && !pinnedTerm"
-            class="text-sm text-base-content/40 px-4 py-2"
+            class="text-sm text-base-content/65 px-4 py-2"
           >
             {{ t('glossary.noResults') }}
           </p>
@@ -120,9 +109,7 @@ watch(
             </span>
           </button>
           <template v-for="group in groupedTerms" :key="group.letter">
-            <div
-              class="px-4 pt-2 pb-0.5 text-xs font-semibold text-secondary uppercase tracking-wide"
-            >
+            <div class="section-label px-4 pt-2 pb-0.5">
               {{ group.letter }}
             </div>
             <button
@@ -158,7 +145,7 @@ watch(
                   :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
                 />
               </button>
-              <span v-else class="text-base-content/60">
+              <span v-else class="text-base-content/65">
                 <KatexInlineElement :text="part.label ?? part.ref" />
               </span>
             </template>
@@ -170,7 +157,7 @@ watch(
             <PublicationCitation :publication="activeDefinition.reference" />
           </section>
         </div>
-        <p v-else class="text-sm text-base-content/40">{{ t('glossary.selectTerm') }}</p>
+        <p v-else class="text-sm text-base-content/65">{{ t('glossary.selectTerm') }}</p>
       </div>
     </div>
   </div>

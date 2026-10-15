@@ -332,9 +332,9 @@ const isActive = computed(() => !suppressed && currentHighlight.value !== undefi
         :aria-expanded="paramsOpen"
         @click="paramsOpen = !paramsOpen"
       >
-        <AdjustmentsHorizontalIcon class="size-4 shrink-0 opacity-70" />
+        <AdjustmentsHorizontalIcon class="size-4 shrink-0 text-base-content/65" />
         <span class="flex-1 min-w-0 truncate font-medium">{{ windowTitle }}</span>
-        <span class="text-[0.65rem] opacity-60">{{
+        <span class="text-micro text-base-content/65">{{
           paramsOpen ? t('evaluation.status.hideParams') : t('evaluation.status.editParams')
         }}</span>
       </button>
@@ -393,7 +393,7 @@ const isActive = computed(() => !suppressed && currentHighlight.value !== undefi
           </button>
         </div>
         <template v-if="data !== undefined">
-          <div v-if="data.sequences.length === 0" class="text-sm opacity-60">
+          <div v-if="data.sequences.length === 0" class="text-sm text-base-content/65">
             {{ t('evaluation.serialisation.noSequences') }}
           </div>
           <ol v-else class="flex flex-col gap-2">
@@ -416,7 +416,7 @@ const isActive = computed(() => !suppressed && currentHighlight.value !== undefi
             {{ t('evaluation.serialisation.sequenceCount', data.sequences.length) }}
           </p>
         </template>
-        <p v-if="isLoading" class="text-base-content/50">{{ t('evaluation.status.evaluating') }}</p>
+        <p v-if="isLoading" class="text-base-content/65">{{ t('evaluation.status.evaluating') }}</p>
       </template>
 
       <!-- ── INTERACTIVE RESULTS ── -->
@@ -454,12 +454,14 @@ const isActive = computed(() => !suppressed && currentHighlight.value !== undefi
           <!-- Step selection -->
           <div
             v-if="selectableStepsDisplay.length === 0 && !interactiveIsLoading"
-            class="text-sm opacity-60"
+            class="text-sm text-base-content/65"
           >
             {{ t('evaluation.serialisation.noInitialSets') }}
           </div>
           <div v-else-if="selectableStepsDisplay.length > 0" class="flex flex-col gap-1.5">
-            <p class="opacity-60">{{ t('evaluation.serialisation.selectNextInitialSet') }}</p>
+            <p class="text-base-content/65">
+              {{ t('evaluation.serialisation.selectNextInitialSet') }}
+            </p>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="(step, i) in selectableStepsDisplay"
@@ -472,7 +474,7 @@ const isActive = computed(() => !suppressed && currentHighlight.value !== undefi
               </button>
             </div>
           </div>
-          <p v-if="interactiveIsLoading" class="text-base-content/50">
+          <p v-if="interactiveIsLoading" class="text-base-content/65">
             {{ t('evaluation.status.evaluating') }}
           </p>
         </template>
