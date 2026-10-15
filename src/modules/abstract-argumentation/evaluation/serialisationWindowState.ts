@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import type { StoredSerialisationGraph } from '@/modules/abstract-argumentation/evaluation/serialisationGraph'
 import {
   KEY_DEFAULT_SELECTION_FUNCTION,
   KEY_DEFAULT_TERMINATION_FUNCTION,
@@ -25,7 +26,10 @@ export interface SerialisationWindowInstanceState {
   id: string
   selectionFunctionKey: string
   terminationFunctionKey: string
-  mode: 'sequences' | 'interactive'
+  view: 'graph' | 'list'
+  /** The graph view grows step by step instead of showing every sequence. */
+  exploring: boolean
+  explored?: StoredSerialisationGraph
 }
 
 export function createDefaultSerialisationWindowInstance(): SerialisationWindowInstanceState {
@@ -33,6 +37,7 @@ export function createDefaultSerialisationWindowInstance(): SerialisationWindowI
     id: crypto.randomUUID(),
     selectionFunctionKey: KEY_DEFAULT_SELECTION_FUNCTION,
     terminationFunctionKey: KEY_DEFAULT_TERMINATION_FUNCTION,
-    mode: 'sequences',
+    view: 'graph',
+    exploring: false,
   }
 }

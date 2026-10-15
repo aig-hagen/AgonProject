@@ -37,7 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Evaluation windows show the result count, put the timing last, and count elapsed time while evaluating.
 - The empty extension shows as ∅; IAF fields read Semantics · Type · Mode, matching the title.
 - Probabilistic evaluation gets a mode hint, copy buttons and a note that node labels show probabilities.
-- Serialisation matches the other evaluation windows; click a sequence to highlight its extension.
+- Serialisation window: all sequences as a graph of states or as a list grouped by extension; an Explore toggle
+  builds the graph step by step instead. Selecting or hovering a state shows it on the canvas.
 - Bipolar: the support type explanation moved into a hint; ABA explains why flat-only semantics are disabled.
 
 ### Fixed
