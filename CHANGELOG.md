@@ -34,10 +34,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reaches 11:1 labels in light mode, Minimal is quieter, and Library uses the AIG brand colors.
 - Evaluation highlights are easier to tell apart with red-green color blindness, labels on them always pick
   the more readable text color, and derived nodes get a dotted border.
+- Evaluation windows show the result count, put the timing last, and count elapsed time while evaluating.
+- The empty extension shows as ∅; IAF fields read Semantics · Type · Mode, matching the title.
+- Probabilistic evaluation gets a mode hint, copy buttons and a note that node labels show probabilities.
+- Serialisation window: all sequences as a graph of states or as a list grouped by extension; an Explore toggle
+  builds the graph step by step instead. Selecting or hovering a state shows it on the canvas.
+- Bipolar: the support type explanation moved into a hint; ABA explains why flat-only semantics are disabled.
 
 ### Fixed
 
 - The publications tooltip heading on module cards is now translated.
+- Numerical ranking scores are readable in dark mode, and their colors no longer rely on red-green hue.
 
 ## [0.13.0] - 2026-09-30
 

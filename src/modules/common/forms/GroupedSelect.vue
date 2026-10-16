@@ -31,6 +31,8 @@ export interface GroupedSelectGroup<T> {
   key: string
   displayName: string
   options: T[]
+  /** Short muted note beside the heading, e.g. why its options are disabled. */
+  note?: string
 }
 
 const {
@@ -253,6 +255,9 @@ watch(isOpen, (open) => {
             :class="{ 'mt-1 border-t border-base-200': groupIndex > 0 }"
           >
             {{ group.displayName }}
+            <span v-if="group.note" class="normal-case tracking-normal font-normal">
+              · {{ group.note }}
+            </span>
           </div>
           <div
             v-for="option in group.options"
