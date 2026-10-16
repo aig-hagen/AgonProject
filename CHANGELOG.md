@@ -47,6 +47,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - The publications tooltip heading on module cards is now translated.
+- Glossary: the ADF stable model definition now requires a two-valued model.
+- Glossary: the discussion-based ranking no longer reads backwards (larger discussion counts rank higher).
+- Glossary: possible/necessary acceptance in iAFs now distinguishes extensions, credulous and skeptical acceptance.
+- Glossary: corrected the selection function, reduct, grounded, burden number, serialisation index, SetAF and
+  ADF completion definitions.
 - Numerical ranking scores are readable in dark mode, and their colors no longer rely on red-green hue.
 
 ## [0.13.0] - 2026-09-30
