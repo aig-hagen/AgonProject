@@ -26,7 +26,7 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
+  <div class="flex flex-col h-dvh w-full bg-base-100 overflow-hidden">
     <PageHeader :title="t('thirdParty.titleShort')" :back-label="t('home.backToEditor')" />
 
     <!-- Single-column disclosure list -->

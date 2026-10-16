@@ -30,12 +30,12 @@ import {
   buildAfOptionList,
   LATEX_PREAMBLE,
   LATEX_STYLE_CHOICES,
-  LATEX_STYLE_DEFAULTS,
   spliceAfOptions,
 } from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ExportSheet from '@/modules/common/export/ExportSheet.vue'
+import { useExportPreferences } from '@/modules/common/export/useExportPreferences'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -97,12 +97,14 @@ const latexConfig = computed<ExportConfig<DocumentT> | undefined>(() =>
   exportConfigs.find((config) => config.id === ExportFormatId.Latex),
 )
 
-const selectedArgumentStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.argumentStyle)
-const selectedNameStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.nameStyle)
-const selectedAttackStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.attackStyle)
-const selectedSupportStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.supportStyle)
-const selectedNodeDistance = shallowRef<number>(LATEX_STYLE_DEFAULTS.nodeDistance)
-const selectedNodeLabels = shallowRef<NodeLabelMode>(LATEX_STYLE_DEFAULTS.nodeLabels)
+const {
+  argumentStyle: selectedArgumentStyle,
+  nameStyle: selectedNameStyle,
+  attackStyle: selectedAttackStyle,
+  supportStyle: selectedSupportStyle,
+  nodeDistance: selectedNodeDistance,
+  nodeLabels: selectedNodeLabels,
+} = useExportPreferences()
 
 // The style values are the package's own (untranslated) keywords, so label == value.
 const toOptions = (values: readonly string[]): PickerOption[] =>

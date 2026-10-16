@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - "Color-blind friendly colors" setting: evaluation results switch to blue and red-orange, which stay apart for
   red-green and blue-yellow color blindness on every graph style.
 - Load ICCMA text files (`.af`, `.baf`, `.setaf`, `.iaf`, `.paf`, `.aba`) from the file menu; imported graphs are laid out automatically.
+- Web app manifest and home-screen icons: "Add to Home Screen" now opens AgonProject full-window, without browser bars.
 
 ### Changed
 
@@ -23,17 +24,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - New blank and generated documents are numbered from the start (AF1, AF2, …) instead of starting with a bare "AF".
 - One type scale on desktop and mobile, and muted text is darker so it meets WCAG AA contrast in light mode.
 - Glossary, generator, privacy and attributions pages share one header bar with a centered title and a back button.
+- Mobile: phones in landscape keep the mobile layout instead of switching to the desktop one.
 - Privacy and third-party links in Help open in the same tab, so back returns to the editor instead of a second app instance.
 - Glossary search uses one search field style on desktop and mobile, with a visible keyboard focus ring.
+- Export options (LaTeX style, image format, scale and background) are remembered across sessions and shared between desktop and mobile.
+- Mobile LaTeX export shows the `argumentation` package note with its link, like desktop.
 - Floating windows, sheets and menus cast palette-tinted shadows; muted icons and code highlighting use the app palette.
 - Graph style presets come from the app palette: every preset now has a proper dark mode, High contrast
   reaches 11:1 labels in light mode, Minimal is quieter, and Library uses the AIG brand colors.
 - Evaluation highlights are easier to tell apart with red-green color blindness, labels on them always pick
   the more readable text color, and derived nodes get a dotted border.
+- Evaluation windows show the result count, put the timing last, and count elapsed time while evaluating.
+- The empty extension shows as ∅; IAF fields read Semantics · Type · Mode, matching the title.
+- Probabilistic evaluation gets a mode hint, copy buttons and a note that node labels show probabilities.
+- Serialisation window: all sequences as a graph of states or as a list grouped by extension; an Explore toggle
+  builds the graph step by step instead. Selecting or hovering a state shows it on the canvas.
+- Bipolar: the support type explanation moved into a hint; ABA explains why flat-only semantics are disabled.
 
 ### Fixed
 
 - The publications tooltip heading on module cards is now translated.
+- Numerical ranking scores are readable in dark mode, and their colors no longer rely on red-green hue.
 
 ## [0.13.0] - 2026-09-30
 

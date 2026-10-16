@@ -16,27 +16,19 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<script lang="ts">
-import { shallowRef } from 'vue'
-
-type ImageFormat = 'svg' | 'png'
-const FORMATS: ImageFormat[] = ['svg', 'png']
-const SCALES = [1, 2, 3]
-
-// Remembered for the session so reopening the export keeps the last choices.
-const format = shallowRef<ImageFormat>('svg')
-const scale = shallowRef(2)
-const transparent = shallowRef(true)
-</script>
-
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core'
-import { computed, inject, onScopeDispose, watch } from 'vue'
+import { computed, inject, onScopeDispose, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import { embedFonts, rasterizeSvg } from '@/modules/common/export/exportImage'
+import {
+  IMAGE_FORMATS as FORMATS,
+  IMAGE_SCALES as SCALES,
+  useExportPreferences,
+} from '@/modules/common/export/useExportPreferences'
 import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
 import { useTheme } from '@/modules/common/theme/useTheme'
 
@@ -49,6 +41,11 @@ const { fill = false } = defineProps<{
 const emit = defineEmits<{ export: [filedata: ExportFileData]; previewLoaded: [] }>()
 
 const { t } = useI18n({ useScope: 'global' })
+const {
+  imageFormat: format,
+  imageScale: scale,
+  imageTransparent: transparent,
+} = useExportPreferences()
 const graphSvgRenderer = inject(GRAPH_SVG_RENDERER_KEY, undefined)
 const { isDark } = useTheme()
 const canCopyImage = typeof ClipboardItem !== 'undefined'

@@ -17,18 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import {
-  computed,
-  inject,
-  onUnmounted,
-  provide,
-  ref,
-  shallowRef,
-  toRef,
-  useTemplateRef,
-  watch,
-  watchEffect,
-} from 'vue'
+import { computed, provide, ref, shallowRef, toRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
@@ -37,15 +26,14 @@ import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWind
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import { binaryAttacks, extensionLabels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
+import { modeLabel, modeOptions } from '@/modules/common/evaluation/modes'
 import type { Input } from '@/modules/common/evaluation/types'
+import { useEvaluationTutorialRefs } from '@/modules/common/evaluation/useEvaluationTutorialRefs'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
-import {
-  type Highlight,
-  TUTORIAL_REF_REGISTRY_KEY,
-} from '@/modules/common/graph-editor/graphEditor'
+import type { Highlight } from '@/modules/common/graph-editor/graphEditor'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 import AcceptanceTypeHint from '@/modules/incomplete-argumentation/AcceptanceTypeHint.vue'
@@ -137,37 +125,21 @@ const {
   emptyMessage,
   dataExtensionsFormatedAndSorted,
   resultItems,
+  countLabel,
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query, (extension) =>
   extensionLabels(extension, binaryAttacks(input.content.definiteAttacks())),
 )
 
-// Register the type/semantics selectors and the result grid as tutorial-spotlight targets while
-// this window is the active one, so the evaluation tutorial can highlight them.
-const registerTutorialRef = inject(TUTORIAL_REF_REGISTRY_KEY, null)
 const typeSelectRef = useTemplateRef<{ $el: HTMLElement }>('typeSelect')
 const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect')
 const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
-watchEffect(() => {
-  if (!registerTutorialRef || suppressed) return
-  registerTutorialRef('typeSelector', typeSelectRef.value?.$el ?? null)
-  registerTutorialRef('semanticsSelector', semanticsSelectRef.value?.$el ?? null)
-})
-watch(
-  [resultsAreaRef, () => resultItems.value.length, () => suppressed],
-  () => {
-    if (!registerTutorialRef) return
-    const grid = suppressed
-      ? null
-      : (resultsAreaRef.value?.querySelector<HTMLElement>('.evaluation-result-grid') ?? null)
-    registerTutorialRef('resultArea', grid)
-  },
-  { flush: 'post', immediate: true },
-)
-onUnmounted(() => {
-  registerTutorialRef?.('typeSelector', null)
-  registerTutorialRef?.('semanticsSelector', null)
-  registerTutorialRef?.('resultArea', null)
+useEvaluationTutorialRefs({
+  selectors: { typeSelector: typeSelectRef, semanticsSelector: semanticsSelectRef },
+  resultsArea: resultsAreaRef,
+  resultsVersion: () => resultItems.value.length,
+  suppressed: () => suppressed,
+  grid: true,
 })
 
 // Always reported; the host's useEvaluationFocus picks which window paints the canvas.
@@ -179,13 +151,8 @@ const windowTitle = computed(() => {
     selectedType.value === 'pos'
       ? t('evaluation.acceptanceType.possible')
       : t('evaluation.acceptanceType.necessary')
-  const modeLabel =
-    selectedMode.value === 'enumerate'
-      ? t('evaluation.modes.enumerate')
-      : selectedMode.value === 'credulous'
-        ? t('evaluation.modes.credulous')
-        : t('evaluation.modes.skeptical')
-  return `${selectedSemantic.value.displayName} · ${typeLabel} · ${modeLabel}`
+  const modeText = modeLabel(t, selectedMode.value)
+  return `${selectedSemantic.value.displayName} · ${typeLabel} · ${modeText}`
 })
 
 // The compact host labels its switcher pill with this title (not the raw key).
@@ -207,6 +174,14 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
     @evaluate="emit('evaluate')"
   >
     <template #parameters>
+      <ParameterField :label="t('evaluation.fields.semantics')" min-width="10rem">
+        <GroupedSelect
+          ref="semanticsSelect"
+          v-model="selectedSemantic"
+          :groups="semanticsSelectGroups"
+          full-width
+        />
+      </ParameterField>
       <ParameterField :label="t('evaluation.acceptanceType.label')" max-width="8rem">
         <template #label-suffix>
           <AcceptanceTypeHint :type="selectedType" />
@@ -220,26 +195,11 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
           ]"
         />
       </ParameterField>
-      <ParameterField :label="t('evaluation.fields.semantics')" min-width="10rem">
-        <GroupedSelect
-          ref="semanticsSelect"
-          v-model="selectedSemantic"
-          :groups="semanticsSelectGroups"
-          full-width
-        />
-      </ParameterField>
       <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
         <template #label-suffix>
           <ModeHint :mode="selectedMode" />
         </template>
-        <PickerSelect
-          v-model="selectedMode"
-          :options="[
-            { value: 'enumerate', label: t('evaluation.modes.enumerate') },
-            { value: 'credulous', label: t('evaluation.modes.credulous') },
-            { value: 'skeptical', label: t('evaluation.modes.skeptical') },
-          ]"
-        />
+        <PickerSelect v-model="selectedMode" :options="modeOptions(t)" />
       </ParameterField>
     </template>
     <template #parameters-footer>
@@ -253,6 +213,7 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
           :items="resultItems"
           :empty-message="emptyMessage"
           :selection-hint="selectionHint"
+          :count-label="countLabel"
           :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
         />
       </div>

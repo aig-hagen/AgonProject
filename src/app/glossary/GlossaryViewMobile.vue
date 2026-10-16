@@ -40,7 +40,7 @@ const {
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
+  <div class="flex flex-col h-dvh w-full bg-base-100 overflow-hidden">
     <PageHeader :title="t('glossary.title')" :back-label="t('glossary.backToEditor')" />
 
     <!-- Module selector -->

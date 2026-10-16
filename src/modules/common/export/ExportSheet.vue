@@ -19,7 +19,6 @@
 <script setup lang="ts" generic="DocumentT">
 import {
   ArrowDownTrayIcon,
-  ArrowTopRightOnSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CodeBracketIcon,
@@ -27,17 +26,14 @@ import {
   PhotoIcon,
   ShareIcon,
 } from '@heroicons/vue/24/outline'
-import { computed, inject, ref, shallowRef } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import {
-  LATEX_PREAMBLE,
-  LATEX_STYLE_CHOICES,
-  LATEX_STYLE_DEFAULTS,
-} from '@/modules/common/argumentation/export'
+import { LATEX_PREAMBLE, LATEX_STYLE_CHOICES } from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ImageExportPanel from '@/modules/common/export/ImageExportPanel.vue'
+import { useExportPreferences } from '@/modules/common/export/useExportPreferences'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
@@ -70,13 +66,9 @@ const canShareNatively = supportsNativeShare()
 type Screen = 'picker' | 'svg' | 'code'
 const screen = ref<Screen>('picker')
 
-// Same defaults and output as the desktop LaTeX studio.
-const argumentStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.argumentStyle)
-const nameStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.nameStyle)
-const attackStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.attackStyle)
-const supportStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.supportStyle)
-const nodeDistance = shallowRef<number>(LATEX_STYLE_DEFAULTS.nodeDistance)
-const nodeLabels = shallowRef<NodeLabelMode>(LATEX_STYLE_DEFAULTS.nodeLabels)
+// Shared with the desktop LaTeX studio.
+const { argumentStyle, nameStyle, attackStyle, supportStyle, nodeDistance, nodeLabels } =
+  useExportPreferences()
 
 const isBipolarDocument = computed(
   () => typeof (input as unknown as { supports?: unknown }).supports === 'function',
@@ -93,7 +85,7 @@ const styleOptions = computed<ExportStyleOptions>(() => ({
 }))
 
 // The config with a code editor (LaTeX) is both the code view and the SVG source;
-// the rest (ICCMA, TGF) are plain data downloads.
+// the rest (AF, TGF) are plain data downloads.
 const codeConfig = computed(() => exportConfigs.find((c) => c.codemirrorOptions !== undefined))
 const dataConfigs = computed(() => exportConfigs.filter((c) => c.codemirrorOptions === undefined))
 
@@ -223,16 +215,6 @@ function download(config: ExportConfig<DocumentT>) {
       </button>
 
       <div class="flex items-center gap-2">
-        <a
-          v-if="codeConfig?.references?.[0]"
-          :href="codeConfig.references[0].url"
-          :title="codeConfig.references[0].label"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-ghost btn-square size-12"
-        >
-          <ArrowTopRightOnSquareIcon class="size-5" />
-        </a>
         <ButtonSave
           class="btn btn-primary h-12 flex-1"
           :filedata="codeFiledata"
@@ -254,6 +236,26 @@ function download(config: ExportConfig<DocumentT>) {
           icon-only
         />
       </div>
+      <i18n-t
+        v-if="isLatex"
+        keypath="export.packageNote"
+        tag="p"
+        scope="global"
+        class="-mt-1.5 px-1 text-xs text-base-content/65"
+      >
+        <template #package>
+          <a
+            v-if="codeConfig?.references?.[0]"
+            :href="codeConfig.references[0].url"
+            :title="codeConfig.references[0].label"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link link-primary"
+            >argumentation</a
+          >
+          <template v-else>argumentation</template>
+        </template>
+      </i18n-t>
 
       <pre
         class="overflow-auto rounded bg-base-200 p-2 text-xs leading-relaxed max-h-64"

@@ -29,6 +29,8 @@ const props = defineProps<{
   items: { key: string; label: string; texLabel: string }[]
   emptyMessage?: string
   selectionHint?: string
+  /** Localized result count, e.g. "3 extensions". */
+  countLabel?: string
   evaluationDurationInMs?: number
   /** Localized plural noun for the copy notification, e.g. "extensions". */
   resultNoun?: string
@@ -36,10 +38,14 @@ const props = defineProps<{
 
 const resolvedEmptyMessage = computed(() => props.emptyMessage ?? t('evaluation.status.noResults'))
 
+// Count and hint only make sense with results; the empty alert already says there are none.
 const statusLine = computed(() => {
   const parts: string[] = []
+  if (props.items.length > 0) {
+    if (props.countLabel) parts.push(props.countLabel)
+    if (props.selectionHint) parts.push(props.selectionHint)
+  }
   if (props.evaluationDurationInMs !== undefined) parts.push(props.evaluationDurationInMs + 'ms')
-  if (props.selectionHint) parts.push(props.selectionHint)
   return parts.join(' · ')
 })
 
@@ -144,7 +150,7 @@ onBeforeUnmount(() => {
       v-for="item of props.items"
       :key="item.key"
       type="button"
-      class="btn btn-sm gap-2 justify-start outline-none focus:outline-none text-base font-(family-name:--font-graph) [word-spacing:-0.5ch]"
+      class="btn btn-sm gap-2 justify-start text-base font-(family-name:--font-graph) [word-spacing:-0.5ch]"
       :class="{
         'btn-soft': selected === item.key,
         'btn-ghost': selected !== item.key,

@@ -37,7 +37,7 @@ const sections = computed(() => [
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh w-screen overflow-hidden bg-base-100">
+  <div class="flex flex-col h-dvh w-full overflow-hidden bg-base-100">
     <PageHeader :title="t('privacy.pageTitle')" :back-label="t('privacy.backToEditor')" />
 
     <div
