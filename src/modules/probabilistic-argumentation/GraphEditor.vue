@@ -51,9 +51,11 @@ import {
 } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/probabilistic-argumentation/export'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
-import type {
-  PafArgumentData,
-  ProbabilisticArgumentation,
+import {
+  clampProbability,
+  MIN_PROBABILITY,
+  type PafArgumentData,
+  type ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
 import ProbabilityEditor from '@/modules/probabilistic-argumentation/ProbabilityEditor.vue'
 import { pafBasicsTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-basics'
@@ -457,7 +459,7 @@ function openPopup(label: ProbabilityLabel, event: MouseEvent) {
 }
 
 function applyEdit(value: number) {
-  const clamped = Math.max(0, Math.min(1, value))
+  const clamped = clampProbability(value)
   editingValue.value = clamped
   const lbl = editingLabel.value
   if (lbl === null) return
@@ -629,7 +631,7 @@ function onPopupKeydown(event: KeyboardEvent) {
             </span>
             <input
               type="number"
-              min="0"
+              :min="MIN_PROBABILITY"
               max="1"
               step="0.01"
               class="input input-xs w-16 shrink-0 pl-1.5 pr-1 text-right font-mono"
@@ -639,7 +641,7 @@ function onPopupKeydown(event: KeyboardEvent) {
           </div>
           <input
             type="range"
-            min="0"
+            :min="MIN_PROBABILITY"
             max="1"
             step="0.01"
             class="range range-xs w-full"

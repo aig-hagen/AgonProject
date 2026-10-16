@@ -23,9 +23,11 @@ import { useI18n } from 'vue-i18n'
 import type { DocumentId } from '@/modules/common/documents/db'
 import type { Input } from '@/modules/common/evaluation/types'
 import WindowShell from '@/modules/common/window/WindowShell.vue'
-import type {
-  PafArgumentData,
-  ProbabilisticArgumentation,
+import {
+  clampProbability,
+  MIN_PROBABILITY,
+  type PafArgumentData,
+  type ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
 
 const open = defineModel<boolean>('open', { required: true })
@@ -66,18 +68,24 @@ const attackList = computed(() => {
   }))
 })
 
+function readProbability(event: Event): number | undefined {
+  const target = event.target as HTMLInputElement
+  const value = parseFloat(target.value)
+  if (isNaN(value)) return undefined
+  const clamped = clampProbability(value)
+  // Show the clamped value even when the stored one doesn't change.
+  target.value = String(clamped)
+  return clamped
+}
+
 function onArgumentProbabilityInput(id: number, event: Event) {
-  const value = parseFloat((event.target as HTMLInputElement).value)
-  if (!isNaN(value) && value >= 0 && value <= 1) {
-    emit('changeArgumentProbability', id, value)
-  }
+  const value = readProbability(event)
+  if (value !== undefined) emit('changeArgumentProbability', id, value)
 }
 
 function onAttackProbabilityInput(sourceId: number, targetId: number, event: Event) {
-  const value = parseFloat((event.target as HTMLInputElement).value)
-  if (!isNaN(value) && value >= 0 && value <= 1) {
-    emit('changeAttackProbability', sourceId, targetId, value)
-  }
+  const value = readProbability(event)
+  if (value !== undefined) emit('changeAttackProbability', sourceId, targetId, value)
 }
 
 // Row-jump: when the editor opens (or the target changes) from a node/attack tap,
@@ -125,7 +133,7 @@ watch(
             <span class="w-8 text-right font-mono text-xs shrink-0">{{ arg.name }}</span>
             <input
               type="range"
-              min="0"
+              :min="MIN_PROBABILITY"
               max="1"
               step="0.01"
               class="range range-xs flex-1"
@@ -134,7 +142,7 @@ watch(
             />
             <input
               type="number"
-              min="0"
+              :min="MIN_PROBABILITY"
               max="1"
               step="0.01"
               class="input input-xs w-16 text-right font-mono"
@@ -160,7 +168,7 @@ watch(
             >
             <input
               type="range"
-              min="0"
+              :min="MIN_PROBABILITY"
               max="1"
               step="0.01"
               class="range range-xs flex-1"
@@ -169,7 +177,7 @@ watch(
             />
             <input
               type="number"
-              min="0"
+              :min="MIN_PROBABILITY"
               max="1"
               step="0.01"
               class="input input-xs w-16 text-right font-mono"

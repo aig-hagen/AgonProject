@@ -25,8 +25,8 @@ import type { ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationStatusFooter from '@/modules/common/evaluation/EvaluationStatusFooter.vue'
-import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
 import { modeLabel, modeOptions } from '@/modules/common/evaluation/modes'
+import TermHint from '@/modules/common/evaluation/TermHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useEvaluationTutorialRefs } from '@/modules/common/evaluation/useEvaluationTutorialRefs'
 import { escapeTexText } from '@/modules/common/export/texEscape'
@@ -101,6 +101,11 @@ const isApproximate = computed({
     selectedSolver.value = v ? 'montecarlo' : 'simple'
   },
 })
+const acceptanceProbabilityTermId = computed(() =>
+  selectedMode.value === 'skeptical'
+    ? 'skepticalAcceptanceProbability'
+    : 'credulousAcceptanceProbability',
+)
 watch([selectedSemantic, selectedMode, selectedSolver], () => {
   emit('update:instanceState', {
     id: instanceState.id,
@@ -179,7 +184,7 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
       </ParameterField>
       <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
         <template #label-suffix>
-          <ModeHint :mode="selectedMode" />
+          <TermHint :id="acceptanceProbabilityTermId" />
         </template>
         <PickerSelect
           v-model="selectedMode"

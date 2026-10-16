@@ -55,6 +55,7 @@ import {
 } from '@/modules/incomplete-argumentation/model'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 import {
+  clampProbability,
   type PafArgumentData,
   ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
@@ -322,11 +323,11 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
           paf.addArgument(i, {
             name: String(i + 1),
             ...circularPos(i),
-            probability: data.argument_probabilities[i] ?? 1,
+            probability: clampProbability(data.argument_probabilities[i] ?? 1),
           })
         }
         data.attacks.forEach(([src, tgt], j) => {
-          paf.addAttack(src - 1, tgt - 1, data.attack_probabilities[j] ?? 1)
+          paf.addAttack(src - 1, tgt - 1, clampProbability(data.attack_probabilities[j] ?? 1))
         })
         generated.value = paf
         stats.value = { nArgs: n, nAttacks: data.attacks.length }

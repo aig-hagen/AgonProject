@@ -28,13 +28,15 @@ import {
 } from '@/modules/common/argumentation/save/saveFormat'
 import type { DeserializationResult } from '@/modules/common/save/load'
 import {
+  clampProbability,
   type PafArgumentData,
   ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
 
 const API_VERSION = 'probabilistic-argumentation-framework/v1' as const
 
-const ProbabilitySchema = z.number().min(0).max(1)
+// Older saves may contain 0; lift it to the minimum.
+const ProbabilitySchema = z.number().min(0).max(1).transform(clampProbability)
 
 const AnnotationPositionSaveSchema = z.strictObject({
   angle: z.number(),
