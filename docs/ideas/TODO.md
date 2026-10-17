@@ -9,8 +9,6 @@
 
 - **7. [S] Publications on module cards.** Desktop shows a `PublicationsTooltip` on each home card
   (`BlankDocumentCanvas.vue`); the mobile cards show none.
-- **8. [S] Clear extension highlighting.** The only way to turn highlighting off is to tap the
-  selected extension again. Add an explicit clear action.
 - **26. [M] Landscape layout.** Phones in landscape now get the compact shell, but its top and
   bottom bars leave little canvas height. Consider moving the command bar to a side rail.
 
@@ -22,7 +20,7 @@ Feature work (BAF/ADF views, LaTeX export, generation, Δ-semantics, tutorials) 
 ### Evaluation window
 
 - **11. [S] Semantics definitions.** Some semantics show incomplete definitions, and the semantics
-  list needs a cleaner layout.
+  list needs a cleaner layout (for ABA). 
 - **12. [S] Glossary.** Update the ABA glossary entries, and in the evaluation window show the
   definitions for flat and non-flat theories separately.
 
