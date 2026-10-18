@@ -305,7 +305,8 @@ quote doesn't count.
 
 ### Phase 7 — Literature page & publication tags
 
-Settled: one page, no per-publication routes (anchors only); tags hand-picked; abstracts for
+Settled: a Literature tab in the glossary (`/glossary/Literature`), no route of its own and no
+per-publication routes (anchors only); tags hand-picked; abstracts for
 search only, never displayed.
 
 - [x] Uncited check: only BDKM16. Kept, cited as further reading on `rankingSemantics`.
@@ -315,12 +316,12 @@ search only, never displayed.
     of Formal Argumentation chapters), foundations (general complexity theory)
 - [x] `lit:abstracts` in `scripts/literature.mjs`: Crossref/OpenAlex (31), else the PDF's first
       page (18; 6 fixed by hand), else none (19). Writes `abstracts.json`, loaded only by the literature page.
-- [ ] Search: every query word must match a field (title, authors, venue, year, key, abstract),
+- [x] Search: every query word must match a field (title, authors, venue, year, key, abstract),
       accent-insensitive; ranked by field weight. Tags filter via chips.
-- [ ] `/literature` page next to the glossary: every publication with its citation and link.
-- [ ] "Cited in" per publication, computed from glossary `meta.ts`, `[@KEY]` citations, complexity
+- [x] Literature tab in the glossary (after Complexity): every publication with its citation and link.
+- [x] "Cited in" per publication, computed from glossary `meta.ts`, `[@KEY]` citations, complexity
       cells and module cards, linking back to the glossary.
-- [ ] Add the page to the Phase 5 sitemap.
+- [x] Add the tab (`/glossary/Literature`) to the Phase 5 sitemap.
 
 ### Phase 8 — Localization infrastructure
 

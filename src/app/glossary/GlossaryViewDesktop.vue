@@ -18,6 +18,7 @@
 -->
 <script setup lang="ts">
 import { MapPinIcon } from '@heroicons/vue/24/outline'
+import type { Objectish } from 'immer'
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -26,11 +27,15 @@ import ComplexityOverview from '@/app/glossary/ComplexityOverview.vue'
 import ComplexityResults from '@/app/glossary/ComplexityResults.vue'
 import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
-import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
+import { glossaryModules, LITERATURE_TAB, useGlossary } from '@/app/glossary/useGlossary'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
+import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
+
+const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -43,6 +48,7 @@ const {
   pinnedTerm,
   groupedTerms,
   activeDefinition,
+  literatureActive,
   navigate,
   followRef,
 } = useGlossary(t('glossary.title'))
@@ -52,8 +58,9 @@ const overviewTable = computed(() => complexityTableFor(activeTermKey.value))
 
 // Auto-select the framework (main) entry when the module changes or no valid term is in the URL.
 watch(
-  activeModulePrefix,
-  (prefix) => {
+  [activeModulePrefix, literatureActive],
+  ([prefix, literature]) => {
+    if (literature) return
     const module = glossaryModules.find((m) => m.prefix === prefix)
     const glossary = module?.glossary ?? {}
     if (!activeTermKey.value || !glossary[activeTermKey.value]) {
@@ -82,7 +89,7 @@ watch(
         role="tab"
         class="px-4 py-2.5 text-sm border-b-2 whitespace-nowrap transition-colors"
         :class="
-          m.prefix === activeModulePrefix
+          !literatureActive && m.prefix === activeModulePrefix
             ? 'border-primary text-primary font-medium'
             : 'border-transparent text-base-content/65 hover:text-base-content'
         "
@@ -90,10 +97,24 @@ watch(
       >
         {{ m.prefix }}
       </button>
+      <button
+        role="tab"
+        class="px-4 py-2.5 text-sm border-b-2 whitespace-nowrap transition-colors"
+        :class="
+          literatureActive
+            ? 'border-primary text-primary font-medium'
+            : 'border-transparent text-base-content/65 hover:text-base-content'
+        "
+        @click="navigate(LITERATURE_TAB, '')"
+      >
+        {{ t('literature.title') }}
+      </button>
     </div>
 
+    <LiteraturePanel v-if="literatureActive" :modules="modules" />
+
     <!-- Two-panel body -->
-    <div class="flex flex-1 overflow-hidden">
+    <div v-else class="flex flex-1 overflow-hidden">
       <!-- Left: term list -->
       <div class="w-64 shrink-0 flex flex-col border-r border-base-300 overflow-hidden">
         <div class="p-3 border-b border-base-300">

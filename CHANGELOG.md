@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Glossary: a Literature tab lists every cited publication, with search over titles, authors, venues and abstracts, formalism and topic filters, and links to where it is cited.
 - Glossary: computational complexity results for AF and ADF semantics, each with its source, on every semantics page and in overview tables, plus a Complexity tab defining the reasoning problems and complexity classes.
 - Every glossary term has its own URL (e.g. `/glossary/AF/ADM`) and page title, and the sitemap lists them all; old `?module=&term=` links still work.
 - Glossary entries can carry a longer write-up with citations, shown on the glossary page and linked from tooltips ("More →"); each entry lists the entries that reference it.

@@ -81,6 +81,9 @@ export function plainText(text: string): string {
   )
 }
 
+/** Path segment of the literature tab, which lists publications instead of terms. */
+export const LITERATURE_TAB = 'Literature'
+
 export function glossaryPath(modulePrefix?: string, termKey?: string): string {
   return ['/glossary', modulePrefix, termKey].filter(Boolean).join('/')
 }
@@ -155,6 +158,7 @@ export function useGlossary(glossaryTitle: string) {
   })
 
   const activeTermKey = computed(() => param('term') ?? '')
+  const literatureActive = computed(() => param('module') === LITERATURE_TAB)
 
   // Old `?module=&term=` links and tooltips' `?term=` (keys are unique, so the module is
   // optional) move to the canonical path.
@@ -260,6 +264,7 @@ export function useGlossary(glossaryTitle: string) {
     activeModulePrefix,
     activeTermKey,
     activeModule,
+    literatureActive,
     searchQuery,
     pinnedTerm,
     groupedTerms,

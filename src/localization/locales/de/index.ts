@@ -25,6 +25,7 @@ import generate from '@/localization/locales/de/messages/generate'
 import glossary from '@/localization/locales/de/messages/glossary'
 import help from '@/localization/locales/de/messages/help'
 import home from '@/localization/locales/de/messages/home'
+import literature from '@/localization/locales/de/messages/literature'
 import menu from '@/localization/locales/de/messages/menu'
 import modules from '@/localization/locales/de/messages/modules'
 import notFound from '@/localization/locales/de/messages/notFound'
@@ -46,6 +47,7 @@ const messages: LocaleMessageSchema = {
   glossary,
   help,
   home,
+  literature,
   menu,
   modules,
   notFound,

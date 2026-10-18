@@ -23,6 +23,7 @@ Code here isn't specific to any argumentation type; it's the chrome around the e
 - [`home/`](/src/app/home/) — the landing page, editor tabs, and [`moduleConfig.ts`](/src/app/home/moduleConfig.ts) (the `ModuleConfig` interface every argumentation module implements to plug into the tab/document system)
 - [`generate/`](/src/app/generate/) — the random framework generation view (talks to the `graph-gen` server)
 - [`glossary/`](/src/app/glossary/) — the standalone glossary browser view
+- [`literature/`](/src/app/literature/) — the glossary's Literature tab: every publication with search, tag filters and where it is cited
 - [`share/`](/src/app/share/) — the view for opening a shared framework link
 - [`third-party/`](/src/app/third-party/) — the in-app third-party attributions view
 - [`privacy/`](/src/app/privacy/) — the user-facing analytics and privacy notice

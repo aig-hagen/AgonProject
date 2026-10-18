@@ -17,13 +17,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import type { Objectish } from 'immer'
 import { nextTick, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import GlossaryCardMobile from '@/app/glossary/GlossaryCardMobile.vue'
-import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
+import { glossaryModules, LITERATURE_TAB, useGlossary } from '@/app/glossary/useGlossary'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
+import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
+
+const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -35,6 +40,7 @@ const {
   searchQuery,
   pinnedTerm,
   groupedTerms,
+  literatureActive,
   selectModule,
   followRef,
 } = useGlossary(t('glossary.title'))
@@ -66,7 +72,7 @@ watch(
           :key="m.prefix"
           class="px-3.5 h-8 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
           :class="
-            m.prefix === activeModulePrefix
+            !literatureActive && m.prefix === activeModulePrefix
               ? 'bg-primary text-primary-content'
               : 'bg-base-200 text-base-content/80'
           "
@@ -74,16 +80,30 @@ watch(
         >
           {{ m.prefix }}
         </button>
+        <button
+          class="px-3.5 h-8 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
+          :class="
+            literatureActive
+              ? 'bg-primary text-primary-content'
+              : 'bg-base-200 text-base-content/80'
+          "
+          @click="selectModule(LITERATURE_TAB)"
+        >
+          {{ t('literature.title') }}
+        </button>
       </div>
     </div>
 
+    <LiteraturePanel v-if="literatureActive" :modules="modules" />
+
     <!-- Search -->
-    <div class="flex-none px-4 pt-3 pb-1">
+    <div v-if="!literatureActive" class="flex-none px-4 pt-3 pb-1">
       <SearchInput v-model="searchQuery" :placeholder="t('glossary.searchPlaceholder')" />
     </div>
 
     <!-- Entry list -->
     <div
+      v-if="!literatureActive"
       ref="list"
       class="flex-1 overflow-y-auto px-4 pt-2 flex flex-col gap-2.5"
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"

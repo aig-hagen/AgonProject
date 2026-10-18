@@ -92,7 +92,7 @@ function gzipFixPlugin(): Plugin {
   }
 }
 
-// sitemap.xml at build time: the home page plus one URL per glossary term, read from the
+// sitemap.xml at build time: the home page, the literature tab and one URL per glossary term, read from the
 // glossary Markdown files so it can't drift from the content.
 function sitemapPlugin(): Plugin {
   const site = 'https://agonproject.aig.fernuni-hagen.de'
@@ -100,7 +100,7 @@ function sitemapPlugin(): Plugin {
     name: 'sitemap',
     apply: 'build',
     generateBundle() {
-      const paths = ['/', '/glossary']
+      const paths = ['/', '/glossary', '/glossary/Literature']
       for (const { prefix, dir } of glossaryModules) {
         const terms = readdirSync(
           fileURLToPath(new URL(`./src/modules/${dir}/glossary/en`, import.meta.url)),
