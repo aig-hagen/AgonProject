@@ -84,7 +84,6 @@ test('derived cells are exactly the reviewed ones', () => {
     'WPR exist',
     'adfCF exist',
     'adfNA exist',
-    'adfMOD3 exist',
     'adfSAD exist',
     'adfSAD ne',
     'adfS2V exist',

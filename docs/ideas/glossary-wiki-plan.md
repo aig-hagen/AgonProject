@@ -39,6 +39,10 @@ This plan replaces the former `glossary-seo-plan.md` (its tiers are Phases 5 and
   1994 for the basic classes, via a new `book` kind), with original papers under "Further reading".
   D₂ᴾ cites Chang & Kadin 1996, the earliest verified source for the Boolean hierarchy over Σ₂ᴾ.
   Cai et al. 1988 may predate it (unchecked, paywalled).
+- ~~**ADF citation recheck.**~~ Done: cite the earliest paper that proves a result. MOD3 and
+  several ver/exist cells now cite BESWW13, exist cells cite primary sources instead of DD18,
+  SW15 locators use the published version, and bipolar GR/CO skept are P-c (DD18). Policy and
+  reasons in `literature/notes/complexity.md`.
 - **Search Console:** submit `/sitemap.xml` after the next deploy.
 - **AIJ serialisability paper:** how to cite it (published / accepted / preprint) decides whether
   the bipolar ADF initial-model results (Thm. 6.1) go into the ADF table.
