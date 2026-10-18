@@ -134,7 +134,9 @@ const clean = (text) =>
     .replace(/-\n(?=[a-z])/g, '')
     .replace(/\s+/g, ' ')
     .replace(/^abstract[.:]?\s*/i, '')
-    .replace(/\s*©.*$/, '')
+    // Keyword lists and copyright lines (some PDFs use a private-use glyph for ©).
+    .replace(/\s*key ?words?:.*$/i, '')
+    .replace(/\s*[©\uf6d9].*$/, '')
     .trim()
 
 async function fetchJson(url) {
