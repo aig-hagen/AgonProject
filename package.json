@@ -27,7 +27,8 @@
     "generate-attributions": "node ./scripts/generate-attributions.ts",
     "lit:status": "node scripts/literature.mjs status",
     "lit:bib": "node scripts/literature.mjs bib",
-    "lit:import": "node scripts/literature.mjs import"
+    "lit:import": "node scripts/literature.mjs import",
+    "lit:abstracts": "node scripts/literature.mjs abstracts"
   },
   "dependencies": {
     "@aig-hagen/graph-component": "file:third-party/aig-hagen/aig_graph_component/aig-hagen-graph-component-5.0.0-rc.36.tgz",

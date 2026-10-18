@@ -18,6 +18,7 @@
  */
 import { describe, expect, test } from 'vitest'
 
+import abstracts from '@/modules/common/publications/abstracts.json'
 import {
   formatCitation,
   formatVenue,
@@ -120,6 +121,11 @@ describe('publication entries', () => {
     const isHandbook =
       pub.kind === 'chapter' && pub.booktitle === 'Handbook of Formal Argumentation'
     expect.soft(pub.tags?.includes('handbook')).toBe(isHandbook)
+  })
+
+  test('abstracts belong to known publications', () => {
+    const keys = new Set(entries.map(([key]) => key))
+    expect(Object.keys(abstracts).filter((key) => !keys.has(key))).toEqual([])
   })
 
   test('short labels are unique', () => {

@@ -2,8 +2,16 @@
 //   node scripts/literature.mjs status         keys without a PDF, PDFs without a key
 //   node scripts/literature.mjs bib            write literature/references.bib
 //   node scripts/literature.mjs import <dir>   copy PDFs from <dir> that match a publication
+//   node scripts/literature.mjs abstracts      fill abstracts.json (search only); --refresh refetches
 import { execFileSync } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
 
 import * as publications from '../src/modules/common/publications/publications.ts'
@@ -118,11 +126,91 @@ function importFrom(dir) {
   }
 }
 
+const ABSTRACTS = 'src/modules/common/publications/abstracts.json'
+
+const clean = (text) =>
+  text
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/-\n(?=[a-z])/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/^abstract[.:]?\s*/i, '')
+    .replace(/\s*©.*$/, '')
+    .trim()
+
+async function fetchJson(url) {
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(15000) })
+    return response.ok ? await response.json() : undefined
+  } catch {
+    return undefined
+  }
+}
+
+async function crossrefAbstract(doi) {
+  const json = await fetchJson(`https://api.crossref.org/works/${encodeURIComponent(doi)}`)
+  return json?.message?.abstract
+}
+
+// OpenAlex ships abstracts as an inverted index: word → positions.
+async function openAlexAbstract(doi) {
+  const json = await fetchJson(`https://api.openalex.org/works/doi:${encodeURIComponent(doi)}`)
+  const index = json?.abstract_inverted_index
+  if (!index) return undefined
+  const words = []
+  for (const [word, positions] of Object.entries(index)) for (const i of positions) words[i] = word
+  return words.join(' ')
+}
+
+// The text between an "Abstract" heading and the introduction, if the PDF has one.
+function pdfAbstract(key) {
+  const file = join(LIT_DIR, `${key}.pdf`)
+  if (!existsSync(file)) return undefined
+  const text = firstPages(file)
+  const match =
+    text.match(
+      /(?:^|\n)\s*abstract(?:[.:]|\s*\n)\s*([\s\S]{200,3000}?)\n\s*(?:\d\.?\s*|I\.\s*)?(?:introduction|keywords|key words)\b/i,
+    ) ??
+    // Handbook chapters print the abstract above an empty "abstract." heading.
+    text.match(/\n\n((?:[^\n]+\n){3,})\n*abstract\.\s*\n/i)
+  return match?.[1]
+}
+
+async function abstracts(refresh) {
+  const existing = existsSync(ABSTRACTS) ? JSON.parse(readFileSync(ABSTRACTS, 'utf8')) : {}
+  const result = {}
+  const missing = []
+  for (const [key, pub] of entries) {
+    if (!refresh && existing[key]) {
+      result[key] = existing[key]
+      continue
+    }
+    const sources = [
+      ['crossref', () => pub.doi && crossrefAbstract(pub.doi)],
+      ['openalex', () => pub.doi && openAlexAbstract(pub.doi)],
+      ['pdf', () => pdfAbstract(key)],
+    ]
+    for (const [source, get] of sources) {
+      const text = await get()
+      if (text && clean(text).length >= 100) {
+        result[key] = clean(text)
+        console.log(`${source.padEnd(9)} ${key}`)
+        break
+      }
+    }
+    if (!result[key]) missing.push(key)
+  }
+  const sorted = Object.fromEntries(Object.entries(result).sort(([a], [b]) => a.localeCompare(b)))
+  writeFileSync(ABSTRACTS, JSON.stringify(sorted, null, 2) + '\n')
+  console.log(`\n${Object.keys(sorted).length}/${entries.length} abstracts in ${ABSTRACTS}`)
+  if (missing.length) console.log(`No abstract: ${missing.join(' ')}`)
+}
+
 const [command, arg] = process.argv.slice(2)
 if (command === 'status') status()
 else if (command === 'bib') bib()
 else if (command === 'import' && arg) importFrom(arg)
+else if (command === 'abstracts') await abstracts(arg === '--refresh')
 else {
-  console.error('Usage: node scripts/literature.mjs status | bib | import <dir>')
+  console.error('Usage: node scripts/literature.mjs status | bib | import <dir> | abstracts')
   process.exit(1)
 }

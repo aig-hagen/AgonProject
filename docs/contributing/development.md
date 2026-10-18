@@ -132,9 +132,14 @@ Cited papers live in a gitignored `literature/` folder, one PDF per publication 
 npm run lit:status            # which publications have a PDF
 npm run lit:import -- <dir>   # copy PDFs from <dir> whose DOI or title matches an entry
 npm run lit:bib               # write literature/references.bib
+npm run lit:abstracts         # fill abstracts.json for the literature search
 ```
 
 `lit:import` only copies, never moves, and skips anything it can't match unambiguously.
+
+`lit:abstracts` tries Crossref, then OpenAlex, then the PDF's first pages, and keeps existing
+entries, so hand fixes in `abstracts.json` survive (`-- --refresh` refetches all). Abstracts are
+only used for search and never shown, since publishers hold their copyright.
 
 ## Extending functionalities
 

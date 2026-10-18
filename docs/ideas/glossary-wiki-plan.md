@@ -309,12 +309,12 @@ Settled: one page, no per-publication routes (anchors only); tags hand-picked; a
 search only, never displayed.
 
 - [x] Uncited check: only BDKM16. Kept, cited as further reading on `rankingSemantics`.
-- [ ] `tags` on `Publication`, hand-picked from a fixed list in `tags.ts` that a test checks:
+- [x] `tags` on `Publication`, hand-picked from a fixed list in `tags.ts` that a test checks:
   - **formalism:** AF, ADF, BAF, SETAF, PAF, IAF, ABA
   - **topic:** semantics, ranking, complexity, algorithms, principles, survey, handbook (Handbook
     of Formal Argumentation chapters), foundations (general complexity theory)
-- [ ] `lit:abstracts` in `scripts/literature.mjs`: OpenAlex/Crossref (31), else the PDF's first
-      page (18), else none (19). Writes `abstracts.json`, loaded only by the literature page.
+- [x] `lit:abstracts` in `scripts/literature.mjs`: Crossref/OpenAlex (31), else the PDF's first
+      page (18; 6 fixed by hand), else none (19). Writes `abstracts.json`, loaded only by the literature page.
 - [ ] Search: every query word must match a field (title, authors, venue, year, key, abstract),
       accent-insensitive; ranked by field weight. Tags filter via chips.
 - [ ] `/literature` page next to the glossary: every publication with its citation and link.
