@@ -2,10 +2,29 @@
 
 ## General
 
-- Add tags to publications (Semantics, Complexity, AF/BAF/etc, etc); add a page with the literature list; allow search and filter by tags there
-
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
   `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
+
+## Glossary
+
+- **27. [S] After deploy.** Check that Caddy serves the prerendered `dist/glossary/**/index.html`
+  pages, then submit `/sitemap.xml` in Google Search Console.
+- **28. [S] Derived complexity cells.** Review the unticked cells in
+  `literature/notes/complexity.md` (AF: EA cred/skept/enum, ID enum, GR enum, ADM/PR/SST/CF/NA/CF2
+  count-dec; ADF: S2V ne). Only ticked ones go into `complexity.ts`.
+- **29. [S] Counting paper.** Get Baroni, Dunne & Giacomin, COMMA 2010
+  (DOI 10.3233/978-1-60750-619-5-63) to verify ST/PR counting. PR count shows "open" until then.
+- **30. [M] Counting and enumeration.** Show them again (hidden via `SHOWN_PROBLEMS`) and restore
+  their problem and class entries (#·P, #·coNP, DelayP, OutputP), cited after FHM24 and KPW17.
+- **31. [S] AIJ serialisability paper.** Settle how to cite it; that unblocks the bipolar ADF
+  initial-model results (Thm. 6.1) and an optional `VerS` problem (Thm. 6.2).
+- **32. [L] German glossary text.** The loading and fallback are in place; content needs Lars's
+  approval. Add `hreflang` to the prerendered pages once German entries exist.
+- **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
+  an "Open in editor" button). Later, one at a time: aliases and notation (also helps search),
+  guarantees (always exists / unique / can be empty?), relations between semantics as a lattice and
+  principles satisfied (both central data, like complexity), origin, and where it shows up in
+  AgonProject.
 
 ## Mobile
 
@@ -22,7 +41,7 @@ Feature work (BAF/ADF views, LaTeX export, generation, Δ-semantics, tutorials) 
 ### Evaluation window
 
 - **11. [S] Semantics definitions.** Some semantics show incomplete definitions, and the semantics
-  list needs a cleaner layout (for ABA). 
+  list needs a cleaner layout (for ABA).
 - **12. [S] Glossary.** Update the ABA glossary entries, and in the evaluation window show the
   definitions for flat and non-flat theories separately.
 
