@@ -193,10 +193,10 @@ period inside fields.
 - [x] Fill in metadata for all 50 entries from the inputs above. If sources disagree, flag it for
       review instead of picking one. (DD17 → DD18: cited as the handbook chapter, like the other
       handbook entries. D95 pages: Crossref 321–357 over bib 321–358.)
-- [ ] **Complexity search** (AF + ADF, see Phase 6 for the problems). For each cell: the class, the
+- [x] **Complexity search** (AF + ADF, see Phase 6 for the problems). For each cell: the class, the
       source, a theorem/table locator, and a short quote. Notes go in
       `literature/notes/complexity-<topic>.md`. Unknown means `open`, never a guess.
-- [ ] New sources found here become `Publication` entries. Their PDFs go into `literature/` when
+- [ ] (Moved to Phase 6: only sources a table cell cites.) New sources found here become `Publication` entries. Their PDFs go into `literature/` when
       openly available (arXiv, author pages, CEUR, open-access proceedings). Paywalled ones go on
       a list for Lars to fetch through university access.
 
@@ -262,6 +262,10 @@ quote doesn't count.
       (`credulousAcceptance` → `Cred_σ`, and back). The notion entries stay, since the
       evaluation windows use them as tooltips.
 - [ ] `complexity.ts` for AF and ADF, filled from the verified Phase 2 notes only.
+      Verified notes: `literature/notes/verification-*.md`. Settled: derived cells are shown with a "derived"
+      marker and a one-line reason, and only after Lars has checked each one
+      (`literature/notes/derived-cells.md`). Caveated classes are shown with their caveat (ID: "in
+      Θ₂ᴾ, hard under randomised reductions"; PR count: "in #·coNP, exact class open").
 - [ ] `ComplexityTable.vue`: one row on each semantics page, the full table on an overview page per
       formalism (`/glossary/AF/complexity`). Every cell links its source.
 - [ ] Tests: every row maps to a glossary entry, every `class` to a class entry, every `source` to
@@ -281,7 +285,7 @@ quote doesn't count.
       using `parse.ts` + `katex.renderToString`. The SPA bundle still loads and takes over. No
       headless browser needed, unlike `vite-plugin-prerender`.
 - [ ] Per-term `<title>`, `<meta description>` (plain text of the definition), `<link
-  rel="canonical">`.
+rel="canonical">`.
 - [ ] JSON-LD `DefinedTerm` per term.
 - [ ] `hreflang` only once German entries exist.
 
