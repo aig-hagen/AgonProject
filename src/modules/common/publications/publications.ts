@@ -785,3 +785,122 @@ export const SW26: Publication = {
   publisher: 'IOS Press',
   doi: '10.3233/FAIA260805',
 }
+
+export const P94: Publication = {
+  kind: 'book',
+  authors: ['Papadimitriou, C.H.'],
+  year: 1994,
+  title: 'Computational Complexity',
+  publisher: 'Addison-Wesley',
+  url: 'https://openlibrary.org/books/OL1398106M',
+}
+
+export const C71: Publication = {
+  kind: 'inproceedings',
+  authors: ['Cook, S.A.'],
+  year: 1971,
+  title: 'The Complexity of Theorem-Proving Procedures',
+  booktitle: 'Proceedings of the 3rd Annual ACM Symposium on Theory of Computing',
+  acronym: 'STOC 1971',
+  pages: '151–158',
+  publisher: 'ACM',
+  doi: '10.1145/800157.805047',
+}
+
+export const K72: Publication = {
+  kind: 'chapter',
+  authors: ['Karp, R.M.'],
+  year: 1972,
+  title: 'Reducibility among Combinatorial Problems',
+  booktitle: 'Complexity of Computer Computations',
+  editors: ['Miller, R.E.', 'Thatcher, J.W.'],
+  pages: '85–103',
+  publisher: 'Plenum Press',
+  doi: '10.1007/978-1-4684-2001-2_9',
+}
+
+export const PY84: Publication = {
+  kind: 'article',
+  authors: ['Papadimitriou, C.H.', 'Yannakakis, M.'],
+  year: 1984,
+  title: 'The Complexity of Facets (and Some Facets of Complexity)',
+  journal: 'Journal of Computer and System Sciences',
+  volume: '28',
+  number: '2',
+  pages: '244–259',
+  doi: '10.1016/0022-0000(84)90068-0',
+}
+
+export const S76: Publication = {
+  kind: 'article',
+  authors: ['Stockmeyer, L.J.'],
+  year: 1976,
+  title: 'The Polynomial-Time Hierarchy',
+  journal: 'Theoretical Computer Science',
+  volume: '3',
+  number: '1',
+  pages: '1–22',
+  doi: '10.1016/0304-3975(76)90061-X',
+}
+
+export const W90: Publication = {
+  kind: 'article',
+  authors: ['Wagner, K.W.'],
+  year: 1990,
+  title: 'Bounded Query Classes',
+  journal: 'SIAM Journal on Computing',
+  volume: '19',
+  number: '5',
+  pages: '833–846',
+  doi: '10.1137/0219058',
+}
+
+export const H89: Publication = {
+  kind: 'article',
+  authors: ['Hemachandra, L.A.'],
+  year: 1989,
+  title: 'The Strong Exponential Hierarchy Collapses',
+  journal: 'Journal of Computer and System Sciences',
+  volume: '39',
+  number: '3',
+  pages: '299–322',
+  doi: '10.1016/0022-0000(89)90025-1',
+}
+
+export const BH91: Publication = {
+  kind: 'article',
+  authors: ['Buss, S.R.', 'Hay, L.'],
+  year: 1991,
+  title: 'On Truth-Table Reducibility to SAT',
+  journal: 'Information and Computation',
+  volume: '91',
+  number: '1',
+  pages: '86–102',
+  doi: '10.1016/0890-5401(91)90075-D',
+}
+
+export const CK96: Publication = {
+  kind: 'article',
+  authors: ['Chang, R.', 'Kadin, J.'],
+  year: 1996,
+  title: 'The Boolean Hierarchy and the Polynomial Hierarchy: A Closer Connection',
+  journal: 'SIAM Journal on Computing',
+  volume: '25',
+  number: '2',
+  pages: '340–354',
+  doi: '10.1137/S0097539790178069',
+}
+
+export const EG97: Publication = {
+  kind: 'inproceedings',
+  authors: ['Eiter, T.', 'Gottlob, G.'],
+  year: 1997,
+  title: 'The Complexity Class Θ₂ᵖ: Recent Results and Applications in AI and Modal Logic',
+  booktitle: 'Fundamentals of Computation Theory',
+  acronym: 'FCT 1997',
+  series: 'LNCS',
+  seriesVolume: '1279',
+  pages: '1–18',
+  publisher: 'Springer',
+  doi: '10.1007/BFb0036168',
+}

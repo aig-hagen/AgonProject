@@ -34,8 +34,8 @@ import {
   T23,
 } from '@/modules/common/publications/publications'
 
-// Sources: literature/notes/complexity-*.md, checked in verification-*.md. Pages refer to the
-// published version; T22 and DG16 were read as preprints, so they cite numbered results only.
+// Sources and caveats: literature/notes/complexity.md. Pages refer to the published version;
+// T22 and DG16 were read as preprints, so they cite numbered results only.
 const dd18 = 'Table 1, p. 649'
 const parsimonious = { note: 'under parsimonious reductions' }
 const subtractive = { note: 'under subtractive reductions' }

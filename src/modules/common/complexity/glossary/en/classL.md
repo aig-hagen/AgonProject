@@ -3,4 +3,4 @@ label: $\mathsf{L}$
 title: Complexity Class $\mathsf{L}$
 ---
 
-The decision problems that can be solved in logarithmic space (not counting input and output) and in polynomial time.
+The decision problems that can be solved by a deterministic algorithm using space logarithmic in the size of the input, not counting the read-only input itself.

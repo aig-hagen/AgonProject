@@ -75,6 +75,7 @@ describe('formatCitation', () => {
         publisher: 'P',
       }),
     ).toBe('A, B. (2000). T. In: E, F. (eds.), H, Vol. 1, Chapter 4. P.')
+    expect(formatCitation({ ...base, kind: 'book', publisher: 'P' })).toBe('A, B. (2000). T. P.')
   })
 
   test('skips an acronym the booktitle already contains', () => {

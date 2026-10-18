@@ -28,16 +28,17 @@ This plan replaces the former `glossary-seo-plan.md` (its tiers are Phases 5 and
 ## Open issues (revisit later)
 
 - **Derived complexity cells awaiting Lars's check** (details in
-  `literature/notes/derived-cells.md`; only ticked ones go into `complexity.ts`):
+  `literature/notes/complexity.md`; only ticked ones go into `complexity.ts`):
   - AF: EA cred, EA skept, EA enum, ID enum (check DVW11 Table 2 visually), GR enum
   - AF count-dec: ADM, PR, SST (NP-hard), CF/NA/CF2 (in P, unary m)
   - ADF: S2V ne (Σ₂ᴾ-complete)
 - **Missing paper:** Baroni, Dunne & Giacomin, "On extension counting problems in argumentation
   frameworks", COMMA 2010 (DOI 10.3233/978-1-60750-619-5-63). Needed to verify ST/PR counting
   ("#P-complete" in its abstract). Until then PR count shows "in #·coNP, exact class open".
-- **PSPACE reference:** the Complexity glossary entry for PSPACE has no source yet (DD18 and the
-  other cited papers only mention it). Candidate: a textbook (e.g. Papadimitriou 1994), which needs
-  a `book` publication kind.
+- ~~**PSPACE reference.**~~ Done: every class entry now cites its defining source (Papadimitriou
+  1994 for the basic classes, via a new `book` kind), with original papers under "Further reading".
+  D₂ᴾ cites Chang & Kadin 1996, the earliest verified source for the Boolean hierarchy over Σ₂ᴾ.
+  Cai et al. 1988 may predate it (unchecked, paywalled).
 - **Search Console:** submit `/sitemap.xml` after the next deploy.
 - **AIJ serialisability paper:** how to cite it (published / accepted / preprint) decides whether
   the bipolar ADF initial-model results (Thm. 6.1) go into the ADF table.
@@ -282,9 +283,9 @@ quote doesn't count.
       (`credulousAcceptance` → `Cred_σ`, and back). The notion entries stay, since the
       evaluation windows use them as tooltips.
 - [x] `complexity.ts` for AF and ADF, filled from the verified Phase 2 notes only.
-      Verified notes: `literature/notes/verification-*.md`. Settled: derived cells are shown with a "derived"
+      Verified notes: `literature/notes/complexity.md`. Settled: derived cells are shown with a "derived"
       marker and a one-line reason, and only after Lars has checked each one
-      (`literature/notes/derived-cells.md`). Caveated classes are shown with their caveat (ID: "in
+      (`literature/notes/complexity.md`). Caveated classes are shown with their caveat (ID: "in
       Θ₂ᴾ, hard under randomised reductions"; PR count: "in #·coNP, exact class open").
 - [x] `ComplexityTable.vue`: one row on each semantics page, the full table on an overview page per
       formalism (glossary entries `complexityAF` / `complexityADF` in a new Complexity tab). Every

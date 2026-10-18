@@ -87,6 +87,8 @@ export function formatVenue(pub: Publication): string {
       if (pub.chapter) parts.push(`Chapter ${pub.chapter}`)
       break
     }
+    case 'book':
+      return pub.publisher
     case 'thesis':
       return `${pub.degree} Thesis, ${pub.school}`
   }

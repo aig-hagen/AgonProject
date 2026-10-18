@@ -72,7 +72,7 @@ test('every cell states a result', () => {
   expect(cells.filter(([, c]) => !c.trivial && !c.in && !c.hard && !c.notIn)).toEqual([])
 })
 
-// Derived cells only go in after Lars has checked them (literature/notes/derived-cells.md).
+// Derived cells only go in after Lars has checked them (literature/notes/complexity.md).
 test('derived cells are exactly the reviewed ones', () => {
   expect(cells.filter(([, c]) => c.derived).map(([key]) => key)).toEqual([
     'GR count',

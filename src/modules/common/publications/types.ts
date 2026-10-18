@@ -61,10 +61,15 @@ export interface Chapter extends PublicationBase {
   publisher: string
 }
 
+export interface Book extends PublicationBase {
+  kind: 'book'
+  publisher: string
+}
+
 export interface Thesis extends PublicationBase {
   kind: 'thesis'
   degree: 'PhD' | 'Master'
   school: string
 }
 
-export type Publication = Article | InProceedings | Chapter | Thesis
+export type Publication = Article | InProceedings | Chapter | Book | Thesis

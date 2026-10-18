@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { GlossaryMeta } from '@/modules/common/glossary/types'
-import { DD18, DVW11, SW15 } from '@/modules/common/publications/publications'
+import { CK96, DD18, EG97, P94, PY84, S76, SW15 } from '@/modules/common/publications/publications'
 
 export const glossaryMeta: GlossaryMeta = {
   complexityAF: { reference: DD18 },
@@ -27,15 +27,16 @@ export const glossaryMeta: GlossaryMeta = {
   problemSkept: { reference: DD18 },
   problemExist: { reference: DD18 },
   problemNE: { reference: DD18 },
-  classL: { reference: DD18 },
-  classP: { reference: DD18 },
-  classNP: { reference: DD18 },
-  classCoNP: { reference: DD18 },
-  classDP: { reference: DD18 },
-  classTheta2P: { reference: DD18 },
-  classSigma2P: { reference: DD18 },
-  classPi2P: { reference: DD18 },
-  classSigma3P: { reference: DD18 },
-  classPi3P: { reference: DD18 },
-  classD2P: { reference: DVW11 },
+  classL: { reference: P94 },
+  classP: { reference: P94 },
+  classNP: { reference: P94 },
+  classCoNP: { reference: P94 },
+  classDP: { reference: PY84 },
+  classTheta2P: { reference: EG97 },
+  classSigma2P: { reference: S76 },
+  classPi2P: { reference: S76 },
+  classSigma3P: { reference: S76 },
+  classPi3P: { reference: S76 },
+  classD2P: { reference: CK96 },
+  classPSPACE: { reference: P94 },
 }

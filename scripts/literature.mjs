@@ -38,6 +38,7 @@ const BIB_TYPES = {
   article: 'article',
   inproceedings: 'inproceedings',
   chapter: 'incollection',
+  book: 'book',
   thesis: 'phdthesis',
 }
 

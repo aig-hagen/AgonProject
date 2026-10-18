@@ -28,9 +28,9 @@ import {
 } from '@/modules/common/publications/publications'
 import { KNOWN_SEMANTIC_GROUPS } from '@/modules/dialectical-argumentation/evaluation/tweetyProject'
 
-// Sources: literature/notes/complexity-adf.md and complexity-additions.md, checked in
-// verification-af-newer-adf.md. SW15 and SW26 were read as manuscripts, so they cite numbered
-// results only. ST is Brewka et al.'s stable semantics, i.e. SW15's ultimate variant.
+// Sources and caveats: literature/notes/complexity.md. SW15 and SW26 were read as manuscripts,
+// so they cite numbered results only. ST is Brewka et al.'s stable semantics, i.e. SW15's
+// ultimate variant.
 const dd18 = 'Table 10, p. 675'
 const dd18Bipolar = 'Table 11, p. 678'
 const trivialModel = { derived: 'The trivial interpretation (all statements u) qualifies.' }
