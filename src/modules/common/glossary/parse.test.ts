@@ -16,9 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { describe, expect, test } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 
-import { buildRegistry, termKeyFromPath } from '@/modules/common/glossary/load'
+import {
+  buildRegistry,
+  createGlossary,
+  localeFromPath,
+  setGlossaryLocale,
+  termKeyFromPath,
+} from '@/modules/common/glossary/load'
 import { parseBody, parseGlossaryEntry, parseInline } from '@/modules/common/glossary/parse'
 import type { Publication } from '@/modules/common/publications/types'
 
@@ -114,5 +120,39 @@ describe('buildRegistry', () => {
   test('names the file in parse errors', () => {
     expect(() => buildRegistry({ '/x/en/bad.md': 'oops' })).toThrow('/x/en/bad.md')
     expect(termKeyFromPath('/src/a/glossary/en/selFnADM.md')).toBe('selFnADM')
+  })
+})
+
+describe('createGlossary', () => {
+  const english = {
+    '/x/en/A.md': '---\nlabel: a\n---\nEnglish A.',
+    '/x/en/B.md': `---\nlabel: b\n---\nEnglish B.\n\n${H2} Remarks\n\nMore.`,
+  }
+  const german = { '/x/de/B.md': async () => '---\nlabel: b\n---\nDeutsches B.' }
+
+  afterEach(() => setGlossaryLocale('en'))
+
+  test('swaps in translations and marks English fallbacks', async () => {
+    const registry = createGlossary(english, german)
+    const merged = { ...registry }
+    await setGlossaryLocale('de')
+    expect(registry.B).toEqual({ label: 'b', content: ['Deutsches B.'] })
+    expect(registry.A).toMatchObject({ content: ['English A.'], untranslated: true })
+    // Entries update in place, so spread copies follow the switch.
+    expect(merged.B!.content).toEqual(['Deutsches B.'])
+
+    await setGlossaryLocale('en')
+    expect(registry.B!.body).toBeDefined()
+    expect(registry.A!.untranslated).toBeUndefined()
+  })
+
+  test('localizes registries created after the switch', async () => {
+    await setGlossaryLocale('de')
+    const registry = createGlossary(english, german)
+    await vi.waitFor(() => expect(registry.B!.content).toEqual(['Deutsches B.']))
+  })
+
+  test('reads the locale from the folder name', () => {
+    expect(localeFromPath('/src/a/glossary/de/ADM.md')).toBe('de')
   })
 })

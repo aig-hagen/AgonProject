@@ -17,13 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { glossaryMeta } from '@/modules/assumption-based-argumentation/glossary/meta'
-import { buildRegistry } from '@/modules/common/glossary/load'
+import { createGlossary } from '@/modules/common/glossary/load'
 
-export const assumptionBasedArgumentationGlossary = buildRegistry(
+export const assumptionBasedArgumentationGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/assumption-based-argumentation/glossary/en/*.md', {
     query: '?raw',
     import: 'default',
     eager: true,
   }),
+  import.meta.glob<string>(
+    [
+      '/src/modules/assumption-based-argumentation/glossary/*/*.md',
+      '!/src/modules/assumption-based-argumentation/glossary/en/*.md',
+    ],
+    {
+      query: '?raw',
+      import: 'default',
+    },
+  ),
   glossaryMeta,
 )

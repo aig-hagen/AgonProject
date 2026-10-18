@@ -16,15 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { shallowReactive } from 'vue'
+
 import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
 import type { GlossaryMeta } from '@/modules/common/glossary/types'
-import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
+import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 /** File path → raw Markdown, as returned by an eager `import.meta.glob(…, { query: '?raw' })`. */
 export type GlossarySources = Record<string, string>
 
+/** File path → loader, as returned by a lazy `import.meta.glob` over the non-English folders. */
+export type LazyGlossarySources = Record<string, () => Promise<string>>
+
+const SOURCE_LOCALE = 'en'
+
 export function termKeyFromPath(path: string): string {
   return path.slice(path.lastIndexOf('/') + 1).replace(/\.md$/, '')
+}
+
+/** The locale folder a term file sits in (`…/glossary/de/ADM.md` → `de`). */
+export function localeFromPath(path: string): string {
+  const parts = path.split('/')
+  return parts[parts.length - 2]!
 }
 
 export function buildRegistry(sources: GlossarySources, meta: GlossaryMeta = {}): TooltipRegistry {
@@ -38,4 +51,60 @@ export function buildRegistry(sources: GlossarySources, meta: GlossaryMeta = {})
     }
   }
   return registry
+}
+
+interface LocalizedGlossary {
+  english: TooltipRegistry
+  translations: LazyGlossarySources
+  meta: GlossaryMeta
+  registry: TooltipRegistry
+}
+
+const glossaries: LocalizedGlossary[] = []
+let activeLocale = SOURCE_LOCALE
+
+// Entries change in place, so registries spread into a merged one (`{ ...af, ...baf }`) follow too.
+function replaceEntry(target: TooltipDefinition, next: TooltipDefinition) {
+  for (const field of Object.keys(target)) {
+    if (!(field in next)) delete target[field as keyof TooltipDefinition]
+  }
+  Object.assign(target, next)
+}
+
+async function localize(glossary: LocalizedGlossary, locale: string) {
+  const files = Object.entries(glossary.translations).filter(([p]) => localeFromPath(p) === locale)
+  const sources = await Promise.all(files.map(async ([p, load]) => [p, await load()] as const))
+  if (locale !== activeLocale) return
+  const translated = buildRegistry(Object.fromEntries(sources), glossary.meta)
+  for (const [key, english] of Object.entries(glossary.english)) {
+    const next =
+      translated[key] ?? (locale === SOURCE_LOCALE ? english : { ...english, untranslated: true })
+    replaceEntry(glossary.registry[key]!, next)
+  }
+}
+
+/**
+ * A reactive registry in the active glossary locale. English is bundled; other locales load on
+ * demand and fall back to English per term.
+ */
+export function createGlossary(
+  english: GlossarySources,
+  translations: LazyGlossarySources = {},
+  meta: GlossaryMeta = {},
+): TooltipRegistry {
+  const base = buildRegistry(english, meta)
+  // Shallow, so `reference` stays the publication object that identity lookups expect.
+  const registry: TooltipRegistry = Object.fromEntries(
+    Object.entries(base).map(([key, def]) => [key, shallowReactive({ ...def })]),
+  )
+  const glossary = { english: base, translations, meta, registry }
+  glossaries.push(glossary)
+  if (activeLocale !== SOURCE_LOCALE) void localize(glossary, activeLocale)
+  return registry
+}
+
+/** Switches every glossary registry to `locale`, resolving once all translations are loaded. */
+export async function setGlossaryLocale(locale: string): Promise<void> {
+  activeLocale = locale
+  await Promise.all(glossaries.map((glossary) => localize(glossary, locale)))
 }

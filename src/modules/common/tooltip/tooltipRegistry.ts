@@ -33,6 +33,8 @@ export interface TooltipDefinition {
   /** Longer content shown only on the glossary page. */
   body?: GlossaryBlock[]
   reference?: Publication
+  /** Shown in English because the active locale has no translation of this entry. */
+  untranslated?: true
 }
 
 export type TooltipRegistry = Record<string, TooltipDefinition>

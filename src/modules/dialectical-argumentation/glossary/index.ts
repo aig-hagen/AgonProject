@@ -16,14 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { buildRegistry } from '@/modules/common/glossary/load'
+import { createGlossary } from '@/modules/common/glossary/load'
 import { glossaryMeta } from '@/modules/dialectical-argumentation/glossary/meta'
 
-export const dialecticalArgumentationGlossary = buildRegistry(
+export const dialecticalArgumentationGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/dialectical-argumentation/glossary/en/*.md', {
     query: '?raw',
     import: 'default',
     eager: true,
   }),
+  import.meta.glob<string>(
+    [
+      '/src/modules/dialectical-argumentation/glossary/*/*.md',
+      '!/src/modules/dialectical-argumentation/glossary/en/*.md',
+    ],
+    {
+      query: '?raw',
+      import: 'default',
+    },
+  ),
   glossaryMeta,
 )

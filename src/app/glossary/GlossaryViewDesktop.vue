@@ -162,6 +162,12 @@ watch(
             <h2 class="text-xl font-bold leading-snug">
               <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
             </h2>
+            <span
+              v-if="activeDefinition.untranslated"
+              class="badge badge-xs badge-ghost mt-1.5 shrink-0 text-base-content/65"
+            >
+              {{ t('glossary.englishOnly') }}
+            </span>
           </div>
           <p class="text-base-content/80 leading-relaxed">
             <GlossaryInline

@@ -53,6 +53,38 @@ const MATH_SYMBOLS: Record<string, string> = {
   Delta: 'Δ',
   neg: '¬',
   emptyset: '∅',
+  tau: 'τ',
+  epsilon: 'ε',
+  Gamma: 'Γ',
+  in: '∈',
+  notin: '∉',
+  subseteq: '⊆',
+  succeq: '⪰',
+  cup: '∪',
+  cap: '∩',
+  bigcup: '⋃',
+  setminus: '∖',
+  times: '×',
+  mid: '|',
+  forall: '∀',
+  exists: '∃',
+  leq: '≤',
+  geq: '≥',
+  neq: '≠',
+  to: '→',
+  mapsto: '↦',
+  leftarrow: '←',
+  vdash: '⊢',
+  top: '⊤',
+  langle: '⟨',
+  rangle: '⟩',
+  ldots: '…',
+  sum: '∑',
+  prod: '∏',
+  sqcap: '⊓',
+  curlywedge: '⋏',
+  curlyvee: '⋎',
+  downarrow: '↓',
 }
 const SUBSCRIPTS: Record<string, string> = Object.fromEntries(
   [...'0123456789+-aehijklmnoprstuvx'].map((c, i) => [c, '₀₁₂₃₄₅₆₇₈₉₊₋ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ'[i]!]),
@@ -73,11 +105,15 @@ function script(text: string, table: Record<string, string>): string {
 export function plainText(text: string): string {
   return text.replace(/\$([^$]*)\$/g, (_, math: string) =>
     math
+      .replace(/\\([{}])/g, (_, brace: string) => (brace === '{' ? '\uE000' : '\uE001'))
+      .replace(/\\[ ,;:!]/g, ' ')
       .replace(/\\([a-zA-Z]+)/g, (_, name: string) => MATH_SYMBOLS[name] ?? '')
       .replace(/([_^])(?:\{((?:[^{}]|\{[^{}]*\})*)\}|([^{}\s]))/g, (_, op, group, single) =>
         script((group ?? single).replace(/[{}]/g, ''), op === '_' ? SUBSCRIPTS : SUPERSCRIPTS),
       )
-      .replace(/[{}]/g, ''),
+      .replace(/[{}]/g, '')
+      .replace(/\uE000/g, '{')
+      .replace(/\uE001/g, '}'),
   )
 }
 

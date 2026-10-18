@@ -58,7 +58,7 @@ Tutorial progress is persisted by [`useTutorial`](/src/modules/common/tutorial/u
 
 ## Add glossary entries
 
-Each module keeps its glossary in `glossary/`: one Markdown file per term in `glossary/en/<key>.md`, publication references in `glossary/meta.ts`, and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`buildRegistry`](/src/modules/common/glossary/load.ts). The file name is the term key, and keys must be unique across all modules.
+Each module keeps its glossary in `glossary/`: one Markdown file per term in `glossary/en/<key>.md`, publication references in `glossary/meta.ts`, and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`createGlossary`](/src/modules/common/glossary/load.ts) from the `en/` files plus any translations in sibling locale folders (see [localization](localization.md)). The file name is the term key, and keys must be unique across all modules.
 
 ```markdown
 ---

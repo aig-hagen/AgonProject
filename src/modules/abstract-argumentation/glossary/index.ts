@@ -17,13 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { glossaryMeta } from '@/modules/abstract-argumentation/glossary/meta'
-import { buildRegistry } from '@/modules/common/glossary/load'
+import { createGlossary } from '@/modules/common/glossary/load'
 
-export const abstractArgumentationGlossary = buildRegistry(
+export const abstractArgumentationGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/abstract-argumentation/glossary/en/*.md', {
     query: '?raw',
     import: 'default',
     eager: true,
   }),
+  import.meta.glob<string>(
+    [
+      '/src/modules/abstract-argumentation/glossary/*/*.md',
+      '!/src/modules/abstract-argumentation/glossary/en/*.md',
+    ],
+    {
+      query: '?raw',
+      import: 'default',
+    },
+  ),
   glossaryMeta,
 )

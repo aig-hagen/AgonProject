@@ -17,13 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { glossaryMeta } from '@/modules/bipolar-argumentation/glossary/meta'
-import { buildRegistry } from '@/modules/common/glossary/load'
+import { createGlossary } from '@/modules/common/glossary/load'
 
-export const bipolarArgumentationGlossary = buildRegistry(
+export const bipolarArgumentationGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/bipolar-argumentation/glossary/en/*.md', {
     query: '?raw',
     import: 'default',
     eager: true,
   }),
+  import.meta.glob<string>(
+    [
+      '/src/modules/bipolar-argumentation/glossary/*/*.md',
+      '!/src/modules/bipolar-argumentation/glossary/en/*.md',
+    ],
+    {
+      query: '?raw',
+      import: 'default',
+    },
+  ),
   glossaryMeta,
 )

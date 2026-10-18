@@ -24,6 +24,8 @@ import { glossaryMeta as abaMeta } from '@/modules/assumption-based-argumentatio
 import { glossaryMeta as bafMeta } from '@/modules/bipolar-argumentation/glossary/meta'
 import { glossaryMeta as cafMeta } from '@/modules/collective-attacks-argumentation/glossary/meta'
 import { glossaryMeta as complexityMeta } from '@/modules/common/complexity/glossary/meta'
+import { localeFromPath } from '@/modules/common/glossary/load'
+import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 import { glossaryMeta as adfMeta } from '@/modules/dialectical-argumentation/glossary/meta'
 import { glossaryMeta as iafMeta } from '@/modules/incomplete-argumentation/glossary/meta'
@@ -99,4 +101,27 @@ test('plainText renders LaTeX as Unicode for page titles', () => {
   expect(plainText('Complexity Class $\\mathsf{D}_2^{\\mathsf{P}}$')).toBe('Complexity Class D₂ᴾ')
   expect(plainText('$\\textsc{Exists}^{\\neg\\emptyset}_\\sigma$')).toBe('Exists¬∅σ')
   expect(plainText('$S^+$ and $d_n^m$')).toBe('S⁺ and dₙᵐ')
+  expect(plainText('$E \\subseteq \\{a, b\\}$')).toBe('E ⊆ {a, b}')
+})
+
+// A translation must link and cite exactly what its English twin does.
+test('translated entries keep the refs and citations of their English twin', () => {
+  const files = import.meta.glob<string>('/src/modules/**/glossary/*/*.md', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  })
+  const links = (source: string) => {
+    const def = parseGlossaryEntry(source)
+    const cites = [...JSON.stringify(def.body ?? []).matchAll(/"cite":"([^"]+)"/g)].map((m) => m[1])
+    return { refs: [...new Set(entryRefs(def))].sort(), cites: [...new Set(cites)].sort() }
+  }
+  const mismatches = Object.entries(files)
+    .filter(([path]) => localeFromPath(path) !== 'en')
+    .flatMap(([path, source]) => {
+      const twin = files[path.replace(/\/[^/]+\/([^/]+)$/, '/en/$1')]
+      if (twin === undefined) return [`${path}: no English twin`]
+      return JSON.stringify(links(source)) === JSON.stringify(links(twin)) ? [] : [path]
+    })
+  expect(mismatches).toEqual([])
 })

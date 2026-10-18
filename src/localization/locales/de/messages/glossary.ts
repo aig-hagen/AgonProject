@@ -25,6 +25,7 @@ export default {
   source: 'Referenz',
   referencedBy: 'Verwendet in',
   more: 'Mehr',
+  englishOnly: 'Nur auf Englisch',
   less: 'Weniger',
   complexity: {
     title: 'Berechnungskomplexität',

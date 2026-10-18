@@ -71,6 +71,12 @@ watch(
     <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
       <MapPinIcon v-if="pinned" class="size-4 text-primary shrink-0" />
       <KatexInlineElement :text="definition.title ?? definition.label" />
+      <span
+        v-if="definition.untranslated"
+        class="badge badge-xs badge-ghost ml-auto shrink-0 font-normal text-base-content/65"
+      >
+        {{ t('glossary.englishOnly') }}
+      </span>
     </h3>
     <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
       <GlossaryInline

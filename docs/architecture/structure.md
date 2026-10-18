@@ -36,7 +36,7 @@ Each of `abstract-argumentation`, `bipolar-argumentation`, `dialectical-argument
 - `moduleConfig.ts` — the `ModuleConfig` registering the module (display name, initial content, save/load, examples) — see [Extending AgonProject](../contributing/extending.md#add-an-argumentation-module)
 - `model.ts` — the data model for that framework type
 - `GraphEditor.vue` — the module's editor, wrapping the shared [`common/graph-editor/GraphEditor.vue`](/src/modules/common/graph-editor/GraphEditor.vue)
-- `glossary/` — glossary entries specific to this framework type (one Markdown file per term in `en/`, references in `meta.ts`), referenced by inline tooltips and tutorials
+- `glossary/` — glossary entries specific to this framework type (one Markdown file per term in `en/`, translations in sibling locale folders, references in `meta.ts`), referenced by inline tooltips and tutorials
 - `tutorials/` — the `<type>-basics` and `<type>-evaluation` step-by-step tutorials
 - `evaluation/` — semantics-evaluation logic, typically a `tweetyProject.ts` calling the TweetyProject backend
 - `examples.ts` (+ `examples/`) — bundled example frameworks

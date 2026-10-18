@@ -17,13 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { glossaryMeta } from '@/modules/common/complexity/glossary/meta'
-import { buildRegistry } from '@/modules/common/glossary/load'
+import { createGlossary } from '@/modules/common/glossary/load'
 
-export const complexityGlossary = buildRegistry(
+export const complexityGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/common/complexity/glossary/en/*.md', {
     query: '?raw',
     import: 'default',
     eager: true,
   }),
+  import.meta.glob<string>(
+    [
+      '/src/modules/common/complexity/glossary/*/*.md',
+      '!/src/modules/common/complexity/glossary/en/*.md',
+    ],
+    {
+      query: '?raw',
+      import: 'default',
+    },
+  ),
   glossaryMeta,
 )

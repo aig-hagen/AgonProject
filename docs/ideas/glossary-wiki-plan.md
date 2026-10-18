@@ -325,20 +325,25 @@ search only, never displayed.
 
 ### Phase 8 — Localization infrastructure
 
-- [ ] `load.ts` picks `glossary/<locale>/<term>.md`, falls back to `en/`.
-- [ ] Quiet "English only" badge on fallback entries.
-- [ ] Parity test: a `de/` file needs the same `[[refs]]` and `[@cites]` as its `en/` twin.
-- [ ] Update `docs/contributing/localization.md`.
+- [x] `load.ts` picks `glossary/<locale>/<term>.md`, falls back to `en/`. `createGlossary` returns
+      shallow-reactive entries that `applyLocale` updates in place, so merged registries follow.
+- [x] Quiet "English only" badge on fallback entries (glossary page, desktop and mobile).
+- [x] Parity test: a `de/` file needs the same `[[refs]]` and `[@cites]` as its `en/` twin.
+- [x] Update `docs/contributing/localization.md`.
 - No German content in this plan. It needs Lars's approval and is tracked separately.
 
 ### Phase 9 — Prerendering (was SEO Tiers 2–3)
 
-- [ ] A build script writes static HTML per term (`dist/glossary/<module>/<term>/index.html`),
+- [x] A build step (`glossaryPrerenderPlugin` in `vite.config.ts`, rendering in
+      `app/glossary/prerender.ts`) writes static HTML per term (`dist/glossary/<module>/<term>/index.html`),
       using `parse.ts` + `katex.renderToString`. The SPA bundle still loads and takes over. No
       headless browser needed, unlike `vite-plugin-prerender`.
-- [ ] Per-term `<title>`, `<meta description>` (plain text of the definition), `<link
+- [x] Per-term `<title>`, `<meta description>` (plain text of the definition), `<link
 rel="canonical">`.
-- [ ] JSON-LD `DefinedTerm` per term.
+- [x] JSON-LD `DefinedTerm` per term. Module pages (`/glossary/AF`) get a term list and a
+      `DefinedTermSet`. Math is KaTeX MathML (no stylesheet needed); Caddy serves
+      `{path}/index.html` before the SPA fallback.
+- [ ] Check a production build: `dist/glossary/**/index.html` exists and Caddy serves it (Lars).
 - [ ] `hreflang` only once German entries exist.
 
 ### Phase 10 — More entry content (future)
