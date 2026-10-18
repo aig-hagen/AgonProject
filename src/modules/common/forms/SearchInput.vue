@@ -17,31 +17,55 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
 const { placeholder } = defineProps<{ placeholder: string }>()
 const query = defineModel<string>({ required: true })
 
+const { t } = useI18n({ useScope: 'global' })
 const { isCompact } = useLayoutMode()
+const input = useTemplateRef('input')
+
+function clear() {
+  query.value = ''
+  input.value?.focus()
+}
 </script>
 
 <template>
   <label
-    class="flex items-center gap-2 rounded-field border border-base-300 bg-base-200 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--color-focus)"
-    :class="isCompact ? 'h-11 px-3.5' : 'h-9 px-3'"
+    class="group flex items-center gap-2 rounded-field border border-base-300 bg-base-200 transition-colors focus-within:bg-base-100 focus-within:border-(--color-focus) has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--color-focus)"
+    :class="isCompact ? 'h-11 pl-3.5' : 'h-9 pl-3'"
   >
     <MagnifyingGlassIcon
-      class="shrink-0 text-base-content/40"
+      class="shrink-0 text-base-content/40 transition-colors group-focus-within:text-base-content/70"
       :class="isCompact ? 'size-5' : 'size-4'"
     />
+    <!-- outline-none! beats the unlayered global :focus-visible ring; the label draws it instead -->
     <input
+      ref="input"
       v-model="query"
       type="search"
-      class="flex-1 min-w-0 bg-transparent outline-none text-sm placeholder:text-base-content/65"
+      class="flex-1 min-w-0 self-stretch bg-transparent outline-none! text-sm placeholder:text-base-content/65 [&::-webkit-search-cancel-button]:appearance-none"
+      :class="{ 'pr-3': !query }"
       :placeholder="placeholder"
       :aria-label="placeholder"
+      @keydown.esc="query && (clear(), $event.stopPropagation())"
     />
+    <button
+      v-if="query"
+      type="button"
+      class="shrink-0 grid place-items-center self-stretch text-base-content/50 hover:text-base-content outline-none!"
+      :class="isCompact ? 'w-11' : 'w-8'"
+      :title="t('common.actions.clear')"
+      :aria-label="t('common.actions.clear')"
+      @click="clear"
+    >
+      <XMarkIcon :class="isCompact ? 'size-5' : 'size-4'" />
+    </button>
   </label>
 </template>

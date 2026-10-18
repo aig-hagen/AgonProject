@@ -408,7 +408,8 @@ page title centered in Headline type. Pages pass extra actions through its `acti
   desktop, full-height (44px) on mobile. No other hand-rolled input wrappers.
 - **Search:** always [`SearchInput.vue`](src/modules/common/forms/SearchInput.vue): a filled paper
   shade field with a hairline border, a leading magnifier in ink `/40`, 36px tall on desktop and
-  44px on compact.
+  44px on compact. On focus it lifts to paper with a focus-colored border, and only the field (not
+  the inner input) draws the ring. A trailing × clears it once there is text.
 - **Focus:** the shared brand focus ring.
 - **Labels:** `.field-label` above the control.
 

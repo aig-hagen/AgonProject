@@ -26,6 +26,7 @@ export default {
     dismiss: 'Verwerfen',
     create: 'Erstellen',
     rename: 'Umbenennen',
+    clear: 'Leeren',
   },
   states: {
     on: 'An',
