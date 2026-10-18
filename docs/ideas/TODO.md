@@ -12,14 +12,6 @@
 - **28. [S] Derived complexity cells.** Review the unticked cells in
   `literature/notes/complexity.md` (AF: EA cred/skept/enum, ID enum, GR enum, ADM/PR/SST/CF/NA/CF2
   count-dec; ADF: S2V ne). Only ticked ones go into `complexity.ts`.
-- **29. [S] Counting paper.** Get Baroni, Dunne & Giacomin, COMMA 2010
-  (DOI 10.3233/978-1-60750-619-5-63) to verify ST/PR counting. PR count shows "open" until then.
-- **30. [M] Counting and enumeration.** Show them again (hidden via `SHOWN_PROBLEMS`) and restore
-  their problem and class entries (#·P, #·coNP, DelayP, OutputP), cited after FHM24 and KPW17.
-- **31. [S] AIJ serialisability paper.** Settle how to cite it; that unblocks the bipolar ADF
-  initial-model results (Thm. 6.1) and an optional `VerS` problem (Thm. 6.2).
-- **32. [L] German glossary text.** The loading and fallback are in place; content needs Lars's
-  approval. Add `hreflang` to the prerendered pages once German entries exist.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search),
   guarantees (always exists / unique / can be empty?), relations between semantics as a lattice and
