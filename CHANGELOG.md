@@ -57,8 +57,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Glossary: the ADF stable model definition now requires a two-valued model.
 - Glossary: the discussion-based ranking no longer reads backwards (larger discussion counts rank higher).
 - Glossary: possible/necessary acceptance in iAFs now distinguishes extensions, credulous and skeptical acceptance.
-- Glossary: corrected the selection function, reduct, grounded, burden number, serialisation index, SetAF and
-  ADF completion definitions.
+- Glossary: corrected the selection function, reduct, grounded, burden number, serialisation index, SetAF,
+  ADF completion and categorizer definitions; the tuples ranking notes that it is partial.
 - Glossary: ADF admissible, complete, grounded and preferred now cite Brewka et al. (2013), where they are defined.
 - Numerical ranking scores are readable in dark mode, and their colors no longer rely on red-green hue.
 

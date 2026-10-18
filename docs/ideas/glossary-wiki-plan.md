@@ -305,10 +305,19 @@ quote doesn't count.
 
 ### Phase 7 — Literature page & publication tags
 
-- [ ] Optional `tags` on `Publication` (e.g. `complexity`, `semantics`, `AF`, `ADF`, `ranking`), from a
-      fixed list that a test checks.
-- [ ] `/literature` page next to the glossary: every publication with its citation and link, search,
-      and tag filters.
+Settled: one page, no per-publication routes (anchors only); tags hand-picked; abstracts for
+search only, never displayed.
+
+- [x] Uncited check: only BDKM16. Kept, cited as further reading on `rankingSemantics`.
+- [ ] `tags` on `Publication`, hand-picked from a fixed list in `tags.ts` that a test checks:
+  - **formalism:** AF, ADF, BAF, SETAF, PAF, IAF, ABA
+  - **topic:** semantics, ranking, complexity, algorithms, principles, survey, handbook (Handbook
+    of Formal Argumentation chapters), foundations (general complexity theory)
+- [ ] `lit:abstracts` in `scripts/literature.mjs`: OpenAlex/Crossref (31), else the PDF's first
+      page (18), else none (19). Writes `abstracts.json`, loaded only by the literature page.
+- [ ] Search: every query word must match a field (title, authors, venue, year, key, abstract),
+      accent-insensitive; ranked by field weight. Tags filter via chips.
+- [ ] `/literature` page next to the glossary: every publication with its citation and link.
 - [ ] "Cited in" per publication, computed from glossary `meta.ts`, `[@KEY]` citations, complexity
       cells and module cards, linking back to the glossary.
 - [ ] Add the page to the Phase 5 sitemap.
