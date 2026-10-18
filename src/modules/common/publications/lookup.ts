@@ -23,3 +23,10 @@ import type { Publication } from '@/modules/common/publications/types'
 export function publicationByKey(key: string): Publication | undefined {
   return (publications as Record<string, Publication>)[key]
 }
+
+const keys = new Map(Object.entries(publications).map(([key, pub]) => [pub as Publication, key]))
+
+/** The `publications.ts` key of an entry, e.g. for a `reference` or complexity source. */
+export function publicationKey(pub: Publication): string | undefined {
+  return keys.get(pub)
+}
