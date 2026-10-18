@@ -115,6 +115,11 @@ describe('publication entries', () => {
     expect.soft(pub.doi ?? '').toMatch(/^(10\.\d{4,9}\/\S+)?$/)
     expect.soft(publicationHref(pub)).toMatch(/^https?:\/\//)
     expect.soft(('pages' in pub && pub.pages) || '').toMatch(/^(\d+(–\d+)?)?$/)
+    expect.soft(pub.tags?.length).toBeGreaterThan(0)
+    expect.soft(new Set(pub.tags).size).toBe(pub.tags?.length)
+    const isHandbook =
+      pub.kind === 'chapter' && pub.booktitle === 'Handbook of Formal Argumentation'
+    expect.soft(pub.tags?.includes('handbook')).toBe(isHandbook)
   })
 
   test('short labels are unique', () => {

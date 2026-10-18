@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import type { PublicationTag } from '@/modules/common/publications/tags'
+
 interface PublicationBase {
   /** "Last, I." per author, in order. */
   authors: string[]
@@ -24,6 +26,8 @@ interface PublicationBase {
   doi?: string
   /** Fallback link when there is no DOI. */
   url?: string
+  /** Hand-picked; required for every entry in `publications.ts` (checked by a test). */
+  tags?: PublicationTag[]
 }
 
 export interface Article extends PublicationBase {
