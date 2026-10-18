@@ -331,8 +331,8 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
   },
 
   adfIS: {
-    label: 'initial',
-    title: 'Initial Semantics (ADF)',
+    label: 'initial models',
+    title: 'Initial Models (ADF)',
     content: [
       'A ',
       { ref: 'threeValuedInterpretation' },
