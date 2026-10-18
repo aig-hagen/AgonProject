@@ -19,8 +19,12 @@
 import { describe, expect, test } from 'vitest'
 
 import { buildRegistry, termKeyFromPath } from '@/modules/common/glossary/load'
-import { parseGlossaryEntry, parseInline } from '@/modules/common/glossary/parse'
+import { parseBody, parseGlossaryEntry, parseInline } from '@/modules/common/glossary/parse'
 import type { Publication } from '@/modules/common/publications/types'
+
+// A literal double hash trips the license-header tool (its regex marker).
+const H2 = '#'.repeat(2)
+const H3 = '#'.repeat(3)
 
 describe('parseInline', () => {
   test('splits wiki links with and without labels', () => {
@@ -40,6 +44,23 @@ describe('parseInline', () => {
   })
 })
 
+describe('parseBody', () => {
+  test('reads headings, paragraphs, lists and citations', () => {
+    const body = parseBody(
+      `${H2} Remarks\n\nIntroduced by [@D95],\nsee [[CO]].\n\n${H3} Sources\n- [@BCG18]: overview\n  of semantics\n- [@DD18]`,
+    )
+    expect(body).toEqual([
+      { kind: 'heading', level: 2, content: ['Remarks'] },
+      {
+        kind: 'paragraph',
+        content: ['Introduced by ', { cite: 'D95' }, ', see ', { ref: 'CO' }, '.'],
+      },
+      { kind: 'heading', level: 3, content: ['Sources'] },
+      { kind: 'list', items: [[{ cite: 'BCG18' }, ': overview of semantics'], [{ cite: 'DD18' }]] },
+    ])
+  })
+})
+
 describe('parseGlossaryEntry', () => {
   test('reads frontmatter and the definition', () => {
     const entry = parseGlossaryEntry(
@@ -50,14 +71,21 @@ describe('parseGlossaryEntry', () => {
 
   test('joins wrapped definition lines and splits off the body', () => {
     const entry = parseGlossaryEntry(
-      '---\nlabel: x\n---\n\nFirst line\nsecond line.\n\n## Remarks\n\nMore text.\n',
+      `---\nlabel: x\n---\n\nFirst line\nsecond line.\n\n${H2} Remarks\n\nMore text.\n`,
     )
     expect(entry.content).toEqual(['First line second line.'])
-    expect(entry.body).toBe('## Remarks\n\nMore text.')
+    expect(entry.body).toEqual([
+      { kind: 'heading', level: 2, content: ['Remarks'] },
+      { kind: 'paragraph', content: ['More text.'] },
+    ])
   })
 
   test('keeps colons in frontmatter values', () => {
     expect(parseGlossaryEntry('---\nlabel: x\ntitle: A: B\n---\nT').title).toBe('A: B')
+  })
+
+  test('rejects citations in the definition', () => {
+    expect(() => parseGlossaryEntry('---\nlabel: x\n---\nSee [@D95].')).toThrow(/body/)
   })
 
   test('rejects entries without frontmatter or label', () => {

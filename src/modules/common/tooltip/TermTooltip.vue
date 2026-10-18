@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { computed, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { formatCitation, publicationHref } from '@/modules/common/publications/format'
 import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
@@ -26,6 +27,8 @@ import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { id, triggerClass } = defineProps<{ id: string; triggerClass?: string }>()
+
+const { t } = useI18n({ useScope: 'global' })
 
 const registry = inject(TOOLTIP_REGISTRY_KEY, {})
 const definition = computed(() => registry[id])
@@ -89,6 +92,13 @@ const definition = computed(() => registry[id])
           </TermTooltip>
         </template>
       </span>
+      <RouterLink
+        v-if="definition.body"
+        :to="{ path: '/glossary', query: { term: id } }"
+        class="block mt-1.5 text-right text-xs font-medium text-primary hover:opacity-70"
+      >
+        {{ t('glossary.more') }} →
+      </RouterLink>
     </template>
   </HoverTooltip>
   <slot v-else />

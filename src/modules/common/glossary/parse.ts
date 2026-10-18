@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import type { GlossaryBlock, GlossaryInline } from '@/modules/common/glossary/types'
 import type { TooltipContentPart } from '@/modules/common/tooltip/tooltipRegistry'
 
 export interface ParsedGlossaryEntry {
@@ -23,25 +24,57 @@ export interface ParsedGlossaryEntry {
   title?: string
   /** The formal definition: everything before the first `##` heading. */
   content: TooltipContentPart[]
-  /** Raw Markdown after the definition, rendered only on the glossary page. */
-  body?: string
+  /** Everything after the definition, rendered only on the glossary page. */
+  body?: GlossaryBlock[]
 }
 
 const FRONTMATTER = /^---\n([\s\S]*?)\n---\n?/
-const WIKI_LINK = /\[\[(.+?)\]\]/g
+const INLINE = /\[\[(.+?)\]\]|\[@([\w-]+)\]/g
 
-/** Splits text with `[[key]]` / `[[key|label]]` links into tooltip content parts. */
-export function parseInline(text: string): TooltipContentPart[] {
-  const parts: TooltipContentPart[] = []
+/** Splits text with `[[key]]` / `[[key|label]]` links and `[@KEY]` citations into parts. */
+export function parseInline(text: string): GlossaryInline[] {
+  const parts: GlossaryInline[] = []
   let last = 0
-  for (const match of text.matchAll(WIKI_LINK)) {
+  for (const match of text.matchAll(INLINE)) {
     if (match.index > last) parts.push(text.slice(last, match.index))
-    const [ref, label] = match[1]!.split('|', 2) as [string, string?]
-    parts.push(label === undefined ? { ref } : { ref, label })
+    if (match[2]) {
+      parts.push({ cite: match[2] })
+    } else {
+      const [ref, label] = match[1]!.split('|', 2) as [string, string?]
+      parts.push(label === undefined ? { ref } : { ref, label })
+    }
     last = match.index + match[0].length
   }
   if (last < text.length) parts.push(text.slice(last))
   return parts
+}
+
+const joinLines = (lines: string[]) => lines.map((line) => line.trim()).join(' ')
+
+/** Paragraphs, `##`/`###` headings and `-` lists, separated by blank lines. */
+export function parseBody(markdown: string): GlossaryBlock[] {
+  const blocks: GlossaryBlock[] = []
+  for (const chunk of markdown.trim().split(/\n\s*\n/)) {
+    const lines = chunk.split('\n')
+    const heading = lines[0]!.match(/^(#{2,3}) (.*)$/)
+    if (heading) {
+      const level = heading[1]!.length as 2 | 3
+      blocks.push({ kind: 'heading', level, content: parseInline(heading[2]!.trim()) })
+      lines.shift()
+      if (!lines.length) continue
+    }
+    if (lines[0]!.startsWith('- ')) {
+      const items: string[][] = []
+      for (const line of lines) {
+        if (line.startsWith('- ')) items.push([line.slice(2)])
+        else items[items.length - 1]!.push(line)
+      }
+      blocks.push({ kind: 'list', items: items.map((item) => parseInline(joinLines(item))) })
+    } else {
+      blocks.push({ kind: 'paragraph', content: parseInline(joinLines(lines)) })
+    }
+  }
+  return blocks
 }
 
 function parseFrontmatter(block: string): Record<string, string> {
@@ -64,11 +97,12 @@ export function parseGlossaryEntry(source: string): ParsedGlossaryEntry {
   const definition = heading === -1 ? rest : rest.slice(0, heading)
   const body = heading === -1 ? '' : rest.slice(heading).trim()
 
-  const entry: ParsedGlossaryEntry = {
-    label,
-    content: parseInline(definition.trim().replace(/\s*\n\s*/g, ' ')),
-  }
+  const content = parseInline(definition.trim().replace(/\s*\n\s*/g, ' '))
+  if (content.some((part) => typeof part !== 'string' && 'cite' in part))
+    throw new Error('Citations belong in the body; the definition cites via meta.ts')
+
+  const entry: ParsedGlossaryEntry = { label, content: content as TooltipContentPart[] }
   if (title) entry.title = title
-  if (body) entry.body = body
+  if (body) entry.body = parseBody(body)
   return entry
 }

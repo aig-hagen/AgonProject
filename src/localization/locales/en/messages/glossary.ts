@@ -23,4 +23,7 @@ export default {
   noResults: 'No results',
   selectTerm: 'Select a term from the list.',
   source: 'Reference',
+  referencedBy: 'Referenced by',
+  more: 'More',
+  less: 'Less',
 }

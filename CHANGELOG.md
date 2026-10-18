@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Glossary entries can carry a longer write-up with citations, shown on the glossary page and linked from tooltips ("More →"); each entry lists the entries that reference it.
 - "Color-blind friendly colors" setting: evaluation results switch to blue and red-orange, which stay apart for
   red-green and blue-yellow color blindness on every graph style.
 - Load ICCMA text files (`.af`, `.baf`, `.setaf`, `.iaf`, `.paf`, `.aba`) from the file menu; imported graphs are laid out automatically.

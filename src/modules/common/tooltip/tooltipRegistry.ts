@@ -18,6 +18,7 @@
  */
 import type { InjectionKey } from 'vue'
 
+import type { GlossaryBlock } from '@/modules/common/glossary/types'
 import type { Publication } from '@/modules/common/publications/types'
 
 /** A plain string (may contain $...$ LaTeX) or a reference to another registry entry rendered as a nested TermTooltip. */
@@ -29,8 +30,8 @@ export interface TooltipDefinition {
   /** Optional bold header line shown at the top of the tooltip panel. */
   title?: string
   content: TooltipContentPart[]
-  /** Longer Markdown shown only on the glossary page. */
-  body?: string
+  /** Longer content shown only on the glossary page. */
+  body?: GlossaryBlock[]
   reference?: Publication
 }
 

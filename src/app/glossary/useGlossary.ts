@@ -23,10 +23,23 @@ import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
+import type { GlossaryInline } from '@/modules/common/glossary/types'
 import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
+
+function inlineRefs(parts: GlossaryInline[]): string[] {
+  return parts.flatMap((part) => (typeof part !== 'string' && 'ref' in part ? [part.ref] : []))
+}
+
+/** Every term key an entry links to, in its definition or body. */
+export function entryRefs(def: TooltipDefinition): string[] {
+  const body = (def.body ?? []).flatMap((block) =>
+    block.kind === 'list' ? block.items.flatMap(inlineRefs) : inlineRefs(block.content),
+  )
+  return [...inlineRefs(def.content), ...body]
+}
 
 export interface GlossaryModule {
   prefix: string
@@ -92,12 +105,34 @@ export function useGlossary() {
     return map
   })
 
+  // termKey → the entries whose definition or body links to it.
+  const backlinks = computed(() => {
+    const map: Record<
+      string,
+      { key: string; definition: TooltipDefinition; modulePrefix: string }[]
+    > = {}
+    for (const m of glossaryModules) {
+      for (const [key, def] of Object.entries(m.glossary)) {
+        for (const ref of new Set(entryRefs(def))) {
+          if (ref !== key) (map[ref] ??= []).push({ key, definition: def, modulePrefix: m.prefix })
+        }
+      }
+    }
+    return map
+  })
+
   const route = useRoute()
   const router = useRouter()
 
+  // `?term=` alone is enough: keys are unique across modules, so tooltips can link without one.
   const activeModulePrefix = computed(() => {
     const p = route.query.module as string | undefined
-    return glossaryModules.find((m) => m.prefix === p)?.prefix ?? glossaryModules[0]!.prefix
+    const term = route.query.term as string | undefined
+    return (
+      glossaryModules.find((m) => m.prefix === p)?.prefix ??
+      (term ? allEntries.value[term]?.modulePrefix : undefined) ??
+      glossaryModules[0]!.prefix
+    )
   })
 
   const activeTermKey = computed(() => (route.query.term as string | undefined) ?? '')
@@ -173,6 +208,7 @@ export function useGlossary() {
 
   return {
     allEntries,
+    backlinks,
     activeModulePrefix,
     activeTermKey,
     activeModule,

@@ -18,11 +18,12 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { glossaryModules } from '@/app/glossary/useGlossary'
+import { entryRefs, glossaryModules } from '@/app/glossary/useGlossary'
 import { glossaryMeta as afMeta } from '@/modules/abstract-argumentation/glossary/meta'
 import { glossaryMeta as abaMeta } from '@/modules/assumption-based-argumentation/glossary/meta'
 import { glossaryMeta as bafMeta } from '@/modules/bipolar-argumentation/glossary/meta'
 import { glossaryMeta as cafMeta } from '@/modules/collective-attacks-argumentation/glossary/meta'
+import { publicationByKey } from '@/modules/common/publications/lookup'
 import { glossaryMeta as adfMeta } from '@/modules/dialectical-argumentation/glossary/meta'
 import { glossaryMeta as iafMeta } from '@/modules/incomplete-argumentation/glossary/meta'
 import { glossaryMeta as pafMeta } from '@/modules/probabilistic-argumentation/glossary/meta'
@@ -46,10 +47,18 @@ describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey 
   // Modules provide their own registry merged over the AF one, so refs may point into either.
   test('every [[ref]] resolves', () => {
     const missing = Object.entries(glossary).flatMap(([key, def]) =>
-      def.content
-        .filter((p) => typeof p !== 'string')
-        .filter((p) => !(p.ref in glossary) && !(p.ref in afGlossary))
-        .map((p) => `${key} → ${p.ref}`),
+      entryRefs(def)
+        .filter((ref) => !(ref in glossary) && !(ref in afGlossary))
+        .map((ref) => `${key} → ${ref}`),
+    )
+    expect(missing).toEqual([])
+  })
+
+  test('every [@KEY] citation names a publication', () => {
+    const missing = Object.entries(glossary).flatMap(([key, def]) =>
+      [...JSON.stringify(def.body ?? []).matchAll(/"cite":"([^"]+)"/g)]
+        .filter((m) => !publicationByKey(m[1]!))
+        .map((m) => `${key} → ${m[1]}`),
     )
     expect(missing).toEqual([])
   })

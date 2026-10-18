@@ -18,9 +18,11 @@
 -->
 <script setup lang="ts">
 import { MapPinIcon } from '@heroicons/vue/24/outline'
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
+import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
@@ -31,6 +33,7 @@ const { t } = useI18n({ useScope: 'global' })
 
 const {
   allEntries,
+  backlinks,
   activeModulePrefix,
   activeTermKey,
   searchQuery,
@@ -40,6 +43,8 @@ const {
   navigate,
   followRef,
 } = useGlossary()
+
+const activeBacklinks = computed(() => backlinks.value[activeTermKey.value] ?? [])
 
 // Auto-select the framework (main) entry when the module changes or no valid term is in the URL.
 watch(
@@ -134,27 +139,39 @@ watch(
             </h2>
           </div>
           <p class="text-base-content/80 leading-relaxed">
-            <template v-for="(part, i) in activeDefinition.content" :key="i">
-              <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
-              <button
-                v-else-if="allEntries[part.ref]"
-                class="text-primary underline underline-offset-2 hover:opacity-70"
-                @click="followRef(part.ref)"
-              >
-                <KatexInlineElement
-                  :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
-                />
-              </button>
-              <span v-else class="text-base-content/65">
-                <KatexInlineElement :text="part.label ?? part.ref" />
-              </span>
-            </template>
+            <GlossaryInline
+              :parts="activeDefinition.content"
+              :entries="allEntries"
+              @follow="followRef"
+            />
           </p>
+          <GlossaryBody
+            v-if="activeDefinition.body"
+            :blocks="activeDefinition.body"
+            :entries="allEntries"
+            class="mt-4"
+            @follow="followRef"
+          />
           <section v-if="activeDefinition.reference" class="mt-6 pt-4 border-t border-base-300">
             <h3 class="section-label mb-2">
               {{ t('glossary.source') }}
             </h3>
             <PublicationCitation :publication="activeDefinition.reference" />
+          </section>
+          <section v-if="activeBacklinks.length" class="mt-6 pt-4 border-t border-base-300">
+            <h3 class="section-label mb-2">
+              {{ t('glossary.referencedBy') }}
+            </h3>
+            <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <li v-for="link in activeBacklinks" :key="link.key">
+                <button
+                  class="text-primary hover:opacity-70"
+                  @click="navigate(link.modulePrefix, link.key)"
+                >
+                  <KatexInlineElement :text="link.definition.title ?? link.definition.label" />
+                </button>
+              </li>
+            </ul>
           </section>
         </div>
         <p v-else class="text-sm text-base-content/65">{{ t('glossary.selectTerm') }}</p>

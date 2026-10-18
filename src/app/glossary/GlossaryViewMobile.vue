@@ -17,19 +17,18 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { MapPinIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
 
+import GlossaryCardMobile from '@/app/glossary/GlossaryCardMobile.vue'
 import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
-import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
 const {
   allEntries,
+  backlinks,
   activeModulePrefix,
   searchQuery,
   pinnedTerm,
@@ -78,79 +77,27 @@ const {
       >
         {{ t('glossary.noResults') }}
       </p>
-      <article v-if="pinnedTerm" class="rounded-box border border-primary/40 bg-primary/5 p-3.5">
-        <div class="flex items-start gap-2.5">
-          <div class="flex-1 min-w-0">
-            <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
-              <MapPinIcon class="size-4 text-primary shrink-0" />
-              <KatexInlineElement :text="pinnedTerm[1].title ?? pinnedTerm[1].label" />
-            </h3>
-            <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
-              <template v-for="(part, i) in pinnedTerm[1].content" :key="i">
-                <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
-                <button
-                  v-else-if="allEntries[part.ref]"
-                  class="text-primary underline underline-offset-2"
-                  @click="followRef(part.ref)"
-                >
-                  <KatexInlineElement
-                    :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
-                  />
-                </button>
-                <span v-else class="text-base-content/65">
-                  <KatexInlineElement :text="part.label ?? part.ref" />
-                </span>
-              </template>
-            </p>
-            <PublicationCitation
-              v-if="pinnedTerm[1].reference"
-              :publication="pinnedTerm[1].reference"
-              compact
-              class="mt-2.5 pt-2.5 border-t border-base-300"
-            />
-          </div>
-        </div>
-      </article>
+      <GlossaryCardMobile
+        v-if="pinnedTerm"
+        :key="pinnedTerm[0]"
+        :definition="pinnedTerm[1]"
+        :entries="allEntries"
+        :backlinks="backlinks[pinnedTerm[0]]"
+        pinned
+        @follow="followRef"
+      />
       <template v-for="group in groupedTerms" :key="group.letter">
         <div class="text-xs font-bold text-secondary tracking-wide mt-1.5 px-0.5">
           {{ group.letter }}
         </div>
-        <article
+        <GlossaryCardMobile
           v-for="[key, def] in group.terms"
           :key="key"
-          class="rounded-box border border-base-300 p-3.5"
-        >
-          <div class="flex items-start gap-2.5">
-            <div class="flex-1 min-w-0">
-              <h3 class="text-base font-semibold leading-snug">
-                <KatexInlineElement :text="def.title ?? def.label" />
-              </h3>
-              <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
-                <template v-for="(part, i) in def.content" :key="i">
-                  <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
-                  <button
-                    v-else-if="allEntries[part.ref]"
-                    class="text-primary underline underline-offset-2"
-                    @click="followRef(part.ref)"
-                  >
-                    <KatexInlineElement
-                      :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
-                    />
-                  </button>
-                  <span v-else class="text-base-content/65">
-                    <KatexInlineElement :text="part.label ?? part.ref" />
-                  </span>
-                </template>
-              </p>
-              <PublicationCitation
-                v-if="def.reference"
-                :publication="def.reference"
-                compact
-                class="mt-2.5 pt-2.5 border-t border-base-300"
-              />
-            </div>
-          </div>
-        </article>
+          :definition="def"
+          :entries="allEntries"
+          :backlinks="backlinks[key]"
+          @follow="followRef"
+        />
       </template>
     </div>
   </div>

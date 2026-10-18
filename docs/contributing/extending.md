@@ -69,7 +69,7 @@ title: Admissible Set
 A set $S$ is admissible if it is [[CF|conflict-free]] and [[defends]] all its members.
 ```
 
-The text before the first `##` heading is the definition shown in tooltips. It may contain KaTeX (`$…$`) and links to other entries (`[[key]]` or `[[key|label]]`). Anything after the first heading is the longer body, shown only on the glossary page. [`glossaryData.test.ts`](/src/app/glossary/glossaryData.test.ts) checks that every link resolves.
+The text before the first `##` heading is the definition shown in tooltips. It may contain KaTeX (`$…$`) and links to other entries (`[[key]]` or `[[key|label]]`). Anything after the first heading is the longer body, shown only on the glossary page: paragraphs, `##`/`###` headings, `-` lists, and `[@KEY]` citations of entries in [`publications.ts`](/src/modules/common/publications/publications.ts). [`glossaryData.test.ts`](/src/app/glossary/glossaryData.test.ts) checks that every link resolves.
 
 Provide the module registry from its editor:
 

@@ -241,10 +241,10 @@ quote doesn't count.
 
 ### Phase 4 — Wiki pages
 
-- [ ] Glossary page renders `body` under the definition (desktop: right panel; mobile: expanded
+- [x] Glossary page renders `body` under the definition (desktop: right panel; mobile: expanded
       card).
-- [ ] Tooltips get a small "More →" link when an entry has a body.
-- [ ] Backlinks ("Referenced by"), computed from `[[refs]]`.
+- [x] Tooltips get a small "More →" link when an entry has a body.
+- [x] Backlinks ("Referenced by"), computed from `[[refs]]`.
 
 ### Phase 5 — Real URLs + sitemap (was SEO Tier 1)
 

@@ -17,6 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { Publication } from '@/modules/common/publications/types'
+import type { TooltipContentPart } from '@/modules/common/tooltip/tooltipRegistry'
 
 /** Language-neutral data for one glossary term, kept out of the per-locale Markdown files. */
 export interface GlossaryTermMeta {
@@ -24,3 +25,11 @@ export interface GlossaryTermMeta {
 }
 
 export type GlossaryMeta = Record<string, GlossaryTermMeta>
+
+/** Body text: definition parts plus `[@KEY]` citations of `publications.ts` entries. */
+export type GlossaryInline = TooltipContentPart | { cite: string }
+
+export type GlossaryBlock =
+  | { kind: 'heading'; level: 2 | 3; content: GlossaryInline[] }
+  | { kind: 'paragraph'; content: GlossaryInline[] }
+  | { kind: 'list'; items: GlossaryInline[][] }
