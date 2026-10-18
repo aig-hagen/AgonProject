@@ -43,13 +43,41 @@ export function entryRefs(def: TooltipDefinition): string[] {
   return [...inlineRefs(def.content), ...body]
 }
 
-/** Strips `$…$` LaTeX down to its letters, for plain-text contexts like the page title. */
+const MATH_SYMBOLS: Record<string, string> = {
+  alpha: 'α',
+  beta: 'β',
+  sigma: 'σ',
+  Sigma: 'Σ',
+  Pi: 'Π',
+  Theta: 'Θ',
+  Delta: 'Δ',
+  neg: '¬',
+  emptyset: '∅',
+}
+const SUBSCRIPTS: Record<string, string> = Object.fromEntries(
+  [...'0123456789+-aehijklmnoprstuvx'].map((c, i) => [c, '₀₁₂₃₄₅₆₇₈₉₊₋ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ'[i]!]),
+)
+const SUPERSCRIPTS: Record<string, string> = Object.fromEntries(
+  [...'0123456789+-Pmn'].map((c, i) => [c, '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᴾᵐⁿ'[i]!]),
+)
+
+// Unicode sub/superscript for single characters and numbers; words stay plain, since most
+// letters lack a Unicode form and a mix (βₚᵣ next to βad) looks inconsistent.
+function script(text: string, table: Record<string, string>): string {
+  const chars = [...text]
+  const convertible = chars.length === 1 || /^[0-9+-]+$/.test(text)
+  return convertible && chars.every((c) => c in table) ? chars.map((c) => table[c]).join('') : text
+}
+
+/** Renders `$…$` LaTeX as Unicode text, for plain-text contexts like the page title. */
 export function plainText(text: string): string {
   return text.replace(/\$([^$]*)\$/g, (_, math: string) =>
     math
-      .replace(/\\[a-zA-Z]+/g, '')
-      .replace(/[{}^]/g, '')
-      .replace(/_/g, ''),
+      .replace(/\\([a-zA-Z]+)/g, (_, name: string) => MATH_SYMBOLS[name] ?? '')
+      .replace(/([_^])(?:\{((?:[^{}]|\{[^{}]*\})*)\}|([^{}\s]))/g, (_, op, group, single) =>
+        script((group ?? single).replace(/[{}]/g, ''), op === '_' ? SUBSCRIPTS : SUPERSCRIPTS),
+      )
+      .replace(/[{}]/g, ''),
   )
 }
 
