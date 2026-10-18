@@ -31,8 +31,8 @@ import {
 } from '@/modules/abstract-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { BCG18, D95 } from '@/modules/common/publications/publications'
 import { TAG_ABSTRACT, TAG_ATTACK } from '@/modules/common/tags'
-import { BCG18, D95 } from '@/modules/common/tooltip/publications'
 
 const initialAbstractArgumentation = new AbstractArgumentation<ArgumentData>()
 initialAbstractArgumentation.addArgument(0, {

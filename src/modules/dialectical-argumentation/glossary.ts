@@ -24,7 +24,7 @@ import {
   KVV21,
   KVV22,
   SW15,
-} from '@/modules/common/tooltip/publications'
+} from '@/modules/common/publications/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const dialecticalArgumentationGlossary: TooltipRegistry = {

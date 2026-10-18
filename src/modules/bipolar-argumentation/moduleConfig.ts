@@ -31,8 +31,8 @@ import {
 } from '@/modules/bipolar-argumentation/save/saveFormat'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import { DirectedGraph } from '@/modules/common/graph/graph'
+import { CCL21, CL05, CL10 } from '@/modules/common/publications/publications'
 import { TAG_ABSTRACT, TAG_ATTACK, TAG_SUPPORT } from '@/modules/common/tags'
-import { CCL21, CL05, CL10 } from '@/modules/common/tooltip/publications'
 
 const BIPOLAR_ARGUMENTATION_V1_TYPE = 'bipolar-argumentation-v1'
 const TYPE_KEY = 'type'

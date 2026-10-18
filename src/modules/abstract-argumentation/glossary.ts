@@ -43,7 +43,7 @@ import {
   T23,
   V96,
   XC18,
-} from '@/modules/common/tooltip/publications'
+} from '@/modules/common/publications/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const abstractArgumentationGlossary: TooltipRegistry = {

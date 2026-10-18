@@ -21,8 +21,8 @@ import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { computed, inject } from 'vue'
 
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
+import { formatCitation, publicationHref } from '@/modules/common/publications/format'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import { formatCitation } from '@/modules/common/tooltip/publications'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -53,7 +53,7 @@ const definition = computed(() => registry[id])
       <span v-if="isCompact" class="flex-1"></span>
       <a
         v-if="definition.reference"
-        :href="definition.reference.href"
+        :href="publicationHref(definition.reference)"
         :title="formatCitation(definition.reference)"
         target="_blank"
         rel="noopener noreferrer"

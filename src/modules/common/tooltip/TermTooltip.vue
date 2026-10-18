@@ -20,9 +20,9 @@
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { computed, inject } from 'vue'
 
+import { formatCitation, publicationHref } from '@/modules/common/publications/format'
 import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import { formatCitation } from '@/modules/common/tooltip/publications'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { id, triggerClass } = defineProps<{ id: string; triggerClass?: string }>()
@@ -50,7 +50,7 @@ const definition = computed(() => registry[id])
         />
         <a
           v-if="definition.reference"
-          :href="definition.reference.href"
+          :href="publicationHref(definition.reference)"
           :title="formatCitation(definition.reference)"
           target="_blank"
           rel="noopener noreferrer"

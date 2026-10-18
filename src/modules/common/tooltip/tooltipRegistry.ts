@@ -18,7 +18,7 @@
  */
 import type { InjectionKey } from 'vue'
 
-import type { Publication } from '@/modules/common/tooltip/publications'
+import type { Publication } from '@/modules/common/publications/types'
 
 /** A plain string (may contain $...$ LaTeX) or a reference to another registry entry rendered as a nested TermTooltip. */
 export type TooltipContentPart = string | { ref: string; label?: string }

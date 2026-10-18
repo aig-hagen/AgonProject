@@ -22,9 +22,9 @@ import type { EvaluationKind } from '@/modules/common/evaluation/types'
 import type { Example } from '@/modules/common/examples'
 import type { EditorComponent } from '@/modules/common/graph-editor/graphEditor'
 import type { Layout } from '@/modules/common/main-menu/layouting'
+import type { Publication } from '@/modules/common/publications/types'
 import type { DeserializationResult, TextImportConfig } from '@/modules/common/save/load'
 import type { TagId } from '@/modules/common/tags'
-import type { Publication } from '@/modules/common/tooltip/publications'
 
 export type { Publication }
 

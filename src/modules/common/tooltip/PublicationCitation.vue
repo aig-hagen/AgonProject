@@ -20,7 +20,13 @@
 import { ArrowTopRightOnSquareIcon, BookOpenIcon } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
 
-import { formatCitation, type Publication } from '@/modules/common/tooltip/publications'
+import {
+  formatCitation,
+  formatVenue,
+  publicationHref,
+  shortLabel,
+} from '@/modules/common/publications/format'
+import type { Publication } from '@/modules/common/publications/types'
 
 const { publication, compact = false } = defineProps<{
   publication: Publication
@@ -29,12 +35,12 @@ const { publication, compact = false } = defineProps<{
 }>()
 
 const surnames = computed(() => publication.authors.map((a) => a.split(', ')[0]).join(', '))
-const venue = computed(() => publication.venue.replace(/^In: /, ''))
+const venue = computed(() => formatVenue(publication))
 </script>
 
 <template>
   <a
-    :href="publication.href"
+    :href="publicationHref(publication)"
     target="_blank"
     rel="noopener noreferrer"
     :aria-label="formatCitation(publication)"
@@ -45,7 +51,7 @@ const venue = computed(() => publication.venue.replace(/^In: /, ''))
       <BookOpenIcon class="size-3.5 shrink-0 mt-px text-base-content/40" />
       <span class="min-w-0 leading-snug">
         <span class="font-medium text-base-content/80 group-hover:text-primary">
-          {{ publication.shortLabel }}
+          {{ shortLabel(publication) }}
         </span>
         <span class="block line-clamp-2 text-base-content/65">{{ publication.title }}</span>
       </span>

@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - ADF evaluation now defaults to preferred semantics instead of admissible.
+- Publication references share one citation format; same-author, same-year papers are labeled 2005a/2005b.
 - Image export now opens in a floating window with a live preview, a transparent-background toggle, and PNG export (1×–3×) alongside SVG; fonts are embedded so labels look the same outside the app.
 - Export menu: text formats download in one click and show their file extension; the image entry gets a quick transparent-SVG download.
 - Visual polish: softer, consistent corner radii app-wide, solid mobile toolbars, no glowing buttons, a clearer

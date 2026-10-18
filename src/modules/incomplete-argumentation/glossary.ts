@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { BJNNR21, CDKLM07 } from '@/modules/common/tooltip/publications'
+import { BJNNR21, CDKLM07 } from '@/modules/common/publications/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const incompleteArgumentationGlossary: TooltipRegistry = {
