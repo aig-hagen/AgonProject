@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import glossaryModuleList from '@/app/glossary/glossaryModules.json'
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
@@ -41,6 +42,20 @@ export function entryRefs(def: TooltipDefinition): string[] {
   return [...inlineRefs(def.content), ...body]
 }
 
+/** Strips `$…$` LaTeX down to its letters, for plain-text contexts like the page title. */
+export function plainText(text: string): string {
+  return text.replace(/\$([^$]*)\$/g, (_, math: string) =>
+    math
+      .replace(/\\[a-zA-Z]+/g, '')
+      .replace(/[{}^]/g, '')
+      .replace(/_/g, ''),
+  )
+}
+
+export function glossaryPath(modulePrefix?: string, termKey?: string): string {
+  return ['/glossary', modulePrefix, termKey].filter(Boolean).join('/')
+}
+
 export interface GlossaryModule {
   prefix: string
   label: string
@@ -49,51 +64,26 @@ export interface GlossaryModule {
   mainKey: string
 }
 
-export const glossaryModules: GlossaryModule[] = [
-  {
-    prefix: 'AF',
-    label: 'Abstract AF',
-    glossary: abstractArgumentationGlossary,
-    mainKey: 'AF',
-  },
-  { prefix: 'BAF', label: 'Bipolar AF', glossary: bipolarArgumentationGlossary, mainKey: 'BAF' },
-  {
-    prefix: 'ADF',
-    label: 'Dialectical AF',
-    glossary: dialecticalArgumentationGlossary,
-    mainKey: 'ADF',
-  },
-  {
-    prefix: 'iAF',
-    label: 'Incomplete AF',
-    glossary: incompleteArgumentationGlossary,
-    mainKey: 'IAF',
-  },
-  {
-    prefix: 'PAF',
-    label: 'Probabilistic AF',
-    glossary: probabilisticArgumentationGlossary,
-    mainKey: 'PAF',
-  },
-  {
-    prefix: 'SetAF',
-    label: 'Collective Attacks',
-    glossary: collectiveAttacksArgumentationGlossary,
-    mainKey: 'SetAF',
-  },
-  {
-    prefix: 'ABA',
-    label: 'Assumption-based',
-    glossary: assumptionBasedArgumentationGlossary,
-    mainKey: 'ABAF',
-  },
-]
+const registries: Record<string, TooltipRegistry> = {
+  'abstract-argumentation': abstractArgumentationGlossary,
+  'assumption-based-argumentation': assumptionBasedArgumentationGlossary,
+  'bipolar-argumentation': bipolarArgumentationGlossary,
+  'collective-attacks-argumentation': collectiveAttacksArgumentationGlossary,
+  'dialectical-argumentation': dialecticalArgumentationGlossary,
+  'incomplete-argumentation': incompleteArgumentationGlossary,
+  'probabilistic-argumentation': probabilisticArgumentationGlossary,
+}
+
+// The module list is JSON so the build's sitemap plugin (vite.config.ts) can read it too.
+export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
+  ({ prefix, label, dir, mainKey }) => ({ prefix, label, mainKey, glossary: registries[dir]! }),
+)
 
 /**
  * Shared glossary state for the desktop two-panel view and the mobile inline-card view:
  * module selection, search, letter-grouping, and cross-module reference navigation.
  */
-export function useGlossary() {
+export function useGlossary(glossaryTitle: string) {
   // Combined map for cross-module ref resolution: termKey → { definition, modulePrefix }
   const allEntries = computed(() => {
     const map: Record<string, { definition: TooltipDefinition; modulePrefix: string }> = {}
@@ -124,18 +114,30 @@ export function useGlossary() {
   const route = useRoute()
   const router = useRouter()
 
-  // `?term=` alone is enough: keys are unique across modules, so tooltips can link without one.
+  const param = (name: string) => {
+    const value = route.params[name]
+    return typeof value === 'string' && value ? value : undefined
+  }
+
   const activeModulePrefix = computed(() => {
-    const p = route.query.module as string | undefined
-    const term = route.query.term as string | undefined
-    return (
-      glossaryModules.find((m) => m.prefix === p)?.prefix ??
-      (term ? allEntries.value[term]?.modulePrefix : undefined) ??
-      glossaryModules[0]!.prefix
-    )
+    const p = param('module')
+    return glossaryModules.find((m) => m.prefix === p)?.prefix ?? glossaryModules[0]!.prefix
   })
 
-  const activeTermKey = computed(() => (route.query.term as string | undefined) ?? '')
+  const activeTermKey = computed(() => param('term') ?? '')
+
+  // Old `?module=&term=` links and tooltips' `?term=` (keys are unique, so the module is
+  // optional) move to the canonical path.
+  watch(
+    () => route.query,
+    ({ module, term }) => {
+      if (typeof module !== 'string' && typeof term !== 'string') return
+      const key = typeof term === 'string' ? term : undefined
+      const prefix = (key && allEntries.value[key]?.modulePrefix) ?? (module as string | undefined)
+      router.replace(glossaryPath(prefix, key))
+    },
+    { immediate: true },
+  )
 
   const activeModule = computed(
     () => glossaryModules.find((m) => m.prefix === activeModulePrefix.value)!,
@@ -193,12 +195,28 @@ export function useGlossary() {
     () => activeModule.value.glossary[activeTermKey.value] as TooltipDefinition | undefined,
   )
 
-  function navigate(modulePrefix: string, termKey: string) {
-    router.replace({ path: '/glossary', query: { module: modulePrefix, term: termKey } })
+  const defaultTitle = document.title
+  watch(
+    activeDefinition,
+    (def) => {
+      document.title = def
+        ? `${plainText(def.title ?? def.label)} · ${glossaryTitle} · AgonProject`
+        : defaultTitle
+    },
+    { immediate: true },
+  )
+  onUnmounted(() => {
+    document.title = defaultTitle
+  })
+
+  function navigate(modulePrefix: string, termKey: string, { replace = false } = {}) {
+    const to = glossaryPath(modulePrefix, termKey)
+    if (replace) router.replace(to)
+    else router.push(to)
   }
 
   function selectModule(modulePrefix: string) {
-    router.replace({ path: '/glossary', query: { module: modulePrefix } })
+    router.push(glossaryPath(modulePrefix))
   }
 
   function followRef(refKey: string) {

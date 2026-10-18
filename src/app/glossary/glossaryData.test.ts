@@ -18,7 +18,7 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { entryRefs, glossaryModules } from '@/app/glossary/useGlossary'
+import { entryRefs, glossaryModules, glossaryPath, plainText } from '@/app/glossary/useGlossary'
 import { glossaryMeta as afMeta } from '@/modules/abstract-argumentation/glossary/meta'
 import { glossaryMeta as abaMeta } from '@/modules/assumption-based-argumentation/glossary/meta'
 import { glossaryMeta as bafMeta } from '@/modules/bipolar-argumentation/glossary/meta'
@@ -40,7 +40,8 @@ const metas = {
 const afGlossary = glossaryModules.find((m) => m.prefix === 'AF')!.glossary
 
 describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey }) => {
-  test('has its main entry', () => {
+  test('has a registry and its main entry', () => {
+    expect(glossary).toBeDefined()
     expect(glossary[mainKey]).toBeDefined()
   })
 
@@ -78,4 +79,15 @@ test('term keys are unique across modules', () => {
       seen.set(key, prefix)
     }
   expect(clashes).toEqual([])
+})
+
+test('glossaryPath builds canonical URLs', () => {
+  expect(glossaryPath()).toBe('/glossary')
+  expect(glossaryPath('AF')).toBe('/glossary/AF')
+  expect(glossaryPath('AF', 'ADM')).toBe('/glossary/AF/ADM')
+})
+
+test('plainText strips LaTeX for page titles', () => {
+  expect(plainText('Admissible Set')).toBe('Admissible Set')
+  expect(plainText('Selection Function $\\alpha_{\\mathsf{ad}}$')).toBe('Selection Function ad')
 })

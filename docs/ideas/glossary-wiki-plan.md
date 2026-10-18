@@ -5,8 +5,7 @@ search engines, with computational complexity data. Also clean up the publicatio
 tooltips stay the core feature and keep showing the full formal definition. Longer content
 (remarks, complexity, later intuition and examples) only shows on the glossary page.
 
-This plan replaces [`glossary-seo-plan.md`](glossary-seo-plan.md) (its tiers are Phases 5 and 9
-here).
+This plan replaces the former `glossary-seo-plan.md` (its tiers are Phases 5 and 9 here).
 
 ## Decisions (settled)
 
@@ -248,10 +247,11 @@ quote doesn't count.
 
 ### Phase 5 — Real URLs + sitemap (was SEO Tier 1)
 
-- [ ] Routes `/glossary/:module/:term`. `?module=&term=` keeps working as a redirect.
-- [ ] Build step generates `sitemap.xml` from the loaded glossary (one `<url>` per term, plus the
-      complexity pages).
-- [ ] Submit the new sitemap in Google Search Console.
+- [x] Routes `/glossary/:module/:term` (keys as-is, e.g. `/glossary/AF/ADM`). `?module=&term=` and
+      `?term=` redirect. Per-term `document.title`; mobile scrolls to and opens the term.
+- [x] Build step (`sitemapPlugin` in `vite.config.ts`) generates `sitemap.xml` from the glossary
+      Markdown files (one `<url>` per term). Complexity pages get added in Phase 6.
+- [ ] Submit the new sitemap in Google Search Console (Lars, after deploying).
 
 ### Phase 6 — Complexity
 

@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { ChevronDownIcon, MapPinIcon } from '@heroicons/vue/24/outline'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
@@ -32,24 +32,33 @@ const {
   entries,
   backlinks = [],
   pinned = false,
+  active = false,
 } = defineProps<{
   definition: TooltipDefinition
   entries: Record<string, { definition: TooltipDefinition }>
   backlinks?: { key: string; definition: TooltipDefinition }[]
   pinned?: boolean
+  /** The term in the URL: highlighted and opened. */
+  active?: boolean
 }>()
 
 const emit = defineEmits<{ follow: [ref: string] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
-const expanded = ref(false)
+const expanded = ref(active)
+watch(
+  () => active,
+  (isActive) => {
+    if (isActive) expanded.value = true
+  },
+)
 </script>
 
 <template>
   <article
     class="rounded-box border p-3.5"
-    :class="pinned ? 'border-primary/40 bg-primary/5' : 'border-base-300'"
+    :class="pinned || active ? 'border-primary/40 bg-primary/5' : 'border-base-300'"
   >
     <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
       <MapPinIcon v-if="pinned" class="size-4 text-primary shrink-0" />

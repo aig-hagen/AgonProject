@@ -42,7 +42,7 @@ const router = createRouter({
       component: GenerateView,
     },
     {
-      path: '/glossary',
+      path: '/glossary/:module?/:term?',
       component: GlossaryView,
     },
     {

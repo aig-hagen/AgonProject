@@ -42,7 +42,7 @@ const {
   activeDefinition,
   navigate,
   followRef,
-} = useGlossary()
+} = useGlossary(t('glossary.title'))
 
 const activeBacklinks = computed(() => backlinks.value[activeTermKey.value] ?? [])
 
@@ -59,7 +59,7 @@ watch(
           : Object.entries(glossary).sort(([, a], [, b]) =>
               (a.title ?? a.label).localeCompare(b.title ?? b.label),
             )[0]
-      if (first) navigate(prefix, first[0]!)
+      if (first) navigate(prefix, first[0]!, { replace: true })
     }
   },
   { immediate: true },

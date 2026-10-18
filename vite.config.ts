@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -13,6 +13,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // deployment/Caddyfile (@backend) must mirror these by hand — Caddy can't read
 // this file — so keep the two in sync when adding an endpoint.
 import backendRoutes from './config/backend-routes.json'
+import glossaryModules from './src/app/glossary/glossaryModules.json'
 
 const solverTarget = 'http://localhost:8080/'
 // Keep the Host header like Caddy does; otherwise Tweety's CORS mapping for /aba rejects the call.
@@ -91,6 +92,34 @@ function gzipFixPlugin(): Plugin {
   }
 }
 
+// sitemap.xml at build time: the home page plus one URL per glossary term, read from the
+// glossary Markdown files so it can't drift from the content.
+function sitemapPlugin(): Plugin {
+  const site = 'https://agonproject.aig.fernuni-hagen.de'
+  return {
+    name: 'sitemap',
+    apply: 'build',
+    generateBundle() {
+      const paths = ['/', '/glossary']
+      for (const { prefix, dir } of glossaryModules) {
+        const terms = readdirSync(
+          fileURLToPath(new URL(`./src/modules/${dir}/glossary/en`, import.meta.url)),
+        )
+        paths.push(`/glossary/${prefix}`)
+        for (const file of terms.filter((f) => f.endsWith('.md')).sort()) {
+          paths.push(`/glossary/${prefix}/${encodeURIComponent(file.slice(0, -3))}`)
+        }
+      }
+      const urls = paths.map((path) => `  <url><loc>${site}${path}</loc></url>`)
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sitemap.xml',
+        source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`,
+      })
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
@@ -126,6 +155,7 @@ export default defineConfig({
     gzipFixPlugin(),
     solverBrowseNoticePlugin(),
     apiDocsPlugin(),
+    sitemapPlugin(),
     // The devtools overlay intercepts pointer events (disabled under e2e) and shows
     // a floating icon (set NO_DEVTOOLS=1 for clean screenshots).
     ...(process.env.E2E || process.env.NO_DEVTOOLS ? [] : [vueDevTools()]),

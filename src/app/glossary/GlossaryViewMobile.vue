@@ -17,6 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { nextTick, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import GlossaryCardMobile from '@/app/glossary/GlossaryCardMobile.vue'
@@ -30,12 +31,27 @@ const {
   allEntries,
   backlinks,
   activeModulePrefix,
+  activeTermKey,
   searchQuery,
   pinnedTerm,
   groupedTerms,
   selectModule,
   followRef,
-} = useGlossary()
+} = useGlossary(t('glossary.title'))
+
+const list = useTemplateRef('list')
+
+// Bring the term in the URL into view, e.g. after following a link or opening a shared URL.
+watch(
+  activeTermKey,
+  async (key) => {
+    await nextTick()
+    list.value
+      ?.querySelector(`[data-term="${CSS.escape(key)}"]`)
+      ?.scrollIntoView({ block: 'start' })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -68,6 +84,7 @@ const {
 
     <!-- Entry list -->
     <div
+      ref="list"
       class="flex-1 overflow-y-auto px-4 pt-2 flex flex-col gap-2.5"
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
@@ -83,6 +100,8 @@ const {
         :definition="pinnedTerm[1]"
         :entries="allEntries"
         :backlinks="backlinks[pinnedTerm[0]]"
+        :active="pinnedTerm[0] === activeTermKey"
+        :data-term="pinnedTerm[0]"
         pinned
         @follow="followRef"
       />
@@ -96,6 +115,8 @@ const {
           :definition="def"
           :entries="allEntries"
           :backlinks="backlinks[key]"
+          :active="key === activeTermKey"
+          :data-term="key"
           @follow="followRef"
         />
       </template>
