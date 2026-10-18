@@ -76,3 +76,6 @@ data/
 *.snm
 *.vrb
 *.xmpi
+
+# Local paper collection (copyrighted PDFs, notes, generated .bib)
+/literature/

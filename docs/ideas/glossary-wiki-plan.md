@@ -96,8 +96,8 @@ literature also reports it as tables, one per formalism.
 // modules/abstract-argumentation/complexity.ts
 export const afComplexity: ComplexityTable = {
   'AF/PR': {
-    cred: { class: 'NP-c', source: 'DD17', locator: 'Table 1' },
-    skept: { class: 'Π2P-c', source: 'DD17', locator: 'Table 1' },
+    cred: { class: 'NP-c', source: 'DD18', locator: 'Table 1' },
+    skept: { class: 'Π2P-c', source: 'DD18', locator: 'Table 1' },
     count: { class: 'open' },
   },
 }
@@ -182,26 +182,27 @@ period inside fields.
 
 **Steps:**
 
-- [ ] Add `literature/` to `.gitignore`. Layout: `literature/<KEY>.pdf`, `literature/notes/`, and
+- [x] Add `literature/` to `.gitignore`. Layout: `literature/<KEY>.pdf`, `literature/notes/`, and
       a generated `literature/references.bib`.
-- [ ] `scripts/literature.ts`:
+- [x] `scripts/literature.mjs`:
   - `lit:status` lists keys without a PDF and PDFs without a key.
   - `lit:bib` generates `references.bib` from `publications.ts`.
   - `lit:import` **copies** (never moves) matching PDFs from `~/Downloads`. A PDF only matches
     by DOI or exact title found in its first page (`pdftotext`). Everything else in Downloads is
     ignored, since it has plenty of unrelated files.
-- [ ] Fill in metadata for all 50 entries from the inputs above. If sources disagree, flag it for
-      review instead of picking one.
+- [x] Fill in metadata for all 50 entries from the inputs above. If sources disagree, flag it for
+      review instead of picking one. (DD17 → DD18: cited as the handbook chapter, like the other
+      handbook entries. D95 pages: Crossref 321–357 over bib 321–358.)
 - [ ] **Complexity search** (AF + ADF, see Phase 6 for the problems). For each cell: the class, the
       source, a theorem/table locator, and a short quote. Notes go in
-      `literature/notes/complexity.md`. Unknown means `open`, never a guess.
+      `literature/notes/complexity-<topic>.md`. Unknown means `open`, never a guess.
 - [ ] New sources found here become `Publication` entries. Their PDFs go into `literature/` when
       openly available (arXiv, author pages, CEUR, open-access proceedings). Paywalled ones go on
       a list for Lars to fetch through university access.
 
 Candidate sources to check (all need verification):
 
-- AF classical semantics: Dvořák & Dunne 2017 handbook chapter (DD17); stage semantics, Dvořák &
+- AF classical semantics: Dvořák & Dunne 2018 handbook chapter (DD18); stage semantics, Dvořák &
   Gaggl 2016 (DG16).
 - AF newer semantics: weak admissibility (Dvořák, Ulbricht & Woltran); serialisable and
   unchallenged semantics (Thimm; Bengel & Thimm).
@@ -280,7 +281,7 @@ quote doesn't count.
       using `parse.ts` + `katex.renderToString`. The SPA bundle still loads and takes over. No
       headless browser needed, unlike `vite-plugin-prerender`.
 - [ ] Per-term `<title>`, `<meta description>` (plain text of the definition), `<link
-    rel="canonical">`.
+  rel="canonical">`.
 - [ ] JSON-LD `DefinedTerm` per term.
 - [ ] `hreflang` only once German entries exist.
 

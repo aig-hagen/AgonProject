@@ -30,7 +30,7 @@ import {
   CT19,
   D17,
   D95,
-  DD17,
+  DD18,
   DG16,
   DMT07,
   DRT20,
@@ -339,7 +339,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
       { ref: 'extension', label: '$\\sigma$-extension' },
       ' of $F$.',
     ],
-    reference: DD17,
+    reference: DD18,
   },
 
   credulousAcceptance: {
@@ -352,7 +352,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
       { ref: 'extension', label: '$\\sigma$-extension' },
       ' of $F$.',
     ],
-    reference: DD17,
+    reference: DD18,
   },
 
   // Extension semantics
