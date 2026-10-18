@@ -58,7 +58,18 @@ Tutorial progress is persisted by [`useTutorial`](/src/modules/common/tutorial/u
 
 ## Add glossary entries
 
-Each module defines a [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) in `glossary.ts`. Entries contain a label, optional title, content, and optional publication reference. Content may include KaTeX and references to other entries.
+Each module keeps its glossary in `glossary/`: one Markdown file per term in `glossary/en/<key>.md`, publication references in `glossary/meta.ts`, and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`buildRegistry`](/src/modules/common/glossary/load.ts). The file name is the term key, and keys must be unique across all modules.
+
+```markdown
+---
+label: admissible
+title: Admissible Set
+---
+
+A set $S$ is admissible if it is [[CF|conflict-free]] and [[defends]] all its members.
+```
+
+The text before the first `##` heading is the definition shown in tooltips. It may contain KaTeX (`$…$`) and links to other entries (`[[key]]` or `[[key|label]]`). Anything after the first heading is the longer body, shown only on the glossary page. [`glossaryData.test.ts`](/src/app/glossary/glossaryData.test.ts) checks that every link resolves.
 
 Provide the module registry from its editor:
 

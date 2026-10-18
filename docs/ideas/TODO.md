@@ -2,6 +2,8 @@
 
 ## General
 
+- Add tags to publications (Semantics, Complexity, AF/BAF/etc, etc); add a page with the literature list; allow search and filter by tags there
+
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
   `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
 

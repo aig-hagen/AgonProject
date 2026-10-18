@@ -58,10 +58,12 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'SER',
     displayName: 'Serialisability-based',
+    tooltipId: 'rankingSER',
   },
   {
     key: 'CO',
     displayName: 'Counting',
+    tooltipId: 'rankingCO',
     parameters: [
       {
         key: 'dampingFactor',
@@ -137,6 +139,7 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'PR',
     displayName: 'Propagation',
+    tooltipId: 'rankingPR',
     parameters: [
       {
         key: 'attackedArgumentsInfluence',
@@ -240,6 +243,8 @@ export interface RankingSemanticParameter {
 export interface RankingSemantic {
   key: string
   displayName: string
+  /** Glossary id, when it differs from `key` (which clashes with an extension semantics). */
+  tooltipId?: string
   parameters?: RankingSemanticParameter[]
 }
 

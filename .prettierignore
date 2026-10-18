@@ -1,1 +1,3 @@
 /third-party
+# Glossary Markdown: Prettier would escape LaTeX (e.g. `_`)
+src/modules/**/glossary/**/*.md

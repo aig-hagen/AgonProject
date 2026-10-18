@@ -226,15 +226,18 @@ quote doesn't count.
 
 ### Phase 3 — Move glossary content to Markdown (no visible change)
 
-- [ ] `common/glossary/` with `types.ts`, `parse.ts`, `load.ts`. Extend `TooltipDefinition` with
+- [x] `common/glossary/` with `types.ts`, `parse.ts`, `load.ts`. Extend `TooltipDefinition` with
       `body?` and `meta?`.
-- [ ] One-shot conversion script (scratchpad, not committed): `glossary.ts` →
+- [x] One-shot conversion script (scratchpad, not committed): `glossary.ts` →
       `glossary/en/<term>.md` + `glossary/meta.ts`.
-- [ ] Namespace ids (`AF/PR`, `ADF/PR`). Fixes the first-wins lookup in `useGlossary`.
-- [ ] Switch all `provide(TOOLTIP_REGISTRY_KEY, …)` sites to the loader.
-- [ ] Tests: parser units; every `[[ref]]` and `[@KEY]` resolves; `meta.ts` keys match the files;
+- [x] ~~Namespace ids (`AF/PR`, `ADF/PR`).~~ Not needed: the only clashes were AF extension vs
+      ranking keys (`CO`, `PR`, `SER`), now `rankingCO`/`rankingPR`/`rankingSER`. A test keeps keys
+      unique across modules.
+- [x] Switch all `provide(TOOLTIP_REGISTRY_KEY, …)` sites to the loader (same export names, so
+      only the ranking window changed).
+- [x] Tests (`[@KEY]` deferred to Phase 4, with citations): parser units; every `[[ref]]` and `[@KEY]` resolves; `meta.ts` keys match the files;
       a sample of entries renders the same as before the migration.
-- [ ] Update `extending.md` (module shape: `glossary.ts` → `glossary/`) and `structure.md`.
+- [x] Update `extending.md` (module shape: `glossary.ts` → `glossary/`) and `structure.md`.
 
 ### Phase 4 — Wiki pages
 

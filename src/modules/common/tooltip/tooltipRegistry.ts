@@ -29,6 +29,8 @@ export interface TooltipDefinition {
   /** Optional bold header line shown at the top of the tooltip panel. */
   title?: string
   content: TooltipContentPart[]
+  /** Longer Markdown shown only on the glossary page. */
+  body?: string
   reference?: Publication
 }
 

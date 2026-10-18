@@ -50,7 +50,7 @@ Rules of thumb:
 
 ## Structured content (glossaries and tutorials)
 
-Glossary and tutorial content is not part of the vue-i18n message catalogs. It currently lives in each argumentation module's `glossary.ts` and `tutorials/` directory and is available only in English. The surrounding glossary and tutorial interface is localized through the ordinary message catalogs.
+Glossary and tutorial content is not part of the vue-i18n message catalogs. It currently lives in each argumentation module's `glossary/` (Markdown per term) and `tutorials/` directories and is available only in English. The surrounding glossary and tutorial interface is localized through the ordinary message catalogs.
 
 ## Adding a new locale
 
@@ -74,7 +74,7 @@ All interactive chrome, notifications, and expected errors are localized. The fo
 - **Semantics labels** — semantics and semantics-family display names (e.g. the extension/ranking selectors) and meta-reasoner parameter labels/descriptions stay English. The `displayName` also feeds notation (`formatNotation`, `.toLowerCase()`), so localizing it needs a notation-vs-label split first.
 - **Generator metadata** — framework-type, algorithm, and parameter names/descriptions in the Generate view (`formatAlgorithmName`/`formatParamLabel` plus the backend `graph-gen` English `description`s).
 - **Tutorial content** — all common and per-module tutorial copy under `src/modules/**/tutorials/`. The chrome around tutorials (window title, Start/Next/Skip/Done, etc.) is already localized.
-- **Glossary content** — all term labels, titles, and definitions in module-level `glossary.ts` files. The glossary page chrome (search, empty states, navigation) is already localized.
+- **Glossary content** — all term labels, titles, and definitions in module-level `glossary/en/*.md` files. The glossary page chrome (search, empty states, navigation) is already localized.
 
 The following is **intentionally never translated** — technical, canonical, or third-party:
 

@@ -19,10 +19,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import {
-  abstractArgumentationGlossary,
-  abstractArgumentationRankingGlossary,
-} from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
@@ -43,7 +40,7 @@ export const glossaryModules: GlossaryModule[] = [
   {
     prefix: 'AF',
     label: 'Abstract AF',
-    glossary: { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary },
+    glossary: abstractArgumentationGlossary,
     mainKey: 'AF',
   },
   { prefix: 'BAF', label: 'Bipolar AF', glossary: bipolarArgumentationGlossary, mainKey: 'BAF' },

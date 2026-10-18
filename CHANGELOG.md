@@ -49,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Glossary: the complete, preferred and serialisable semantics entries were hidden behind the counting, propagation and serialisability-based ranking entries.
 - The publications tooltip heading on module cards is now translated.
 - Glossary: the ADF stable model definition now requires a two-valued model.
 - Glossary: the discussion-based ranking no longer reads backwards (larger discussion counts rank higher).
