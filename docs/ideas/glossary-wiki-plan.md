@@ -25,6 +25,18 @@ This plan replaces the former `glossary-seo-plan.md` (its tiers are Phases 5 and
 - **German:** infrastructure only. No German glossary text is written or merged without Lars's
   approval.
 
+## Open issues (revisit later)
+
+- **Derived complexity cells awaiting Lars's check** (details in
+  `literature/notes/derived-cells.md`; only ticked ones go into `complexity.ts`):
+  - AF: EA cred, EA skept, EA enum, ID enum (check DVW11 Table 2 visually), GR enum
+  - AF count-dec: ADM, PR, SST (NP-hard), CF/NA/CF2 (in P, unary m)
+  - ADF: S2V ne (Σ₂ᴾ-complete)
+- **Missing paper:** Baroni, Dunne & Giacomin, "On extension counting problems in argumentation
+  frameworks", COMMA 2010 (DOI 10.3233/978-1-60750-619-5-63). Needed to verify ST/PR counting
+  ("#P-complete" in its abstract). Until then PR count shows "in #·coNP, exact class open".
+- **Search Console:** submit `/sitemap.xml` after the next deploy.
+
 ## Current state
 
 ```text
