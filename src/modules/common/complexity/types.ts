@@ -69,10 +69,9 @@ export interface ComplexityCell {
 
 export type ComplexityRow = Partial<Record<ProblemKey, ComplexityCell>>
 
-/** A group of semantics as the evaluation window shows it; `labelKey` is an i18n key. */
+/** A group of semantics as the evaluation window shows it. */
 export interface ComplexityGroup {
-  label?: string
-  labelKey?: string
+  label: string
   keys: string[]
 }
 

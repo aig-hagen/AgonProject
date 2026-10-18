@@ -16,10 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import {
-  KNOWN_META_REASONERS,
-  KNOWN_SEMANTIC_GROUPS,
-} from '@/modules/abstract-argumentation/evaluation/tweetyProject'
+import { KNOWN_SEMANTIC_GROUPS } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
 import { complete, type ComplexityTable, member, trivial } from '@/modules/common/complexity/types'
 import {
   BT22,
@@ -52,13 +49,10 @@ const pspace = (locator = 'Thm. 3.16, p. 1419') => complete('classPSPACE', DUW22
 
 export const afComplexity: ComplexityTable = {
   overviewKey: 'complexityAF',
-  groups: [
-    ...KNOWN_SEMANTIC_GROUPS.map((group) => ({
-      label: group.displayName,
-      keys: group.semantics.map((semantics) => semantics.key),
-    })),
-    { labelKey: 'evaluation.metaSemantics', keys: KNOWN_META_REASONERS.map((m) => m.key) },
-  ],
+  groups: KNOWN_SEMANTIC_GROUPS.map((group) => ({
+    label: group.displayName,
+    keys: group.semantics.map((semantics) => semantics.key),
+  })),
   rows: {
     CF: {
       ver: member('classL', DD18, dd18),

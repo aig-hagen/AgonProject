@@ -94,7 +94,7 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
                   :colspan="problemsIn(section.rows).length + 1"
                   class="section-label text-left pt-3 pb-1"
                 >
-                  {{ group.label ?? t(group.labelKey!) }}
+                  {{ group.label }}
                 </th>
               </tr>
               <tr
