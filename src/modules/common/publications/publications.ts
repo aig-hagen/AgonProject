@@ -680,3 +680,108 @@ export const BRU24: Publication = {
   publisher: 'ijcai.org',
   doi: '10.24963/kr.2024/12',
 }
+
+// ── Computational Complexity ──────────────────────────────────────────────────
+
+export const DVW11: Publication = {
+  kind: 'inproceedings',
+  authors: ['Dvořák, W.', 'Dunne, P.E.', 'Woltran, S.'],
+  year: 2011,
+  title: 'Parametric Properties of Ideal Semantics',
+  booktitle: 'Proceedings of the 22nd International Joint Conference on Artificial Intelligence',
+  acronym: 'IJCAI 2011',
+  pages: '851–856',
+  publisher: 'AAAI Press',
+  url: 'https://www.ijcai.org/Proceedings/11/Papers/148.pdf',
+}
+
+export const KPW17: Publication = {
+  kind: 'inproceedings',
+  authors: ['Kröll, M.', 'Pichler, R.', 'Woltran, S.'],
+  year: 2017,
+  title: 'On the Complexity of Enumerating the Extensions of Abstract Argumentation Frameworks',
+  booktitle: 'Proceedings of the 26th International Joint Conference on Artificial Intelligence',
+  acronym: 'IJCAI 2017',
+  pages: '1145–1152',
+  publisher: 'ijcai.org',
+  doi: '10.24963/ijcai.2017/159',
+}
+
+export const DW20: Publication = {
+  kind: 'inproceedings',
+  authors: ['Dvořák, W.', 'Wallner, J.P.'],
+  year: 2020,
+  title: 'Computing Strongly Admissible Sets',
+  booktitle: 'Computational Models of Argument',
+  acronym: 'COMMA 2020',
+  series: 'FAIA',
+  seriesVolume: '326',
+  pages: '179–190',
+  publisher: 'IOS Press',
+  doi: '10.3233/FAIA200503',
+}
+
+export const DUW22: Publication = {
+  kind: 'article',
+  authors: ['Dvořák, W.', 'Ulbricht, M.', 'Woltran, S.'],
+  year: 2022,
+  title:
+    'Recursion in Abstract Argumentation is Hard — On the Complexity of Semantics Based on Weak Admissibility',
+  journal: 'Journal of Artificial Intelligence Research',
+  volume: '74',
+  pages: '1403–1447',
+  doi: '10.1613/jair.1.13603',
+}
+
+export const KDVV22: Publication = {
+  kind: 'inproceedings',
+  authors: ['Keshavarzi Zafarghandi, A.', 'Dvořák, W.', 'Verbrugge, R.', 'Verheij, B.'],
+  year: 2022,
+  title: 'How Complex Is the Strong Admissibility Semantics for Abstract Dialectical Frameworks?',
+  booktitle: 'Computational Models of Argument',
+  acronym: 'COMMA 2022',
+  series: 'FAIA',
+  seriesVolume: '353',
+  pages: '200–211',
+  publisher: 'IOS Press',
+  doi: '10.3233/FAIA220153',
+}
+
+export const FHM24: Publication = {
+  kind: 'article',
+  authors: ['Fichte, J.K.', 'Hecher, M.', 'Meier, A.'],
+  year: 2024,
+  title: 'Counting Complexity for Reasoning in Abstract Argumentation',
+  journal: 'Journal of Artificial Intelligence Research',
+  volume: '80',
+  pages: '805–834',
+  doi: '10.1613/jair.1.16210',
+}
+
+export const KW24: Publication = {
+  kind: 'inproceedings',
+  authors: ['Keshavarzi Zafarghandi, A.', 'Wallner, J.P.'],
+  year: 2024,
+  title: 'Complexity of Semi-Stable Semantics in Abstract Dialectical Frameworks',
+  booktitle: 'Computational Models of Argument',
+  acronym: 'COMMA 2024',
+  series: 'FAIA',
+  seriesVolume: '388',
+  pages: '109–120',
+  publisher: 'IOS Press',
+  doi: '10.3233/FAIA240314',
+}
+
+export const SW26: Publication = {
+  kind: 'inproceedings',
+  authors: ['Strass, H.', 'Wallner, J.P.'],
+  year: 2026,
+  title: 'On the Complexity of Initial Models in Abstract Dialectical Frameworks',
+  booktitle: 'Computational Models of Argument',
+  acronym: 'COMMA 2026',
+  series: 'FAIA',
+  seriesVolume: '428',
+  pages: '113–124',
+  publisher: 'IOS Press',
+  doi: '10.3233/FAIA260805',
+}

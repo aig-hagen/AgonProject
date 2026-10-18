@@ -21,6 +21,8 @@ import 'katex/dist/katex.min.css'
 
 import renderMathInElement from 'katex/contrib/auto-render'
 import { useTemplateRef, watchEffect } from 'vue'
+
+import { KATEX_OPTIONS } from '@/modules/common/tooltip/katexOptions'
 const { text } = defineProps<{
   text: string
 }>()
@@ -33,7 +35,7 @@ watchEffect(() => {
   }
   elementRef.value.innerText = text
   renderMathInElement(elementRef.value, {
-    strict: true,
+    ...KATEX_OPTIONS,
     delimiters: [{ left: '$', right: '$', display: false }],
   })
 })

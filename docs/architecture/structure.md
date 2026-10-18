@@ -55,6 +55,7 @@ Used by every module above instead of being reimplemented per type:
 - [`tooltip/`](/src/modules/common/tooltip/) — the glossary/tooltip registry and rendering (`TermTooltip.vue`, `tooltipRegistry.ts`)
 - [`glossary/`](/src/modules/common/glossary/) — parses the Markdown glossary entries into tooltip registries (`parse.ts`, `load.ts`)
 - [`publications/`](/src/modules/common/publications/) — cited publications and their citation formatting
+- [`complexity/`](/src/modules/common/complexity/) — complexity result types and the Complexity glossary (problems, classes)
 - [`evaluation/`](/src/modules/common/evaluation/) — shared evaluation UI (`BaseEvaluationWindow.vue`, result grids) and the TweetyProject fetch client
 - [`export/`](/src/modules/common/export/) — shared export machinery (save-file, SVG rendering, copy-to-clipboard button)
 - [`window/`](/src/modules/common/window/), [`main-menu/`](/src/modules/common/main-menu/), [`settings/`](/src/modules/common/settings/), [`share/`](/src/modules/common/share/), [`notifications/`](/src/modules/common/notifications/), [`theme/`](/src/modules/common/theme/) — other shared editor chrome and app-wide concerns

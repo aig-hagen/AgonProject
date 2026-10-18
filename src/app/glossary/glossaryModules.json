@@ -30,5 +30,11 @@
     "dir": "assumption-based-argumentation",
     "label": "Assumption-based",
     "mainKey": "ABAF"
+  },
+  {
+    "prefix": "Complexity",
+    "dir": "common/complexity",
+    "label": "Complexity",
+    "mainKey": "complexityAF"
   }
 ]

@@ -18,9 +18,12 @@
 -->
 <script setup lang="ts">
 import { ChevronDownIcon, MapPinIcon } from '@heroicons/vue/24/outline'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { complexityRowFor, complexityTableFor } from '@/app/glossary/complexity'
+import ComplexityOverview from '@/app/glossary/ComplexityOverview.vue'
+import ComplexityResults from '@/app/glossary/ComplexityResults.vue'
 import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
@@ -28,12 +31,14 @@ import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vu
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
 const {
+  termKey,
   definition,
   entries,
   backlinks = [],
   pinned = false,
   active = false,
 } = defineProps<{
+  termKey: string
   definition: TooltipDefinition
   entries: Record<string, { definition: TooltipDefinition }>
   backlinks?: { key: string; definition: TooltipDefinition }[]
@@ -45,6 +50,9 @@ const {
 const emit = defineEmits<{ follow: [ref: string] }>()
 
 const { t } = useI18n({ useScope: 'global' })
+
+const overviewTable = computed(() => complexityTableFor(termKey))
+const hasComplexity = computed(() => !!complexityRowFor(termKey) || !!overviewTable.value)
 
 const expanded = ref(active)
 watch(
@@ -77,7 +85,7 @@ watch(
       compact
       class="mt-2.5 pt-2.5 border-t border-base-300"
     />
-    <template v-if="definition.body || backlinks.length">
+    <template v-if="definition.body || backlinks.length || hasComplexity">
       <div v-if="expanded" class="mt-2.5 pt-2.5 border-t border-base-300 text-sm">
         <GlossaryBody
           v-if="definition.body"
@@ -85,7 +93,20 @@ watch(
           :entries="entries"
           @follow="emit('follow', $event)"
         />
-        <section v-if="backlinks.length" :class="{ 'mt-3': definition.body }">
+        <ComplexityOverview
+          v-if="overviewTable"
+          :table="overviewTable"
+          :entries="entries"
+          class="mt-3"
+          @follow="emit('follow', $event)"
+        />
+        <ComplexityResults
+          :term-key="termKey"
+          :entries="entries"
+          class="mt-3"
+          @follow="emit('follow', $event)"
+        />
+        <section v-if="backlinks.length" class="mt-3">
           <h4 class="section-label mb-1">{{ t('glossary.referencedBy') }}</h4>
           <div class="flex flex-wrap gap-x-3 gap-y-1">
             <button

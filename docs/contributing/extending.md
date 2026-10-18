@@ -79,6 +79,10 @@ provide(TOOLTIP_REGISTRY_KEY, moduleGlossary)
 
 Modules can merge the abstract-argumentation glossary with their own registry. Tutorials and evaluation result headers resolve `tooltipId` values through the registry provided by the active module.
 
+## Add complexity results
+
+A module can list known complexity results for its semantics in `complexity.ts` (see the AF and ADF modules): one row per semantics glossary key, one cell per reasoning problem, each with its source publication and a locator (theorem, table, page). Register the table in [`complexity.ts`](/src/app/glossary/complexity.ts) and add an overview entry to the Complexity glossary. Only add results a source states; a result that merely follows from one needs a `derived` reason and a review.
+
 ## Add exports
 
 Modules define their available [`ExportConfig`](/src/modules/common/export/index.ts) objects in `export.ts`. They flow to three places: the LaTeX config drives the desktop **LaTeX studio** ([`WindowExport.vue`](/src/modules/common/export/WindowExport.vue)); the trivial formats (ICCMA, TGF) are surfaced as quick copy/download actions in the main menu's **Export** submenu (provided via `QUICK_EXPORT_KEY`); and the compact layout uses the export sheet. An export config contains:

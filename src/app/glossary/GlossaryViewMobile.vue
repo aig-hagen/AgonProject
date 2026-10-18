@@ -97,6 +97,7 @@ watch(
       <GlossaryCardMobile
         v-if="pinnedTerm"
         :key="pinnedTerm[0]"
+        :term-key="pinnedTerm[0]"
         :definition="pinnedTerm[1]"
         :entries="allEntries"
         :backlinks="backlinks[pinnedTerm[0]]"
@@ -112,6 +113,7 @@ watch(
         <GlossaryCardMobile
           v-for="[key, def] in group.terms"
           :key="key"
+          :term-key="key"
           :definition="def"
           :entries="allEntries"
           :backlinks="backlinks[key]"

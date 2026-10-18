@@ -21,6 +21,9 @@ import { MapPinIcon } from '@heroicons/vue/24/outline'
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { complexityTableFor } from '@/app/glossary/complexity'
+import ComplexityOverview from '@/app/glossary/ComplexityOverview.vue'
+import ComplexityResults from '@/app/glossary/ComplexityResults.vue'
 import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
@@ -45,6 +48,7 @@ const {
 } = useGlossary(t('glossary.title'))
 
 const activeBacklinks = computed(() => backlinks.value[activeTermKey.value] ?? [])
+const overviewTable = computed(() => complexityTableFor(activeTermKey.value))
 
 // Auto-select the framework (main) entry when the module changes or no valid term is in the URL.
 watch(
@@ -132,7 +136,7 @@ watch(
 
       <!-- Right: definition panel -->
       <div class="flex-1 overflow-y-auto p-8">
-        <div v-if="activeDefinition" class="max-w-2xl">
+        <div v-if="activeDefinition" :class="overviewTable ? 'max-w-5xl' : 'max-w-2xl'">
           <div class="flex items-start gap-2 mb-4">
             <h2 class="text-xl font-bold leading-snug">
               <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
@@ -150,6 +154,19 @@ watch(
             :blocks="activeDefinition.body"
             :entries="allEntries"
             class="mt-4"
+            @follow="followRef"
+          />
+          <ComplexityOverview
+            v-if="overviewTable"
+            :table="overviewTable"
+            :entries="allEntries"
+            class="mt-6"
+            @follow="followRef"
+          />
+          <ComplexityResults
+            :term-key="activeTermKey"
+            :entries="allEntries"
+            class="mt-6 pt-4 border-t border-base-300"
             @follow="followRef"
           />
           <section v-if="activeDefinition.reference" class="mt-6 pt-4 border-t border-base-300">

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Glossary: computational complexity results for AF and ADF semantics, each with its source, on every semantics page and in overview tables, plus a Complexity tab defining the reasoning problems and complexity classes.
 - Every glossary term has its own URL (e.g. `/glossary/AF/ADM`) and page title, and the sitemap lists them all; old `?module=&term=` links still work.
 - Glossary entries can carry a longer write-up with citations, shown on the glossary page and linked from tooltips ("More →"); each entry lists the entries that reference it.
 - "Color-blind friendly colors" setting: evaluation results switch to blue and red-orange, which stay apart for

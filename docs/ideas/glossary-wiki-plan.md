@@ -35,7 +35,12 @@ This plan replaces the former `glossary-seo-plan.md` (its tiers are Phases 5 and
 - **Missing paper:** Baroni, Dunne & Giacomin, "On extension counting problems in argumentation
   frameworks", COMMA 2010 (DOI 10.3233/978-1-60750-619-5-63). Needed to verify ST/PR counting
   ("#P-complete" in its abstract). Until then PR count shows "in #·coNP, exact class open".
+- **PSPACE reference:** the Complexity glossary entry for PSPACE has no source yet (DD18 and the
+  other cited papers only mention it). Candidate: a textbook (e.g. Papadimitriou 1994), which needs
+  a `book` publication kind.
 - **Search Console:** submit `/sitemap.xml` after the next deploy.
+- **AIJ serialisability paper:** how to cite it (published / accepted / preprint) decides whether
+  the bipolar ADF initial-model results (Thm. 6.1) go into the ADF table.
 
 ## Current state
 
@@ -267,24 +272,31 @@ quote doesn't count.
 
 ### Phase 6 — Complexity
 
-- [ ] `common/complexity/`: types, plus shared glossary entries for
+- [x] `common/complexity/`: types, plus shared glossary entries for
   - **problems:** `Ver_σ` (is $S$ a σ-extension?), `Cred_σ`, `Skept_σ`, `Exist_σ` (does a
     σ-extension exist?), `NE_σ` (non-empty existence: does a _non-empty_ σ-extension exist?),
     `Count_σ` (how many σ-extensions?), `Enum_σ` (list them all);
   - **classes:** P, L, NP, coNP, DP, Σ₂ᴾ, Π₂ᴾ, …, #P, and the enumeration classes the literature
     uses.
-- [ ] The problem entries are formalism-generic and link to the existing AF notion entries
+- [x] The problem entries are formalism-generic and link to the existing AF notion entries
       (`credulousAcceptance` → `Cred_σ`, and back). The notion entries stay, since the
       evaluation windows use them as tooltips.
-- [ ] `complexity.ts` for AF and ADF, filled from the verified Phase 2 notes only.
+- [x] `complexity.ts` for AF and ADF, filled from the verified Phase 2 notes only.
       Verified notes: `literature/notes/verification-*.md`. Settled: derived cells are shown with a "derived"
       marker and a one-line reason, and only after Lars has checked each one
       (`literature/notes/derived-cells.md`). Caveated classes are shown with their caveat (ID: "in
       Θ₂ᴾ, hard under randomised reductions"; PR count: "in #·coNP, exact class open").
-- [ ] `ComplexityTable.vue`: one row on each semantics page, the full table on an overview page per
-      formalism (`/glossary/AF/complexity`). Every cell links its source.
-- [ ] Tests: every row maps to a glossary entry, every `class` to a class entry, every `source` to
+- [x] `ComplexityTable.vue`: one row on each semantics page, the full table on an overview page per
+      formalism (glossary entries `complexityAF` / `complexityADF` in a new Complexity tab). Every
+      cell links its source.
+- [x] Tests: every row maps to a glossary entry, every `class` to a class entry, every `source` to
       a publication.
+- [x] New sources as `Publication` entries (DVW11, KPW17, DW20, DUW22, KDVV22, FHM24, KW24, SW26).
+- [ ] Bipolar ADF initial models (AIJ Thm. 6.1), once the citation for the AIJ paper is settled.
+- [ ] Optional: serialisation-sequence verification (`VerS`, AIJ Thm. 6.2) as a separate problem.
+- [ ] Show counting and enumeration again. The results stay in `complexity.ts` (hidden via
+      `SHOWN_PROBLEMS`); their problem and class glossary entries (#·P, #·coNP, DelayP, OutputP)
+      were removed for now and need to come back, cited after FHM24 (p. 809) and KPW17 (p. 1147).
 
 ### Phase 7 — Literature page & publication tags
 

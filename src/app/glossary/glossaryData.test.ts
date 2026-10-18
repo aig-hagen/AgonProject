@@ -23,6 +23,7 @@ import { glossaryMeta as afMeta } from '@/modules/abstract-argumentation/glossar
 import { glossaryMeta as abaMeta } from '@/modules/assumption-based-argumentation/glossary/meta'
 import { glossaryMeta as bafMeta } from '@/modules/bipolar-argumentation/glossary/meta'
 import { glossaryMeta as cafMeta } from '@/modules/collective-attacks-argumentation/glossary/meta'
+import { glossaryMeta as complexityMeta } from '@/modules/common/complexity/glossary/meta'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 import { glossaryMeta as adfMeta } from '@/modules/dialectical-argumentation/glossary/meta'
 import { glossaryMeta as iafMeta } from '@/modules/incomplete-argumentation/glossary/meta'
@@ -36,8 +37,10 @@ const metas = {
   ADF: adfMeta,
   iAF: iafMeta,
   PAF: pafMeta,
+  Complexity: complexityMeta,
 }
 const afGlossary = glossaryModules.find((m) => m.prefix === 'AF')!.glossary
+const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
 
 describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey }) => {
   test('has a registry and its main entry', () => {
@@ -46,10 +49,12 @@ describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey 
   })
 
   // Modules provide their own registry merged over the AF one, so refs may point into either.
+  // Complexity entries only appear on the glossary page, which resolves refs across all modules.
   test('every [[ref]] resolves', () => {
+    const scope = prefix === 'Complexity' ? allGlossaries : { ...afGlossary, ...glossary }
     const missing = Object.entries(glossary).flatMap(([key, def]) =>
       entryRefs(def)
-        .filter((ref) => !(ref in glossary) && !(ref in afGlossary))
+        .filter((ref) => !(ref in scope))
         .map((ref) => `${key} → ${ref}`),
     )
     expect(missing).toEqual([])
