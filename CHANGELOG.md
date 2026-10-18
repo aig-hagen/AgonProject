@@ -12,9 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   red-green and blue-yellow color blindness on every graph style.
 - Load ICCMA text files (`.af`, `.baf`, `.setaf`, `.iaf`, `.paf`, `.aba`) from the file menu; imported graphs are laid out automatically.
 - Web app manifest and home-screen icons: "Add to Home Screen" now opens AgonProject full-window, without browser bars.
+- ADF semantics: strongly admissible, semi-stable, semi-two-valued, initial, two-valued and three-valued, with glossary entries.
 
 ### Changed
 
+- ADF evaluation now defaults to preferred semantics instead of admissible.
 - Image export now opens in a floating window with a live preview, a transparent-background toggle, and PNG export (1×–3×) alongside SVG; fonts are embedded so labels look the same outside the app.
 - Export menu: text formats download in one click and show their file extension; the image entry gets a quick transparent-SVG download.
 - Visual polish: softer, consistent corner radii app-wide, solid mobile toolbars, no glowing buttons, a clearer
@@ -52,6 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Glossary: possible/necessary acceptance in iAFs now distinguishes extensions, credulous and skeptical acceptance.
 - Glossary: corrected the selection function, reduct, grounded, burden number, serialisation index, SetAF and
   ADF completion definitions.
+- Glossary: ADF admissible, complete, grounded and preferred now cite Brewka et al. (2013), where they are defined.
 - Numerical ranking scores are readable in dark mode, and their colors no longer rely on red-green hue.
 
 ## [0.13.0] - 2026-09-30

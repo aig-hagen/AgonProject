@@ -471,6 +471,35 @@ export const BESWW18: Publication = {
   href: 'https://www.collegepublications.co.uk/downloads/handbooks00003.pdf',
 }
 
+export const KVV21: Publication = {
+  shortLabel: 'Keshavarzi Zafarghandi et al. (2021)',
+  authors: ['Keshavarzi Zafarghandi, A.', 'Verbrugge, R.', 'Verheij, B.'],
+  year: 2021,
+  title: 'Semi-Stable Semantics for Abstract Dialectical Frameworks',
+  venue:
+    'In: Proceedings of the 18th International Conference on Principles of Knowledge Representation and Reasoning (KR 2021), pp. 422–431',
+  href: 'https://doi.org/10.24963/kr.2021/40',
+}
+
+export const KVV22: Publication = {
+  shortLabel: 'Keshavarzi Zafarghandi et al. (2022)',
+  authors: ['Keshavarzi Zafarghandi, A.', 'Verbrugge, R.', 'Verheij, B.'],
+  year: 2022,
+  title: 'Strong Admissibility for Abstract Dialectical Frameworks',
+  venue: 'Argument & Computation, 13(3), pp. 249–289',
+  href: 'https://doi.org/10.3233/AAC-210002',
+}
+
+export const BT25: Publication = {
+  shortLabel: 'Bengel & Thimm (2025)',
+  authors: ['Bengel, L.', 'Thimm, M.'],
+  year: 2025,
+  title: 'Initial Models and Serialisability in Abstract Dialectical Frameworks',
+  venue:
+    'In: Proceedings of the 34th International Joint Conference on Artificial Intelligence (IJCAI 2025), pp. 4365–4373',
+  href: 'https://doi.org/10.24963/ijcai.2025/486',
+}
+
 // ── Assumption-based Argumentation ────────────────────────────────────────────
 
 export const BDKT97: Publication = {
