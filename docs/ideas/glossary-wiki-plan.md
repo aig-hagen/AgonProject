@@ -5,7 +5,7 @@ search engines, with computational complexity data. Also clean up the publicatio
 tooltips stay the core feature and keep showing the full formal definition. Longer content
 (remarks, complexity, later intuition and examples) only shows on the glossary page.
 
-This plan replaces [`glossary-seo-plan.md`](glossary-seo-plan.md) (its tiers are Phases 5 and 8
+This plan replaces [`glossary-seo-plan.md`](glossary-seo-plan.md) (its tiers are Phases 5 and 9
 here).
 
 ## Decisions (settled)
@@ -16,7 +16,7 @@ here).
 - **Language-neutral data stays in TS**: references and aliases in `glossary/meta.ts`, complexity
   in a central `complexity.ts` per formalism.
 - **Tooltips show the full formal definition.** No length cap. Informal description and example
-  come later as separate sections (Phase 9).
+  come later as separate sections (Phase 10).
 - **Publications get structured fields** in TS, rendered by one formatter in an LNCS-like style.
   Changing the style later means editing that one function.
 - **PDFs go in a gitignored `literature/` folder**, one file per publication key.
@@ -274,7 +274,17 @@ quote doesn't count.
 - [ ] Tests: every row maps to a glossary entry, every `class` to a class entry, every `source` to
       a publication.
 
-### Phase 7 — Localization infrastructure
+### Phase 7 — Literature page & publication tags
+
+- [ ] Optional `tags` on `Publication` (e.g. `complexity`, `semantics`, `AF`, `ADF`, `ranking`), from a
+      fixed list that a test checks.
+- [ ] `/literature` page next to the glossary: every publication with its citation and link, search,
+      and tag filters.
+- [ ] "Cited in" per publication, computed from glossary `meta.ts`, `[@KEY]` citations, complexity
+      cells and module cards, linking back to the glossary.
+- [ ] Add the page to the Phase 5 sitemap.
+
+### Phase 8 — Localization infrastructure
 
 - [ ] `load.ts` picks `glossary/<locale>/<term>.md`, falls back to `en/`.
 - [ ] Quiet "English only" badge on fallback entries.
@@ -282,7 +292,7 @@ quote doesn't count.
 - [ ] Update `docs/contributing/localization.md`.
 - No German content in this plan. It needs Lars's approval and is tracked separately.
 
-### Phase 8 — Prerendering (was SEO Tiers 2–3)
+### Phase 9 — Prerendering (was SEO Tiers 2–3)
 
 - [ ] A build script writes static HTML per term (`dist/glossary/<module>/<term>/index.html`),
       using `parse.ts` + `katex.renderToString`. The SPA bundle still loads and takes over. No
@@ -292,7 +302,7 @@ rel="canonical">`.
 - [ ] JSON-LD `DefinedTerm` per term.
 - [ ] `hreflang` only once German entries exist.
 
-### Phase 9 — More entry content (future)
+### Phase 10 — More entry content (future)
 
 Each entry should eventually have three standard parts: formal definition (the tooltip),
 **informal description** (`## Intuition`), and an **example** (`## Example`, with an "Open in
