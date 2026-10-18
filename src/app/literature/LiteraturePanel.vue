@@ -144,7 +144,7 @@ onUnmounted(() => {
             <span
               v-for="tag in publication.tags"
               :key="tag"
-              class="badge badge-xs badge-ghost text-micro font-medium uppercase tracking-wide text-base-content/65"
+              class="badge badge-xs badge-ghost text-micro font-medium text-base-content/65"
             >
               {{
                 (FORMALISM_TAGS as readonly string[]).includes(tag)

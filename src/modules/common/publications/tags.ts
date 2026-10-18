@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /** Formalism tags, one per module. Acronyms, so they need no translation. */
-export const FORMALISM_TAGS = ['AF', 'ADF', 'BAF', 'SETAF', 'PAF', 'IAF', 'ABA'] as const
+export const FORMALISM_TAGS = ['AF', 'ADF', 'BAF', 'SetAF', 'PAF', 'iAF', 'ABA'] as const
 
 /** Topic tags. Labels live in the `literature.tags.<id>` message catalog. */
 export const TOPIC_TAGS = [
