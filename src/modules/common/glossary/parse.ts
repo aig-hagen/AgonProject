@@ -17,12 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { GlossaryBlock, GlossaryInline } from '@/modules/common/glossary/types'
+import { publicationByKey } from '@/modules/common/publications/lookup'
+import type { Publication } from '@/modules/common/publications/types'
 import type { TooltipContentPart } from '@/modules/common/tooltip/tooltipRegistry'
 
 export interface ParsedGlossaryEntry {
   label: string
   title?: string
   short?: string
+  /** The `publications.ts` entry named by the `reference` frontmatter field. */
+  reference?: Publication
   /** The formal definition: everything before the first `##` heading. */
   content: TooltipContentPart[]
   /** Everything after the definition, rendered only on the glossary page. */
@@ -90,7 +94,7 @@ function parseFrontmatter(block: string): Record<string, string> {
 export function parseGlossaryEntry(source: string): ParsedGlossaryEntry {
   const match = source.match(FRONTMATTER)
   if (!match) throw new Error('Glossary entry is missing its frontmatter')
-  const { label, title, short } = parseFrontmatter(match[1]!)
+  const { label, title, short, reference } = parseFrontmatter(match[1]!)
   if (!label) throw new Error('Glossary entry frontmatter needs a label')
 
   const rest = source.slice(match[0].length)
@@ -100,11 +104,16 @@ export function parseGlossaryEntry(source: string): ParsedGlossaryEntry {
 
   const content = parseInline(definition.trim().replace(/\s*\n\s*/g, ' '))
   if (content.some((part) => typeof part !== 'string' && 'cite' in part))
-    throw new Error('Citations belong in the body; the definition cites via meta.ts')
+    throw new Error('Citations belong in the body; the definition cites via `reference`')
 
   const entry: ParsedGlossaryEntry = { label, content: content as TooltipContentPart[] }
   if (title) entry.title = title
   if (short) entry.short = short
+  if (reference) {
+    const publication = publicationByKey(reference)
+    if (!publication) throw new Error(`Unknown reference ${reference}`)
+    entry.reference = publication
+  }
   if (body) entry.body = parseBody(body)
   return entry
 }

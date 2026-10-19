@@ -56,13 +56,12 @@ Glossary text is Markdown, one folder per locale and one file per term:
 
 ```text
 src/modules/<type>/glossary/
-├── meta.ts      # language-neutral: references
 ├── en/<term>.md # source text, bundled eagerly
 └── de/<term>.md # optional translation, loaded when German is selected
 ```
 
 - `createGlossary` (`common/glossary/load.ts`) returns a reactive registry. `applyLocale` calls `setGlossaryLocale`, which loads the locale's files and updates every entry in place. A term with no translation falls back to English.
-- To translate a term, copy `en/<term>.md` to `<locale>/<term>.md` and translate the frontmatter `label`/`title` and the text. Keep every `[[ref]]` and `[@KEY]` as is; `glossaryData.test.ts` fails if a translation links or cites differently from its English twin.
+- To translate a term, copy `en/<term>.md` to `<locale>/<term>.md` and translate the frontmatter `label`/`title`/`short` and the text; the `reference` may be left out, since translations inherit it from English. Keep every `[[ref]]` and `[@KEY]` as is; `glossaryData.test.ts` fails if a translation links or cites differently from its English twin.
 - German glossary text needs review by a domain expert before it is merged.
 
 ## Adding a new locale

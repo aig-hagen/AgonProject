@@ -16,15 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import type { Publication } from '@/modules/common/publications/types'
 import type { TooltipContentPart } from '@/modules/common/tooltip/tooltipRegistry'
-
-/** Language-neutral data for one glossary term, kept out of the per-locale Markdown files. */
-export interface GlossaryTermMeta {
-  reference?: Publication
-}
-
-export type GlossaryMeta = Record<string, GlossaryTermMeta>
 
 /** Body text: definition parts plus `[@KEY]` citations of `publications.ts` entries. */
 export type GlossaryInline = TooltipContentPart | { cite: string }

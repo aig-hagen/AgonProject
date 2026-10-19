@@ -19,7 +19,6 @@
 import { shallowReactive } from 'vue'
 
 import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
-import type { GlossaryMeta } from '@/modules/common/glossary/types'
 import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 /** File path → raw Markdown, as returned by an eager `import.meta.glob(…, { query: '?raw' })`. */
@@ -40,12 +39,12 @@ export function localeFromPath(path: string): string {
   return parts[parts.length - 2]!
 }
 
-export function buildRegistry(sources: GlossarySources, meta: GlossaryMeta = {}): TooltipRegistry {
+export function buildRegistry(sources: GlossarySources): TooltipRegistry {
   const registry: TooltipRegistry = {}
   for (const [path, source] of Object.entries(sources)) {
     const key = termKeyFromPath(path)
     try {
-      registry[key] = { ...parseGlossaryEntry(source), ...meta[key] }
+      registry[key] = parseGlossaryEntry(source)
     } catch (error) {
       throw new Error(`${path}: ${(error as Error).message}`)
     }
@@ -56,7 +55,6 @@ export function buildRegistry(sources: GlossarySources, meta: GlossaryMeta = {})
 interface LocalizedGlossary {
   english: TooltipRegistry
   translations: LazyGlossarySources
-  meta: GlossaryMeta
   registry: TooltipRegistry
 }
 
@@ -75,9 +73,13 @@ async function localize(glossary: LocalizedGlossary, locale: string) {
   const files = Object.entries(glossary.translations).filter(([p]) => localeFromPath(p) === locale)
   const sources = await Promise.all(files.map(async ([p, load]) => [p, await load()] as const))
   if (locale !== activeLocale) return
-  const translated = buildRegistry(Object.fromEntries(sources), glossary.meta)
+  const translated = buildRegistry(Object.fromEntries(sources))
   for (const [key, english] of Object.entries(glossary.english)) {
-    replaceEntry(glossary.registry[key]!, translated[key] ?? english)
+    const translation = translated[key]
+    // The reference is language-neutral, so translations needn't repeat it.
+    if (translation && !translation.reference && english.reference)
+      translation.reference = english.reference
+    replaceEntry(glossary.registry[key]!, translation ?? english)
   }
 }
 
@@ -88,14 +90,13 @@ async function localize(glossary: LocalizedGlossary, locale: string) {
 export function createGlossary(
   english: GlossarySources,
   translations: LazyGlossarySources = {},
-  meta: GlossaryMeta = {},
 ): TooltipRegistry {
-  const base = buildRegistry(english, meta)
+  const base = buildRegistry(english)
   // Shallow, so `reference` stays the publication object that identity lookups expect.
   const registry: TooltipRegistry = Object.fromEntries(
     Object.entries(base).map(([key, def]) => [key, shallowReactive({ ...def })]),
   )
-  const glossary = { english: base, translations, meta, registry }
+  const glossary = { english: base, translations, registry }
   glossaries.push(glossary)
   if (activeLocale !== SOURCE_LOCALE) void localize(glossary, activeLocale)
   return registry

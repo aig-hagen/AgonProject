@@ -20,30 +20,10 @@ import { describe, expect, test } from 'vitest'
 
 import { plainText } from '@/app/glossary/plainText'
 import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
-import { glossaryMeta as afMeta } from '@/modules/abstract-argumentation/glossary/meta'
-import { glossaryMeta as abaMeta } from '@/modules/assumption-based-argumentation/glossary/meta'
-import { glossaryMeta as bafMeta } from '@/modules/bipolar-argumentation/glossary/meta'
-import { glossaryMeta as cafMeta } from '@/modules/collective-attacks-argumentation/glossary/meta'
-import { glossaryMeta as complexityMeta } from '@/modules/common/complexity/glossary/meta'
 import { localeFromPath } from '@/modules/common/glossary/load'
 import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
-import { glossaryMeta as principlesMeta } from '@/modules/common/principles/glossary/meta'
 import { publicationByKey } from '@/modules/common/publications/lookup'
-import { glossaryMeta as adfMeta } from '@/modules/dialectical-argumentation/glossary/meta'
-import { glossaryMeta as iafMeta } from '@/modules/incomplete-argumentation/glossary/meta'
-import { glossaryMeta as pafMeta } from '@/modules/probabilistic-argumentation/glossary/meta'
 
-const metas = {
-  AF: afMeta,
-  ABA: abaMeta,
-  BAF: bafMeta,
-  SetAF: cafMeta,
-  ADF: adfMeta,
-  iAF: iafMeta,
-  PAF: pafMeta,
-  Complexity: complexityMeta,
-  Principles: principlesMeta,
-}
 const afGlossary = glossaryModules.find((m) => m.prefix === 'AF')!.glossary
 const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
 
@@ -75,11 +55,6 @@ describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey 
         .map((m) => `${key} → ${m[1]}`),
     )
     expect(missing).toEqual([])
-  })
-
-  test('meta.ts only names existing terms', () => {
-    const meta = metas[prefix as keyof typeof metas]
-    expect(Object.keys(meta).filter((key) => !(key in glossary))).toEqual([])
   })
 })
 

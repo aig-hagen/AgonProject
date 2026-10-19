@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { createGlossary } from '@/modules/common/glossary/load'
-import { glossaryMeta } from '@/modules/probabilistic-argumentation/glossary/meta'
 
 export const probabilisticArgumentationGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/probabilistic-argumentation/glossary/en/*.md', {
@@ -35,5 +34,4 @@ export const probabilisticArgumentationGlossary = createGlossary(
       import: 'default',
     },
   ),
-  glossaryMeta,
 )

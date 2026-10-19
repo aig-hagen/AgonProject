@@ -26,7 +26,7 @@ import {
   termKeyFromPath,
 } from '@/modules/common/glossary/load'
 import { parseBody, parseGlossaryEntry, parseInline } from '@/modules/common/glossary/parse'
-import type { Publication } from '@/modules/common/publications/types'
+import { D95 } from '@/modules/common/publications/publications'
 
 // A literal double hash trips the license-header tool (its regex marker).
 const H2 = '#'.repeat(2)
@@ -102,20 +102,15 @@ describe('parseGlossaryEntry', () => {
 })
 
 describe('buildRegistry', () => {
-  test('keys terms by file name and merges meta', () => {
-    const reference: Publication = {
-      kind: 'thesis',
-      authors: ['A, B.'],
-      year: 2000,
-      title: 'T',
-      degree: 'PhD',
-      school: 'S',
-    }
-    const registry = buildRegistry(
-      { '/x/en/AF.md': '---\nlabel: AF\n---\nAn AF.' },
-      { AF: { reference } },
-    )
-    expect(registry.AF).toEqual({ label: 'AF', content: ['An AF.'], reference })
+  test('keys terms by file name and resolves the reference', () => {
+    const registry = buildRegistry({ '/x/en/AF.md': '---\nlabel: AF\nreference: D95\n---\nAn AF.' })
+    expect(registry.AF).toEqual({ label: 'AF', content: ['An AF.'], reference: D95 })
+  })
+
+  test('rejects an unknown reference', () => {
+    expect(() =>
+      buildRegistry({ '/x/en/AF.md': '---\nlabel: AF\nreference: NOPE\n---\nA.' }),
+    ).toThrow(/Unknown reference NOPE/)
   })
 
   test('names the file in parse errors', () => {
@@ -144,6 +139,15 @@ describe('createGlossary', () => {
 
     await setGlossaryLocale('en')
     expect(registry.B!.body).toBeDefined()
+  })
+
+  test('translations keep the English reference', async () => {
+    const registry = createGlossary(
+      { '/x/en/C.md': '---\nlabel: c\nreference: D95\n---\nEnglish C.' },
+      { '/x/de/C.md': async () => '---\nlabel: c\n---\nDeutsches C.' },
+    )
+    await setGlossaryLocale('de')
+    expect(registry.C).toEqual({ label: 'c', content: ['Deutsches C.'], reference: D95 })
   })
 
   test('localizes registries created after the switch', async () => {

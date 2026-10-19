@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { createGlossary } from '@/modules/common/glossary/load'
-import { glossaryMeta } from '@/modules/dialectical-argumentation/glossary/meta'
 
 export const dialecticalArgumentationGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/dialectical-argumentation/glossary/en/*.md', {
@@ -35,5 +34,4 @@ export const dialecticalArgumentationGlossary = createGlossary(
       import: 'default',
     },
   ),
-  glossaryMeta,
 )

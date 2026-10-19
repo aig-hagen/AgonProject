@@ -58,18 +58,19 @@ Tutorial progress is persisted by [`useTutorial`](/src/modules/common/tutorial/u
 
 ## Add glossary entries
 
-Each module keeps its glossary in `glossary/`: one Markdown file per term in `glossary/en/<key>.md`, publication references in `glossary/meta.ts`, and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`createGlossary`](/src/modules/common/glossary/load.ts) from the `en/` files plus any translations in sibling locale folders (see [localization](localization.md)). The file name is the term key, and keys must be unique across all modules.
+Each module keeps its glossary in `glossary/`: one Markdown file per term in `glossary/en/<key>.md` and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`createGlossary`](/src/modules/common/glossary/load.ts) from the `en/` files plus any translations in sibling locale folders (see [localization](localization.md)). The file name is the term key, and keys must be unique across all modules.
 
 ```markdown
 ---
 label: admissible
 title: Admissible Set
+reference: D95
 ---
 
 A set $S$ is admissible if it is [[CF|conflict-free]] and [[defends]] all its members.
 ```
 
-An optional `short` field gives a shorter name for the glossary's term list, e.g. `NP` under the Complexity Classes heading instead of the full title.
+The optional `reference` names the defining publication by its key in [`publications.ts`](/src/modules/common/publications/publications.ts); an unknown key fails the build. An optional `short` field gives a shorter name for the glossary's term list, e.g. `NP` under the Complexity Classes heading instead of the full title.
 
 The text before the first `##` heading is the definition shown in tooltips. It may contain KaTeX (`$…$`) and links to other entries (`[[key]]` or `[[key|label]]`). Anything after the first heading is the longer body, shown only on the glossary page: paragraphs, `##`/`###` headings, `-` lists, and `[@KEY]` citations of entries in [`publications.ts`](/src/modules/common/publications/publications.ts). [`glossaryData.test.ts`](/src/app/glossary/glossaryData.test.ts) checks that every link resolves.
 

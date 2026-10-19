@@ -1,6 +1,7 @@
 ---
 label: BAF
 title: Bipolar Argumentation Framework (BAF)
+reference: CL05
 ---
 
 A bipolar argumentation framework $B = (A, R, S)$ extends the classical [[AF]] with a support relation $S \subseteq A \times A$. Support can be read in different ways, e.g. as [[deductiveSupport|deductive]] or [[necessarySupport|necessary]] support.

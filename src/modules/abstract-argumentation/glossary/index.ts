@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { glossaryMeta } from '@/modules/abstract-argumentation/glossary/meta'
 import { createGlossary } from '@/modules/common/glossary/load'
 
 export const abstractArgumentationGlossary = createGlossary(
@@ -35,5 +34,4 @@ export const abstractArgumentationGlossary = createGlossary(
       import: 'default',
     },
   ),
-  glossaryMeta,
 )
