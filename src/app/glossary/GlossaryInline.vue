@@ -17,20 +17,17 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
+import { useGlossaryContext } from '@/app/glossary/glossaryContext'
+import SourceLink from '@/app/glossary/SourceLink.vue'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
-import { formatCitation, publicationHref, shortLabel } from '@/modules/common/publications/format'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
-import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { parts, entries } = defineProps<{
-  parts: GlossaryInline[]
-  entries: Record<string, { definition: TooltipDefinition }>
-}>()
+const { parts } = defineProps<{ parts: GlossaryInline[] }>()
 
-const emit = defineEmits<{ follow: [ref: string] }>()
+const { entries, follow } = useGlossaryContext()
 
 // On touch layouts a tap would both open the tooltip and navigate, so links stay plain.
 const { isCompact } = useLayoutMode()
@@ -40,15 +37,11 @@ const { isCompact } = useLayoutMode()
   <template v-for="(part, i) in parts" :key="i">
     <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
     <template v-else-if="'cite' in part">
-      <a
+      <SourceLink
         v-if="publicationByKey(part.cite)"
-        :href="publicationHref(publicationByKey(part.cite)!)"
-        :title="formatCitation(publicationByKey(part.cite)!)"
-        target="_blank"
-        rel="noopener noreferrer"
+        :publication="publicationByKey(part.cite)!"
         class="text-primary hover:opacity-70"
-        >{{ shortLabel(publicationByKey(part.cite)!) }}</a
-      >
+      />
       <span v-else class="text-base-content/65">{{ part.cite }}</span>
     </template>
     <component
@@ -58,7 +51,7 @@ const { isCompact } = useLayoutMode()
     >
       <button
         class="text-primary underline underline-offset-2 hover:opacity-70"
-        @click="emit('follow', part.ref)"
+        @click="follow(part.ref)"
       >
         <KatexInlineElement :text="part.label ?? entries[part.ref]!.definition.label" />
       </button>

@@ -33,7 +33,6 @@ const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>
 const { t } = useI18n({ useScope: 'global' })
 
 const {
-  allEntries,
   backlinks,
   activeModulePrefix,
   activeTermKey,
@@ -42,7 +41,6 @@ const {
   groupedTerms,
   literatureActive,
   selectModule,
-  followRef,
 } = useGlossary(t('glossary.title'))
 
 const list = useTemplateRef('list')
@@ -119,12 +117,10 @@ watch(
         :key="pinnedTerm[0]"
         :term-key="pinnedTerm[0]"
         :definition="pinnedTerm[1]"
-        :entries="allEntries"
         :backlinks="backlinks[pinnedTerm[0]]"
         :active="pinnedTerm[0] === activeTermKey"
         :data-term="pinnedTerm[0]"
         pinned
-        @follow="followRef"
       />
       <template v-for="group in groupedTerms" :key="group.letter">
         <div class="text-xs font-bold text-secondary tracking-wide mt-1.5 px-0.5">
@@ -135,11 +131,9 @@ watch(
           :key="key"
           :term-key="key"
           :definition="def"
-          :entries="allEntries"
           :backlinks="backlinks[key]"
           :active="key === activeTermKey"
           :data-term="key"
-          @follow="followRef"
         />
       </template>
     </div>

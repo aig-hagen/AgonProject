@@ -20,32 +20,32 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import FilterDropdown from '@/app/glossary/FilterDropdown.vue'
+import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
 import type { PrincipleTable } from '@/modules/common/principles/types'
-import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { table, entries } = defineProps<{
-  table: PrincipleTable
-  entries: Record<string, { definition: TooltipDefinition }>
-}>()
+const { table } = defineProps<{ table: PrincipleTable }>()
 
-const emit = defineEmits<{ follow: [ref: string] }>()
+const { entries, follow, titleOf } = useGlossaryContext()
 
 const { t } = useI18n({ useScope: 'global' })
 
-const allSemantics = table.groups.flatMap((group) => group.keys)
-const allPrinciples = table.principleGroups.flatMap((group) => group.principles)
-const shownSemantics = ref(new Set(allSemantics))
+const shownSemantics = ref(new Set(table.groups.flatMap((group) => group.keys)))
 const shownPrinciples = ref(
-  new Set(allPrinciples.filter((p) => !table.hiddenByDefault?.includes(p))),
+  new Set(
+    table.principleGroups
+      .flatMap((group) => group.principles)
+      .filter((p) => !table.hiddenByDefault?.includes(p)),
+  ),
 )
-
-function toggle(set: Set<string>, key: string) {
-  if (set.has(key)) set.delete(key)
-  else set.add(key)
-}
+const filterPrincipleGroups = computed(() =>
+  table.principleGroups.map((group) => ({
+    label: t(`glossary.principles.groups.${group.key}`),
+    keys: group.principles,
+  })),
+)
 
 const semanticsGroups = computed(() =>
   table.groups
@@ -63,80 +63,23 @@ const principleGroups = computed(() =>
 )
 
 const labelOf = (key: string) => entries[key]?.definition.label ?? key
-const titleOf = (key: string) => entries[key]?.definition.title ?? labelOf(key)
 </script>
 
 <template>
   <div class="flex flex-col gap-4 text-sm">
     <div class="flex flex-wrap gap-2">
-      <details class="dropdown">
-        <summary class="btn btn-sm">
-          {{ t('glossary.principles.show') }}: {{ t('glossary.principles.semantics') }} ({{
-            shownSemantics.size
-          }}/{{ allSemantics.length }})
-        </summary>
-        <div
-          class="dropdown-content z-10 mt-1 p-3 w-72 max-h-96 overflow-y-auto bg-base-100 border border-base-300 rounded-box shadow"
-        >
-          <div class="flex gap-3 mb-2">
-            <button class="text-primary" @click="shownSemantics = new Set(allSemantics)">
-              {{ t('glossary.principles.all') }}
-            </button>
-            <button class="text-primary" @click="shownSemantics = new Set()">
-              {{ t('glossary.principles.none') }}
-            </button>
-          </div>
-          <template v-for="group in table.groups" :key="group.label">
-            <p class="section-label mt-2 mb-1">{{ group.label }}</p>
-            <label v-for="key in group.keys" :key="key" class="flex items-center gap-2 py-0.5">
-              <input
-                type="checkbox"
-                class="checkbox checkbox-xs"
-                :checked="shownSemantics.has(key)"
-                @change="toggle(shownSemantics, key)"
-              />
-              {{ labelOf(key) }}
-            </label>
-          </template>
-        </div>
-      </details>
-      <details class="dropdown">
-        <summary class="btn btn-sm">
-          {{ t('glossary.principles.show') }}: {{ t('glossary.principles.title') }} ({{
-            shownPrinciples.size
-          }}/{{ allPrinciples.length }})
-        </summary>
-        <div
-          class="dropdown-content z-10 mt-1 p-3 w-80 max-h-96 overflow-y-auto bg-base-100 border border-base-300 rounded-box shadow"
-        >
-          <div class="flex gap-3 mb-2">
-            <button class="text-primary" @click="shownPrinciples = new Set(allPrinciples)">
-              {{ t('glossary.principles.all') }}
-            </button>
-            <button class="text-primary" @click="shownPrinciples = new Set()">
-              {{ t('glossary.principles.none') }}
-            </button>
-          </div>
-          <template v-for="group in table.principleGroups" :key="group.key">
-            <p class="section-label mt-2 mb-1">
-              {{ t(`glossary.principles.groups.${group.key}`) }}
-            </p>
-            <label
-              v-for="key in group.principles"
-              :key="key"
-              class="flex items-center gap-2 py-0.5"
-            >
-              <input
-                type="checkbox"
-                class="checkbox checkbox-xs"
-                :checked="shownPrinciples.has(key)"
-                @change="toggle(shownPrinciples, key)"
-              />
-              <KatexInlineElement :text="titleOf(key)" />
-            </label>
-          </template>
-        </div>
-      </details>
+      <FilterDropdown
+        v-model="shownSemantics"
+        :label="t('glossary.principles.semantics')"
+        :groups="table.groups"
+        :item-label="labelOf"
+      />
+      <FilterDropdown
+        v-model="shownPrinciples"
+        :label="t('glossary.principles.title')"
+        :groups="filterPrincipleGroups"
+        :item-label="titleOf"
+      />
     </div>
 
     <div v-if="columns.length && principleGroups.length" class="overflow-x-auto">
@@ -164,7 +107,7 @@ const titleOf = (key: string) => entries[key]?.definition.title ?? labelOf(key)
               :key="key"
               class="w-8 min-w-8 text-xs font-medium px-0.5 pb-1.5"
             >
-              <button class="hover:text-primary" :title="labelOf(key)" @click="emit('follow', key)">
+              <button class="hover:text-primary" :title="labelOf(key)" @click="follow(key)">
                 {{ key }}
               </button>
             </th>
@@ -183,11 +126,7 @@ const titleOf = (key: string) => entries[key]?.definition.title ?? labelOf(key)
               class="border-b border-base-300/60"
             >
               <th class="text-left font-normal pr-4 py-1 whitespace-nowrap">
-                <GlossaryInline
-                  :parts="[{ ref: principle, label: titleOf(principle) }]"
-                  :entries="entries"
-                  @follow="emit('follow', $event)"
-                />
+                <GlossaryInline :parts="[{ ref: principle, label: titleOf(principle) }]" />
               </th>
               <td v-for="key in columns" :key="key" class="px-0.5 py-1 text-center">
                 <PrincipleCellView

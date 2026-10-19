@@ -18,7 +18,8 @@
  */
 import katex, { type KatexOptions } from 'katex'
 
-import { entryRefs, glossaryModules, glossaryPath, plainText } from '@/app/glossary/useGlossary'
+import { plainText } from '@/app/glossary/plainText'
+import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
 import enGlossary from '@/localization/locales/en/messages/glossary'
 import type { GlossaryBlock, GlossaryInline } from '@/modules/common/glossary/types'
 import { formatCitation, publicationHref, shortLabel } from '@/modules/common/publications/format'

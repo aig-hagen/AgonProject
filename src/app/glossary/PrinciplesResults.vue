@@ -20,17 +20,14 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
 import { principleRowFor } from '@/app/glossary/principles'
-import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { termKey, entries } = defineProps<{
-  termKey: string
-  entries: Record<string, { definition: TooltipDefinition }>
-}>()
+const { termKey } = defineProps<{ termKey: string }>()
 
-const emit = defineEmits<{ follow: [ref: string] }>()
+const { follow, titleOf } = useGlossaryContext()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -60,19 +57,7 @@ const groups = computed(() =>
         <tbody>
           <tr v-for="principle in group.principles" :key="principle" class="align-top">
             <th class="text-left font-normal pr-6 py-0.5 whitespace-nowrap">
-              <GlossaryInline
-                :parts="[
-                  {
-                    ref: principle,
-                    label:
-                      entries[principle]?.definition.title ??
-                      entries[principle]?.definition.label ??
-                      principle,
-                  },
-                ]"
-                :entries="entries"
-                @follow="emit('follow', $event)"
-              />
+              <GlossaryInline :parts="[{ ref: principle, label: titleOf(principle) }]" />
             </th>
             <td class="py-0.5">
               <PrincipleCellView :cell="row.row[principle]!" />
@@ -83,7 +68,7 @@ const groups = computed(() =>
     </div>
     <button
       class="mt-2 text-sm text-primary hover:opacity-70"
-      @click="emit('follow', row.table.overviewKey)"
+      @click="follow(row.table.overviewKey)"
     >
       {{ t('glossary.principles.compareAll') }} →
     </button>

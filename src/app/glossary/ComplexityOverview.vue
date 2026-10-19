@@ -30,14 +30,8 @@ import {
 } from '@/modules/common/complexity/types'
 import type { Publication } from '@/modules/common/publications/types'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
-import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { table, entries } = defineProps<{
-  table: ComplexityTable
-  entries: Record<string, { definition: TooltipDefinition }>
-}>()
-
-const emit = defineEmits<{ follow: [ref: string] }>()
+const { table } = defineProps<{ table: ComplexityTable }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -79,11 +73,7 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
                 :key="problem"
                 class="font-medium pr-4 pb-1.5 whitespace-nowrap"
               >
-                <GlossaryInline
-                  :parts="[{ ref: problemKeys[problem] }]"
-                  :entries="entries"
-                  @follow="emit('follow', $event)"
-                />
+                <GlossaryInline :parts="[{ ref: problemKeys[problem] }]" />
               </th>
             </tr>
           </thead>
@@ -103,19 +93,13 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
                 class="border-b border-base-300/60 align-top"
               >
                 <th class="text-left font-normal pr-4 py-1.5 whitespace-nowrap">
-                  <GlossaryInline
-                    :parts="[{ ref: key }]"
-                    :entries="entries"
-                    @follow="emit('follow', $event)"
-                  />
+                  <GlossaryInline :parts="[{ ref: key }]" />
                 </th>
                 <td v-for="problem in problemsIn(section.rows)" :key="problem" class="pr-4 py-1.5">
                   <ComplexityCellView
                     v-if="section.rows[key]?.[problem]"
                     :cell="section.rows[key][problem]"
-                    :entries="entries"
                     :source-number="sourceNumber(section.rows[key][problem].source)"
-                    @follow="emit('follow', $event)"
                   />
                   <span v-else class="text-base-content/40">–</span>
                 </td>

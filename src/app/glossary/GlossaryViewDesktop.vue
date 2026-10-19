@@ -23,27 +23,22 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { complexityTableFor } from '@/app/glossary/complexity'
-import ComplexityOverview from '@/app/glossary/ComplexityOverview.vue'
-import ComplexityResults from '@/app/glossary/ComplexityResults.vue'
-import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
+import { termTitle } from '@/app/glossary/glossaryContext'
+import GlossaryEntryDetails from '@/app/glossary/GlossaryEntryDetails.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { principleTableFor } from '@/app/glossary/principles'
-import PrinciplesOverview from '@/app/glossary/PrinciplesOverview.vue'
-import PrinciplesResults from '@/app/glossary/PrinciplesResults.vue'
 import { glossaryModules, LITERATURE_TAB, useGlossary } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
 const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
 const {
-  allEntries,
   backlinks,
   activeModulePrefix,
   activeTermKey,
@@ -51,31 +46,22 @@ const {
   pinnedTerm,
   groupedTerms,
   activeDefinition,
+  fallbackTermKey,
   literatureActive,
   navigate,
-  followRef,
+  selectModule,
 } = useGlossary(t('glossary.title'))
 
-const activeBacklinks = computed(() => backlinks.value[activeTermKey.value] ?? [])
-const overviewTable = computed(() => complexityTableFor(activeTermKey.value))
-const principleOverview = computed(() => principleTableFor(activeTermKey.value))
+const wide = computed(
+  () => !!complexityTableFor(activeTermKey.value) || !!principleTableFor(activeTermKey.value),
+)
 
-// Auto-select the framework (main) entry when the module changes or no valid term is in the URL.
+// The detail panel always shows a term: without a valid one in the URL, open the fallback.
 watch(
   [activeModulePrefix, literatureActive, activeTermKey],
   ([prefix, literature]) => {
-    if (literature) return
-    const module = glossaryModules.find((m) => m.prefix === prefix)
-    const glossary = module?.glossary ?? {}
-    if (!activeTermKey.value || !glossary[activeTermKey.value]) {
-      const first =
-        module && glossary[module.mainKey]
-          ? [module.mainKey]
-          : Object.entries(glossary).sort(([, a], [, b]) =>
-              (a.title ?? a.label).localeCompare(b.title ?? b.label),
-            )[0]
-      if (first) navigate(prefix, first[0]!, { replace: true })
-    }
+    if (literature || activeDefinition.value || !fallbackTermKey.value) return
+    navigate(prefix, fallbackTermKey.value, { replace: true })
   },
   { immediate: true },
 )
@@ -97,7 +83,7 @@ watch(
             ? 'border-primary text-primary font-medium'
             : 'border-transparent text-base-content/65 hover:text-base-content'
         "
-        @click="navigate(m.prefix, '')"
+        @click="selectModule(m.prefix)"
       >
         {{ m.prefix }}
       </button>
@@ -109,7 +95,7 @@ watch(
             ? 'border-primary text-primary font-medium'
             : 'border-transparent text-base-content/65 hover:text-base-content'
         "
-        @click="navigate(LITERATURE_TAB, '')"
+        @click="selectModule(LITERATURE_TAB)"
       >
         {{ t('literature.title') }}
       </button>
@@ -139,7 +125,7 @@ watch(
           >
             <MapPinIcon class="size-3.5 text-primary shrink-0" />
             <span class="truncate">
-              <KatexInlineElement :text="pinnedTerm[1].title ?? pinnedTerm[1].label" />
+              <KatexInlineElement :text="termTitle(pinnedTerm[1])" />
             </span>
           </button>
           <template v-for="group in groupedTerms" :key="group.letter">
@@ -153,7 +139,7 @@ watch(
               :class="{ 'bg-base-200 font-medium': key === activeTermKey }"
               @click="navigate(activeModulePrefix, key)"
             >
-              <KatexInlineElement :text="def.title ?? def.label" />
+              <KatexInlineElement :text="termTitle(def)" />
             </button>
           </template>
         </div>
@@ -161,75 +147,18 @@ watch(
 
       <!-- Right: definition panel -->
       <div class="flex-1 overflow-y-auto p-8">
-        <div
-          v-if="activeDefinition"
-          :key="activeTermKey"
-          :class="overviewTable || principleOverview ? 'max-w-5xl' : 'max-w-2xl'"
-        >
+        <div v-if="activeDefinition" :key="activeTermKey" :class="wide ? 'max-w-5xl' : 'max-w-2xl'">
           <h2 class="text-xl font-bold leading-snug mb-4">
-            <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
+            <KatexInlineElement :text="termTitle(activeDefinition)" />
           </h2>
           <p class="text-base-content/80 leading-relaxed">
-            <GlossaryInline
-              :parts="activeDefinition.content"
-              :entries="allEntries"
-              @follow="followRef"
-            />
+            <GlossaryInline :parts="activeDefinition.content" />
           </p>
-          <GlossaryBody
-            v-if="activeDefinition.body"
-            :blocks="activeDefinition.body"
-            :entries="allEntries"
-            class="mt-4"
-            @follow="followRef"
-          />
-          <ComplexityOverview
-            v-if="overviewTable"
-            :table="overviewTable"
-            :entries="allEntries"
-            class="mt-6"
-            @follow="followRef"
-          />
-          <ComplexityResults
+          <GlossaryEntryDetails
             :term-key="activeTermKey"
-            :entries="allEntries"
-            class="mt-6 pt-4 border-t border-base-300"
-            @follow="followRef"
+            :definition="activeDefinition"
+            :backlinks="backlinks[activeTermKey]"
           />
-          <PrinciplesOverview
-            v-if="principleOverview"
-            :table="principleOverview"
-            :entries="allEntries"
-            class="mt-6"
-            @follow="followRef"
-          />
-          <PrinciplesResults
-            :term-key="activeTermKey"
-            :entries="allEntries"
-            class="mt-6 pt-4 border-t border-base-300"
-            @follow="followRef"
-          />
-          <section v-if="activeDefinition.reference" class="mt-6 pt-4 border-t border-base-300">
-            <h3 class="section-label mb-2">
-              {{ t('glossary.source') }}
-            </h3>
-            <PublicationCitation :publication="activeDefinition.reference" />
-          </section>
-          <section v-if="activeBacklinks.length" class="mt-6 pt-4 border-t border-base-300">
-            <h3 class="section-label mb-2">
-              {{ t('glossary.referencedBy') }}
-            </h3>
-            <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              <li v-for="link in activeBacklinks" :key="link.key">
-                <button
-                  class="text-primary hover:opacity-70"
-                  @click="navigate(link.modulePrefix, link.key)"
-                >
-                  <KatexInlineElement :text="link.definition.title ?? link.definition.label" />
-                </button>
-              </li>
-            </ul>
-          </section>
         </div>
         <p v-else class="text-sm text-base-content/65">{{ t('glossary.selectTerm') }}</p>
       </div>

@@ -22,13 +22,10 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { complexityRowFor, complexityTableFor } from '@/app/glossary/complexity'
-import ComplexityOverview from '@/app/glossary/ComplexityOverview.vue'
-import ComplexityResults from '@/app/glossary/ComplexityResults.vue'
-import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
+import { termTitle } from '@/app/glossary/glossaryContext'
+import GlossaryEntryDetails from '@/app/glossary/GlossaryEntryDetails.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { principleRowFor, principleTableFor } from '@/app/glossary/principles'
-import PrinciplesOverview from '@/app/glossary/PrinciplesOverview.vue'
-import PrinciplesResults from '@/app/glossary/PrinciplesResults.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
@@ -36,28 +33,27 @@ import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry
 const {
   termKey,
   definition,
-  entries,
   backlinks = [],
   pinned = false,
   active = false,
 } = defineProps<{
   termKey: string
   definition: TooltipDefinition
-  entries: Record<string, { definition: TooltipDefinition }>
   backlinks?: { key: string; definition: TooltipDefinition }[]
   pinned?: boolean
   /** The term in the URL: highlighted and opened. */
   active?: boolean
 }>()
 
-const emit = defineEmits<{ follow: [ref: string] }>()
-
 const { t } = useI18n({ useScope: 'global' })
 
-const overviewTable = computed(() => complexityTableFor(termKey))
-const hasComplexity = computed(() => !!complexityRowFor(termKey) || !!overviewTable.value)
-const principleOverview = computed(() => principleTableFor(termKey))
-const hasPrinciples = computed(() => !!principleOverview.value || !!principleRowFor(termKey))
+const hasDetails = computed(
+  () =>
+    !!definition.body ||
+    backlinks.length > 0 ||
+    !!(complexityRowFor(termKey) || complexityTableFor(termKey)) ||
+    !!(principleRowFor(termKey) || principleTableFor(termKey)),
+)
 
 const expanded = ref(active)
 watch(
@@ -75,14 +71,10 @@ watch(
   >
     <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
       <MapPinIcon v-if="pinned" class="size-4 text-primary shrink-0" />
-      <KatexInlineElement :text="definition.title ?? definition.label" />
+      <KatexInlineElement :text="termTitle(definition)" />
     </h3>
     <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
-      <GlossaryInline
-        :parts="definition.content"
-        :entries="entries"
-        @follow="emit('follow', $event)"
-      />
+      <GlossaryInline :parts="definition.content" />
     </p>
     <PublicationCitation
       v-if="definition.reference"
@@ -90,54 +82,15 @@ watch(
       compact
       class="mt-2.5 pt-2.5 border-t border-base-300"
     />
-    <template v-if="definition.body || backlinks.length || hasComplexity || hasPrinciples">
-      <div v-if="expanded" class="mt-2.5 pt-2.5 border-t border-base-300 text-sm">
-        <GlossaryBody
-          v-if="definition.body"
-          :blocks="definition.body"
-          :entries="entries"
-          @follow="emit('follow', $event)"
-        />
-        <ComplexityOverview
-          v-if="overviewTable"
-          :table="overviewTable"
-          :entries="entries"
-          class="mt-3"
-          @follow="emit('follow', $event)"
-        />
-        <ComplexityResults
-          :term-key="termKey"
-          :entries="entries"
-          class="mt-3"
-          @follow="emit('follow', $event)"
-        />
-        <PrinciplesOverview
-          v-if="principleOverview"
-          :table="principleOverview"
-          :entries="entries"
-          class="mt-3"
-          @follow="emit('follow', $event)"
-        />
-        <PrinciplesResults
-          :term-key="termKey"
-          :entries="entries"
-          class="mt-3"
-          @follow="emit('follow', $event)"
-        />
-        <section v-if="backlinks.length" class="mt-3">
-          <h4 class="section-label mb-1">{{ t('glossary.referencedBy') }}</h4>
-          <div class="flex flex-wrap gap-x-3 gap-y-1">
-            <button
-              v-for="link in backlinks"
-              :key="link.key"
-              class="text-primary"
-              @click="emit('follow', link.key)"
-            >
-              <KatexInlineElement :text="link.definition.title ?? link.definition.label" />
-            </button>
-          </div>
-        </section>
-      </div>
+    <template v-if="hasDetails">
+      <GlossaryEntryDetails
+        v-if="expanded"
+        :term-key="termKey"
+        :definition="definition"
+        :backlinks="backlinks"
+        compact
+        class="mt-2.5 pt-2.5 border-t border-base-300 text-sm"
+      />
       <button
         class="mt-2 flex items-center gap-1 text-xs font-medium text-primary"
         :aria-expanded="expanded"

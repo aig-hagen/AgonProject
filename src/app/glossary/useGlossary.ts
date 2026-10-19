@@ -16,10 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { computed, onUnmounted, provide, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import {
+  type GlossaryEntries,
+  provideGlossaryContext,
+  termTitle,
+} from '@/app/glossary/glossaryContext'
 import glossaryModuleList from '@/app/glossary/glossaryModules.json'
+import { plainText } from '@/app/glossary/plainText'
 import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
@@ -27,11 +33,7 @@ import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-att
 import { complexityGlossary } from '@/modules/common/complexity/glossary'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
 import { principlesGlossary } from '@/modules/common/principles/glossary'
-import {
-  TOOLTIP_REGISTRY_KEY,
-  type TooltipDefinition,
-  type TooltipRegistry,
-} from '@/modules/common/tooltip/tooltipRegistry'
+import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
@@ -46,80 +48,6 @@ export function entryRefs(def: TooltipDefinition): string[] {
     block.kind === 'list' ? block.items.flatMap(inlineRefs) : inlineRefs(block.content),
   )
   return [...inlineRefs(def.content), ...body]
-}
-
-const MATH_SYMBOLS: Record<string, string> = {
-  alpha: 'α',
-  beta: 'β',
-  sigma: 'σ',
-  Sigma: 'Σ',
-  Pi: 'Π',
-  Theta: 'Θ',
-  Delta: 'Δ',
-  neg: '¬',
-  emptyset: '∅',
-  tau: 'τ',
-  epsilon: 'ε',
-  Gamma: 'Γ',
-  in: '∈',
-  notin: '∉',
-  subseteq: '⊆',
-  succeq: '⪰',
-  cup: '∪',
-  cap: '∩',
-  bigcup: '⋃',
-  setminus: '∖',
-  times: '×',
-  mid: '|',
-  forall: '∀',
-  exists: '∃',
-  leq: '≤',
-  geq: '≥',
-  neq: '≠',
-  to: '→',
-  mapsto: '↦',
-  leftarrow: '←',
-  vdash: '⊢',
-  top: '⊤',
-  langle: '⟨',
-  rangle: '⟩',
-  ldots: '…',
-  sum: '∑',
-  prod: '∏',
-  sqcap: '⊓',
-  curlywedge: '⋏',
-  curlyvee: '⋎',
-  downarrow: '↓',
-}
-const SUBSCRIPTS: Record<string, string> = Object.fromEntries(
-  [...'0123456789+-aehijklmnoprstuvx'].map((c, i) => [c, '₀₁₂₃₄₅₆₇₈₉₊₋ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ'[i]!]),
-)
-const SUPERSCRIPTS: Record<string, string> = Object.fromEntries(
-  [...'0123456789+-Pmn'].map((c, i) => [c, '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᴾᵐⁿ'[i]!]),
-)
-
-// Unicode sub/superscript for single characters and numbers; words stay plain, since most
-// letters lack a Unicode form and a mix (βₚᵣ next to βad) looks inconsistent.
-function script(text: string, table: Record<string, string>): string {
-  const chars = [...text]
-  const convertible = chars.length === 1 || /^[0-9+-]+$/.test(text)
-  return convertible && chars.every((c) => c in table) ? chars.map((c) => table[c]).join('') : text
-}
-
-/** Renders `$…$` LaTeX as Unicode text, for plain-text contexts like the page title. */
-export function plainText(text: string): string {
-  return text.replace(/\$([^$]*)\$/g, (_, math: string) =>
-    math
-      .replace(/\\([{}])/g, (_, brace: string) => (brace === '{' ? '\uE000' : '\uE001'))
-      .replace(/\\[ ,;:!]/g, ' ')
-      .replace(/\\([a-zA-Z]+)/g, (_, name: string) => MATH_SYMBOLS[name] ?? '')
-      .replace(/([_^])(?:\{((?:[^{}]|\{[^{}]*\})*)\}|([^{}\s]))/g, (_, op, group, single) =>
-        script((group ?? single).replace(/[{}]/g, ''), op === '_' ? SUBSCRIPTS : SUPERSCRIPTS),
-      )
-      .replace(/[{}]/g, '')
-      .replace(/\uE000/g, '{')
-      .replace(/\uE001/g, '}'),
-  )
 }
 
 /** Path segment of the literature tab, which lists publications instead of terms. */
@@ -154,44 +82,24 @@ export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
   ({ prefix, label, dir, mainKey }) => ({ prefix, label, mainKey, glossary: registries[dir]! }),
 )
 
+// Combined map for cross-module ref resolution; on a key clash the first module wins.
+const allEntries: GlossaryEntries = {}
+// termKey → the entries whose definition or body links to it.
+const backlinks: Record<string, { key: string; definition: TooltipDefinition }[]> = {}
+for (const m of glossaryModules) {
+  for (const [key, def] of Object.entries(m.glossary)) {
+    allEntries[key] ??= { definition: def, modulePrefix: m.prefix }
+    for (const ref of new Set(entryRefs(def))) {
+      if (ref !== key) (backlinks[ref] ??= []).push({ key, definition: def })
+    }
+  }
+}
+
 /**
  * Shared glossary state for the desktop two-panel view and the mobile inline-card view:
  * module selection, search, letter-grouping, and cross-module reference navigation.
  */
 export function useGlossary(glossaryTitle: string) {
-  // Combined map for cross-module ref resolution: termKey → { definition, modulePrefix }
-  const allEntries = computed(() => {
-    const map: Record<string, { definition: TooltipDefinition; modulePrefix: string }> = {}
-    for (const m of glossaryModules) {
-      for (const [key, def] of Object.entries(m.glossary)) {
-        if (!(key in map)) map[key] = { definition: def, modulePrefix: m.prefix }
-      }
-    }
-    return map
-  })
-
-  // Hover tooltips on inline term links resolve against every module's entries.
-  provide(
-    TOOLTIP_REGISTRY_KEY,
-    Object.fromEntries(Object.entries(allEntries.value).map(([k, e]) => [k, e.definition])),
-  )
-
-  // termKey → the entries whose definition or body links to it.
-  const backlinks = computed(() => {
-    const map: Record<
-      string,
-      { key: string; definition: TooltipDefinition; modulePrefix: string }[]
-    > = {}
-    for (const m of glossaryModules) {
-      for (const [key, def] of Object.entries(m.glossary)) {
-        for (const ref of new Set(entryRefs(def))) {
-          if (ref !== key) (map[ref] ??= []).push({ key, definition: def, modulePrefix: m.prefix })
-        }
-      }
-    }
-    return map
-  })
-
   const route = useRoute()
   const router = useRouter()
 
@@ -215,7 +123,7 @@ export function useGlossary(glossaryTitle: string) {
     ({ module, term }) => {
       if (typeof module !== 'string' && typeof term !== 'string') return
       const key = typeof term === 'string' ? term : undefined
-      const prefix = (key && allEntries.value[key]?.modulePrefix) ?? (module as string | undefined)
+      const prefix = (key && allEntries[key]?.modulePrefix) ?? (module as string | undefined)
       router.replace(glossaryPath(prefix, key))
     },
     { immediate: true },
@@ -232,9 +140,7 @@ export function useGlossary(glossaryTitle: string) {
   })
 
   function matchesQuery([key, def]: [string, TooltipDefinition], q: string) {
-    return (
-      (def.title ?? def.label ?? key).toLowerCase().includes(q) || key.toLowerCase().includes(q)
-    )
+    return termTitle(def).toLowerCase().includes(q) || key.toLowerCase().includes(q)
   }
 
   // The framework entry, pinned above the alphabetical list (hidden when it fails the search).
@@ -250,7 +156,7 @@ export function useGlossary(glossaryTitle: string) {
   const sortedTerms = computed(() =>
     Object.entries(activeModule.value.glossary)
       .filter(([key]) => key !== activeModule.value.mainKey)
-      .sort(([, a], [, b]) => (a.title ?? a.label).localeCompare(b.title ?? b.label)),
+      .sort(([, a], [, b]) => termTitle(a).localeCompare(termTitle(b))),
   )
 
   const filteredTerms = computed(() => {
@@ -262,7 +168,7 @@ export function useGlossary(glossaryTitle: string) {
   const groupedTerms = computed(() => {
     const groups: { letter: string; terms: [string, TooltipDefinition][] }[] = []
     for (const entry of filteredTerms.value) {
-      const letter = (entry[1].title ?? entry[1].label ?? entry[0]).charAt(0).toUpperCase()
+      const letter = termTitle(entry[1]).charAt(0).toUpperCase()
       const last = groups[groups.length - 1]
       if (last?.letter === letter) {
         last.terms.push(entry)
@@ -277,12 +183,19 @@ export function useGlossary(glossaryTitle: string) {
     () => activeModule.value.glossary[activeTermKey.value] as TooltipDefinition | undefined,
   )
 
+  // Shown when the URL names no valid term: the pinned entry, else the first alphabetically.
+  const fallbackTermKey = computed(() =>
+    activeModule.value.glossary[activeModule.value.mainKey]
+      ? activeModule.value.mainKey
+      : sortedTerms.value[0]?.[0],
+  )
+
   const defaultTitle = document.title
   watch(
     activeDefinition,
     (def) => {
       document.title = def
-        ? `${plainText(def.title ?? def.label)} · ${glossaryTitle} · AgonProject`
+        ? `${plainText(termTitle(def))} · ${glossaryTitle} · AgonProject`
         : defaultTitle
     },
     { immediate: true },
@@ -302,12 +215,13 @@ export function useGlossary(glossaryTitle: string) {
   }
 
   function followRef(refKey: string) {
-    const entry = allEntries.value[refKey]
+    const entry = allEntries[refKey]
     if (entry) navigate(entry.modulePrefix, refKey)
   }
 
+  provideGlossaryContext({ entries: allEntries, follow: followRef })
+
   return {
-    allEntries,
     backlinks,
     activeModulePrefix,
     activeTermKey,
@@ -317,8 +231,8 @@ export function useGlossary(glossaryTitle: string) {
     pinnedTerm,
     groupedTerms,
     activeDefinition,
+    fallbackTermKey,
     navigate,
     selectModule,
-    followRef,
   }
 }

@@ -19,44 +19,26 @@
 <script setup lang="ts">
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import type { GlossaryBlock } from '@/modules/common/glossary/types'
-import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { blocks, entries } = defineProps<{
-  blocks: GlossaryBlock[]
-  entries: Record<string, { definition: TooltipDefinition }>
-}>()
-
-const emit = defineEmits<{ follow: [ref: string] }>()
+const { blocks } = defineProps<{ blocks: GlossaryBlock[] }>()
 </script>
 
 <template>
   <div class="flex flex-col gap-3 leading-relaxed text-base-content/80">
     <template v-for="(block, i) in blocks" :key="i">
       <h3 v-if="block.kind === 'heading' && block.level === 2" class="section-label mt-3">
-        <GlossaryInline
-          :parts="block.content"
-          :entries="entries"
-          @follow="emit('follow', $event)"
-        />
+        <GlossaryInline :parts="block.content" />
       </h3>
       <h4 v-else-if="block.kind === 'heading'" class="font-semibold text-base-content mt-1">
-        <GlossaryInline
-          :parts="block.content"
-          :entries="entries"
-          @follow="emit('follow', $event)"
-        />
+        <GlossaryInline :parts="block.content" />
       </h4>
       <ul v-else-if="block.kind === 'list'" class="list-disc pl-5 flex flex-col gap-1">
         <li v-for="(item, j) in block.items" :key="j">
-          <GlossaryInline :parts="item" :entries="entries" @follow="emit('follow', $event)" />
+          <GlossaryInline :parts="item" />
         </li>
       </ul>
       <p v-else>
-        <GlossaryInline
-          :parts="block.content"
-          :entries="entries"
-          @follow="emit('follow', $event)"
-        />
+        <GlossaryInline :parts="block.content" />
       </p>
     </template>
   </div>

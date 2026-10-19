@@ -18,7 +18,8 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { entryRefs, glossaryModules, glossaryPath, plainText } from '@/app/glossary/useGlossary'
+import { plainText } from '@/app/glossary/plainText'
+import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
 import { glossaryMeta as afMeta } from '@/modules/abstract-argumentation/glossary/meta'
 import { glossaryMeta as abaMeta } from '@/modules/assumption-based-argumentation/glossary/meta'
 import { glossaryMeta as bafMeta } from '@/modules/bipolar-argumentation/glossary/meta'

@@ -22,6 +22,7 @@ import { nextTick, onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
+import { termTitle } from '@/app/glossary/glossaryContext'
 import { glossaryPath } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { useLiterature } from '@/app/literature/useLiterature'
@@ -164,7 +165,7 @@ onUnmounted(() => {
                 :to="glossaryPath(term.modulePrefix, term.key)"
                 class="text-base-content/80 underline decoration-base-300 underline-offset-2 hover:text-primary"
               >
-                <KatexInlineElement :text="term.definition.title ?? term.definition.label" />
+                <KatexInlineElement :text="termTitle(term.definition)" />
               </RouterLink>
             </template>
             <template v-for="id in index[key]?.modules ?? []" :key="id">

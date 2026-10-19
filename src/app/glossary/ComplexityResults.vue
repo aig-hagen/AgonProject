@@ -22,16 +22,13 @@ import { useI18n } from 'vue-i18n'
 
 import { complexityRowFor, problemKeys } from '@/app/glossary/complexity'
 import ComplexityCellView from '@/app/glossary/ComplexityCellView.vue'
+import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { SHOWN_PROBLEMS } from '@/modules/common/complexity/types'
-import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
-const { termKey, entries } = defineProps<{
-  termKey: string
-  entries: Record<string, { definition: TooltipDefinition }>
-}>()
+const { termKey } = defineProps<{ termKey: string }>()
 
-const emit = defineEmits<{ follow: [ref: string] }>()
+const { follow } = useGlossaryContext()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -58,27 +55,16 @@ const problems = computed(() =>
         <tbody>
           <tr v-for="problem in problems" :key="problem" class="align-top">
             <th class="text-left font-normal pr-6 py-1 whitespace-nowrap">
-              <GlossaryInline
-                :parts="[{ ref: problemKeys[problem] }]"
-                :entries="entries"
-                @follow="emit('follow', $event)"
-              />
+              <GlossaryInline :parts="[{ ref: problemKeys[problem] }]" />
             </th>
             <td class="pr-6 py-1">
-              <ComplexityCellView
-                v-if="result.row?.[problem]"
-                :cell="result.row[problem]"
-                :entries="entries"
-                @follow="emit('follow', $event)"
-              />
+              <ComplexityCellView v-if="result.row?.[problem]" :cell="result.row[problem]" />
               <span v-else class="text-base-content/40">–</span>
             </td>
             <td v-if="result.variantRow" class="py-1">
               <ComplexityCellView
                 v-if="result.variantRow[problem]"
                 :cell="result.variantRow[problem]"
-                :entries="entries"
-                @follow="emit('follow', $event)"
               />
               <span v-else class="text-base-content/40">–</span>
             </td>
@@ -88,7 +74,7 @@ const problems = computed(() =>
     </div>
     <button
       class="mt-2 text-sm text-primary hover:opacity-70"
-      @click="emit('follow', result.table.overviewKey)"
+      @click="follow(result.table.overviewKey)"
     >
       {{ t('glossary.complexity.compareAll') }} →
     </button>

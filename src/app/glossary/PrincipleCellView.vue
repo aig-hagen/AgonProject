@@ -20,8 +20,9 @@
 import { computed } from 'vue'
 
 import { principleStatus, statusMark } from '@/app/glossary/principles'
+import SourceLink from '@/app/glossary/SourceLink.vue'
 import type { PrincipleCell } from '@/modules/common/principles/types'
-import { formatCitation, publicationHref, shortLabel } from '@/modules/common/publications/format'
+import { shortLabel } from '@/modules/common/publications/format'
 
 const { cell, compact } = defineProps<{
   cell: PrincipleCell
@@ -50,15 +51,11 @@ const markClass = computed(
   <span v-else class="flex flex-col">
     <span>
       <span :class="markClass">{{ statusMark[status] }}</span>
-      <a
+      <SourceLink
         v-if="cell.source"
-        :href="publicationHref(cell.source)"
-        :title="formatCitation(cell.source)"
-        target="_blank"
-        rel="noopener noreferrer"
+        :publication="cell.source"
         class="text-xs text-base-content/65 hover:text-primary"
-        >{{ shortLabel(cell.source) }}</a
-      >
+      />
     </span>
     <span v-if="cell.remark" class="text-xs text-base-content/65">{{ cell.remark }}</span>
   </span>

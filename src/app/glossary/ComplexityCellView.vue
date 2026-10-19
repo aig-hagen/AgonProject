@@ -22,18 +22,15 @@ import { useI18n } from 'vue-i18n'
 
 import { cellParts } from '@/app/glossary/complexity'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
+import SourceLink from '@/app/glossary/SourceLink.vue'
 import type { ComplexityCell } from '@/modules/common/complexity/types'
-import { formatCitation, publicationHref, shortLabel } from '@/modules/common/publications/format'
-import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
+import { shortLabel } from '@/modules/common/publications/format'
 
-const { cell, entries, sourceNumber } = defineProps<{
+const { cell, sourceNumber } = defineProps<{
   cell: ComplexityCell
-  entries: Record<string, { definition: TooltipDefinition }>
   /** Set in the overview table: cite by number instead of spelling out the source. */
   sourceNumber?: number
 }>()
-
-const emit = defineEmits<{ follow: [ref: string] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -55,7 +52,7 @@ const details = computed(() => [shortLabel(cell.source), cell.note].filter(Boole
 
 <template>
   <span v-if="sourceNumber" :title="details" class="whitespace-nowrap">
-    <GlossaryInline :parts="parts" :entries="entries" @follow="emit('follow', $event)" />
+    <GlossaryInline :parts="parts" />
     <sup class="ml-0.5 text-base-content/65">
       <a :href="`#complexity-source-${sourceNumber}`" class="hover:text-primary">{{
         sourceNumber
@@ -65,16 +62,12 @@ const details = computed(() => [shortLabel(cell.source), cell.note].filter(Boole
   </span>
   <span v-else class="flex flex-col">
     <span>
-      <GlossaryInline :parts="parts" :entries="entries" @follow="emit('follow', $event)" />
+      <GlossaryInline :parts="parts" />
       <span v-if="cell.note" class="text-base-content/65"> ({{ cell.note }})</span>
     </span>
-    <a
-      :href="publicationHref(cell.source)"
-      :title="formatCitation(cell.source)"
-      target="_blank"
-      rel="noopener noreferrer"
+    <SourceLink
+      :publication="cell.source"
       class="text-xs text-base-content/65 hover:text-primary"
-      >{{ shortLabel(cell.source) }}</a
-    >
+    />
   </span>
 </template>
