@@ -20,6 +20,7 @@ import type { GlossaryModule } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { ComplexityTable } from '@/modules/common/complexity/types'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
+import type { PrincipleTable } from '@/modules/common/principles/types'
 import { publicationKey } from '@/modules/common/publications/lookup'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -45,10 +46,14 @@ function bodyCites(def: TooltipDefinition): string[] {
   )
 }
 
-/** Publication key → where it is cited: glossary references, `[@KEY]`, complexity cells, cards. */
+/**
+ * Publication key → where it is cited: glossary references, `[@KEY]`, complexity and principle
+ * cells, cards.
+ */
 export function citedIn(
   glossaryModules: GlossaryModule[],
   complexityTables: ComplexityTable[],
+  principleTables: PrincipleTable[],
   moduleConfigs: readonly Pick<ModuleConfig<object>, 'id' | 'publications'>[],
 ): Record<string, CitedIn> {
   const index: Record<string, CitedIn> = {}
@@ -77,6 +82,15 @@ export function citedIn(
       for (const [key, row] of Object.entries(rows)) {
         for (const cell of Object.values(row)) addTerm(publicationKey(cell.source), key)
       }
+    }
+  }
+  for (const table of principleTables) {
+    for (const [key, row] of Object.entries(table.rows)) {
+      for (const cell of Object.values(row))
+        addTerm(cell?.source && publicationKey(cell.source), key)
+    }
+    for (const [key, cell] of Object.entries(table.cardinality)) {
+      addTerm(cell.source && publicationKey(cell.source), key)
     }
   }
   for (const module of moduleConfigs) {

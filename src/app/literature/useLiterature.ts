@@ -19,6 +19,7 @@
 import { computed, ref } from 'vue'
 
 import { complexityTables } from '@/app/glossary/complexity'
+import { principleTables } from '@/app/glossary/principles'
 import { glossaryModules } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { citedIn } from '@/app/literature/citedIn'
@@ -40,7 +41,7 @@ const entries: LiteratureEntry[] = Object.entries(publications as Record<string,
 export function useLiterature(
   modules: readonly Pick<ModuleConfig<object>, 'id' | 'publications'>[],
 ) {
-  const index = citedIn(glossaryModules, complexityTables, modules)
+  const index = citedIn(glossaryModules, complexityTables, principleTables, modules)
   const searchQuery = ref('')
   const selectedTags = ref<PublicationTag[]>([])
 

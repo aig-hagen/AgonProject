@@ -19,6 +19,7 @@
 import { expect, test } from 'vitest'
 
 import { complexityTables } from '@/app/glossary/complexity'
+import { principleTables } from '@/app/glossary/principles'
 import { glossaryModules } from '@/app/glossary/useGlossary'
 import { citedIn } from '@/app/literature/citedIn'
 import { abstractArgumentationModule } from '@/modules/abstract-argumentation/moduleConfig'
@@ -39,7 +40,7 @@ const modules = [
   collectiveAttacksArgumentationModule,
   assumptionBasedArgumentationModule,
 ]
-const index = citedIn(glossaryModules, complexityTables, modules)
+const index = citedIn(glossaryModules, complexityTables, principleTables, modules)
 const termKeys = (pubKey: string) => index[pubKey]?.terms.map((term) => term.key) ?? []
 
 test('every publication is cited somewhere', () => {
