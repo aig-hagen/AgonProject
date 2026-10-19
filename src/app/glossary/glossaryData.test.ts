@@ -26,6 +26,7 @@ import { glossaryMeta as cafMeta } from '@/modules/collective-attacks-argumentat
 import { glossaryMeta as complexityMeta } from '@/modules/common/complexity/glossary/meta'
 import { localeFromPath } from '@/modules/common/glossary/load'
 import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
+import { glossaryMeta as principlesMeta } from '@/modules/common/principles/glossary/meta'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 import { glossaryMeta as adfMeta } from '@/modules/dialectical-argumentation/glossary/meta'
 import { glossaryMeta as iafMeta } from '@/modules/incomplete-argumentation/glossary/meta'
@@ -40,6 +41,7 @@ const metas = {
   iAF: iafMeta,
   PAF: pafMeta,
   Complexity: complexityMeta,
+  Principles: principlesMeta,
 }
 const afGlossary = glossaryModules.find((m) => m.prefix === 'AF')!.glossary
 const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
@@ -51,9 +53,12 @@ describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey 
   })
 
   // Modules provide their own registry merged over the AF one, so refs may point into either.
-  // Complexity entries only appear on the glossary page, which resolves refs across all modules.
+  // Complexity and principle entries only appear on the glossary page, which resolves refs across
+  // all modules.
   test('every [[ref]] resolves', () => {
-    const scope = prefix === 'Complexity' ? allGlossaries : { ...afGlossary, ...glossary }
+    const scope = ['Complexity', 'Principles'].includes(prefix)
+      ? allGlossaries
+      : { ...afGlossary, ...glossary }
     const missing = Object.entries(glossary).flatMap(([key, def]) =>
       entryRefs(def)
         .filter((ref) => !(ref in scope))

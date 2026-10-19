@@ -65,13 +65,16 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 
 ### Phase 3 — Glossary entries
 
-- [ ] `src/modules/common/principles/glossary/en/<key>.md` per principle (label, title, informal
-      idea, formal definition in Agon notation from `principles.md`), `meta.ts` with the defining
-      paper as `reference`. Reuse/link existing entries where they exist (`sccRecursive`,
-      `reduct`, `scc`).
-- [ ] Register the glossary module: `glossaryModules.json` entry (`dir: common/principles`,
-      `mainKey: principlesAF`) and the map in `useGlossary.ts`, as for `common/complexity`.
-- [ ] Overview entry (`principlesAF`) and an entry explaining "principle" itself.
+- [x] New glossary module `common/principles` (prefix `Principles`, main entry `principlesAF`),
+      registered in `glossaryModules.json` and `useGlossary.ts`; refs resolve across all modules,
+      as for Complexity.
+- [x] 58 principle entries plus `principle` and `principlesAF`; `SCOOC` reuses the existing AF
+      entry (SCF2 links to it). Definitions checked against the defining papers (TV17, BG07, DRT20,
+      BBU20a, BlT24, BU22, CT19, CCD12, DUW22, FU21, BT26, BLW16, BBU20); `meta.ts` names the
+      defining paper as reference.
+- [ ] Top-down / bottom-up / full decomposability are paraphrased (BBCGTV14 itself not read; FU21
+      restates full decomposability). Check against BBCGTV14 Defs. 15–17 once fetched.
+- [x] Test: overview entry and a glossary entry for every principle in the table.
 
 ### Phase 4 — UI
 

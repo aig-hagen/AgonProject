@@ -36,5 +36,11 @@
     "dir": "common/complexity",
     "label": "Complexity",
     "mainKey": "complexityAF"
+  },
+  {
+    "prefix": "Principles",
+    "dir": "common/principles",
+    "label": "Principles",
+    "mainKey": "principlesAF"
   }
 ]

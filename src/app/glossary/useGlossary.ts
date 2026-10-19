@@ -26,6 +26,7 @@ import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/gl
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { complexityGlossary } from '@/modules/common/complexity/glossary'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
+import { principlesGlossary } from '@/modules/common/principles/glossary'
 import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
@@ -138,6 +139,7 @@ const registries: Record<string, TooltipRegistry> = {
   'bipolar-argumentation': bipolarArgumentationGlossary,
   'collective-attacks-argumentation': collectiveAttacksArgumentationGlossary,
   'common/complexity': complexityGlossary,
+  'common/principles': principlesGlossary,
   'dialectical-argumentation': dialecticalArgumentationGlossary,
   'incomplete-argumentation': incompleteArgumentationGlossary,
   'probabilistic-argumentation': probabilisticArgumentationGlossary,

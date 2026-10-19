@@ -19,9 +19,11 @@
 import { describe, expect, test } from 'vitest'
 
 import { principleTables } from '@/app/glossary/principles'
+import { glossaryModules } from '@/app/glossary/useGlossary'
 import * as publications from '@/modules/common/publications/publications'
 
 const knownSources = new Set(Object.values(publications))
+const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
 
 describe.each(principleTables)('$overviewKey', (table) => {
   const semantics = table.groups.flatMap((group) => group.keys)
@@ -33,6 +35,11 @@ describe.each(principleTables)('$overviewKey', (table) => {
   test('rows and cardinality cover exactly the grouped semantics', () => {
     expect(Object.keys(table.rows).sort()).toEqual([...semantics].sort())
     expect(Object.keys(table.cardinality).sort()).toEqual([...semantics].sort())
+  })
+
+  test('has an overview entry, and every principle a glossary entry', () => {
+    expect(allGlossaries[table.overviewKey]).toBeDefined()
+    expect(grouped.filter((p) => !(p in allGlossaries))).toEqual([])
   })
 
   test('every principle sits in exactly one group', () => {
