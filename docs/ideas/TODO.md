@@ -16,7 +16,7 @@
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search),
   guarantees (always exists / unique / can be empty?), relations between semantics as a lattice,
   origin, and where it shows up in AgonProject. (Principles satisfied and number of extensions are
-  done, see [`principles-code-plan.md`](principles-code-plan.md).)
+  done: `src/modules/abstract-argumentation/principles.ts`.)
 
 ## Mobile
 
