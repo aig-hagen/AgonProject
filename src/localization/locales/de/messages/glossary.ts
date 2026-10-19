@@ -26,6 +26,7 @@ export default {
   referencedBy: 'Verwendet in',
   more: 'Mehr',
   less: 'Weniger',
+  sources: 'Quellen',
   complexity: {
     groups: {
       overviews: 'Übersichten',
@@ -39,7 +40,6 @@ export default {
     bipolar: 'Bipolar',
     compareAll: 'Alle Semantiken vergleichen',
     semantics: 'Semantik',
-    sources: 'Quellen',
     trivial: 'trivial',
     complete: '-vollständig',
     completeShort: '-v',

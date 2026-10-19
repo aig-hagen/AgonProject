@@ -24,8 +24,11 @@ import FilterDropdown from '@/app/glossary/FilterDropdown.vue'
 import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
+import { compareEntries } from '@/app/literature/search'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import type { PrincipleTable } from '@/modules/common/principles/types'
+import type { Publication } from '@/modules/common/publications/types'
+import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 
 const { table } = defineProps<{ table: PrincipleTable }>()
@@ -65,6 +68,19 @@ const principleGroups = computed(() =>
     }))
     .filter((group) => group.principles.length),
 )
+
+// Sources of the shown cells, in bibliography order.
+const sources = computed(() => {
+  const found = new Set<Publication>()
+  for (const key of columns.value)
+    for (const p of principleGroups.value.flatMap((group) => group.principles)) {
+      const source = table.rows[key]?.[p]?.source
+      if (source) found.add(source)
+    }
+  return [...found].sort((a, b) =>
+    compareEntries({ key: '', publication: a }, { key: '', publication: b }),
+  )
+})
 
 const labelOf = (key: string) => entries[key]?.definition.label ?? key
 </script>
@@ -154,5 +170,13 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
       </table>
     </div>
     <p class="text-xs text-base-content/65">{{ t('glossary.principles.legend') }}</p>
+    <section v-if="sources.length">
+      <h3 class="section-label mb-2">{{ t('glossary.sources') }}</h3>
+      <ul class="flex flex-col gap-2">
+        <li v-for="(source, i) in sources" :key="i">
+          <PublicationCitation :publication="source" compact />
+        </li>
+      </ul>
+    </section>
   </div>
 </template>

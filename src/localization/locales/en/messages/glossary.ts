@@ -26,6 +26,7 @@ export default {
   referencedBy: 'Referenced by',
   more: 'More',
   less: 'Less',
+  sources: 'Sources',
   complexity: {
     groups: {
       overviews: 'Overviews',
@@ -39,7 +40,6 @@ export default {
     bipolar: 'Bipolar',
     compareAll: 'Compare all semantics',
     semantics: 'Semantics',
-    sources: 'Sources',
     trivial: 'trivial',
     complete: '-complete',
     completeShort: '-c',
