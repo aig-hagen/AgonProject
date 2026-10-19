@@ -48,7 +48,7 @@ function toggle(key: string) {
       {{ t('glossary.principles.show') }}: {{ label }} ({{ shown.size }}/{{ allKeys.length }})
     </summary>
     <div
-      class="dropdown-content z-10 mt-1 p-3 w-80 max-h-96 overflow-y-auto bg-base-100 border border-base-300 rounded-box shadow"
+      class="dropdown-content z-10 mt-1 p-3 w-80 max-h-96 overflow-y-auto bg-base-100 border border-base-300 rounded-box shadow-md"
     >
       <div class="flex gap-3 mb-2">
         <button class="text-primary" @click="shown = new Set(allKeys)">

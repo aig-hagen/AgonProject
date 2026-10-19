@@ -39,7 +39,7 @@ const markClass = computed(
     ({
       satisfied: 'text-success',
       violated: 'text-error',
-      open: 'text-base-content/50',
+      open: 'text-base-content/65',
     })[status.value],
 )
 </script>

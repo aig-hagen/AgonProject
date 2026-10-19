@@ -63,7 +63,7 @@ watch(
     <PageHeader :title="t('glossary.title')" :back-label="t('glossary.backToEditor')" />
 
     <!-- Module selector -->
-    <div class="flex-none overflow-x-auto px-3 py-2 border-b border-base-200">
+    <div class="flex-none overflow-x-auto px-3 py-2 border-b border-base-300">
       <div class="flex gap-2 w-max">
         <button
           v-for="m in glossaryModules"
@@ -103,7 +103,7 @@ watch(
     <div
       v-if="!literatureActive"
       ref="list"
-      class="flex-1 overflow-y-auto px-4 pt-2 flex flex-col gap-2.5"
+      class="flex-1 overflow-y-auto px-4 pt-2 flex flex-col gap-3"
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
       <p
@@ -123,7 +123,7 @@ watch(
         pinned
       />
       <template v-for="group in groupedTerms" :key="group.label">
-        <div class="text-xs font-bold text-secondary tracking-wide mt-1.5 px-0.5">
+        <div class="section-label mt-1.5 px-0.5">
           {{ group.label }}
         </div>
         <GlossaryCardMobile

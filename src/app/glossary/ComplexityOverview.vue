@@ -87,11 +87,7 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
                   {{ group.label }}
                 </th>
               </tr>
-              <tr
-                v-for="key in group.keys"
-                :key="key"
-                class="border-b border-base-300/60 align-top"
-              >
+              <tr v-for="key in group.keys" :key="key" class="border-b border-base-300 align-top">
                 <th class="text-left font-normal pr-4 py-1.5 whitespace-nowrap">
                   <GlossaryInline :parts="[{ ref: key }]" />
                 </th>

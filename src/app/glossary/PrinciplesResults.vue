@@ -67,7 +67,7 @@ const groups = computed(() =>
       </table>
     </div>
     <button
-      class="mt-2 text-sm text-primary hover:opacity-70"
+      class="mt-2 text-sm text-primary underline-offset-2 hover:underline"
       @click="follow(row.table.overviewKey)"
     >
       {{ t('glossary.principles.compareAll') }} →

@@ -79,7 +79,7 @@ const definition = computed(() => registry[id])
     <RouterLink
       v-if="definition.body"
       :to="{ path: '/glossary', query: { term: id } }"
-      class="inline-block mt-1 text-xs font-medium text-primary hover:opacity-70"
+      class="inline-block mt-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
     >
       {{ t('glossary.more') }} →
     </RouterLink>

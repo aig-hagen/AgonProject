@@ -112,7 +112,7 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
               :key="group.label"
               :colspan="group.keys.length"
               :title="group.label"
-              class="section-label font-medium px-1 pb-1 border-l border-base-300"
+              class="section-label px-1 pb-1 border-l border-base-300"
             >
               <!-- Zero width, so a long label can't widen its columns. -->
               <div class="w-0 min-w-full truncate">{{ group.label }}</div>
@@ -152,7 +152,7 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
             <tr
               v-for="principle in group.principles"
               :key="principle"
-              class="border-b border-base-300/60"
+              class="border-b border-base-300"
             >
               <th class="text-left font-normal pr-4 py-1 whitespace-nowrap">
                 <GlossaryInline :parts="[{ ref: principle, label: titleOf(principle) }]" />

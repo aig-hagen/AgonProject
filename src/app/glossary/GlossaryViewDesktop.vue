@@ -148,7 +148,7 @@ watch(
       <!-- Right: definition panel -->
       <div class="flex-1 overflow-y-auto p-8">
         <div v-if="activeDefinition" :key="activeTermKey" :class="wide ? 'max-w-5xl' : 'max-w-2xl'">
-          <h2 class="text-xl font-bold leading-snug mb-4">
+          <h2 class="text-lg font-bold leading-snug mb-4">
             <KatexInlineElement :text="termTitle(activeDefinition)" />
           </h2>
           <p class="text-base-content/80 leading-relaxed">

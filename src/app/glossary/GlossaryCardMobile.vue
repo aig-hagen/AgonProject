@@ -66,7 +66,7 @@ watch(
 
 <template>
   <article
-    class="rounded-box border p-3.5"
+    class="rounded-box border p-3"
     :class="pinned || active ? 'border-primary/40 bg-primary/5' : 'border-base-300'"
   >
     <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
@@ -92,7 +92,7 @@ watch(
         class="mt-2.5 pt-2.5 border-t border-base-300 text-sm"
       />
       <button
-        class="mt-2 flex items-center gap-1 text-xs font-medium text-primary"
+        class="-mb-3 flex min-h-11 items-center gap-1 text-xs font-medium text-primary"
         :aria-expanded="expanded"
         @click="expanded = !expanded"
       >

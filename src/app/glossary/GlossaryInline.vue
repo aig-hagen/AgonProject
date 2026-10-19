@@ -40,7 +40,7 @@ const { isCompact } = useLayoutMode()
       <SourceLink
         v-if="publicationByKey(part.cite)"
         :publication="publicationByKey(part.cite)!"
-        class="text-primary hover:opacity-70"
+        class="text-primary underline-offset-2 hover:underline"
       />
       <span v-else class="text-base-content/65">{{ part.cite }}</span>
     </template>
@@ -50,7 +50,7 @@ const { isCompact } = useLayoutMode()
       v-bind="isCompact ? {} : { id: part.ref, triggerClass: '' }"
     >
       <button
-        class="text-primary underline underline-offset-2 hover:opacity-70"
+        class="text-primary underline underline-offset-2 hover:decoration-2"
         @click="follow(part.ref)"
       >
         <KatexInlineElement :text="part.label ?? entries[part.ref]!.definition.label" />

@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Mobile: phones in landscape keep the mobile layout instead of switching to the desktop one.
 - Privacy and third-party links in Help open in the same tab, so back returns to the editor instead of a second app instance.
 - Glossary search uses one search field style on desktop and mobile; it brightens while typing and has a clear (×) button.
+- Glossary follows the design system more closely: shared section labels on mobile, underline link hovers, and a larger "More" tap target.
 - Export options (LaTeX style, image format, scale and background) are remembered across sessions and shared between desktop and mobile.
 - Mobile LaTeX export shows the `argumentation` package note with its link, like desktop.
 - Floating windows, sheets and menus cast palette-tinted shadows; muted icons and code highlighting use the app palette.
