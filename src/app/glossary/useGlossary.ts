@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import glossaryModuleList from '@/app/glossary/glossaryModules.json'
@@ -27,7 +27,11 @@ import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-att
 import { complexityGlossary } from '@/modules/common/complexity/glossary'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
 import { principlesGlossary } from '@/modules/common/principles/glossary'
-import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
+import {
+  TOOLTIP_REGISTRY_KEY,
+  type TooltipDefinition,
+  type TooltipRegistry,
+} from '@/modules/common/tooltip/tooltipRegistry'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
@@ -165,6 +169,12 @@ export function useGlossary(glossaryTitle: string) {
     }
     return map
   })
+
+  // Hover tooltips on inline term links resolve against every module's entries.
+  provide(
+    TOOLTIP_REGISTRY_KEY,
+    Object.fromEntries(Object.entries(allEntries.value).map(([k, e]) => [k, e.definition])),
+  )
 
   // termKey → the entries whose definition or body links to it.
   const backlinks = computed(() => {

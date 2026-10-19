@@ -18,9 +18,11 @@
 -->
 <script setup lang="ts">
 import type { GlossaryInline } from '@/modules/common/glossary/types'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { formatCitation, publicationHref, shortLabel } from '@/modules/common/publications/format'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { parts, entries } = defineProps<{
@@ -29,6 +31,9 @@ const { parts, entries } = defineProps<{
 }>()
 
 const emit = defineEmits<{ follow: [ref: string] }>()
+
+// On touch layouts a tap would both open the tooltip and navigate, so links stay plain.
+const { isCompact } = useLayoutMode()
 </script>
 
 <template>
@@ -46,13 +51,18 @@ const emit = defineEmits<{ follow: [ref: string] }>()
       >
       <span v-else class="text-base-content/65">{{ part.cite }}</span>
     </template>
-    <button
+    <component
+      :is="isCompact ? 'span' : TermTooltip"
       v-else-if="entries[part.ref]"
-      class="text-primary underline underline-offset-2 hover:opacity-70"
-      @click="emit('follow', part.ref)"
+      v-bind="isCompact ? {} : { id: part.ref, triggerClass: '' }"
     >
-      <KatexInlineElement :text="part.label ?? entries[part.ref]!.definition.label" />
-    </button>
+      <button
+        class="text-primary underline underline-offset-2 hover:opacity-70"
+        @click="emit('follow', part.ref)"
+      >
+        <KatexInlineElement :text="part.label ?? entries[part.ref]!.definition.label" />
+      </button>
+    </component>
     <span v-else class="text-base-content/65">
       <KatexInlineElement :text="part.label ?? part.ref" />
     </span>

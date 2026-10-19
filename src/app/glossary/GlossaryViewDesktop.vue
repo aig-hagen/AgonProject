@@ -163,6 +163,7 @@ watch(
       <div class="flex-1 overflow-y-auto p-8">
         <div
           v-if="activeDefinition"
+          :key="activeTermKey"
           :class="overviewTable || principleOverview ? 'max-w-5xl' : 'max-w-2xl'"
         >
           <h2 class="text-xl font-bold leading-snug mb-4">
