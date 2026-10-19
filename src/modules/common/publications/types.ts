@@ -76,4 +76,10 @@ export interface Thesis extends PublicationBase {
   school: string
 }
 
-export type Publication = Article | InProceedings | Chapter | Book | Thesis
+export interface Preprint extends PublicationBase {
+  kind: 'preprint'
+  /** Where it is hosted, e.g. "Zenodo" or "arXiv". */
+  repository: string
+}
+
+export type Publication = Article | InProceedings | Chapter | Book | Thesis | Preprint

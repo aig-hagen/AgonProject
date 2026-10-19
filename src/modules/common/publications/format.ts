@@ -91,6 +91,8 @@ export function formatVenue(pub: Publication): string {
       return pub.publisher
     case 'thesis':
       return `${pub.degree} Thesis, ${pub.school}`
+    case 'preprint':
+      return `Preprint, ${pub.repository}`
   }
   if (pub.pages) parts.push(`pp. ${pub.pages}`)
   const venue = parts.join(', ')

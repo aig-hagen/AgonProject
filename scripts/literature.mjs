@@ -48,6 +48,7 @@ const BIB_TYPES = {
   chapter: 'incollection',
   book: 'book',
   thesis: 'phdthesis',
+  preprint: 'misc',
 }
 
 function bibValue(value) {
@@ -70,6 +71,7 @@ function bibEntry(key, pub) {
     pages: pub.pages,
     publisher: pub.publisher,
     school: pub.school,
+    howpublished: pub.repository && `Preprint, ${pub.repository}`,
     doi: pub.doi,
     url: pub.doi ? undefined : pub.url,
   }

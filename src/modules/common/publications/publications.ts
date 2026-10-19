@@ -254,6 +254,261 @@ export const CT19: Publication = {
   url: 'https://ceur-ws.org/Vol-2445/paper_3.pdf',
 }
 
+// ── Principles ────────────────────────────────────────────────────────────────
+
+export const CDM05: Publication = {
+  kind: 'inproceedings',
+  authors: ['Coste-Marquis, S.', 'Devred, C.', 'Marquis, P.'],
+  year: 2005,
+  tags: ['AF', 'semantics', 'principles'],
+  title: 'Prudent Semantics for Argumentation Frameworks',
+  booktitle: '17th IEEE International Conference on Tools with Artificial Intelligence',
+  acronym: 'ICTAI 2005',
+  publisher: 'IEEE',
+  doi: '10.1109/ICTAI.2005.103',
+}
+
+export const BG07: Publication = {
+  kind: 'article',
+  authors: ['Baroni, P.', 'Giacomin, M.'],
+  year: 2007,
+  tags: ['AF', 'principles'],
+  title: 'On Principle-Based Evaluation of Extension-Based Argumentation Semantics',
+  journal: 'Artificial Intelligence',
+  volume: '171',
+  number: '10–15',
+  pages: '675–700',
+  doi: '10.1016/j.artint.2007.04.004',
+}
+
+export const BCG11: Publication = {
+  kind: 'article',
+  authors: ['Baroni, P.', 'Caminada, M.', 'Giacomin, M.'],
+  year: 2011,
+  tags: ['AF', 'semantics', 'principles', 'survey'],
+  title: 'An Introduction to Argumentation Semantics',
+  journal: 'The Knowledge Engineering Review',
+  volume: '26',
+  number: '4',
+  pages: '365–410',
+  doi: '10.1017/S0269888911000166',
+}
+
+export const CCD12: Publication = {
+  kind: 'article',
+  authors: ['Caminada, M.W.A.', 'Carnielli, W.A.', 'Dunne, P.E.'],
+  year: 2012,
+  tags: ['AF', 'semantics', 'principles'],
+  title: 'Semi-Stable Semantics',
+  journal: 'Journal of Logic and Computation',
+  volume: '22',
+  number: '5',
+  pages: '1207–1254',
+  doi: '10.1093/logcom/exr033',
+}
+
+export const GW13: Publication = {
+  kind: 'article',
+  authors: ['Gaggl, S.A.', 'Woltran, S.'],
+  year: 2013,
+  tags: ['AF', 'semantics', 'principles'],
+  title: 'The cf2 Argumentation Semantics Revisited',
+  journal: 'Journal of Logic and Computation',
+  volume: '23',
+  number: '5',
+  pages: '925–949',
+  doi: '10.1093/logcom/exs011',
+}
+
+export const BBCGTV14: Publication = {
+  kind: 'article',
+  authors: [
+    'Baroni, P.',
+    'Boella, G.',
+    'Cerutti, F.',
+    'Giacomin, M.',
+    'van der Torre, L.',
+    'Villata, S.',
+  ],
+  year: 2014,
+  tags: ['AF', 'principles'],
+  title: 'On the Input/Output Behavior of Argumentation Frameworks',
+  journal: 'Artificial Intelligence',
+  volume: '217',
+  pages: '144–197',
+  doi: '10.1016/j.artint.2014.08.004',
+}
+
+export const DDLW15: Publication = {
+  kind: 'article',
+  authors: ['Dunne, P.E.', 'Dvořák, W.', 'Linsbichler, T.', 'Woltran, S.'],
+  year: 2015,
+  tags: ['AF', 'principles'],
+  title: 'Characteristics of Multiple Viewpoints in Abstract Argumentation',
+  journal: 'Artificial Intelligence',
+  volume: '228',
+  pages: '153–178',
+  doi: '10.1016/j.artint.2015.07.006',
+}
+
+export const BLW16: Publication = {
+  kind: 'inproceedings',
+  authors: ['Baumann, R.', 'Linsbichler, T.', 'Woltran, S.'],
+  year: 2016,
+  tags: ['AF', 'principles'],
+  title: 'Verifiability of Argumentation Semantics',
+  booktitle: 'Computational Models of Argument',
+  acronym: 'COMMA 2016',
+  series: 'FAIA',
+  seriesVolume: '287',
+  pages: '83–94',
+  publisher: 'IOS Press',
+  doi: '10.3233/978-1-61499-686-6-83',
+}
+
+export const XC16: Publication = {
+  kind: 'inproceedings',
+  authors: ['Xu, Y.', 'Cayrol, C.'],
+  year: 2016,
+  tags: ['AF', 'semantics'],
+  title: 'Initial Sets in Abstract Argumentation Frameworks',
+  booktitle: 'First Chinese Conference on Logic and Argumentation',
+  acronym: 'CLAR 2016',
+  series: 'CEUR-WS',
+  seriesVolume: '1811',
+  pages: '72–85',
+  url: 'https://ceur-ws.org/Vol-1811/paper6.pdf',
+}
+
+export const TV17: Publication = {
+  kind: 'article',
+  authors: ['van der Torre, L.', 'Vesic, S.'],
+  year: 2017,
+  tags: ['AF', 'principles'],
+  title: 'The Principle-Based Approach to Abstract Argumentation Semantics',
+  journal: 'IfCoLog Journal of Logics and their Applications',
+  volume: '4',
+  number: '8',
+  url: 'https://orbilu.uni.lu/handle/10993/33989',
+}
+
+export const CD19: Publication = {
+  kind: 'article',
+  authors: ['Caminada, M.', 'Dunne, P.E.'],
+  year: 2019,
+  tags: ['AF', 'semantics'],
+  title: 'Strong Admissibility Revisited: Theory and Applications',
+  journal: 'Argument & Computation',
+  volume: '10',
+  number: '3',
+  pages: '277–300',
+  doi: '10.3233/AAC-190463',
+}
+
+export const BBU20a: Publication = {
+  kind: 'inproceedings',
+  authors: ['Baumann, R.', 'Brewka, G.', 'Ulbricht, M.'],
+  year: 2020,
+  tags: ['AF', 'semantics', 'principles'],
+  title:
+    'Comparing Weak Admissibility Semantics to their Dung-style Counterparts – Reduct, Modularization, and Strong Equivalence in Abstract Argumentation',
+  booktitle:
+    'Proceedings of the 17th International Conference on Principles of Knowledge Representation and Reasoning',
+  acronym: 'KR 2020',
+  pages: '79–88',
+  publisher: 'ijcai.org',
+  doi: '10.24963/kr.2020/9',
+}
+
+export const FU21: Publication = {
+  kind: 'inproceedings',
+  authors: ['Friese, T.', 'Ulbricht, M.'],
+  year: 2021,
+  tags: ['AF', 'principles'],
+  title: 'On the Relationship of Modularity Notions in Abstract Argumentation',
+  booktitle: 'Proceedings of the 19th International Workshop on Non-Monotonic Reasoning',
+  acronym: 'NMR 2021',
+  pages: '51–60',
+  url: 'https://iccl.inf.tu-dresden.de/web/Inproceedings3408',
+}
+
+export const BBU22: Publication = {
+  kind: 'article',
+  authors: ['Baumann, R.', 'Brewka, G.', 'Ulbricht, M.'],
+  year: 2022,
+  tags: ['AF', 'semantics', 'principles'],
+  title:
+    'Shedding New Light on the Foundations of Abstract Argumentation: Modularization and Weak Admissibility',
+  journal: 'Artificial Intelligence',
+  volume: '310',
+  articleNo: '103742',
+  doi: '10.1016/j.artint.2022.103742',
+}
+
+export const BU22: Publication = {
+  kind: 'inproceedings',
+  authors: ['Blümel, L.', 'Ulbricht, M.'],
+  year: 2022,
+  tags: ['AF', 'semantics', 'principles'],
+  title:
+    'Defining Defense and Defeat in Abstract Argumentation From Scratch – A Generalizing Approach',
+  booktitle:
+    'Proceedings of the 19th International Conference on Principles of Knowledge Representation and Reasoning',
+  acronym: 'KR 2022',
+  pages: '63–72',
+  publisher: 'ijcai.org',
+  doi: '10.24963/kr.2022/7',
+}
+
+export const CT23: Publication = {
+  kind: 'article',
+  authors: ['Cramer, M.', 'van der Torre, L.'],
+  year: 2023,
+  tags: ['AF', 'semantics', 'principles'],
+  title: 'An Argumentation Semantics for Rational Human Evaluation of Arguments',
+  journal: 'Frontiers in Artificial Intelligence',
+  volume: '6',
+  articleNo: '1045663',
+  doi: '10.3389/frai.2023.1045663',
+}
+
+export const BlT24: Publication = {
+  kind: 'inproceedings',
+  authors: ['Blümel, L.', 'Thimm, M.'],
+  year: 2024,
+  tags: ['AF', 'semantics', 'principles'],
+  title: 'Revisiting Vacuous Reduct Semantics for Abstract Argumentation',
+  booktitle: 'ECAI 2024',
+  series: 'FAIA',
+  seriesVolume: '392',
+  pages: '3517–3524',
+  publisher: 'IOS Press',
+  doi: '10.3233/FAIA240905',
+}
+
+export const BT26: Publication = {
+  kind: 'preprint',
+  authors: ['Bengel, L.', 'Thimm, M.'],
+  year: 2025,
+  tags: ['AF', 'ADF', 'semantics', 'principles'],
+  title: 'Serialisability in Formal Argumentation',
+  repository: 'Zenodo',
+  doi: '10.5281/zenodo.19048256',
+}
+
+export const DT25: Publication = {
+  kind: 'article',
+  authors: ['Doukas, T.', 'Thimm, M.'],
+  year: 2025,
+  tags: ['AF', 'semantics', 'principles'],
+  title: 'On the Realisability of Weak Argumentation Semantics',
+  journal: 'Journal of Logic and Computation',
+  volume: '35',
+  number: '8',
+  articleNo: 'exaf058',
+  doi: '10.1093/logcom/exaf058',
+}
+
 // ── Ranking Semantics ──────────────────────────────────────────────────
 
 export const BDKM16: Publication = {

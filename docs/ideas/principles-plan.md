@@ -24,14 +24,14 @@ the glossary wiki in [`TODO.md`](TODO.md). Code integration is a separate, later
 
 ## Sources
 
-| Key    | Paper                                                                   | Status                 |
-| ------ | ----------------------------------------------------------------------- | ---------------------- |
-| BT26   | Bengel & Thimm, _Serialisability in Formal Argumentation_, AIJ preprint | `~/Downloads` (AIJ v.) |
-| BG07   | Baroni & Giacomin, _On principle-based evaluation…_, AIJ 171 (2007)     | `literature/incoming/` |
-| TV17   | van der Torre & Vesic, _The principle-based approach…_, IfCoLog (2017)  | `literature/incoming/` |
-| BGG05  | Baroni, Giacomin, Guida, _SCC-recursiveness_, AIJ 168 (2005)            | `literature/`          |
-| DRT20  | Dauphin, Rienstra, van der Torre, principles for weak admissibility     | `literature/`          |
-| others | per-semantics papers in `literature/` (see agent briefs)                | `literature/`          |
+| Key    | Paper                                                                        | Status                 |
+| ------ | ---------------------------------------------------------------------------- | ---------------------- |
+| BT26   | Bengel & Thimm, _Serialisability in Formal Argumentation_, preprint (Zenodo) | `literature/`          |
+| BG07   | Baroni & Giacomin, _On principle-based evaluation…_, AIJ 171 (2007)          | `literature/incoming/` |
+| TV17   | van der Torre & Vesic, _The principle-based approach…_, IfCoLog (2017)       | `literature/incoming/` |
+| BGG05  | Baroni, Giacomin, Guida, _SCC-recursiveness_, AIJ 168 (2005)                 | `literature/`          |
+| DRT20  | Dauphin, Rienstra, van der Torre, principles for weak admissibility          | `literature/`          |
+| others | per-semantics papers in `literature/` (see agent briefs)                     | `literature/`          |
 
 Use the AIJ version (`Serialisability_in_Formal_Argumentation___AIJ.pdf`), not the older preprint.
 Def. 2.6 and Table 1 (pp. 10–12) are the seed.

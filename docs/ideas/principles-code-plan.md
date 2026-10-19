@@ -32,23 +32,27 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 
 ### Phase 1 — Publications
 
-- [ ] Map every grid source string to a publication key (34 strings → ~29 keys; e.g.
-      `Baumann Brewka Ulbricht 2022` → `BBU22`, `Friese Ulbricht 2021` → `FU21`,
-      `T23 / Blümel & Thimm 2024` → pick one).
-- [ ] Add the ~19 missing papers to `publications.ts` (TV17, BG07, BBU20a, BBU22, BBCGTV14,
-      BCG11, BLW16, BlT24, BT26, BU22, CCD12, CD19, CDM05, CT23, DDLW15, DT25, FU21, GW13, XC16)
-      with data checked via `literature/notes/principles-work/verify_refs.py` (Crossref / publisher
-      page; no unverified fields). Tags as in the existing entries.
-- [ ] Mirror them in `literature/references.bib`; file the PDFs we have from `literature/incoming/`
-      under their keys.
-- [ ] BT26: cite as preprint (Lars). Only confluence (7 cells, incl. SAD) and UC language
-      independence rely on it.
+- [x] 18 papers added to `publications.ts` (new "Principles" section): CDM05, BG07, BCG11, CCD12,
+      GW13, BBCGTV14, DDLW15, BLW16, XC16, TV17, CD19, BBU20a, FU21, BBU22, BU22, CT23, BlT24, DT25.
+      Data from Crossref (authors, venue, volume, pages, DOI), IOS Press pages (FAIA volume/pages),
+      CEUR-WS (XC16), the TU Dresden ICCL page (FU21) and the PDF itself (TV17 vol./no.; no
+      verified pages, so none given).
+- [x] `npm run lit:bib`; PDFs filed with `lit:import` (fixed three wrong matches by hand: P94,
+      XC18, C14). Local PDFs now for BG07, TV17, BBU22, CD19, CDM05, XC16, DT25 (manuscript),
+      BLW16 (arXiv), FU21.
+- [x] BT26 as a preprint: new `preprint` kind (types, `format.ts`, `lit:bib` → `@misc`), entry from
+      the Zenodo record (doi:10.5281/zenodo.19048256, year 2025 per the record), PDF filed. Grid
+      locators for BT26 cite numbered results only (Zenodo pages differ from the AIJ draft).
+- [ ] `citedIn.test.ts` ("every publication is cited somewhere") fails until Phase 2 wires the
+      principle cells into `citedIn()` (as complexity cells are).
 
 ### Phase 2 — Data
 
 - [ ] `src/modules/common/principles/types.ts`: `PrincipleCell` (`holds: boolean`, `source?`,
       `locator?`, `remark?`, `via?`, `noReference?`), `PrincipleTable` (overview key, semantics
       groups, rows), helpers like `holds()` / `fails()` in the style of `complete()` / `member()`.
+- [ ] Map grid source strings to publication keys (e.g. `Baumann Brewka Ulbricht 2022` → `BBU22`,
+      `Friese Ulbricht 2021` → `FU21`, `T23 / Blümel & Thimm 2024` → `T23`).
 - [ ] `src/modules/abstract-argumentation/principles.ts`: generated once from the grid JSON by a
       script under `principles-work/` (source strings → publication imports), then maintained by
       hand like `complexity.ts`. Header comment points to `literature/notes/principles.md`.
