@@ -489,7 +489,7 @@ export const BlT24: Publication = {
 export const BT26: Publication = {
   kind: 'preprint',
   authors: ['Bengel, L.', 'Thimm, M.'],
-  year: 2025,
+  year: 2026,
   tags: ['AF', 'ADF', 'semantics', 'principles'],
   title: 'Serialisability in Formal Argumentation',
   repository: 'Zenodo',
