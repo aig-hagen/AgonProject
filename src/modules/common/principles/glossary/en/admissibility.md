@@ -1,6 +1,7 @@
 ---
 label: Admissibility
-title: Admissibility
+title: Admissibility (Principle)
+short: Admissibility
 reference: BG07
 ---
 

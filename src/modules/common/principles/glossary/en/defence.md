@@ -1,6 +1,7 @@
 ---
 label: Defence
-title: Defence
+title: Defence (Principle)
+short: Defence
 reference: TV18
 ---
 

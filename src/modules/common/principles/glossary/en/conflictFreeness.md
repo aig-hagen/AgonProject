@@ -1,6 +1,7 @@
 ---
 label: Conflict-Freeness
-title: Conflict-Freeness
+title: Conflict-Freeness (Principle)
+short: Conflict-Freeness
 reference: BG07
 ---
 

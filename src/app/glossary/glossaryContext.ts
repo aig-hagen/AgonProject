@@ -59,6 +59,6 @@ export function useGlossaryContext() {
   const context = inject(GLOSSARY_CONTEXT)
   if (!context) throw new Error('useGlossaryContext() called outside a glossary view')
   const { entries } = context
-  const titleOf = (key: string) => (entries[key] ? termTitle(entries[key].definition) : key)
+  const titleOf = (key: string) => (entries[key] ? listTitle(entries[key].definition) : key)
   return { ...context, titleOf }
 }
