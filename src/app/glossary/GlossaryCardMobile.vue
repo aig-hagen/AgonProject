@@ -22,7 +22,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { complexityRowFor, complexityTableFor } from '@/app/glossary/complexity'
-import { termTitle } from '@/app/glossary/glossaryContext'
+import { listTitle } from '@/app/glossary/glossaryContext'
 import GlossaryEntryDetails from '@/app/glossary/GlossaryEntryDetails.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { principleRowFor, principleTableFor } from '@/app/glossary/principles'
@@ -71,7 +71,7 @@ watch(
   >
     <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
       <MapPinIcon v-if="pinned" class="size-4 text-primary shrink-0" />
-      <KatexInlineElement :text="termTitle(definition)" />
+      <KatexInlineElement :text="listTitle(definition)" />
     </h3>
     <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
       <GlossaryInline :parts="definition.content" />

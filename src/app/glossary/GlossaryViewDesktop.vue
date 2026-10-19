@@ -23,7 +23,7 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { complexityTableFor } from '@/app/glossary/complexity'
-import { termTitle } from '@/app/glossary/glossaryContext'
+import { listTitle, termTitle } from '@/app/glossary/glossaryContext'
 import GlossaryEntryDetails from '@/app/glossary/GlossaryEntryDetails.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { principleTableFor } from '@/app/glossary/principles'
@@ -125,12 +125,12 @@ watch(
           >
             <MapPinIcon class="size-3.5 text-primary shrink-0" />
             <span class="truncate">
-              <KatexInlineElement :text="termTitle(pinnedTerm[1])" />
+              <KatexInlineElement :text="listTitle(pinnedTerm[1])" />
             </span>
           </button>
-          <template v-for="group in groupedTerms" :key="group.letter">
+          <template v-for="group in groupedTerms" :key="group.label">
             <div class="section-label px-4 pt-2 pb-0.5">
-              {{ group.letter }}
+              {{ group.label }}
             </div>
             <button
               v-for="[key, def] in group.terms"
@@ -139,7 +139,7 @@ watch(
               :class="{ 'bg-base-200 font-medium': key === activeTermKey }"
               @click="navigate(activeModulePrefix, key)"
             >
-              <KatexInlineElement :text="termTitle(def)" />
+              <KatexInlineElement :text="listTitle(def)" />
             </button>
           </template>
         </div>

@@ -17,10 +17,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { computed, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import { complexityTermGroups } from '@/app/glossary/complexity'
 import {
   type GlossaryEntries,
+  listTitle,
   provideGlossaryContext,
   termTitle,
 } from '@/app/glossary/glossaryContext'
@@ -63,6 +66,8 @@ export interface GlossaryModule {
   glossary: TooltipRegistry
   // Key of the "main" entry (the framework itself), pinned to the top of the list.
   mainKey: string
+  // Curated term list sections; without them the list is grouped by first letter.
+  groups?: { label: string; keys: string[] }[]
 }
 
 const registries: Record<string, TooltipRegistry> = {
@@ -77,9 +82,19 @@ const registries: Record<string, TooltipRegistry> = {
   'probabilistic-argumentation': probabilisticArgumentationGlossary,
 }
 
+const termGroups: Record<string, GlossaryModule['groups']> = {
+  'common/complexity': complexityTermGroups,
+}
+
 // The module list is JSON so the build's sitemap plugin (vite.config.ts) can read it too.
 export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
-  ({ prefix, label, dir, mainKey }) => ({ prefix, label, mainKey, glossary: registries[dir]! }),
+  ({ prefix, label, dir, mainKey }) => ({
+    prefix,
+    label,
+    mainKey,
+    glossary: registries[dir]!,
+    groups: termGroups[dir],
+  }),
 )
 
 // Combined map for cross-module ref resolution; on a key clash the first module wins.
@@ -97,11 +112,12 @@ for (const m of glossaryModules) {
 
 /**
  * Shared glossary state for the desktop two-panel view and the mobile inline-card view:
- * module selection, search, letter-grouping, and cross-module reference navigation.
+ * module selection, search, term grouping, and cross-module reference navigation.
  */
 export function useGlossary(glossaryTitle: string) {
   const route = useRoute()
   const router = useRouter()
+  const { t } = useI18n({ useScope: 'global' })
 
   const param = (name: string) => {
     const value = route.params[name]
@@ -140,7 +156,7 @@ export function useGlossary(glossaryTitle: string) {
   })
 
   function matchesQuery([key, def]: [string, TooltipDefinition], q: string) {
-    return termTitle(def).toLowerCase().includes(q) || key.toLowerCase().includes(q)
+    return [termTitle(def), listTitle(def), key].some((name) => name.toLowerCase().includes(q))
   }
 
   // The framework entry, pinned above the alphabetical list (hidden when it fails the search).
@@ -156,7 +172,7 @@ export function useGlossary(glossaryTitle: string) {
   const sortedTerms = computed(() =>
     Object.entries(activeModule.value.glossary)
       .filter(([key]) => key !== activeModule.value.mainKey)
-      .sort(([, a], [, b]) => termTitle(a).localeCompare(termTitle(b))),
+      .sort(([, a], [, b]) => listTitle(a).localeCompare(listTitle(b))),
   )
 
   const filteredTerms = computed(() => {
@@ -166,14 +182,31 @@ export function useGlossary(glossaryTitle: string) {
   })
 
   const groupedTerms = computed(() => {
-    const groups: { letter: string; terms: [string, TooltipDefinition][] }[] = []
+    const curated = activeModule.value.groups
+    if (curated) {
+      const terms = new Map(filteredTerms.value)
+      const take = (keys: string[]) =>
+        keys.flatMap((key) => (terms.has(key) ? [[key, terms.get(key)!] as const] : []))
+      const groups = curated.map(({ label, keys }) => ({
+        label: t(`glossary.complexity.groups.${label}`),
+        terms: take(keys),
+      }))
+      // Terms missing from the curated groups still show up, at the end.
+      const grouped = new Set(curated.flatMap(({ keys }) => keys))
+      groups.push({
+        label: t('glossary.complexity.groups.other'),
+        terms: take([...terms.keys()].filter((key) => !grouped.has(key))),
+      })
+      return groups.filter((group) => group.terms.length)
+    }
+    const groups: { label: string; terms: (readonly [string, TooltipDefinition])[] }[] = []
     for (const entry of filteredTerms.value) {
-      const letter = termTitle(entry[1]).charAt(0).toUpperCase()
+      const letter = listTitle(entry[1]).charAt(0).toUpperCase()
       const last = groups[groups.length - 1]
-      if (last?.letter === letter) {
+      if (last?.label === letter) {
         last.terms.push(entry)
       } else {
-        groups.push({ letter, terms: [entry] })
+        groups.push({ label: letter, terms: [entry] })
       }
     }
     return groups

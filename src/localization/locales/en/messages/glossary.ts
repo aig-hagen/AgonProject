@@ -27,6 +27,12 @@ export default {
   more: 'More',
   less: 'Less',
   complexity: {
+    groups: {
+      overviews: 'Overviews',
+      problems: 'Reasoning Problems',
+      classes: 'Complexity Classes',
+      other: 'Other',
+    },
     title: 'Computational complexity',
     problem: 'Problem',
     general: 'General',
@@ -37,7 +43,6 @@ export default {
     trivial: 'trivial',
     complete: '-complete',
     completeShort: '-c',
-    legend: 'X-c: X-complete. * qualified result (hover for details).',
     unlessPNP: 'unless P = NP',
     hard: '-hard',
     in: 'in',
@@ -50,12 +55,11 @@ export default {
     show: 'Show',
     all: 'All',
     none: 'None',
-    legend:
-      '✓ satisfied · ✗ violated · ? open in the literature · empty: not examined. Hover a cell for its source.',
+    legend: '✓ satisfied · ✗ violated · ? open',
     groups: {
-      basic: 'Basic',
+      conflictAndDefence: 'Conflict and Defence',
       reinstatement: 'Reinstatement',
-      numberOfExtensions: 'Number of Extensions',
+      basic: 'Basic',
       structureOfExtensions: 'Structure of Extensions',
       directionality: 'Directionality',
       invariance: 'Invariance',

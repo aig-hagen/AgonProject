@@ -1,6 +1,7 @@
 ---
-label: principles of AF semantics
-title: Principles of Abstract Argumentation Semantics
+label: principles
+title: Principles of Argumentation Semantics
+short: AF Principles
 ---
 
-Which [[principle|principles]] the [[semantics]] of [[AF|abstract argumentation frameworks]] in AgonProject satisfy, as reported in the literature. Results without a source in the literature are left open.
+A principle is a property of a [[semantics]] $\sigma$ that $\sigma(F)$ satisfies for every [[AF|argumentation framework]] $F$. The table shows which principles argumentation semantics satisfy.

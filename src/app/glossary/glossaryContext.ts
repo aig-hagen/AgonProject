@@ -41,6 +41,11 @@ export function termTitle(def: TooltipDefinition): string {
   return def.title ?? def.label
 }
 
+/** The name in the term list, which may drop what its group heading already says. */
+export function listTitle(def: TooltipDefinition): string {
+  return def.short ?? termTitle(def)
+}
+
 /** Shares the entries and navigation with every glossary component below, tooltips included. */
 export function provideGlossaryContext(context: GlossaryContext) {
   provide(GLOSSARY_CONTEXT, context)

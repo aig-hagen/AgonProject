@@ -22,6 +22,7 @@ import type { TooltipContentPart } from '@/modules/common/tooltip/tooltipRegistr
 export interface ParsedGlossaryEntry {
   label: string
   title?: string
+  short?: string
   /** The formal definition: everything before the first `##` heading. */
   content: TooltipContentPart[]
   /** Everything after the definition, rendered only on the glossary page. */
@@ -89,7 +90,7 @@ function parseFrontmatter(block: string): Record<string, string> {
 export function parseGlossaryEntry(source: string): ParsedGlossaryEntry {
   const match = source.match(FRONTMATTER)
   if (!match) throw new Error('Glossary entry is missing its frontmatter')
-  const { label, title } = parseFrontmatter(match[1]!)
+  const { label, title, short } = parseFrontmatter(match[1]!)
   if (!label) throw new Error('Glossary entry frontmatter needs a label')
 
   const rest = source.slice(match[0].length)
@@ -103,6 +104,7 @@ export function parseGlossaryEntry(source: string): ParsedGlossaryEntry {
 
   const entry: ParsedGlossaryEntry = { label, content: content as TooltipContentPart[] }
   if (title) entry.title = title
+  if (short) entry.short = short
   if (body) entry.body = parseBody(body)
   return entry
 }

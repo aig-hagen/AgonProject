@@ -27,6 +27,12 @@ export default {
   more: 'Mehr',
   less: 'Weniger',
   complexity: {
+    groups: {
+      overviews: 'Übersichten',
+      problems: 'Entscheidungsprobleme',
+      classes: 'Komplexitätsklassen',
+      other: 'Weitere',
+    },
     title: 'Berechnungskomplexität',
     problem: 'Problem',
     general: 'Allgemein',
@@ -37,7 +43,6 @@ export default {
     trivial: 'trivial',
     complete: '-vollständig',
     completeShort: '-v',
-    legend: 'X-v: X-vollständig. * eingeschränktes Ergebnis (Details beim Darüberfahren).',
     unlessPNP: 'außer P = NP',
     hard: '-schwer',
     in: 'in',
@@ -50,12 +55,11 @@ export default {
     show: 'Anzeigen',
     all: 'Alle',
     none: 'Keine',
-    legend:
-      '✓ erfüllt · ✗ verletzt · ? in der Literatur offen · leer: nicht untersucht. Quelle beim Darüberfahren.',
+    legend: '✓ erfüllt · ✗ verletzt · ? offen',
     groups: {
-      basic: 'Basic',
+      conflictAndDefence: 'Conflict and Defence',
       reinstatement: 'Reinstatement',
-      numberOfExtensions: 'Number of Extensions',
+      basic: 'Basic',
       structureOfExtensions: 'Structure of Extensions',
       directionality: 'Directionality',
       invariance: 'Invariance',

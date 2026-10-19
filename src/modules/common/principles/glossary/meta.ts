@@ -40,7 +40,7 @@ import {
 } from '@/modules/common/publications/publications'
 
 export const glossaryMeta: GlossaryMeta = {
-  principle: { reference: BG07 },
+  principlesAF: { reference: BG07 },
   languageIndependence: { reference: BG07 },
   conflictFreeness: { reference: BG07 },
   defence: { reference: TV18 },

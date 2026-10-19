@@ -109,7 +109,6 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
         </table>
       </div>
     </section>
-    <p class="text-xs text-base-content/65">{{ t('glossary.complexity.legend') }}</p>
     <section>
       <h3 class="section-label mb-2">{{ t('glossary.complexity.sources') }}</h3>
       <ol class="flex flex-col gap-2">

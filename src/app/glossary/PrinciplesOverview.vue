@@ -24,11 +24,15 @@ import FilterDropdown from '@/app/glossary/FilterDropdown.vue'
 import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import type { PrincipleTable } from '@/modules/common/principles/types'
+import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 
 const { table } = defineProps<{ table: PrincipleTable }>()
 
 const { entries, follow, titleOf } = useGlossaryContext()
+// Touch layouts keep the native title: a tap would both open the tooltip and navigate.
+const { isCompact } = useLayoutMode()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -107,9 +111,18 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
               :key="key"
               class="w-8 min-w-8 text-xs font-medium px-0.5 pb-1.5"
             >
-              <button class="hover:text-primary" :title="labelOf(key)" @click="follow(key)">
-                {{ key }}
-              </button>
+              <component
+                :is="isCompact ? 'span' : TermTooltip"
+                v-bind="isCompact ? {} : { id: key, triggerClass: '' }"
+              >
+                <button
+                  class="hover:text-primary"
+                  :title="isCompact ? labelOf(key) : undefined"
+                  @click="follow(key)"
+                >
+                  {{ key }}
+                </button>
+              </component>
             </th>
           </tr>
         </thead>

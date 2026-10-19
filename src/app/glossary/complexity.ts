@@ -17,11 +17,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { afComplexity } from '@/modules/abstract-argumentation/complexity'
-import type {
-  ComplexityCell,
-  ComplexityRow,
-  ComplexityTable,
-  ShownProblemKey,
+import {
+  type ClassKey,
+  type ComplexityCell,
+  type ComplexityRow,
+  type ComplexityTable,
+  SHOWN_PROBLEMS,
+  type ShownProblemKey,
 } from '@/modules/common/complexity/types'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
 import { adfComplexity } from '@/modules/dialectical-argumentation/complexity'
@@ -70,3 +72,27 @@ export const problemKeys: Record<ShownProblemKey, string> = {
   exist: 'problemExist',
   ne: 'problemNE',
 }
+
+/** The Complexity tab's term list; `label` names a `glossary.complexity.groups` message. */
+export const complexityTermGroups = [
+  { label: 'overviews', keys: complexityTables.map((table) => table.overviewKey) },
+  { label: 'problems', keys: SHOWN_PROBLEMS.map((p) => problemKeys[p]) },
+  {
+    label: 'classes',
+    // Bottom to top of the hierarchy, not alphabetically.
+    keys: [
+      'classL',
+      'classP',
+      'classNP',
+      'classCoNP',
+      'classDP',
+      'classTheta2P',
+      'classSigma2P',
+      'classPi2P',
+      'classD2P',
+      'classSigma3P',
+      'classPi3P',
+      'classPSPACE',
+    ] satisfies ClassKey[],
+  },
+]

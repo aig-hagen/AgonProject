@@ -42,7 +42,7 @@ const parts = computed(() =>
       : t('glossary.complexity.complete'),
     hard: t('glossary.complexity.hard'),
     in: t('glossary.complexity.in'),
-    // The table explains ∉ in its legend.
+    // The overview table leaves the caveat out to keep its cells narrow.
     unless: sourceNumber ? undefined : t('glossary.complexity.unlessPNP'),
   }),
 )

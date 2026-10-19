@@ -18,7 +18,12 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { cellParts, complexityTables, problemKeys } from '@/app/glossary/complexity'
+import {
+  cellParts,
+  complexityTables,
+  complexityTermGroups,
+  problemKeys,
+} from '@/app/glossary/complexity'
 import { glossaryModules } from '@/app/glossary/useGlossary'
 import { complexityGlossary } from '@/modules/common/complexity/glossary'
 import { type ComplexityCell, PROBLEMS, SHOWN_PROBLEMS } from '@/modules/common/complexity/types'
@@ -118,4 +123,9 @@ describe('cellParts', () => {
       { ref: 'classOutputP' },
     ])
   })
+})
+
+test('every Complexity term sits in exactly one term-list group', () => {
+  const grouped = complexityTermGroups.flatMap((group) => group.keys)
+  expect([...grouped].sort()).toEqual(Object.keys(complexityGlossary).sort())
 })

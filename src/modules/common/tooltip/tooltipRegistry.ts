@@ -29,6 +29,8 @@ export interface TooltipDefinition {
   label: string
   /** Optional bold header line shown at the top of the tooltip panel. */
   title?: string
+  /** Shorter name for the glossary's term list, where a group heading gives the context. */
+  short?: string
   content: TooltipContentPart[]
   /** Longer content shown only on the glossary page. */
   body?: GlossaryBlock[]

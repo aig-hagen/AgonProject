@@ -88,6 +88,7 @@ describe('parseGlossaryEntry', () => {
 
   test('keeps colons in frontmatter values', () => {
     expect(parseGlossaryEntry('---\nlabel: x\ntitle: A: B\n---\nT').title).toBe('A: B')
+    expect(parseGlossaryEntry('---\nlabel: x\nshort: S\n---\nT').short).toBe('S')
   })
 
   test('rejects citations in the definition', () => {

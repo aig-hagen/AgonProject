@@ -1,6 +1,7 @@
 ---
 label: $\mathsf{NP}$
 title: Complexity Class $\mathsf{NP}$
+short: $\mathsf{NP}$
 ---
 
 The decision problems of the form $\exists y\, W(x, y)$, where $y$ has size polynomial in $|x|$ and $W$ is decidable in polynomial time: $x$ is a yes-instance if and only if it has a short witness $y$ (e.g. a satisfying assignment) that can be checked efficiently. Equivalently, the problems solvable by a nondeterministic polynomial-time algorithm.

@@ -122,9 +122,9 @@ watch(
         :data-term="pinnedTerm[0]"
         pinned
       />
-      <template v-for="group in groupedTerms" :key="group.letter">
+      <template v-for="group in groupedTerms" :key="group.label">
         <div class="text-xs font-bold text-secondary tracking-wide mt-1.5 px-0.5">
-          {{ group.letter }}
+          {{ group.label }}
         </div>
         <GlossaryCardMobile
           v-for="[key, def] in group.terms"

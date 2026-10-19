@@ -1,6 +1,7 @@
 ---
 label: complexity of AF reasoning
 title: Complexity of Reasoning in Abstract Argumentation
+short: AF Complexity
 ---
 
-The computational complexity of the standard reasoning problems for [[AF|abstract argumentation frameworks]] under the semantics available in AgonProject.
+The computational complexity of the standard reasoning problems for [[semantics]] of [[AF|abstract argumentation frameworks]].

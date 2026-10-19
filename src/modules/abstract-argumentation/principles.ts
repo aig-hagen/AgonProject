@@ -72,6 +72,15 @@ export const afPrinciples: PrincipleTable = {
       key: 'basic',
       principles: [
         'languageIndependence',
+        'existence',
+        'nonTriviality',
+        'uniqueStatus',
+        'decisiveness',
+      ],
+    },
+    {
+      key: 'conflictAndDefence',
+      principles: [
         'conflictFreeness',
         'indirectCF',
         'naivety',
@@ -85,10 +94,6 @@ export const afPrinciples: PrincipleTable = {
       principles: ['reinstatement', 'weakReinstatement', 'cfReinstatement', 'fundamentalLemma'],
     },
     {
-      key: 'numberOfExtensions',
-      principles: ['existence', 'nonTriviality', 'uniqueStatus', 'decisiveness'],
-    },
-    {
       key: 'structureOfExtensions',
       principles: [
         'iMaximality',
@@ -100,6 +105,14 @@ export const afPrinciples: PrincipleTable = {
       ],
     },
     {
+      key: 'modularity',
+      principles: ['sccRecursiveness', 'serialisability', 'modularisation', 'confluence'],
+    },
+    {
+      key: 'invariance',
+      principles: ['rationality', 'succinctness'],
+    },
+    {
       key: 'directionality',
       principles: [
         'directionality',
@@ -109,14 +122,6 @@ export const afPrinciples: PrincipleTable = {
         'crashResistance',
         'contextFreeness',
       ],
-    },
-    {
-      key: 'invariance',
-      principles: ['rationality', 'succinctness'],
-    },
-    {
-      key: 'modularity',
-      principles: ['sccRecursiveness', 'serialisability', 'modularisation', 'confluence'],
     },
     {
       key: 'decomposition',
@@ -148,6 +153,8 @@ export const afPrinciples: PrincipleTable = {
   ],
   hiddenByDefault: [
     'fundamentalLemma',
+    'nonTriviality',
+    'decisiveness',
     'contextFreeness',
     'rationality',
     'succinctness',
