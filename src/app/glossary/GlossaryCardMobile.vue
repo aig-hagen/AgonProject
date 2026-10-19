@@ -26,6 +26,9 @@ import ComplexityOverview from '@/app/glossary/ComplexityOverview.vue'
 import ComplexityResults from '@/app/glossary/ComplexityResults.vue'
 import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
+import { principleColumnFor, principleRowFor, principleTableFor } from '@/app/glossary/principles'
+import PrinciplesOverview from '@/app/glossary/PrinciplesOverview.vue'
+import PrinciplesResults from '@/app/glossary/PrinciplesResults.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
@@ -53,6 +56,10 @@ const { t } = useI18n({ useScope: 'global' })
 
 const overviewTable = computed(() => complexityTableFor(termKey))
 const hasComplexity = computed(() => !!complexityRowFor(termKey) || !!overviewTable.value)
+const principleOverview = computed(() => principleTableFor(termKey))
+const hasPrinciples = computed(
+  () => !!principleOverview.value || !!principleRowFor(termKey) || !!principleColumnFor(termKey),
+)
 
 const expanded = ref(active)
 watch(
@@ -91,7 +98,7 @@ watch(
       compact
       class="mt-2.5 pt-2.5 border-t border-base-300"
     />
-    <template v-if="definition.body || backlinks.length || hasComplexity">
+    <template v-if="definition.body || backlinks.length || hasComplexity || hasPrinciples">
       <div v-if="expanded" class="mt-2.5 pt-2.5 border-t border-base-300 text-sm">
         <GlossaryBody
           v-if="definition.body"
@@ -107,6 +114,19 @@ watch(
           @follow="emit('follow', $event)"
         />
         <ComplexityResults
+          :term-key="termKey"
+          :entries="entries"
+          class="mt-3"
+          @follow="emit('follow', $event)"
+        />
+        <PrinciplesOverview
+          v-if="principleOverview"
+          :table="principleOverview"
+          :entries="entries"
+          class="mt-3"
+          @follow="emit('follow', $event)"
+        />
+        <PrinciplesResults
           :term-key="termKey"
           :entries="entries"
           class="mt-3"

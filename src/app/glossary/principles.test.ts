@@ -18,7 +18,12 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { principleTables } from '@/app/glossary/principles'
+import {
+  principleColumnFor,
+  principleRowFor,
+  principleStatus,
+  principleTables,
+} from '@/app/glossary/principles'
 import { glossaryModules } from '@/app/glossary/useGlossary'
 import * as publications from '@/modules/common/publications/publications'
 
@@ -60,4 +65,12 @@ describe.each(principleTables)('$overviewKey', (table) => {
     const sources = Object.values(table.cardinality).flatMap((cell) => cell.source ?? [])
     expect(sources.filter((source) => !knownSources.has(source))).toEqual([])
   })
+})
+
+test('a principle lists the semantics it was examined for', () => {
+  const column = principleColumnFor('directionality')!
+  const status = Object.fromEntries(column.cells.map(([key, cell]) => [key, principleStatus(cell)]))
+  expect(status.GR).toBe('satisfied')
+  expect(status.ST).toBe('violated')
+  expect(principleRowFor('GR')?.row.directionality).toBe(column.table.rows.GR!.directionality)
 })

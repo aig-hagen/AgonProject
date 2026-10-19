@@ -14,9 +14,9 @@
   count-dec; ADF: S2V ne). Only ticked ones go into `complexity.ts`.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search),
-  guarantees (always exists / unique / can be empty?), relations between semantics as a lattice and
-  principles satisfied (both central data, like complexity), origin, and where it shows up in
-  AgonProject.
+  guarantees (always exists / unique / can be empty?), relations between semantics as a lattice,
+  origin, and where it shows up in AgonProject. (Principles satisfied and number of extensions are
+  done, see [`principles-code-plan.md`](principles-code-plan.md).)
 
 ## Mobile
 

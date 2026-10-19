@@ -78,18 +78,17 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 
 ### Phase 4 — UI
 
-- [ ] `app/glossary/principles.ts`: `principleRowFor(termKey)`, `principleTableFor(overviewKey)`
-      (as `complexity.ts`).
-- [ ] `PrinciplesResults.vue` on semantics entries: cardinality, then ✓ / ✗ per principle group,
-      citation on hover/click, link to the overview.
-- [ ] `PrinciplesOverview.vue`: one table (semantics × principles, grouped), with selectors for
-      which principles and which semantics to show; `PrincipleCellView.vue`.
-- [ ] Principle entries list which semantics satisfy / violate them (reverse view of the same data).
-- [ ] Mobile: `GlossaryCardMobile.vue` handling as for complexity.
-- [ ] i18n strings (`glossary.principles.*`).
+- [x] `app/glossary/principles.ts`: `principleRowFor`, `principleColumnFor`, `principleTableFor`,
+      status helpers.
+- [x] `PrinciplesResults.vue`: on semantics entries the number of extensions and ✓ / ✗ / ? per
+      principle group with source and remark; on principle entries "Satisfied by / Violated by /
+      Open for" with semantics links. Link to the overview.
+- [x] `PrinciplesOverview.vue`: one table (principles × semantics, both grouped) with selectors
+      for which semantics and principles to show, cardinality row, source on hover;
+      `PrincipleCellView.vue`.
+- [x] Desktop and mobile glossary views; English and German strings (`glossary.principles.*`).
 
 ### Phase 5 — Wrap-up
 
-- [ ] `npm run lint`, `format`, `format:check`, `docs:check`; tests.
-- [ ] CHANGELOG entry (Added: principles in the glossary).
-- [ ] TODO.md #33: tick "principles satisfied".
+- [x] Lint, format, type-check, tests; CHANGELOG entry; TODO #33 updated.
+- [ ] Lars: visual check; confirm the principle grouping; refine presentation later.
