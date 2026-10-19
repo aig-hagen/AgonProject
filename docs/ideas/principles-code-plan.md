@@ -45,7 +45,7 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 - [x] BT26 as a preprint: new `preprint` kind (types, `format.ts`, `lit:bib` → `@misc`), entry from
       the Zenodo record (doi:10.5281/zenodo.19048256, dated 2026), PDF filed. Grid
       locators for BT26 cite numbered results only (Zenodo pages differ from the AIJ draft).
-- [ ] `citedIn.test.ts` ("every publication is cited somewhere") fails until Phase 2 wires the
+- [x] `citedIn.test.ts` ("every publication is cited somewhere") fails until Phase 2 wires the
       principle cells into `citedIn()` (as complexity cells are).
 
 ### Phase 2 — Data
@@ -75,8 +75,8 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
       table; its AF entry stays for SCF2. Definitions checked against the defining papers (TV18, BG07, DRT20,
       BBU20a, BlT24, BU22, CT19, CCD12, DUW22, FU21, BT26, BLW16, BBU20); `meta.ts` names the
       defining paper as reference.
-- [ ] Top-down / bottom-up / full decomposability are paraphrased (BBCGTV14 itself not read; FU21
-      restates full decomposability). Check against BBCGTV14 Defs. 15–17 once fetched.
+- [x] Top-down / bottom-up / full decomposability checked against BBCGTV14 Defs. 15–17; top-down
+      and bottom-up now name the canonical local function.
 - [x] Test: overview entry and a glossary entry for every principle in the table.
 
 ### Phase 4 — UI

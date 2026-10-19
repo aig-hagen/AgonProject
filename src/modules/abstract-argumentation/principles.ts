@@ -188,14 +188,14 @@ export const afPrinciples: PrincipleTable = {
       existence: unreferenced(true),
       uniqueStatus: unreferenced(false),
       allowingAbstention: open(),
-      tightness: holds(DDLW15, 'Prop. 3.6(1) (TR numbering)'),
-      conflictSensitiveness: holds(DDLW15, 'Prop. 3.6 + Lemma 3.9 (TR numbering)', {
-        via: 'tight (DDLW15 Prop. 3.6) ⇒ conflict-sensitive (Lemma 3.9)',
+      tightness: holds(DDLW15, 'Prop. 1(1), p. 157'),
+      conflictSensitiveness: holds(DDLW15, 'Prop. 1 (p. 157) + Lemma 3 (p. 158)', {
+        via: 'tight (DDLW15 Prop. 1) ⇒ conflict-sensitive (Lemma 3)',
       }),
-      comClosure: holds(DDLW15, 'Lemma 3.16 (TR numbering)', {
-        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 3.16)',
+      comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
+        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
-      downwardClosure: holds(DDLW15, 'Prop. 3.6(1) (TR numbering)'),
+      downwardClosure: holds(DDLW15, 'Prop. 1(1), p. 157'),
       languageIndependence: unreferenced(true),
       directionality: open(),
       weakDirectionality: open(),
@@ -234,9 +234,9 @@ export const afPrinciples: PrincipleTable = {
       uniqueStatus: unreferenced(false),
       allowingAbstention: unreferenced(true),
       tightness: open(),
-      conflictSensitiveness: holds(DDLW15, 'Prop. 3.11(1) (TR numbering)'),
-      comClosure: holds(DDLW15, 'Lemma 3.16 (TR numbering)', {
-        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 3.16)',
+      conflictSensitiveness: holds(DDLW15, 'Prop. 2(1), p. 158'),
+      comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
+        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: unreferenced(true),
@@ -299,12 +299,12 @@ export const afPrinciples: PrincipleTable = {
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: holds(BCG11, '§3.4 Def. 46 text; Table 2'),
-      tightness: fails(DDLW15, 'Example 3.18 + Lemma 3.9 (TR numbering)', {
-        via: 'Every tight extension-set is conflict-sensitive (DDLW15 Lemma 3.9)',
+      allowingAbstention: holds(BCG11, 'Def. 46 and text after it, p. 393; Table 2, p. 395'),
+      tightness: fails(DDLW15, 'Example 5 (p. 159) + Lemma 3 (p. 158)', {
+        via: 'Every tight extension-set is conflict-sensitive (DDLW15 Lemma 3)',
       }),
-      conflictSensitiveness: fails(DDLW15, 'Example 3.18 (TR numbering)'),
-      comClosure: holds(DDLW15, "Prop. 3.17 (TR numbering; AIJ 'Proposition 4' per TV18)"),
+      conflictSensitiveness: fails(DDLW15, 'Example 5, p. 159'),
+      comClosure: holds(DDLW15, 'Prop. 4, p. 159'),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 55, p. 691; Table 1 p. 688'),
@@ -373,15 +373,15 @@ export const afPrinciples: PrincipleTable = {
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: holds(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: holds(BCG11, '§3.4 text after Def. 46', {
+      allowingAbstention: holds(BCG11, '§3.4, text after Def. 46, p. 393', {
         remark:
           'Unique-status semantics satisfy this vacuously: with one extension, no argument can be in one extension and attacked by another (BCG11 §3.4: "technically comply").',
       }),
       tightness: holds(TV18, 'Obs. 11, PDF p. 34'),
       conflictSensitiveness: holds(TV18, 'text PDF p. 36', {
-        via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3.9)',
+        via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3)',
       }),
-      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 3.16)' }),
+      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 55, p. 691; Table 1 p. 688'),
@@ -451,14 +451,11 @@ export const afPrinciples: PrincipleTable = {
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: fails(BCG11, '§3.4 text; Table 2'),
-      tightness: fails(DDLW15, "Example 3.12 (TR numbering; AIJ 'Example 4' per TV18)"),
-      conflictSensitiveness: holds(
-        DDLW15,
-        "Prop. 3.11(2–3) (TR numbering; AIJ 'Proposition 2' per TV18)",
-      ),
-      comClosure: holds(DDLW15, 'Lemma 3.16 (TR numbering)', {
-        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 3.16)',
+      allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
+      tightness: fails(DDLW15, 'Example 4, p. 159'),
+      conflictSensitiveness: holds(DDLW15, 'Prop. 2(2), p. 158'),
+      comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
+        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
@@ -528,21 +525,21 @@ export const afPrinciples: PrincipleTable = {
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: fails(BCG11, '§3.4 text; Table 2'),
-      tightness: holds(DDLW15, 'Prop. 3.6(3–4) (TR numbering)'),
-      conflictSensitiveness: holds(DDLW15, 'Prop. 3.6 + Lemma 3.9 (TR numbering)', {
-        via: 'tight (DDLW15 Prop. 3.6) ⇒ conflict-sensitive (Lemma 3.9)',
+      allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
+      tightness: holds(DDLW15, 'Prop. 1(4), p. 157'),
+      conflictSensitiveness: holds(DDLW15, 'Prop. 1 (p. 157) + Lemma 3 (p. 158)', {
+        via: 'tight (DDLW15 Prop. 1) ⇒ conflict-sensitive (Lemma 3)',
       }),
-      comClosure: holds(DDLW15, 'Lemma 3.16 (TR numbering)', {
-        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 3.16)',
+      comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
+        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: fails(BG07, 'Fig. 4 text, p. 692'),
       weakDirectionality: holds(TV18, 'text PDF p. 24'),
       semiDirectionality: fails(TV18, 'text PDF p. 24'),
-      nonInterference: fails(BCG11, '§3.5 text after Def. 51; Table 2'),
-      crashResistance: fails(BCG11, '§3.5 text after Def. 48; Table 2'),
+      nonInterference: fails(BCG11, '§3.5, text after Def. 51, p. 394; Table 2, p. 395'),
+      crashResistance: fails(BCG11, '§3.5, text after Def. 48, p. 394; Table 2, p. 395'),
       rationality: holds(BLW16, 'Def. 2 and text after it (arXiv v1)'),
       selfAttackerNeglection: fails(BBU22, 'Table 1, p. 23 (Def. 5.12, p. 22)'),
       succinctness: fails(GW13, 'Thm. 5.8, p. 944', {
@@ -646,14 +643,11 @@ export const afPrinciples: PrincipleTable = {
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: fails(BCG11, '§3.4 text; Table 2'),
-      tightness: fails(DDLW15, "Example 3.12 (TR numbering; AIJ 'Example 4' per TV18)"),
-      conflictSensitiveness: holds(
-        DDLW15,
-        "Prop. 3.11(2–3) (TR numbering; AIJ 'Proposition 2' per TV18)",
-      ),
-      comClosure: holds(DDLW15, 'Lemma 3.16 (TR numbering)', {
-        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 3.16)',
+      allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
+      tightness: fails(DDLW15, 'Example 4, p. 159'),
+      conflictSensitiveness: holds(DDLW15, 'Prop. 2(3), p. 158'),
+      comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
+        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
@@ -709,15 +703,15 @@ export const afPrinciples: PrincipleTable = {
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: holds(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: holds(BCG11, '§3.4 text after Def. 46', {
+      allowingAbstention: holds(BCG11, '§3.4, text after Def. 46, p. 393', {
         remark:
           'Unique-status semantics satisfy this vacuously: with one extension, no argument can be in one extension and attacked by another (BCG11 §3.4: "technically comply").',
       }),
       tightness: holds(TV18, 'Obs. 11, PDF p. 34'),
       conflictSensitiveness: holds(TV18, 'text PDF p. 36', {
-        via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3.9)',
+        via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3)',
       }),
-      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 3.16)' }),
+      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 58, p. 692'),
@@ -918,12 +912,12 @@ export const afPrinciples: PrincipleTable = {
       uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
       allowingAbstention: fails(TV18, 'Fig. 6, PDF p. 21'),
-      tightness: holds(DDLW15, 'Prop. 3.6(2) + proof (TR numbering)'),
-      conflictSensitiveness: holds(DDLW15, 'Prop. 3.6 + Lemma 3.9 (TR numbering)', {
-        via: 'tight (DDLW15 Prop. 3.6) ⇒ conflict-sensitive (Lemma 3.9)',
+      tightness: holds(DDLW15, 'Prop. 1(2) and its proof, p. 157'),
+      conflictSensitiveness: holds(DDLW15, 'Prop. 1 (p. 157) + Lemma 3 (p. 158)', {
+        via: 'tight (DDLW15 Prop. 1) ⇒ conflict-sensitive (Lemma 3)',
       }),
-      comClosure: holds(DDLW15, 'Lemma 3.16 (TR numbering)', {
-        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 3.16)',
+      comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
+        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(TV18, 'Principle 1 text, PDF p. 13'),
@@ -947,36 +941,36 @@ export const afPrinciples: PrincipleTable = {
       conflictFreeness: holds(TV18, 'Principle 2 text, PDF p. 13'),
       indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, PDF pp. 16–17'),
       naivety: holds(TV18, 'Principle 6 text, PDF p. 15'),
-      admissibility: fails(BCG11, 'Table 2 (author preprint p. 29)'),
+      admissibility: fails(BCG11, 'Table 2, p. 395'),
       strongAdmissibility: fails(TV18, 'Principle 5 text, PDF p. 15', {
         via: 'Strong admissibility ⇒ admissibility (TV18 Obs. 2)',
       }),
       defence: fails(TV18, 'Principle 3 text + Fig. 1, PDF p. 14'),
       reductAdmissibility: open(),
       semiQualifiedAdm: open(),
-      reinstatement: fails(BCG11, 'Table 2 (author preprint p. 29)'),
+      reinstatement: fails(BCG11, 'Table 2, p. 395'),
       weakReinstatement: fails(DG16, 'Prop. 3.14 (preprint)'),
       cfReinstatement: holds(DG16, 'Prop. 3.12 (preprint)'),
-      iMaximality: holds(BCG11, 'Table 2 (author preprint p. 29)'),
+      iMaximality: holds(BCG11, 'Table 2, p. 395'),
       existence: holds(TV18, 'Table 4, PDF p. 32'),
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: fails(BCG11, '§3.4 text; Table 2'),
-      tightness: holds(DDLW15, 'Prop. 3.6(3–4) (TR numbering)'),
-      conflictSensitiveness: holds(DDLW15, 'Prop. 3.6 + Lemma 3.9 (TR numbering)', {
-        via: 'tight (DDLW15 Prop. 3.6) ⇒ conflict-sensitive (Lemma 3.9)',
+      allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
+      tightness: holds(DDLW15, 'Prop. 1(3), p. 157'),
+      conflictSensitiveness: holds(DDLW15, 'Prop. 1 (p. 157) + Lemma 3 (p. 158)', {
+        via: 'tight (DDLW15 Prop. 1) ⇒ conflict-sensitive (Lemma 3)',
       }),
-      comClosure: holds(DDLW15, 'Lemma 3.16 (TR numbering)', {
-        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 3.16)',
+      comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
+        via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(TV18, 'Principle 1 text, PDF p. 13'),
-      directionality: fails(BCG11, '§3.5 text after Def. 54, Fig. 8; Table 2'),
+      directionality: fails(BCG11, 'Table 2 and text after it (Fig. 8), p. 395'),
       weakDirectionality: fails(TV18, 'Fig. 8, PDF p. 24'),
       semiDirectionality: fails(TV18, 'Fig. 9, PDF p. 25'),
-      nonInterference: holds(BCG11, '§3.5 text after Def. 51; Table 2'),
-      crashResistance: holds(BCG11, '§3.5 text after Def. 48; Table 2'),
+      nonInterference: holds(BCG11, '§3.5, text after Def. 51, p. 394; Table 2, p. 395'),
+      crashResistance: holds(BCG11, '§3.5, text after Def. 48, p. 394; Table 2, p. 395'),
       rationality: holds(BLW16, 'Def. 2 and text after it (arXiv v1)'),
       succinctness: fails(
         GW13,
@@ -1053,12 +1047,12 @@ export const afPrinciples: PrincipleTable = {
       nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
       uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
       decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: fails(BCG11, '§3.4 text; Table 2'),
+      allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
       tightness: holds(TV18, 'Obs. 12, PDF p. 35', { via: 'CF2 ⊆ naive (BG07 Lemma 40)' }),
       conflictSensitiveness: holds(TV18, 'text PDF p. 36', {
-        via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3.9)',
+        via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3)',
       }),
-      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 3.16)' }),
+      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
       downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 55, p. 691; Table 1 p. 688'),

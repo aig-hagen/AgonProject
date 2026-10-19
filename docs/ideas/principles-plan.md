@@ -127,15 +127,18 @@ report any principle not in the catalogue.
 - [x] Remaining calls: via cells shown as normal results (via info kept in the data);
       `ADM|directionality` ✓ without reference; weak admissibility stays BBU22; CF2/STG2
       decomposability kept as DRT20 Table 1 (revisit later); CF2 rationality not added.
-- [ ] Fetch the must-have papers (BBU20a, BBCGTV14, BCG11, DDLW15, published DT25) and recheck
-      their cells' locators.
+- [x] Fetch the must-have papers and recheck their cells' locators: done for BBCGTV14, DDLW15,
+      BCG11 (BBU20a was already the KR version). BBCGTV14 has no CF2/STG2 results. Final (Lars):
+      no further papers; DT25 stays the manuscript, GW13, CT23 and the published CCD12/BlT24
+      versions stay unread.
 
 ### Phase 4 — Wrap-up
 
 - [x] Final grid and caveats in `literature/notes/principles.md` (conventions, variant definitions,
       conflicting sources, open cells), mirroring `complexity.md`.
-- [ ] Separate plan for code: `principles.ts` (like `ComplexityTable`), one glossary entry per
-      principle, principles table on each semantics entry.
+- [x] Separate plan for code ([`principles-code-plan.md`](principles-code-plan.md)):
+      `principles.ts` (like `ComplexityTable`), one glossary entry per principle, principles table
+      on each semantics entry.
 
 ## Open questions
 
