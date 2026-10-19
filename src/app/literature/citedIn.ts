@@ -89,9 +89,6 @@ export function citedIn(
       for (const cell of Object.values(row))
         addTerm(cell?.source && publicationKey(cell.source), key)
     }
-    for (const [key, cell] of Object.entries(table.cardinality)) {
-      addTerm(cell.source && publicationKey(cell.source), key)
-    }
   }
   for (const module of moduleConfigs) {
     for (const pub of module.publications ?? []) {

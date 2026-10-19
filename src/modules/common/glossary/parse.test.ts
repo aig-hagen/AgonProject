@@ -132,18 +132,17 @@ describe('createGlossary', () => {
 
   afterEach(() => setGlossaryLocale('en'))
 
-  test('swaps in translations and marks English fallbacks', async () => {
+  test('swaps in translations and falls back to English', async () => {
     const registry = createGlossary(english, german)
     const merged = { ...registry }
     await setGlossaryLocale('de')
     expect(registry.B).toEqual({ label: 'b', content: ['Deutsches B.'] })
-    expect(registry.A).toMatchObject({ content: ['English A.'], untranslated: true })
+    expect(registry.A).toMatchObject({ content: ['English A.'] })
     // Entries update in place, so spread copies follow the switch.
     expect(merged.B!.content).toEqual(['Deutsches B.'])
 
     await setGlossaryLocale('en')
     expect(registry.B!.body).toBeDefined()
-    expect(registry.A!.untranslated).toBeUndefined()
   })
 
   test('localizes registries created after the switch', async () => {

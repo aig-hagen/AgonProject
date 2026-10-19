@@ -18,7 +18,6 @@
 -->
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 
 import { principleStatus, statusMark } from '@/app/glossary/principles'
 import type { PrincipleCell } from '@/modules/common/principles/types'
@@ -30,20 +29,9 @@ const { cell, compact } = defineProps<{
   compact?: boolean
 }>()
 
-const { t } = useI18n({ useScope: 'global' })
-
 const status = computed(() => principleStatus(cell))
-const sourceText = computed(() =>
-  cell.source
-    ? [shortLabel(cell.source), cell.locator].filter(Boolean).join(', ')
-    : cell.unreferenced
-      ? t('glossary.principles.unreferenced')
-      : '',
-)
 const details = computed(() =>
-  [t(`glossary.principles.${status.value}`), sourceText.value, cell.remark]
-    .filter(Boolean)
-    .join(' · '),
+  [cell.source && shortLabel(cell.source), cell.remark].filter(Boolean).join(' · '),
 )
 const markClass = computed(
   () =>
@@ -62,7 +50,6 @@ const markClass = computed(
   <span v-else class="flex flex-col">
     <span>
       <span :class="markClass">{{ statusMark[status] }}</span>
-      {{ t(`glossary.principles.${status}`) }}
       <a
         v-if="cell.source"
         :href="publicationHref(cell.source)"
@@ -70,10 +57,7 @@ const markClass = computed(
         target="_blank"
         rel="noopener noreferrer"
         class="text-xs text-base-content/65 hover:text-primary"
-        >· {{ sourceText }}</a
-      >
-      <span v-else-if="cell.unreferenced" class="text-xs text-base-content/65">
-        · {{ sourceText }}</span
+        >{{ shortLabel(cell.source) }}</a
       >
     </span>
     <span v-if="cell.remark" class="text-xs text-base-content/65">{{ cell.remark }}</span>

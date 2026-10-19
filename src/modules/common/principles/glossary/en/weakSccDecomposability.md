@@ -1,5 +1,5 @@
 ---
-label: weak SCC decomposability
+label: Weak SCC Decomposability
 title: Weak SCC Decomposability
 ---
 

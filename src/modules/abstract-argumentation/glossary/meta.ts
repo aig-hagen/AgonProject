@@ -20,6 +20,7 @@ import type { GlossaryMeta } from '@/modules/common/glossary/types'
 import {
   AB13,
   BBU20,
+  BG07,
   BGG05,
   BH01,
   BT22,
@@ -68,6 +69,7 @@ export const glossaryMeta: GlossaryMeta = {
   reduct: { reference: BBU20 },
   semantics: { reference: D95 },
   unattackedInitial: { reference: T22 },
+  unattackedSet: { reference: BG07 },
   unchallengedInitial: { reference: T22 },
   challengedInitial: { reference: T22 },
   extension: { reference: D95 },

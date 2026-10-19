@@ -77,9 +77,7 @@ async function localize(glossary: LocalizedGlossary, locale: string) {
   if (locale !== activeLocale) return
   const translated = buildRegistry(Object.fromEntries(sources), glossary.meta)
   for (const [key, english] of Object.entries(glossary.english)) {
-    const next =
-      translated[key] ?? (locale === SOURCE_LOCALE ? english : { ...english, untranslated: true })
-    replaceEntry(glossary.registry[key]!, next)
+    replaceEntry(glossary.registry[key]!, translated[key] ?? english)
   }
 }
 

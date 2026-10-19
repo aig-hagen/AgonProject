@@ -26,7 +26,7 @@ import ComplexityOverview from '@/app/glossary/ComplexityOverview.vue'
 import ComplexityResults from '@/app/glossary/ComplexityResults.vue'
 import GlossaryBody from '@/app/glossary/GlossaryBody.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
-import { principleColumnFor, principleRowFor, principleTableFor } from '@/app/glossary/principles'
+import { principleRowFor, principleTableFor } from '@/app/glossary/principles'
 import PrinciplesOverview from '@/app/glossary/PrinciplesOverview.vue'
 import PrinciplesResults from '@/app/glossary/PrinciplesResults.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
@@ -57,9 +57,7 @@ const { t } = useI18n({ useScope: 'global' })
 const overviewTable = computed(() => complexityTableFor(termKey))
 const hasComplexity = computed(() => !!complexityRowFor(termKey) || !!overviewTable.value)
 const principleOverview = computed(() => principleTableFor(termKey))
-const hasPrinciples = computed(
-  () => !!principleOverview.value || !!principleRowFor(termKey) || !!principleColumnFor(termKey),
-)
+const hasPrinciples = computed(() => !!principleOverview.value || !!principleRowFor(termKey))
 
 const expanded = ref(active)
 watch(
@@ -78,12 +76,6 @@ watch(
     <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
       <MapPinIcon v-if="pinned" class="size-4 text-primary shrink-0" />
       <KatexInlineElement :text="definition.title ?? definition.label" />
-      <span
-        v-if="definition.untranslated"
-        class="badge badge-xs badge-ghost ml-auto shrink-0 font-normal text-base-content/65"
-      >
-        {{ t('glossary.englishOnly') }}
-      </span>
     </h3>
     <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
       <GlossaryInline

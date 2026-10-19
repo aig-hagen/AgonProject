@@ -28,7 +28,7 @@ the glossary wiki in [`TODO.md`](TODO.md). Code integration is a separate, later
 | ------ | ---------------------------------------------------------------------------- | ---------------------- |
 | BT26   | Bengel & Thimm, _Serialisability in Formal Argumentation_, preprint (Zenodo) | `literature/`          |
 | BG07   | Baroni & Giacomin, _On principle-based evaluation…_, AIJ 171 (2007)          | `literature/incoming/` |
-| TV17   | van der Torre & Vesic, _The principle-based approach…_, IfCoLog (2017)       | `literature/incoming/` |
+| TV18   | van der Torre & Vesic, _The principle-based approach…_, IfCoLog (2017)       | `literature/incoming/` |
 | BGG05  | Baroni, Giacomin, Guida, _SCC-recursiveness_, AIJ 168 (2005)                 | `literature/`          |
 | DRT20  | Dauphin, Rienstra, van der Torre, principles for weak admissibility          | `literature/`          |
 | others | per-semantics papers in `literature/` (see agent briefs)                     | `literature/`          |
@@ -38,7 +38,7 @@ Def. 2.6 and Table 1 (pp. 10–12) are the seed.
 
 ## Principle catalogue
 
-Lives in `literature/notes/principles.md` (30 entries after Phase 0: BG07, TV17's Principles 1–23,
+Lives in `literature/notes/principles.md` (30 entries after Phase 0: BG07, TV18's Principles 1–23,
 BT26's Modularisation, DRT20's four). New principles found by agents are appended there.
 
 ## Cell format
@@ -55,7 +55,7 @@ Each agent returns one JSON object per cell:
   "quote": "semi-stable semantics does not satisfy the directionality principle",
   "conditions": "finite AFs",
   "confidence": "high",
-  "corroboration": ["TV17 Table 2"]
+  "corroboration": ["TV18 Table 2"]
 }
 ```
 
@@ -69,8 +69,8 @@ Each agent returns one JSON object per cell:
 
 ### Phase 0 — Groundwork (main session)
 
-- [x] Lars places BG07 and TV17 in `literature/incoming/`; add both to `references.bib`
-      (keys `BG07`, `TV17` — the local vdTV copy is the 2017 IfCoLog version).
+- [x] Lars places BG07 and TV18 in `literature/incoming/`; add both to `references.bib`
+      (keys `BG07`, `TV18` — the local vdTV copy is the 2017 IfCoLog version).
 - [x] Write `literature/notes/principles.md`: catalogue with origin, informal idea, formal
       definition in Agon notation, known implications between principles (e.g. Admissibility ⇒
       Reduct Admissibility).
@@ -89,7 +89,7 @@ report any principle not in the catalogue.
 
 | Agent       | Semantics                                      | Start from                      |
 | ----------- | ---------------------------------------------- | ------------------------------- |
-| A classical | CF, ADM, CO, GR, PR, ST, SST, ID, NA, STG, CF2 | BG07, TV17, BGG05, D95, DMT07   |
+| A classical | CF, ADM, CO, GR, PR, ST, SST, ID, NA, STG, CF2 | BG07, TV18, BGG05, D95, DMT07   |
 | B adm-based | SAD, EA, IS, UC                                | C07, C14, T22, BT22, BT26       |
 | C non-adm   | STG2, SCF2, UD, SUD                            | DG16, CT19, T23, BRU24          |
 | D weak      | WAD, WCO, WGR, WPR                             | BBU20, DRT20, Baumann et al. 22 |

@@ -61,7 +61,7 @@ src/modules/<type>/glossary/
 └── de/<term>.md # optional translation, loaded when German is selected
 ```
 
-- `createGlossary` (`common/glossary/load.ts`) returns a reactive registry. `applyLocale` calls `setGlossaryLocale`, which loads the locale's files and updates every entry in place. A term with no translation falls back to English and gets a quiet "English only" badge on the glossary page.
+- `createGlossary` (`common/glossary/load.ts`) returns a reactive registry. `applyLocale` calls `setGlossaryLocale`, which loads the locale's files and updates every entry in place. A term with no translation falls back to English.
 - To translate a term, copy `en/<term>.md` to `<locale>/<term>.md` and translate the frontmatter `label`/`title` and the text. Keep every `[[ref]]` and `[@KEY]` as is; `glossaryData.test.ts` fails if a translation links or cites differently from its English twin.
 - German glossary text needs review by a domain expert before it is merged.
 

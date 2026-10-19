@@ -1,6 +1,6 @@
 ---
-label: modularisation
+label: Modularisation
 title: Modularisation
 ---
 
-A [[semantics]] $\sigma$ satisfies modularisation iff $E \in \sigma(F)$ and $E' \in \sigma(F^E)$ imply $E \cup E' \in \sigma(F)$, where $F^E$ is the [[reduct]].
+A [[semantics]] $\sigma$ satisfies Modularisation iff $E \in \sigma(F)$ and $E' \in \sigma$[[reduct|$(F^E)$]] imply $E \cup E' \in \sigma(F)$.

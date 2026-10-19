@@ -165,17 +165,9 @@ watch(
           v-if="activeDefinition"
           :class="overviewTable || principleOverview ? 'max-w-5xl' : 'max-w-2xl'"
         >
-          <div class="flex items-start gap-2 mb-4">
-            <h2 class="text-xl font-bold leading-snug">
-              <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
-            </h2>
-            <span
-              v-if="activeDefinition.untranslated"
-              class="badge badge-xs badge-ghost mt-1.5 shrink-0 text-base-content/65"
-            >
-              {{ t('glossary.englishOnly') }}
-            </span>
-          </div>
+          <h2 class="text-xl font-bold leading-snug mb-4">
+            <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
+          </h2>
           <p class="text-base-content/80 leading-relaxed">
             <GlossaryInline
               :parts="activeDefinition.content"

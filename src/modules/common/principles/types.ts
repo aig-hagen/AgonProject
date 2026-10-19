@@ -22,6 +22,7 @@ export interface PrincipleCell {
   /** Missing: examined, but open in the literature. */
   holds?: boolean
   source?: Publication
+  /** Data-only: where in the source the result is. */
   locator?: string
   /** Shown with the result. */
   remark?: string
@@ -33,14 +34,6 @@ export interface PrincipleCell {
 
 /** Principle glossary key → result. A missing principle was not examined. */
 export type PrincipleRow = Partial<Record<string, PrincipleCell>>
-
-export type Cardinality = '0+' | '1' | '1+'
-
-export interface CardinalityCell {
-  value: Cardinality
-  source?: Publication
-  locator?: string
-}
 
 /** A group of semantics as the evaluation window shows it. */
 export interface SemanticsGroup {
@@ -59,8 +52,8 @@ export interface PrincipleTable {
   overviewKey: string
   groups: SemanticsGroup[]
   principleGroups: PrincipleGroup[]
-  /** Semantics glossary key → number of extensions. */
-  cardinality: Record<string, CardinalityCell>
+  /** Principles left out of the overview until selected. */
+  hiddenByDefault?: string[]
   /** Semantics glossary key → results. */
   rows: Record<string, PrincipleRow>
 }

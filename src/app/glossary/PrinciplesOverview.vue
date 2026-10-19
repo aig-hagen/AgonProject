@@ -22,9 +22,8 @@ import { useI18n } from 'vue-i18n'
 
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
-import { cardinalityKey } from '@/app/glossary/principles'
 import type { PrincipleTable } from '@/modules/common/principles/types'
-import { formatCitation, shortLabel } from '@/modules/common/publications/format'
+import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { table, entries } = defineProps<{
@@ -39,7 +38,9 @@ const { t } = useI18n({ useScope: 'global' })
 const allSemantics = table.groups.flatMap((group) => group.keys)
 const allPrinciples = table.principleGroups.flatMap((group) => group.principles)
 const shownSemantics = ref(new Set(allSemantics))
-const shownPrinciples = ref(new Set(allPrinciples))
+const shownPrinciples = ref(
+  new Set(allPrinciples.filter((p) => !table.hiddenByDefault?.includes(p))),
+)
 
 function toggle(set: Set<string>, key: string) {
   if (set.has(key)) set.delete(key)
@@ -62,14 +63,7 @@ const principleGroups = computed(() =>
 )
 
 const labelOf = (key: string) => entries[key]?.definition.label ?? key
-const cardinalityTitle = (key: string) => {
-  const cell = table.cardinality[key]
-  if (!cell) return ''
-  const value = t(`glossary.principles.cardinalityValues.${cardinalityKey[cell.value]}`)
-  return cell.source
-    ? `${value} · ${shortLabel(cell.source)}, ${cell.locator} · ${formatCitation(cell.source)}`
-    : value
-}
+const titleOf = (key: string) => entries[key]?.definition.title ?? labelOf(key)
 </script>
 
 <template>
@@ -138,7 +132,7 @@ const cardinalityTitle = (key: string) => {
                 :checked="shownPrinciples.has(key)"
                 @change="toggle(shownPrinciples, key)"
               />
-              {{ labelOf(key) }}
+              <KatexInlineElement :text="titleOf(key)" />
             </label>
           </template>
         </div>
@@ -154,16 +148,22 @@ const cardinalityTitle = (key: string) => {
               v-for="group in semanticsGroups"
               :key="group.label"
               :colspan="group.keys.length"
+              :title="group.label"
               class="section-label font-medium px-1 pb-1 border-l border-base-300"
             >
-              {{ group.label }}
+              <!-- Zero width, so a long label can't widen its columns. -->
+              <div class="w-0 min-w-full truncate">{{ group.label }}</div>
             </th>
           </tr>
           <tr class="border-b border-base-300">
             <th class="text-left font-medium pr-4 pb-1.5">
               {{ t('glossary.principles.principle') }}
             </th>
-            <th v-for="key in columns" :key="key" class="font-medium px-1 pb-1.5">
+            <th
+              v-for="key in columns"
+              :key="key"
+              class="w-8 min-w-8 text-xs font-medium px-0.5 pb-1.5"
+            >
               <button class="hover:text-primary" :title="labelOf(key)" @click="emit('follow', key)">
                 {{ key }}
               </button>
@@ -171,19 +171,6 @@ const cardinalityTitle = (key: string) => {
           </tr>
         </thead>
         <tbody>
-          <tr class="border-b border-base-300/60">
-            <th class="text-left font-normal pr-4 py-1 whitespace-nowrap">
-              {{ t('glossary.principles.cardinality') }}
-            </th>
-            <td
-              v-for="key in columns"
-              :key="key"
-              :title="cardinalityTitle(key)"
-              class="px-1 py-1 text-center whitespace-nowrap cursor-default"
-            >
-              {{ table.cardinality[key]?.value }}
-            </td>
-          </tr>
           <template v-for="group in principleGroups" :key="group.key">
             <tr>
               <th :colspan="columns.length + 1" class="section-label text-left pt-3 pb-1">
@@ -197,12 +184,12 @@ const cardinalityTitle = (key: string) => {
             >
               <th class="text-left font-normal pr-4 py-1 whitespace-nowrap">
                 <GlossaryInline
-                  :parts="[{ ref: principle }]"
+                  :parts="[{ ref: principle, label: titleOf(principle) }]"
                   :entries="entries"
                   @follow="emit('follow', $event)"
                 />
               </th>
-              <td v-for="key in columns" :key="key" class="px-1 py-1 text-center">
+              <td v-for="key in columns" :key="key" class="px-0.5 py-1 text-center">
                 <PrincipleCellView
                   v-if="table.rows[key]?.[principle]"
                   :cell="table.rows[key][principle]"

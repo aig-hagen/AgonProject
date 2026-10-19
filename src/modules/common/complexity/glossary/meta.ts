@@ -17,11 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import type { GlossaryMeta } from '@/modules/common/glossary/types'
-import { CK96, DD18, EG97, P94, PY84, S76, SW15 } from '@/modules/common/publications/publications'
+import { CK96, DD18, EG97, P94, PY84, S76 } from '@/modules/common/publications/publications'
 
 export const glossaryMeta: GlossaryMeta = {
-  complexityAF: { reference: DD18 },
-  complexityADF: { reference: SW15 },
   problemVer: { reference: DD18 },
   problemCred: { reference: DD18 },
   problemSkept: { reference: DD18 },

@@ -1,6 +1,6 @@
 ---
-label: conflict-freeness
+label: Conflict-Freeness
 title: Conflict-Freeness
 ---
 
-A [[semantics]] $\sigma$ satisfies conflict-freeness iff every [[extension]] $E \in \sigma(F)$ is [[CF|conflict-free]] in $F$.
+A [[semantics]] $\sigma$ satisfies Conflict-Freeness iff every [[extension]] $E \in \sigma(F)$ is [[CF|conflict-free]] in $F$.

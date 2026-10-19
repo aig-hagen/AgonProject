@@ -1,0 +1,76 @@
+Principle grouping for the AF principles matrix (draft).
+
+Format: "## " starts a group, then one principle title per line, in table order.
+Append " *" to a principle to hide it by default. Move, rename or reorder freely.
+
+## Basic
+Language Independence
+Conflict-Freeness
+Indirect Conflict-Freeness
+Naivety
+Admissibility
+Strong Admissibility
+Defence
+
+## Reinstatement
+Reinstatement
+Weak Reinstatement
+CF-Reinstatement
+Fundamental Lemma *
+
+## Number of Extensions
+Existence
+Non-Triviality
+Unique-Status
+Decisiveness
+
+## Structure of Extensions
+I-Maximality
+Allowing Abstention
+Tightness
+Conflict-Sensitiveness
+Com-Closure
+Downward Closure
+
+## Directionality
+Directionality
+Weak Directionality
+Semi-Directionality
+Non-Interference
+Crash Resistance
+Context-Freeness *
+
+## Invariance
+Rationality *
+Succinctness *
+INRA * (delete this completely)
+
+## Modularity
+SCC-Recursiveness
+Serialisability
+Modularisation
+Confluence
+
+## Decomposition
+SCC Decomposability *
+Weak SCC Decomposability *
+Full Decomposability *
+Top-Down Decomposability *
+Bottom-Up Decomposability *
+Splitting *
+Weak Splitting *
+
+## Weak Admissibility
+Reduct Admissibility *
+Semi-Qualified Admissibility *
+Unattack Inclusion *
+Strict Unattack Inclusion *
+Neglection of Self-Attackers *
+Meaningless Reduct *
+ad-Modularisation *
+Range Compatibility *
+Separation *
+ad-Liberalization *
+
+## Others
+Backward Compatibility (delete completely)

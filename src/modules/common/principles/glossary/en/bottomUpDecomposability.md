@@ -1,5 +1,5 @@
 ---
-label: bottom-up decomposability
+label: Bottom-Up Decomposability
 title: Bottom-Up Decomposability
 ---
 

@@ -18,12 +18,7 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import {
-  principleColumnFor,
-  principleRowFor,
-  principleStatus,
-  principleTables,
-} from '@/app/glossary/principles'
+import { principleRowFor, principleStatus, principleTables } from '@/app/glossary/principles'
 import { glossaryModules } from '@/app/glossary/useGlossary'
 import * as publications from '@/modules/common/publications/publications'
 
@@ -37,9 +32,8 @@ describe.each(principleTables)('$overviewKey', (table) => {
     Object.entries(row).map(([p, cell]) => [`${s} ${p}`, p, cell!] as const),
   )
 
-  test('rows and cardinality cover exactly the grouped semantics', () => {
+  test('rows cover exactly the grouped semantics', () => {
     expect(Object.keys(table.rows).sort()).toEqual([...semantics].sort())
-    expect(Object.keys(table.cardinality).sort()).toEqual([...semantics].sort())
   })
 
   test('has an overview entry, and every principle a glossary entry', () => {
@@ -61,16 +55,13 @@ describe.each(principleTables)('$overviewKey', (table) => {
     expect(bad.map(([key]) => key)).toEqual([])
   })
 
-  test('cardinality sources are known publications', () => {
-    const sources = Object.values(table.cardinality).flatMap((cell) => cell.source ?? [])
-    expect(sources.filter((source) => !knownSources.has(source))).toEqual([])
+  test('principles hidden by default are in the table', () => {
+    expect((table.hiddenByDefault ?? []).filter((p) => !grouped.includes(p))).toEqual([])
   })
 })
 
-test('a principle lists the semantics it was examined for', () => {
-  const column = principleColumnFor('directionality')!
-  const status = Object.fromEntries(column.cells.map(([key, cell]) => [key, principleStatus(cell)]))
-  expect(status.GR).toBe('satisfied')
-  expect(status.ST).toBe('violated')
-  expect(principleRowFor('GR')?.row.directionality).toBe(column.table.rows.GR!.directionality)
+test('a semantics row gives each examined principle a status', () => {
+  const row = principleRowFor('GR')!.row
+  expect(principleStatus(row.directionality!)).toBe('satisfied')
+  expect(principleRowFor('ST')!.row.directionality!.holds).toBe(false)
 })

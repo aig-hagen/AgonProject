@@ -1,6 +1,6 @@
 ---
-label: meaningless reduct
+label: Meaningless Reduct
 title: Meaningless Reduct
 ---
 
-A [[semantics]] $\sigma$ satisfies meaningless reduct iff $E \in \sigma(F)$ implies $\sigma(F^E) = \{\emptyset\}$: nothing more can be accepted in the [[reduct]].
+A [[semantics]] $\sigma$ satisfies Meaningless Reduct iff $E \in \sigma(F)$ implies $\sigma(F^E) = \{\emptyset\}$.

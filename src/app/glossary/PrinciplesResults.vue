@@ -22,14 +22,7 @@ import { useI18n } from 'vue-i18n'
 
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
-import {
-  cardinalityKey,
-  principleColumnFor,
-  principleRowFor,
-  type PrincipleStatus,
-  principleStatus,
-} from '@/app/glossary/principles'
-import { formatCitation, publicationHref, shortLabel } from '@/modules/common/publications/format'
+import { principleRowFor } from '@/app/glossary/principles'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { termKey, entries } = defineProps<{
@@ -41,94 +34,56 @@ const emit = defineEmits<{ follow: [ref: string] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
-// A semantics entry shows its row, a principle entry its column.
 const row = computed(() => principleRowFor(termKey))
-const column = computed(() => (row.value ? undefined : principleColumnFor(termKey)))
 
 const groups = computed(() =>
   row.value
     ? row.value.table.principleGroups
         .map((group) => ({
           key: group.key,
-          principles: group.principles.filter((p) => row.value!.row[p]),
+          // Open results stay in the overview table only.
+          principles: group.principles.filter((p) => row.value!.row[p]?.holds !== undefined),
         }))
         .filter((group) => group.principles.length)
     : [],
 )
-const cardinality = computed(() => row.value?.table.cardinality[termKey])
-
-const STATUSES: PrincipleStatus[] = ['satisfied', 'violated', 'open']
-const statusLabels: Record<PrincipleStatus, string> = {
-  satisfied: 'satisfiedBy',
-  violated: 'violatedBy',
-  open: 'openFor',
-}
-const byStatus = computed(() =>
-  STATUSES.map((status) => ({
-    status,
-    cells: column.value?.cells.filter(([, cell]) => principleStatus(cell) === status) ?? [],
-  })).filter((entry) => entry.cells.length),
-)
 </script>
 
 <template>
-  <section v-if="row || column?.cells.length">
+  <section v-if="row">
     <h3 class="section-label mb-2">{{ t('glossary.principles.title') }}</h3>
-    <template v-if="row">
-      <p v-if="cardinality" class="text-sm mb-3">
-        {{ t('glossary.principles.cardinality') }}:
-        {{ t(`glossary.principles.cardinalityValues.${cardinalityKey[cardinality.value]}`) }}
-        <a
-          v-if="cardinality.source"
-          :href="publicationHref(cardinality.source)"
-          :title="formatCitation(cardinality.source)"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-xs text-base-content/65 hover:text-primary"
-          >· {{ shortLabel(cardinality.source) }}, {{ cardinality.locator }}</a
-        >
-      </p>
-      <div v-for="group in groups" :key="group.key" class="mb-3">
-        <h4 class="text-xs font-medium text-base-content/65 mb-1">
-          {{ t(`glossary.principles.groups.${group.key}`) }}
-        </h4>
-        <table class="text-sm">
-          <tbody>
-            <tr v-for="principle in group.principles" :key="principle" class="align-top">
-              <th class="text-left font-normal pr-6 py-0.5 whitespace-nowrap">
-                <GlossaryInline
-                  :parts="[{ ref: principle }]"
-                  :entries="entries"
-                  @follow="emit('follow', $event)"
-                />
-              </th>
-              <td class="py-0.5">
-                <PrincipleCellView :cell="row.row[principle]!" />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </template>
-    <dl v-else class="text-sm flex flex-col gap-2">
-      <div v-for="entry in byStatus" :key="entry.status">
-        <dt class="text-xs font-medium text-base-content/65">
-          {{ t(`glossary.principles.${statusLabels[entry.status]}`) }}
-        </dt>
-        <dd class="flex flex-wrap gap-x-3 gap-y-1">
-          <span v-for="[key, cell] in entry.cells" :key="key" :title="cell.remark">
-            <GlossaryInline
-              :parts="[{ ref: key }]"
-              :entries="entries"
-              @follow="emit('follow', $event)"
-            />
-          </span>
-        </dd>
-      </div>
-    </dl>
+    <div v-for="group in groups" :key="group.key" class="mb-3">
+      <h4 class="text-xs font-medium text-base-content/65 mb-1">
+        {{ t(`glossary.principles.groups.${group.key}`) }}
+      </h4>
+      <table class="text-sm">
+        <tbody>
+          <tr v-for="principle in group.principles" :key="principle" class="align-top">
+            <th class="text-left font-normal pr-6 py-0.5 whitespace-nowrap">
+              <GlossaryInline
+                :parts="[
+                  {
+                    ref: principle,
+                    label:
+                      entries[principle]?.definition.title ??
+                      entries[principle]?.definition.label ??
+                      principle,
+                  },
+                ]"
+                :entries="entries"
+                @follow="emit('follow', $event)"
+              />
+            </th>
+            <td class="py-0.5">
+              <PrincipleCellView :cell="row.row[principle]!" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <button
       class="mt-2 text-sm text-primary hover:opacity-70"
-      @click="emit('follow', (row ?? column)!.table.overviewKey)"
+      @click="emit('follow', row.table.overviewKey)"
     >
       {{ t('glossary.principles.compareAll') }} →
     </button>

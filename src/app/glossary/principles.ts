@@ -17,12 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { afPrinciples } from '@/modules/abstract-argumentation/principles'
-import type {
-  Cardinality,
-  PrincipleCell,
-  PrincipleRow,
-  PrincipleTable,
-} from '@/modules/common/principles/types'
+import type { PrincipleCell, PrincipleRow, PrincipleTable } from '@/modules/common/principles/types'
 
 export const principleTables: PrincipleTable[] = [afPrinciples]
 
@@ -37,34 +32,11 @@ export function principleRowFor(
   return table && { table, row: table.rows[termKey]! }
 }
 
-/** The semantics a principle was examined for, in table order. */
-export function principleColumnFor(
-  principleKey: string,
-): { table: PrincipleTable; cells: [string, PrincipleCell][] } | undefined {
-  const table = principleTables.find((t) =>
-    t.principleGroups.some((group) => group.principles.includes(principleKey)),
-  )
-  if (!table) return undefined
-  const cells = table.groups
-    .flatMap((group) => group.keys)
-    .flatMap((key): [string, PrincipleCell][] => {
-      const cell = table.rows[key]?.[principleKey]
-      return cell ? [[key, cell]] : []
-    })
-  return { table, cells }
-}
-
 export type PrincipleStatus = 'satisfied' | 'violated' | 'open'
 
 export function principleStatus(cell: PrincipleCell): PrincipleStatus {
   if (cell.holds === undefined) return 'open'
   return cell.holds ? 'satisfied' : 'violated'
-}
-
-export const cardinalityKey: Record<Cardinality, string> = {
-  '0+': 'zeroOrMore',
-  '1': 'one',
-  '1+': 'oneOrMore',
 }
 
 export const statusMark: Record<PrincipleStatus, string> = {

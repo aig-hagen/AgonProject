@@ -1,6 +1,6 @@
 ---
-label: serialisability
+label: Serialisability
 title: Serialisability
 ---
 
-A [[semantics]] $\sigma$ satisfies serialisability iff it is a [[serialisation|serialisable semantics]]: there are a [[selFn|selection function]] and a [[termFn|termination function]] such that its extensions are exactly the sets built by repeatedly adding a selected initial set of the current [[reduct]] until termination.
+A [[semantics]] $\sigma$ satisfies Serialisability iff it is a [[serialisation|serialisable semantics]]: there are a [[selFn|selection function]] $\alpha$ and a [[termFn|termination function]] $\beta$ such that its extensions are exactly the sets built by repeatedly adding a selected initial set of the current [[reduct]] until termination.

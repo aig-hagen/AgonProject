@@ -380,16 +380,19 @@ export const XC16: Publication = {
   url: 'https://ceur-ws.org/Vol-1811/paper6.pdf',
 }
 
-export const TV17: Publication = {
-  kind: 'article',
+export const TV18: Publication = {
+  kind: 'chapter',
   authors: ['van der Torre, L.', 'Vesic, S.'],
-  year: 2017,
-  tags: ['AF', 'principles'],
+  year: 2018,
+  tags: ['AF', 'principles', 'handbook'],
   title: 'The Principle-Based Approach to Abstract Argumentation Semantics',
-  journal: 'IfCoLog Journal of Logics and their Applications',
-  volume: '4',
-  number: '8',
-  url: 'https://orbilu.uni.lu/handle/10993/33989',
+  booktitle: 'Handbook of Formal Argumentation',
+  editors: ['Baroni, P.', 'Gabbay, D.', 'Giacomin, M.', 'van der Torre, L.'],
+  volume: '1',
+  chapter: '16',
+  pages: '797–837',
+  publisher: 'College Publications',
+  url: 'https://www.collegepublications.co.uk/downloads/handbooks00003.pdf',
 }
 
 export const CD19: Publication = {

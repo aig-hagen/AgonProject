@@ -1,6 +1,6 @@
 ---
-label: defence
+label: Defence
 title: Defence
 ---
 
-A [[semantics]] $\sigma$ satisfies defence iff every [[extension]] $E \in \sigma(F)$ [[defends]] each of its members.
+A [[semantics]] $\sigma$ satisfies Defence iff every [[extension]] $E \in \sigma(F)$ [[defends]] each of its members.

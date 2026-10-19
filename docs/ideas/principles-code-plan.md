@@ -13,7 +13,7 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 - **Via cells** show as normal results; `viaText` is kept in the data (data-only, like
   `ComplexityCell.comment`).
 - **No-reference cells** (`noReference`, 21) show the result without a citation.
-- **`remark`** is user-facing (single-status abstention, IS directionality, weak SCC-recursiveness).
+- **`remark`** is user-facing (unique-status abstention, IS directionality, weak SCC-recursiveness).
 - **Notes** (`notes`, `corroboration`, verifier output) stay out of the app.
 - **All 59 principles** get a glossary entry (Lars: keep all new ones).
 - **Literature rule:** a paper enters `publications.ts`, `references.bib` and `literature/` only
@@ -21,24 +21,26 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 
 ## UI decisions (Lars)
 
-- **Grouped principles** (admissibility, reinstatement, directionality, decomposability, adequacy,
-  …) — grouping proposed in Phase 3, Lars confirms.
-- **Adequacy variants** (∩ / W / S) stay separate rows.
+- **Grouped principles** (admissibility, reinstatement, directionality, decomposability, …) —
+  grouping proposed in Phase 3, Lars confirms.
+- **Adequacy principles** dropped after review.
 - **One overview table** to start, with filters: the user picks which principles and which
   semantics are shown. Presentation gets refined later.
-- **Cardinality** (0+ / 1 / 1+) is shown.
+- **Cardinality** is not a separate row: it fills the existence and unique-status cells.
+- **Groups and default visibility** follow `docs/ideas/principle-groups.txt` (nine groups; `*`
+  marks rows hidden by default). INRA and backward compatibility were dropped.
 
 ## Phases
 
 ### Phase 1 — Publications
 
 - [x] 18 papers added to `publications.ts` (new "Principles" section): CDM05, BG07, BCG11, CCD12,
-      GW13, BBCGTV14, DDLW15, BLW16, XC16, TV17, CD19, BBU20a, FU21, BBU22, BU22, CT23, BlT24, DT25.
+      GW13, BBCGTV14, DDLW15, BLW16, XC16, TV18, CD19, BBU20a, FU21, BBU22, BU22, CT23, BlT24, DT25.
       Data from Crossref (authors, venue, volume, pages, DOI), IOS Press pages (FAIA volume/pages),
-      CEUR-WS (XC16), the TU Dresden ICCL page (FU21) and the PDF itself (TV17 vol./no.; no
+      CEUR-WS (XC16), the TU Dresden ICCL page (FU21) and the PDF itself (TV18 vol./no.; no
       verified pages, so none given).
 - [x] `npm run lit:bib`; PDFs filed with `lit:import` (fixed three wrong matches by hand: P94,
-      XC18, C14). Local PDFs now for BG07, TV17, BBU22, CD19, CDM05, XC16, DT25 (manuscript),
+      XC18, C14). Local PDFs now for BG07, TV18, BBU22, CD19, CDM05, XC16, DT25 (manuscript),
       BLW16 (arXiv), FU21.
 - [x] BT26 as a preprint: new `preprint` kind (types, `format.ts`, `lit:bib` → `@misc`), entry from
       the Zenodo record (doi:10.5281/zenodo.19048256, dated 2026), PDF filed. Grid
@@ -50,17 +52,18 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 
 - [x] `src/modules/common/principles/types.ts`: `PrincipleCell` (`holds?`, `source?`, `locator?`,
       `remark?`, `via?`, `unreferenced?`), `PrincipleTable` (semantics groups, principle groups,
-      cardinality, rows) and helpers `holds()` / `fails()` / `unreferenced()` / `open()`.
+      `hiddenByDefault`, rows) and helpers `holds()` / `fails()` / `unreferenced()` / `open()`.
 - [x] `src/modules/abstract-argumentation/principles.ts` generated once by
       `principles-work/gen_principles_ts.py` (source strings → publication keys; adequacy keys
       renamed `…Cap/W/S`); maintained by hand from now on. Seven principle groups (draft, Lars
       confirms): conflict & defence, reinstatement, extension sets, independence, decomposition,
       reduct, adequacy.
-- [x] Cardinality for all 23 semantics: TV17 Table 4 (EA from C07 Thm. 3), the rest from their
-      origin papers; CF and ADM unreferenced (∅ is always an extension).
+- [x] Existence and unique-status for all 23 semantics from their cardinality: TV18 Table 4 (EA
+      from C07 Thm. 3), the rest from their origin papers; CF and ADM unreferenced (∅ is always
+      an extension).
 - [x] `app/glossary/principles.ts` (`principleTables`, `principleRowFor`, `principleTableFor`);
-      `citedIn()` counts principle and cardinality sources.
-- [x] `principles.test.ts`: rows and cardinality match the semantics groups, every principle in
+      `citedIn()` counts principle sources.
+- [x] `principles.test.ts`: rows match the semantics groups, every principle in
       exactly one group, sources known / absent as required.
 
 ### Phase 3 — Glossary entries
@@ -68,8 +71,8 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 - [x] New glossary module `common/principles` (prefix `Principles`, main entry `principlesAF`),
       registered in `glossaryModules.json` and `useGlossary.ts`; refs resolve across all modules,
       as for Complexity.
-- [x] 58 principle entries plus `principle` and `principlesAF`; `SCOOC` reuses the existing AF
-      entry (SCF2 links to it). Definitions checked against the defining papers (TV17, BG07, DRT20,
+- [x] 52 principle entries (after dropping the six adequacy ones) plus `principle` and `principlesAF`; `SCOOC` was dropped from the
+      table; its AF entry stays for SCF2. Definitions checked against the defining papers (TV18, BG07, DRT20,
       BBU20a, BlT24, BU22, CT19, CCD12, DUW22, FU21, BT26, BLW16, BBU20); `meta.ts` names the
       defining paper as reference.
 - [ ] Top-down / bottom-up / full decomposability are paraphrased (BBCGTV14 itself not read; FU21
@@ -78,13 +81,12 @@ complexity feature (`common/complexity/`, `abstract-argumentation/complexity.ts`
 
 ### Phase 4 — UI
 
-- [x] `app/glossary/principles.ts`: `principleRowFor`, `principleColumnFor`, `principleTableFor`,
+- [x] `app/glossary/principles.ts`: `principleRowFor`, `principleTableFor`,
       status helpers.
-- [x] `PrinciplesResults.vue`: on semantics entries the number of extensions and ✓ / ✗ / ? per
-      principle group with source and remark; on principle entries "Satisfied by / Violated by /
-      Open for" with semantics links. Link to the overview.
+- [x] `PrinciplesResults.vue`: on semantics entries ✓ / ✗ per principle group with source
+      and remark (open results only in the overview). Link to the overview.
 - [x] `PrinciplesOverview.vue`: one table (principles × semantics, both grouped) with selectors
-      for which semantics and principles to show, cardinality row, source on hover;
+      for which semantics and principles to show, source on hover;
       `PrincipleCellView.vue`.
 - [x] Desktop and mobile glossary views; English and German strings (`glossary.principles.*`).
 

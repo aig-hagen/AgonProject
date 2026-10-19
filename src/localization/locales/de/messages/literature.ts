@@ -32,7 +32,7 @@ export default {
     ranking: 'Ranking',
     complexity: 'Komplexität',
     algorithms: 'Algorithmen',
-    principles: 'Prinzipien',
+    principles: 'Postulate',
     survey: 'Überblick',
     handbook: 'Handbuch',
     foundations: 'Grundlagen',
