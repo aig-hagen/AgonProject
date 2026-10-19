@@ -62,7 +62,7 @@ const principleOverview = computed(() => principleTableFor(activeTermKey.value))
 
 // Auto-select the framework (main) entry when the module changes or no valid term is in the URL.
 watch(
-  [activeModulePrefix, literatureActive],
+  [activeModulePrefix, literatureActive, activeTermKey],
   ([prefix, literature]) => {
     if (literature) return
     const module = glossaryModules.find((m) => m.prefix === prefix)
