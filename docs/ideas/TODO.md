@@ -13,13 +13,11 @@
   `literature/notes/complexity.md` (AF: EA cred/skept/enum, ID enum, GR enum, ADM/PR/SST/CF/NA/CF2
   count-dec; ADF: S2V ne). Only ticked ones go into `complexity.ts`.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
-  an "Open in editor" button). Later, one at a time: aliases and notation (also helps search),
-  guarantees (always exists / unique / can be empty?), relations between semantics as a lattice,
-  origin, and where it shows up in AgonProject. (Principles satisfied and number of extensions are
-  done: `src/modules/abstract-argumentation/principles.ts`.)
+  an "Open in editor" button). Later, one at a time: aliases and notation (also helps search), relations between semantics as a lattice
 
 ## Mobile
 
+- 34. mobile version of the serialisation sheet needs a small overhaul. especially the collapsed sheet
 - **7. [S] Publications on module cards.** Desktop shows a `PublicationsTooltip` on each home card
   (`BlankDocumentCanvas.vue`); the mobile cards show none.
 - **26. [M] Landscape layout.** Phones in landscape now get the compact shell, but its top and

@@ -42,6 +42,22 @@ const ROW_PITCH = 44
 const NODE_PADDING = 22
 const MIN_GAP = 56
 const MARGIN = 8
+const LABEL_INSET = 10
+const LABEL_HEIGHT = 18
+
+// Height of the edge curve at x; its x(t) is monotone, so bisect for t.
+function curveY(x1: number, y1: number, x2: number, y2: number, x: number) {
+  const f = (x - x1) / (x2 - x1)
+  let lo = 0
+  let hi = 1
+  for (let i = 0; i < 20; i++) {
+    const t = (lo + hi) / 2
+    if (1.5 * t * (1 - t) + t ** 3 < f) lo = t
+    else hi = t
+  }
+  const t = (lo + hi) / 2
+  return y1 + (y2 - y1) * (3 * t ** 2 - 2 * t ** 3)
+}
 
 // Labels are mono, so one measured character width sizes every box.
 const probe = useTemplateRef<HTMLSpanElement>('probe')
@@ -112,13 +128,16 @@ const layout = computed(() => {
     const x2 = to.x - 2 - ringGap(e.to)
     const y2 = to.y + NODE_HEIGHT / 2
     const dx = (x2 - x1) / 2
+    const labelWidth = textWidth(formatStep(e.step)) + 4
+    const labelX = x2 - LABEL_INSET - labelWidth / 2
     return {
       key,
       d: `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`,
       label: formatStep(e.step),
-      // Three quarters along the curve, where edges leaving one state have spread out.
-      labelX: 0.15625 * x1 + 0.84375 * x2,
-      labelY: 0.15625 * y1 + 0.84375 * y2 - 8,
+      // Kept clear of the target; the backing box keeps it readable over crossings.
+      labelX,
+      labelWidth,
+      labelY: curveY(x1, y1, x2, y2, labelX),
       onPath: onPath.has(key),
       // Only the path and the next steps are labelled; the rest would pile up.
       labelled: onPath.has(key) || e.from === current,
@@ -215,13 +234,22 @@ function nodeClass(key: string) {
             :class="edge.onPath ? 'text-primary' : 'text-base-content/65'"
             :marker-end="`url(#${markerId}-${edge.onPath ? 'path' : 'muted'})`"
           />
+          <rect
+            v-if="edge.labelled"
+            :x="edge.labelX - edge.labelWidth / 2"
+            :y="edge.labelY - LABEL_HEIGHT / 2"
+            :width="edge.labelWidth"
+            :height="LABEL_HEIGHT"
+            rx="3"
+            class="fill-base-100"
+          />
           <text
             v-if="edge.labelled"
             :x="edge.labelX"
             :y="edge.labelY"
             text-anchor="middle"
             dominant-baseline="central"
-            class="serialisation-edge-label font-(family-name:--font-graph) text-sm [word-spacing:-0.5ch]"
+            class="font-(family-name:--font-graph) text-sm [word-spacing:-0.5ch]"
             :class="edge.onPath ? 'fill-primary font-semibold' : 'fill-base-content/65'"
           >
             {{ edge.label }}
@@ -253,13 +281,3 @@ function nodeClass(key: string) {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* A paper halo keeps edge labels readable where they cross other edges. */
-.serialisation-edge-label {
-  paint-order: stroke;
-  stroke: var(--color-base-100);
-  stroke-width: 4px;
-  stroke-linejoin: round;
-}
-</style>
