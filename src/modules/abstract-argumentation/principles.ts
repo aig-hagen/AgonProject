@@ -58,7 +58,7 @@ import {
 } from '@/modules/common/publications/publications'
 
 // Sources and caveats: literature/notes/principles.md. Preprints (BT26, T22, DG16) cite numbered
-// results only; TV18 cites PDF pages of its journal version (IfCoLog 4(8), 2017).
+// results only.
 export const afPrinciples: PrincipleTable = {
   overviewKey: 'principlesAF',
   groups: KNOWN_SEMANTIC_GROUPS.filter((group) => group.key !== 'qualified Semantics').map(
@@ -240,16 +240,16 @@ export const afPrinciples: PrincipleTable = {
       }),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: unreferenced(true),
-      weakDirectionality: holds(TV18, 'Obs. 7, PDF p. 24', {
+      weakDirectionality: holds(TV18, 'Obs. 7, p. 818', {
         via: 'ADM directionality + TV18 Obs. 7 (directionality ⇔ weak ∧ semi-directionality)',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7, PDF p. 24', {
+      semiDirectionality: holds(TV18, 'Obs. 7, p. 818', {
         via: 'ADM directionality + TV18 Obs. 7 (directionality ⇔ weak ∧ semi-directionality)',
       }),
-      nonInterference: holds(TV18, 'Obs. 6, PDF p. 22', {
+      nonInterference: holds(TV18, 'Obs. 6, p. 816', {
         via: 'ADM directionality + TV18 Obs. 6 (directionality ⇒ non-interference)',
       }),
-      crashResistance: holds(TV18, 'Obs. 6, PDF p. 22', {
+      crashResistance: holds(TV18, 'Obs. 6, p. 816', {
         via: 'ADM directionality + TV18 Obs. 6 (directionality ⇒ non-interference ⇒ crash resistance)',
       }),
       rationality: holds(BLW16, 'Def. 2 and text after it (arXiv v1)'),
@@ -277,11 +277,11 @@ export const afPrinciples: PrincipleTable = {
     CO: {
       conflictFreeness: holds(BG07, 'p. 678 (text after Def. 8)'),
       indirectCF: fails(CDM05, 'Ex. 1 + §1 text, PDF pp. 1–2'),
-      naivety: fails(TV18, 'Principle 6 text, PDF p. 16'),
+      naivety: fails(TV18, 'Principle 6 text, pp. 810–811'),
       admissibility: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       strongAdmissibility: fails(BG07, '§6.2 p. 691 (Nixon diamond); Table 1 p. 688'),
       defence: holds(BG07, 'Table 1, p. 688 (admissibility row)', {
-        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, PDF p. 14)',
+        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, p. 809)',
       }),
       reductAdmissibility: holds(DRT20, 'Table 1, p. 172', {
         via: 'Admissibility ⇒ reduct/semi-qualified adm. (DRT20 p. 171)',
@@ -295,23 +295,23 @@ export const afPrinciples: PrincipleTable = {
       cfReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       unattackInclusion: holds(BBU20a, 'text after Def. 3.9, p. 82; Table 1 p. 85'),
       iMaximality: fails(BG07, '§6.1 p. 689; Table 1 p. 688'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: holds(BCG11, 'Def. 46 and text after it, p. 393; Table 2, p. 395'),
       tightness: fails(DDLW15, 'Example 5 (p. 159) + Lemma 3 (p. 158)', {
         via: 'Every tight extension-set is conflict-sensitive (DDLW15 Lemma 3)',
       }),
       conflictSensitiveness: fails(DDLW15, 'Example 5, p. 159'),
       comClosure: holds(DDLW15, 'Prop. 4, p. 159'),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 55, p. 691; Table 1 p. 688'),
-      weakDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      weakDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      semiDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
       nonInterference: holds(BG07, 'Table 1, p. 688 (directionality row); Props. 55, 58', {
@@ -351,11 +351,11 @@ export const afPrinciples: PrincipleTable = {
     GR: {
       conflictFreeness: holds(BG07, 'p. 678 (text after Def. 8)'),
       indirectCF: fails(CDM05, 'Ex. 1 + §1 text, PDF pp. 1–2'),
-      naivety: fails(TV18, 'Principle 6 text, PDF p. 16'),
+      naivety: fails(TV18, 'Principle 6 text, pp. 810–811'),
       admissibility: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       strongAdmissibility: holds(BG07, 'Prop. 49, p. 690'),
       defence: holds(BG07, 'Table 1, p. 688 (admissibility row)', {
-        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, PDF p. 14)',
+        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, p. 809)',
       }),
       reductAdmissibility: holds(DRT20, 'p. 171 (before Prop. 4)', {
         via: "Admissibility ⇒ reduct & semi-qualified admissibility (DRT20 p. 171: 'one can easily see that reduct and semi-qualified admissibility follow from admissibility')",
@@ -369,26 +369,26 @@ export const afPrinciples: PrincipleTable = {
       cfReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       unattackInclusion: holds(BBU20a, 'text after Def. 3.9, p. 82; Table 1 p. 85'),
       iMaximality: holds(BG07, '§6.1 p. 688–689; Table 1 p. 688'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: holds(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: holds(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: holds(BCG11, '§3.4, text after Def. 46, p. 393', {
         remark:
           'Unique-status semantics satisfy this vacuously: with one extension, no argument can be in one extension and attacked by another (BCG11 §3.4: "technically comply").',
       }),
-      tightness: holds(TV18, 'Obs. 11, PDF p. 34'),
-      conflictSensitiveness: holds(TV18, 'text PDF p. 36', {
+      tightness: holds(TV18, 'Obs. 11, p. 828'),
+      conflictSensitiveness: holds(TV18, 'text, p. 830', {
         via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3)',
       }),
-      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
+      comClosure: holds(TV18, 'text, pp. 831–832', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 55, p. 691; Table 1 p. 688'),
-      weakDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      weakDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      semiDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
       nonInterference: holds(BG07, 'Table 1, p. 688 (directionality row); Props. 55, 58', {
@@ -429,11 +429,11 @@ export const afPrinciples: PrincipleTable = {
     PR: {
       conflictFreeness: holds(BG07, 'p. 678 (text after Def. 8)'),
       indirectCF: fails(CDM05, 'Ex. 1 + §1 text, PDF pp. 1–2'),
-      naivety: fails(TV18, 'Principle 6 text, PDF p. 16'),
+      naivety: fails(TV18, 'Principle 6 text, pp. 810–811'),
       admissibility: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       strongAdmissibility: fails(BG07, '§6.2 p. 691 (Nixon diamond); Table 1 p. 688'),
       defence: holds(BG07, 'Table 1, p. 688 (admissibility row)', {
-        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, PDF p. 14)',
+        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, p. 809)',
       }),
       reductAdmissibility: holds(DRT20, 'Table 1, p. 172', {
         via: 'Admissibility ⇒ reduct/semi-qualified adm. (DRT20 p. 171)',
@@ -447,23 +447,23 @@ export const afPrinciples: PrincipleTable = {
       cfReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       unattackInclusion: holds(BBU20a, 'text after Def. 3.9, p. 82; Table 1 p. 85'),
       iMaximality: holds(BG07, '§6.1 p. 688–689; Table 1 p. 688'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
       tightness: fails(DDLW15, 'Example 4, p. 159'),
       conflictSensitiveness: holds(DDLW15, 'Prop. 2(2), p. 158'),
       comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
         via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 55, p. 691; Table 1 p. 688'),
-      weakDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      weakDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      semiDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
       nonInterference: holds(BG07, 'Table 1, p. 688 (directionality row); Props. 55, 58', {
@@ -503,11 +503,11 @@ export const afPrinciples: PrincipleTable = {
     ST: {
       conflictFreeness: holds(BG07, 'p. 678 (text after Def. 8)'),
       indirectCF: fails(CDM05, 'Ex. 1 + §1 text, PDF pp. 1–2'),
-      naivety: holds(TV18, 'Principle 6 text, PDF p. 15'),
+      naivety: holds(TV18, 'Principle 6 text, pp. 810–811'),
       admissibility: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       strongAdmissibility: fails(BG07, '§6.2 p. 691 (Nixon diamond); Table 1 p. 688'),
       defence: holds(BG07, 'Table 1, p. 688 (admissibility row)', {
-        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, PDF p. 14)',
+        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, p. 809)',
       }),
       reductAdmissibility: holds(DRT20, 'p. 171 (before Prop. 4)', {
         via: "Admissibility ⇒ reduct & semi-qualified admissibility (DRT20 p. 171: 'one can easily see that reduct and semi-qualified admissibility follow from admissibility')",
@@ -521,10 +521,10 @@ export const afPrinciples: PrincipleTable = {
       cfReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       unattackInclusion: fails(BBU20a, 'Table 1, p. 85'),
       iMaximality: holds(BG07, '§6.1 p. 688–689; Table 1 p. 688'),
-      existence: fails(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: fails(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
       tightness: holds(DDLW15, 'Prop. 1(4), p. 157'),
       conflictSensitiveness: holds(DDLW15, 'Prop. 1 (p. 157) + Lemma 3 (p. 158)', {
@@ -533,11 +533,11 @@ export const afPrinciples: PrincipleTable = {
       comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
         via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: fails(BG07, 'Fig. 4 text, p. 692'),
-      weakDirectionality: holds(TV18, 'text PDF p. 24'),
-      semiDirectionality: fails(TV18, 'text PDF p. 24'),
+      weakDirectionality: holds(TV18, 'text, p. 818'),
+      semiDirectionality: fails(TV18, 'text, p. 818'),
       nonInterference: fails(BCG11, '§3.5, text after Def. 51, p. 394; Table 2, p. 395'),
       crashResistance: fails(BCG11, '§3.5, text after Def. 48, p. 394; Table 2, p. 395'),
       rationality: holds(BLW16, 'Def. 2 and text after it (arXiv v1)'),
@@ -598,17 +598,17 @@ export const afPrinciples: PrincipleTable = {
       comClosure: open(),
       languageIndependence: unreferenced(true),
       directionality: holds(BBU22, 'Prop. 5.15 + proof, p. 23'),
-      weakDirectionality: holds(TV18, 'Obs. 7, PDF p. 24', {
-        via: 'TV18 Obs. 7 (PDF p. 24): directionality iff weak directionality and semi-directionality + SAD directionality (BBU22 Prop. 5.15)',
+      weakDirectionality: holds(TV18, 'Obs. 7, p. 818', {
+        via: 'TV18 Obs. 7 (p. 818): directionality iff weak directionality and semi-directionality + SAD directionality (BBU22 Prop. 5.15)',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7, PDF p. 24', {
-        via: 'TV18 Obs. 7 (PDF p. 24): directionality iff weak directionality and semi-directionality + SAD directionality (BBU22 Prop. 5.15)',
+      semiDirectionality: holds(TV18, 'Obs. 7, p. 818', {
+        via: 'TV18 Obs. 7 (p. 818): directionality iff weak directionality and semi-directionality + SAD directionality (BBU22 Prop. 5.15)',
       }),
-      nonInterference: holds(TV18, 'Obs. 6, PDF p. 22', {
-        via: 'TV18 Obs. 6 (PDF p. 22, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + SAD directionality (BBU22 Prop. 5.15)',
+      nonInterference: holds(TV18, 'Obs. 6, p. 816', {
+        via: 'TV18 Obs. 6 (p. 816, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + SAD directionality (BBU22 Prop. 5.15)',
       }),
-      crashResistance: holds(TV18, 'Obs. 6, PDF p. 22', {
-        via: 'TV18 Obs. 6 (PDF p. 22, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + SAD directionality (BBU22 Prop. 5.15)',
+      crashResistance: holds(TV18, 'Obs. 6, p. 816', {
+        via: 'TV18 Obs. 6 (p. 816, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + SAD directionality (BBU22 Prop. 5.15)',
       }),
       rationality: open(),
       selfAttackerNeglection: fails(BBU22, 'Table 1, p. 23 (Def. 5.12, p. 22)'),
@@ -622,12 +622,12 @@ export const afPrinciples: PrincipleTable = {
     },
     SST: {
       conflictFreeness: holds(BG07, 'p. 678 (text after Def. 8)'),
-      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, PDF pp. 16–17'),
-      naivety: fails(TV18, 'Principle 6 text, PDF p. 16'),
+      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, p. 811'),
+      naivety: fails(TV18, 'Principle 6 text, pp. 810–811'),
       admissibility: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       strongAdmissibility: fails(BG07, '§6.2 p. 691 (Nixon diamond); Table 1 p. 688'),
       defence: holds(BG07, 'Table 1, p. 688 (admissibility row)', {
-        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, PDF p. 14)',
+        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, p. 809)',
       }),
       reductAdmissibility: holds(DRT20, 'p. 171 (before Prop. 4)', {
         via: "Admissibility ⇒ reduct & semi-qualified admissibility (DRT20 p. 171: 'one can easily see that reduct and semi-qualified admissibility follow from admissibility')",
@@ -639,28 +639,28 @@ export const afPrinciples: PrincipleTable = {
       weakReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       cfReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       iMaximality: holds(BG07, '§6.1 p. 688–689; Table 1 p. 688'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
       tightness: fails(DDLW15, 'Example 4, p. 159'),
       conflictSensitiveness: holds(DDLW15, 'Prop. 2(3), p. 158'),
       comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
         via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: fails(BG07, 'Fig. 4 text, p. 692'),
-      weakDirectionality: fails(TV18, 'Fig. 8, PDF p. 24'),
-      semiDirectionality: fails(TV18, 'Fig. 9, PDF p. 25'),
+      weakDirectionality: fails(TV18, 'Fig. 8, p. 818'),
+      semiDirectionality: fails(TV18, 'Fig. 9, p. 819'),
       nonInterference: holds(CCD12, 'Thm. 7 (author preprint)'),
       crashResistance: holds(CCD12, 'Thm. 8 (author preprint)'),
       rationality: holds(BLW16, 'Def. 2 and text after it (arXiv v1)'),
       succinctness: fails(GW13, 'Thm. 5.8, p. 944', {
         via: 'OW11 kernel result + GW13 Thm. 5.8, p. 944 (OW11 does not name succinctness)',
       }),
-      sccRecursiveness: fails(TV18, 'Fig. 21, PDF p. 40'),
+      sccRecursiveness: fails(TV18, 'Fig. 21, p. 833'),
       sccDecomposability: fails(BBCGTV14, '§4.5, pp. 156–157; Table 1 p. 153'),
       weakSccDecomposability: open(),
       fullDecomposability: fails(
@@ -682,12 +682,12 @@ export const afPrinciples: PrincipleTable = {
     },
     ID: {
       conflictFreeness: holds(BG07, 'p. 678 (text after Def. 8)'),
-      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, PDF pp. 16–17'),
-      naivety: fails(TV18, 'Principle 6 text, PDF p. 16'),
+      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, p. 811'),
+      naivety: fails(TV18, 'Principle 6 text, pp. 810–811'),
       admissibility: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       strongAdmissibility: fails(BG07, '§6.2 p. 691, Fig. 3'),
       defence: holds(BG07, 'Table 1, p. 688 (admissibility row)', {
-        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, PDF p. 14)',
+        via: 'Admissibility ⇒ Defence (TV18 Obs. 1, p. 809)',
       }),
       reductAdmissibility: holds(DRT20, 'p. 171 (before Prop. 4)', {
         via: "Admissibility ⇒ reduct & semi-qualified admissibility (DRT20 p. 171: 'one can easily see that reduct and semi-qualified admissibility follow from admissibility')",
@@ -699,26 +699,26 @@ export const afPrinciples: PrincipleTable = {
       weakReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       cfReinstatement: holds(BG07, 'Table 1, p. 688; §6.2 p. 689'),
       iMaximality: holds(BG07, '§6.1 p. 688–689; Table 1 p. 688'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: holds(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: holds(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: holds(BCG11, '§3.4, text after Def. 46, p. 393', {
         remark:
           'Unique-status semantics satisfy this vacuously: with one extension, no argument can be in one extension and attacked by another (BCG11 §3.4: "technically comply").',
       }),
-      tightness: holds(TV18, 'Obs. 11, PDF p. 34'),
-      conflictSensitiveness: holds(TV18, 'text PDF p. 36', {
+      tightness: holds(TV18, 'Obs. 11, p. 828'),
+      conflictSensitiveness: holds(TV18, 'text, p. 830', {
         via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3)',
       }),
-      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
+      comClosure: holds(TV18, 'text, pp. 831–832', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 58, p. 692'),
-      weakDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      weakDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      semiDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
       nonInterference: holds(BG07, 'Table 1, p. 688 (directionality row); Props. 55, 58', {
@@ -731,7 +731,7 @@ export const afPrinciples: PrincipleTable = {
       succinctness: fails(GW13, 'Thm. 5.8, p. 944', {
         via: 'OW11 kernel result + GW13 Thm. 5.8, p. 944 (OW11 does not name succinctness)',
       }),
-      sccRecursiveness: fails(TV18, 'Fig. 20, PDF p. 39'),
+      sccRecursiveness: fails(TV18, 'Fig. 20, p. 832'),
       sccDecomposability: fails(BBCGTV14, 'Example 7 + Fig. 4, p. 156; Table 1'),
       weakSccDecomposability: open(),
       fullDecomposability: fails(
@@ -753,33 +753,33 @@ export const afPrinciples: PrincipleTable = {
       serialisability: fails(T22, 'Thm. 8'),
     },
     EA: {
-      conflictFreeness: holds(TV18, 'text PDF p. 13; Principle 2, PDF p. 14'),
-      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, PDF pp. 16–17; Table 1'),
-      naivety: fails(TV18, 'Principle 6 text, PDF pp. 15–16; Table 1'),
+      conflictFreeness: holds(TV18, 'text and Principle 2, p. 808'),
+      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, p. 811; Table 1, p. 808'),
+      naivety: fails(TV18, 'Principle 6 text, pp. 810–811; Table 1, p. 808'),
       admissibility: holds(C07, 'Def. 5 (+ Thm. 4)'),
-      strongAdmissibility: fails(TV18, 'Principle 5 text, PDF p. 15; Fig. 3, PDF p. 16'),
-      defence: holds(TV18, 'Principle 3 + text, PDF p. 14; Table 1'),
+      strongAdmissibility: fails(TV18, 'Principle 5 text, pp. 809–810; Fig. 3, p. 810'),
+      defence: holds(TV18, 'Principle 3 + text, p. 809; Table 1, p. 808'),
       reductAdmissibility: holds(C07, 'Def. 5', {
         via: 'Admissibility ⇒ reduct/semi-qualified adm. (DRT20 p. 171) + EA admissibility (C07 Def. 5)',
       }),
       semiQualifiedAdm: holds(C07, 'Def. 5', {
         via: 'Admissibility ⇒ reduct/semi-qualified adm. (DRT20 p. 171) + EA admissibility (C07 Def. 5)',
       }),
-      reinstatement: holds(TV18, 'Principle 8 text, PDF p. 17; Table 1'),
-      weakReinstatement: holds(TV18, 'Principle 9 + Obs. 4, PDF pp. 17–18; Table 1'),
-      cfReinstatement: holds(TV18, 'Principle 10 + Obs. 5, PDF p. 18; Table 1'),
-      iMaximality: holds(TV18, 'Principle 11 text, PDF p. 19; Table 2'),
+      reinstatement: holds(TV18, 'Principle 8 text, pp. 811–812; Table 1, p. 808'),
+      weakReinstatement: holds(TV18, 'Principle 9 + Obs. 4, p. 812; Table 1, p. 808'),
+      cfReinstatement: holds(TV18, 'Principle 10 + Obs. 5, p. 813; Table 1, p. 808'),
+      iMaximality: holds(TV18, 'Principle 11 text, pp. 813–814; Table 2, p. 813'),
       existence: holds(C07, 'Thm. 3'),
       uniqueStatus: holds(C07, 'Thm. 3'),
-      allowingAbstention: holds(TV18, 'Principle 12 text, PDF p. 20; Table 2', {
+      allowingAbstention: holds(TV18, 'Principle 12 text, pp. 814–815; Table 2, p. 813', {
         remark:
           'Unique-status semantics satisfy this vacuously: with one extension, no argument can be in one extension and attacked by another (BCG11 §3.4: "technically comply").',
       }),
-      tightness: holds(TV18, 'Principle 21 + Obs. 11, PDF p. 34; Table 4'),
-      conflictSensitiveness: holds(TV18, 'Principle 22 text, PDF p. 36; Table 4'),
-      comClosure: holds(TV18, 'Principle 23 text, PDF pp. 37–38; Table 4'),
-      languageIndependence: holds(TV18, 'Principle 1, PDF p. 13'),
-      directionality: fails(TV18, 'Principle 15 text, PDF p. 22; Fig. 3 caption, PDF p. 16'),
+      tightness: holds(TV18, 'Principle 21 + Obs. 11, p. 828; Table 4, p. 826'),
+      conflictSensitiveness: holds(TV18, 'Principle 22 text, p. 830; Table 4, p. 826'),
+      comClosure: holds(TV18, 'Principle 23 text, pp. 831–832; Table 4, p. 826'),
+      languageIndependence: holds(TV18, 'Principle 1, p. 808'),
+      directionality: fails(TV18, 'Principle 15 text, pp. 816–817; Fig. 3 caption, p. 810'),
       weakDirectionality: open(),
       semiDirectionality: open(),
       nonInterference: open(),
@@ -790,7 +790,7 @@ export const afPrinciples: PrincipleTable = {
       }),
       sccRecursiveness: fails(
         TV18,
-        'SCC-recursiveness text, PDF p. 39; Fig. 21, PDF p. 40; Table 4',
+        'SCC-recursiveness text, p. 832; Fig. 21, p. 833; Table 4, p. 826',
       ),
       sccDecomposability: open(),
       weakSccDecomposability: open(),
@@ -802,7 +802,7 @@ export const afPrinciples: PrincipleTable = {
     },
     IS: {
       conflictFreeness: holds(XC16, 'Def. 9, p. 78 (via TV18 Obs. 1)', {
-        via: 'TV18 Obs. 1 (PDF p. 14): admissibility implies conflict-freeness and defence + IS admissibility (XC16 Def. 9)',
+        via: 'TV18 Obs. 1 (p. 809): admissibility implies conflict-freeness and defence + IS admissibility (XC16 Def. 9)',
       }),
       indirectCF: open(),
       naivety: open(),
@@ -815,7 +815,7 @@ export const afPrinciples: PrincipleTable = {
         },
       ),
       defence: holds(XC16, 'Def. 9, p. 78 (via TV18 Obs. 1)', {
-        via: 'TV18 Obs. 1 (PDF p. 14): admissibility implies conflict-freeness and defence + IS admissibility (XC16 Def. 9)',
+        via: 'TV18 Obs. 1 (p. 809): admissibility implies conflict-freeness and defence + IS admissibility (XC16 Def. 9)',
       }),
       reductAdmissibility: holds(XC16, 'Def. 9, p. 78', {
         via: 'Admissibility ⇒ reduct/semi-qualified adm. (DRT20 p. 171) + IS admissibility (XC16 Def. 9)',
@@ -856,7 +856,7 @@ export const afPrinciples: PrincipleTable = {
       admissibility: holds(BT22, 'Thm. 7, p. 89'),
       strongAdmissibility: fails(BT22, 'Thm. 8, p. 89'),
       defence: holds(BT22, 'Thm. 7, p. 89', {
-        via: 'TV18 Obs. 1 (PDF p. 14): admissibility implies conflict-freeness and defence + UC admissibility (BT22 Thm. 7)',
+        via: 'TV18 Obs. 1 (p. 809): admissibility implies conflict-freeness and defence + UC admissibility (BT22 Thm. 7)',
       }),
       reductAdmissibility: holds(BT22, 'Thm. 7, p. 89'),
       semiQualifiedAdm: holds(BT22, 'Thm. 7, p. 89'),
@@ -873,16 +873,16 @@ export const afPrinciples: PrincipleTable = {
       languageIndependence: holds(BT26, 'Thm. 4.8 (with Thm. 4.1)'),
       directionality: holds(BT22, 'Thm. 7, p. 89'),
       weakDirectionality: holds(BT22, 'Thm. 7, p. 89', {
-        via: 'TV18 Obs. 7 (PDF p. 24): directionality iff weak directionality and semi-directionality + UC directionality (BT22 Thm. 7)',
+        via: 'TV18 Obs. 7 (p. 818): directionality iff weak directionality and semi-directionality + UC directionality (BT22 Thm. 7)',
       }),
       semiDirectionality: holds(BT22, 'Thm. 7, p. 89', {
-        via: 'TV18 Obs. 7 (PDF p. 24): directionality iff weak directionality and semi-directionality + UC directionality (BT22 Thm. 7)',
+        via: 'TV18 Obs. 7 (p. 818): directionality iff weak directionality and semi-directionality + UC directionality (BT22 Thm. 7)',
       }),
       nonInterference: holds(BT22, 'Thm. 7, p. 89', {
-        via: 'TV18 Obs. 6 (PDF p. 22, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + UC directionality (BT22 Thm. 7)',
+        via: 'TV18 Obs. 6 (p. 816, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + UC directionality (BT22 Thm. 7)',
       }),
       crashResistance: holds(BT22, 'Thm. 7, p. 89', {
-        via: 'TV18 Obs. 6 (PDF p. 22, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + UC directionality (BT22 Thm. 7)',
+        via: 'TV18 Obs. 6 (p. 816, citing Baroni et al. 2011): directionality implies non-interference implies crash resistance + UC directionality (BT22 Thm. 7)',
       }),
       succinctness: open(),
       sccRecursiveness: fails(BT22, 'Thm. 8, p. 89'),
@@ -893,25 +893,25 @@ export const afPrinciples: PrincipleTable = {
       serialisability: holds(BT22, 'Thm. 7, p. 89'),
     },
     NA: {
-      conflictFreeness: holds(TV18, 'Principle 2 text, PDF p. 13'),
-      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, PDF pp. 16–17'),
-      naivety: holds(TV18, 'Principle 6 text, PDF p. 15'),
-      admissibility: fails(TV18, 'Fig. 1, PDF p. 14'),
-      strongAdmissibility: fails(TV18, 'Principle 5 text, PDF p. 15', {
+      conflictFreeness: holds(TV18, 'Principle 2 text, p. 808'),
+      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, p. 811'),
+      naivety: holds(TV18, 'Principle 6 text, pp. 810–811'),
+      admissibility: fails(TV18, 'Fig. 1, p. 809'),
+      strongAdmissibility: fails(TV18, 'Principle 5 text, pp. 809–810', {
         via: 'Strong admissibility ⇒ admissibility (TV18 Obs. 2)',
       }),
-      defence: fails(TV18, 'Principle 3 text + Fig. 1, PDF p. 14'),
+      defence: fails(TV18, 'Principle 3 text + Fig. 1, p. 809'),
       reductAdmissibility: open(),
       semiQualifiedAdm: open(),
       reinstatement: fails(DG16, 'Prop. 3.13 + Table 1 (preprint)'),
       weakReinstatement: fails(DG16, 'Prop. 3.14 (preprint)'),
       cfReinstatement: holds(DG16, 'Prop. 3.12 (preprint)'),
       iMaximality: holds(DG16, 'Prop. 3.12 (preprint)'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
-      allowingAbstention: fails(TV18, 'Fig. 6, PDF p. 21'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
+      allowingAbstention: fails(TV18, 'Fig. 6, p. 815'),
       tightness: holds(DDLW15, 'Prop. 1(2) and its proof, p. 157'),
       conflictSensitiveness: holds(DDLW15, 'Prop. 1 (p. 157) + Lemma 3 (p. 158)', {
         via: 'tight (DDLW15 Prop. 1) ⇒ conflict-sensitive (Lemma 3)',
@@ -919,43 +919,43 @@ export const afPrinciples: PrincipleTable = {
       comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
         via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
-      languageIndependence: holds(TV18, 'Principle 1 text, PDF p. 13'),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
+      languageIndependence: holds(TV18, 'Principle 1 text, p. 808'),
       directionality: fails(DG16, 'Prop. 3.14 (preprint)'),
-      weakDirectionality: fails(TV18, 'Fig. 7 + text, PDF pp. 23–24'),
-      semiDirectionality: holds(TV18, 'text PDF p. 24'),
-      nonInterference: holds(TV18, 'text PDF p. 23'),
-      crashResistance: holds(TV18, 'text PDF p. 23'),
+      weakDirectionality: fails(TV18, 'Fig. 7 + text, pp. 817–818'),
+      semiDirectionality: holds(TV18, 'text, p. 819'),
+      nonInterference: holds(TV18, 'text, p. 817'),
+      crashResistance: holds(TV18, 'text, p. 818'),
       rationality: holds(BLW16, 'Def. 2 and text after it (arXiv v1)'),
       selfAttackerNeglection: holds(BBU22, 'Table 1, p. 23 (Def. 5.12, p. 22)'),
       succinctness: fails(
         GW13,
         'Thm. 5.11 p. 945 (stage), Thm. 5.13 p. 947 (naive), Thm. 5.8 p. 944; conclusion p. 947',
       ),
-      sccRecursiveness: fails(TV18, 'Fig. 22, PDF p. 40'),
+      sccRecursiveness: fails(TV18, 'Fig. 22, p. 833'),
       sccDecomposability: open(),
       weakSccDecomposability: open(),
       modularisation: fails(BBU20a, 'Example 3.5, p. 81'),
     },
     STG: {
-      conflictFreeness: holds(TV18, 'Principle 2 text, PDF p. 13'),
-      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, PDF pp. 16–17'),
-      naivety: holds(TV18, 'Principle 6 text, PDF p. 15'),
+      conflictFreeness: holds(TV18, 'Principle 2 text, p. 808'),
+      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, p. 811'),
+      naivety: holds(TV18, 'Principle 6 text, pp. 810–811'),
       admissibility: fails(BCG11, 'Table 2, p. 395'),
-      strongAdmissibility: fails(TV18, 'Principle 5 text, PDF p. 15', {
+      strongAdmissibility: fails(TV18, 'Principle 5 text, pp. 809–810', {
         via: 'Strong admissibility ⇒ admissibility (TV18 Obs. 2)',
       }),
-      defence: fails(TV18, 'Principle 3 text + Fig. 1, PDF p. 14'),
+      defence: fails(TV18, 'Principle 3 text + Fig. 1, p. 809'),
       reductAdmissibility: open(),
       semiQualifiedAdm: open(),
       reinstatement: fails(BCG11, 'Table 2, p. 395'),
       weakReinstatement: fails(DG16, 'Prop. 3.14 (preprint)'),
       cfReinstatement: holds(DG16, 'Prop. 3.12 (preprint)'),
       iMaximality: holds(BCG11, 'Table 2, p. 395'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
       tightness: holds(DDLW15, 'Prop. 1(3), p. 157'),
       conflictSensitiveness: holds(DDLW15, 'Prop. 1 (p. 157) + Lemma 3 (p. 158)', {
@@ -964,11 +964,11 @@ export const afPrinciples: PrincipleTable = {
       comClosure: holds(DDLW15, 'Lemma 5, p. 159', {
         via: 'conflict-sensitive (see CS cells, DDLW15) ⇒ com-closed (Lemma 5)',
       }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
-      languageIndependence: holds(TV18, 'Principle 1 text, PDF p. 13'),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
+      languageIndependence: holds(TV18, 'Principle 1 text, p. 808'),
       directionality: fails(BCG11, 'Table 2 and text after it (Fig. 8), p. 395'),
-      weakDirectionality: fails(TV18, 'Fig. 8, PDF p. 24'),
-      semiDirectionality: fails(TV18, 'Fig. 9, PDF p. 25'),
+      weakDirectionality: fails(TV18, 'Fig. 8, p. 818'),
+      semiDirectionality: fails(TV18, 'Fig. 9, p. 819'),
       nonInterference: holds(BCG11, '§3.5, text after Def. 51, p. 394; Table 2, p. 395'),
       crashResistance: holds(BCG11, '§3.5, text after Def. 48, p. 394; Table 2, p. 395'),
       rationality: holds(BLW16, 'Def. 2 and text after it (arXiv v1)'),
@@ -976,46 +976,46 @@ export const afPrinciples: PrincipleTable = {
         GW13,
         'Thm. 5.11 p. 945 (stage), Thm. 5.13 p. 947 (naive), Thm. 5.8 p. 944; conclusion p. 947',
       ),
-      sccRecursiveness: fails(TV18, 'Fig. 21, PDF p. 40'),
+      sccRecursiveness: fails(TV18, 'Fig. 21, p. 833'),
       sccDecomposability: open(),
       weakSccDecomposability: open(),
       modularisation: open(),
     },
     STG2: {
       conflictFreeness: holds(DG16, 'Prop. 3.2, manuscript p. 10'),
-      indirectCF: fails(TV18, 'Principle 7 + text, PDF p. 16; Fig. 4, PDF p. 17'),
+      indirectCF: fails(TV18, 'Principle 7 + text, Fig. 4, p. 811'),
       naivety: holds(DG16, 'Prop. 3.2, manuscript p. 10'),
-      admissibility: fails(TV18, 'Fig. 1, PDF p. 14'),
-      strongAdmissibility: fails(TV18, 'Principle 5 discussion, PDF p. 15', {
-        via: 'Strong Admissibility ⇒ Admissibility (TV18 Obs. 2, PDF p. 15)',
+      admissibility: fails(TV18, 'Fig. 1, p. 809'),
+      strongAdmissibility: fails(TV18, 'Principle 5 discussion, p. 810', {
+        via: 'Strong Admissibility ⇒ Admissibility (TV18 Obs. 2, p. 809)',
       }),
-      defence: fails(TV18, 'Principle 3, Fig. 1, PDF p. 14'),
+      defence: fails(TV18, 'Principle 3, Fig. 1, p. 809'),
       reductAdmissibility: fails(DRT20, 'Prop. 3, p. 171'),
       semiQualifiedAdm: fails(DRT20, 'Prop. 3, p. 171'),
       reinstatement: fails(DG16, 'Prop. 3.13, manuscript p. 15; Table 1 p. 16'),
       weakReinstatement: holds(DG16, 'Prop. 3.15, manuscript p. 16'),
       cfReinstatement: holds(DG16, 'Prop. 3.12, manuscript p. 15; Table 1 p. 16'),
       iMaximality: holds(DG16, 'Prop. 3.12, manuscript p. 15; Table 1 p. 16'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      allowingAbstention: fails(TV18, 'Principle 12, Fig. 6, PDF p. 21'),
-      tightness: holds(TV18, 'Obs. 12, PDF p. 35', {
+      existence: holds(TV18, 'Table 4, p. 826'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      allowingAbstention: fails(TV18, 'Principle 12, Fig. 6, p. 815'),
+      tightness: holds(TV18, 'Obs. 12, p. 829', {
         via: 'Every extension naive ⇒ tightness (TV18 Obs. 12, from Dunne et al. 2015 Prop. 1 + Lemma 2); naivety from DG12/DG16',
       }),
-      conflictSensitiveness: holds(TV18, 'Principle 22 text, PDF p. 36', {
+      conflictSensitiveness: holds(TV18, 'Principle 22 text, p. 830', {
         via: 'Tight ⇒ conflict-sensitive (Dunne et al. 2015)',
       }),
-      comClosure: holds(TV18, 'Principle 23 text, PDF p. 37', {
+      comClosure: holds(TV18, 'Principle 23 text, p. 831', {
         via: 'Conflict-sensitive ⇒ com-closed (Dunne et al. 2015)',
       }),
-      languageIndependence: holds(TV18, 'Principle 1, PDF p. 13'),
+      languageIndependence: holds(TV18, 'Principle 1, p. 808'),
       directionality: holds(DG16, 'Sect. 3.2 summary + Table 1, manuscript p. 16', {
         via: 'SCC-recursive semantics (with ≥1 extension) satisfy directionality (BG07, cited as [3]/[5])',
       }),
-      weakDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      weakDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality ⇔ Weak ∧ Semi-Directionality (TV18 Obs. 7); directionality from DG12/DG16',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      semiDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality ⇔ Weak ∧ Semi-Directionality (TV18 Obs. 7)',
       }),
       nonInterference: holds(DG16, 'Sect. 3.2, manuscript p. 16', {
@@ -1032,34 +1032,34 @@ export const afPrinciples: PrincipleTable = {
     },
     CF2: {
       conflictFreeness: holds(BG07, 'p. 678 (text after Def. 8)'),
-      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, PDF pp. 16–17'),
+      indirectCF: fails(TV18, 'Principle 7 text + Fig. 4, p. 811'),
       naivety: holds(BG07, 'Lemma 40, p. 687'),
       admissibility: fails(BG07, 'Table 1, p. 688; Fig. 1 text p. 689'),
       strongAdmissibility: fails(BG07, '§6.2 p. 691 (Nixon diamond); Table 1 p. 688'),
-      defence: fails(TV18, 'Principle 3 text + Fig. 1, PDF p. 14'),
+      defence: fails(TV18, 'Principle 3 text + Fig. 1, p. 809'),
       reductAdmissibility: fails(DRT20, 'Prop. 3, p. 171'),
       semiQualifiedAdm: fails(DRT20, 'Prop. 3, p. 171'),
       reinstatement: fails(BG07, '§6.2 p. 690, Fig. 1'),
       weakReinstatement: holds(BG07, '§6.2 p. 690 (via Prop. 50(b))'),
       cfReinstatement: holds(BG07, '§6.2 p. 690'),
       iMaximality: holds(BG07, '§6.1 p. 688–689; Table 1 p. 688'),
-      existence: holds(TV18, 'Table 4, PDF p. 32'),
-      nonTriviality: fails(TV18, '§4 end, PDF p. 40'),
-      uniqueStatus: fails(TV18, 'Table 4, PDF p. 32'),
-      decisiveness: fails(TV18, '§4 end, PDF p. 40'),
+      existence: holds(TV18, 'Table 4, p. 826'),
+      nonTriviality: fails(TV18, '§4 end, p. 833'),
+      uniqueStatus: fails(TV18, 'Table 4, p. 826'),
+      decisiveness: fails(TV18, '§4 end, p. 833'),
       allowingAbstention: fails(BCG11, '§3.4, text after Def. 46, p. 393; Table 2, p. 395'),
-      tightness: holds(TV18, 'Obs. 12, PDF p. 35', { via: 'CF2 ⊆ naive (BG07 Lemma 40)' }),
-      conflictSensitiveness: holds(TV18, 'text PDF p. 36', {
+      tightness: holds(TV18, 'Obs. 12, p. 829', { via: 'CF2 ⊆ naive (BG07 Lemma 40)' }),
+      conflictSensitiveness: holds(TV18, 'text, p. 830', {
         via: 'tight (TV18 Obs. 11/12) ⇒ CS (DDLW15 Lemma 3)',
       }),
-      comClosure: holds(TV18, 'text PDF pp. 37–38', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
-      downwardClosure: fails(TV18, '§4 end, PDF p. 40'),
+      comClosure: holds(TV18, 'text, pp. 831–832', { via: 'CS ⇒ com-closed (DDLW15 Lemma 5)' }),
+      downwardClosure: fails(TV18, '§4 end, p. 833'),
       languageIndependence: holds(BG07, 'p. 678 (text after Def. 7)'),
       directionality: holds(BG07, 'Prop. 55, p. 691; Table 1 p. 688'),
-      weakDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      weakDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
-      semiDirectionality: holds(TV18, 'Obs. 7 + text, PDF p. 24', {
+      semiDirectionality: holds(TV18, 'Obs. 7 + text, p. 818', {
         via: 'Directionality (BG07) ⇔ weak ∧ semi (TV18 Obs. 7)',
       }),
       nonInterference: holds(BG07, 'Table 1, p. 688 (directionality row); Props. 55, 58', {
@@ -1082,7 +1082,7 @@ export const afPrinciples: PrincipleTable = {
       naivety: holds(CT23, 'Thm. 6, p. 10 (proof in Suppl.)'),
       admissibility: fails(CT23, 'Suppl. Data Sheet 1, Thm. 20 + Fig. 6, pp. 8–9'),
       strongAdmissibility: fails(CT23, 'Suppl. Data Sheet 1, Thm. 20, p. 8', {
-        via: 'Strong Admissibility ⇒ Admissibility (TV18 Obs. 2, PDF p. 15)',
+        via: 'Strong Admissibility ⇒ Admissibility (TV18 Obs. 2, p. 809)',
       }),
       defence: fails(CT23, 'Suppl. Data Sheet 1, Thm. 20 + Fig. 6, pp. 8–9'),
       reductAdmissibility: open(),
@@ -1118,16 +1118,16 @@ export const afPrinciples: PrincipleTable = {
         via: 'T23 (not admissible) + TV18 Obs. 2 (strong adm. ⇒ adm.)',
       }),
       defence: fails(T23, 'T23 p. 6553; BlT24 Prop. 36', {
-        via: "For conflict-free extensions, defence ⇔ admissibility (TV18 PDF p. 14: 'an extension defends all it arguments if and only if it is admissible'); UD is conflict-free and not admissible",
+        via: "For conflict-free extensions, defence ⇔ admissibility (TV18 p. 809: 'an extension defends all it arguments if and only if it is admissible'); UD is conflict-free and not admissible",
       }),
       reductAdmissibility: open(),
       semiQualifiedAdm: open(),
       reinstatement: holds(T23, 'Prop. 4, p. 6554'),
       weakReinstatement: holds(T23, 'Prop. 4, p. 6554', {
-        via: 'Reinstatement ⇒ Weak Reinstatement (TV18 Obs. 4, PDF p. 17; BG07)',
+        via: 'Reinstatement ⇒ Weak Reinstatement (TV18 Obs. 4, p. 812; BG07)',
       }),
       cfReinstatement: holds(T23, 'Prop. 4, p. 6554', {
-        via: 'Reinstatement ⇒ CF-Reinstatement (TV18 Obs. 5, PDF p. 18; BG07)',
+        via: 'Reinstatement ⇒ CF-Reinstatement (TV18 Obs. 5, p. 813; BG07)',
       }),
       iMaximality: fails(T23, 'Sect. 4, p. 6554'),
       existence: holds(T23, 'Cor. 1, p. 6553'),
@@ -1171,7 +1171,7 @@ export const afPrinciples: PrincipleTable = {
         via: 'Strong Admissibility ⇒ Admissibility (TV18 Obs. 2)',
       }),
       defence: fails(T23, 'Example 5, p. 6554', {
-        via: 'For conflict-free extensions, defence ⇔ admissibility (TV18 PDF p. 14)',
+        via: 'For conflict-free extensions, defence ⇔ admissibility (TV18 p. 809)',
       }),
       reductAdmissibility: holds(T23, 'Prop. 7, p. 6556'),
       semiQualifiedAdm: open(),
@@ -1212,7 +1212,7 @@ export const afPrinciples: PrincipleTable = {
       admissibility: fails(BBU22, ''),
       strongAdmissibility: fails(BBU20a, 'Table 1, p. 85'),
       defence: fails(BBU22, '', {
-        via: 'BBU22 (not admissible) + TV18 PDF p. 14 (for conflict-free σ, defence ⇔ admissibility)',
+        via: 'BBU22 (not admissible) + TV18 p. 809 (for conflict-free σ, defence ⇔ admissibility)',
       }),
       reductAdmissibility: open(),
       semiQualifiedAdm: open(),
@@ -1268,7 +1268,7 @@ export const afPrinciples: PrincipleTable = {
       admissibility: fails(BBU22, ''),
       strongAdmissibility: fails(BBU20a, 'Table 1, p. 85'),
       defence: fails(BBU22, '', {
-        via: 'BBU22 (not admissible) + TV18 PDF p. 14 (for conflict-free σ, defence ⇔ admissibility)',
+        via: 'BBU22 (not admissible) + TV18 p. 809 (for conflict-free σ, defence ⇔ admissibility)',
       }),
       reductAdmissibility: holds(DRT20, 'Prop. 1, p. 170'),
       semiQualifiedAdm: fails(DRT20, 'Prop. 2, p. 171'),
@@ -1312,7 +1312,7 @@ export const afPrinciples: PrincipleTable = {
       admissibility: fails(BBU22, ''),
       strongAdmissibility: fails(BBU20a, 'Table 1, p. 85'),
       defence: fails(BBU22, '', {
-        via: 'BBU22 (not admissible) + TV18 PDF p. 14 (for conflict-free σ, defence ⇔ admissibility)',
+        via: 'BBU22 (not admissible) + TV18 p. 809 (for conflict-free σ, defence ⇔ admissibility)',
       }),
       reductAdmissibility: holds(DRT20, 'Prop. 1, p. 170'),
       semiQualifiedAdm: fails(DRT20, 'Prop. 2, p. 171'),
@@ -1356,7 +1356,7 @@ export const afPrinciples: PrincipleTable = {
       admissibility: fails(BBU22, ''),
       strongAdmissibility: fails(BBU20a, 'Table 1, p. 85'),
       defence: fails(BBU22, '', {
-        via: 'BBU22 (not admissible) + TV18 PDF p. 14 (for conflict-free σ, defence ⇔ admissibility)',
+        via: 'BBU22 (not admissible) + TV18 p. 809 (for conflict-free σ, defence ⇔ admissibility)',
       }),
       reductAdmissibility: holds(DRT20, 'Prop. 1, p. 170'),
       semiQualifiedAdm: fails(DRT20, 'Prop. 2, p. 171'),
