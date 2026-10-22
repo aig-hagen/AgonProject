@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-10-22
+
 ### Added
 
 - "Color-blind friendly colors" setting: evaluation results switch to blue and red-orange, which stay apart for
@@ -205,7 +207,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Earlier versions are available on the
 [GitHub Releases page](https://github.com/aig-hagen/AgonProject/releases).
 
-[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/aig-hagen/AgonProject/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/aig-hagen/AgonProject/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/aig-hagen/AgonProject/compare/v0.11.4...v0.12.0
 [0.11.4]: https://github.com/aig-hagen/AgonProject/compare/v0.11.3...v0.11.4
