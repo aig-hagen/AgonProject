@@ -37,6 +37,7 @@ import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWind
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import { extensionLabels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
+import { modeLabel, modeOptions } from '@/modules/common/evaluation/modes'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
@@ -116,6 +117,7 @@ const {
   emptyMessage,
   dataExtensionsFormatedAndSorted,
   resultItems,
+  countLabel,
   currentHighlight,
 } = useExtensionWindowBase(selectedMode, query, (extension) =>
   extensionLabels(
@@ -129,13 +131,8 @@ watch(currentHighlight, (h) => emit('highlight', h), { immediate: true })
 const isActive = computed(() => !suppressed && currentHighlight.value !== undefined)
 
 const windowTitle = computed(() => {
-  const modeLabel =
-    selectedMode.value === 'enumerate'
-      ? t('evaluation.modes.enumerate')
-      : selectedMode.value === 'credulous'
-        ? t('evaluation.modes.credulous')
-        : t('evaluation.modes.skeptical')
-  return `${selectedSemantic.value.displayName} · ${modeLabel}`
+  const modeText = modeLabel(t, selectedMode.value)
+  return `${selectedSemantic.value.displayName} · ${modeText}`
 })
 
 // The compact host labels its switcher pill with this title (not the raw key).
@@ -164,14 +161,7 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
         <template #label-suffix>
           <ModeHint :mode="selectedMode" />
         </template>
-        <PickerSelect
-          v-model="selectedMode"
-          :options="[
-            { value: 'enumerate', label: t('evaluation.modes.enumerate') },
-            { value: 'credulous', label: t('evaluation.modes.credulous') },
-            { value: 'skeptical', label: t('evaluation.modes.skeptical') },
-          ]"
-        />
+        <PickerSelect v-model="selectedMode" :options="modeOptions(t)" />
       </ParameterField>
     </template>
     <template #parameters-footer>
@@ -185,6 +175,7 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
           :items="resultItems"
           :empty-message="emptyMessage"
           :selection-hint="selectionHint"
+          :count-label="countLabel"
           :evaluation-duration-in-ms="dataExtensionsFormatedAndSorted.evaluationDurationInMs"
         />
       </template>

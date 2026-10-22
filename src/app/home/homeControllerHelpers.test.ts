@@ -32,6 +32,11 @@ test('nextDocumentName appends the smallest free integer suffix', () => {
   expect(nextDocumentName(['AF', 'AF2'], 'AF')).toBe('AF1')
 })
 
+test('nextDocumentName always numbers when asked to', () => {
+  expect(nextDocumentName([], 'AF', true)).toBe('AF1')
+  expect(nextDocumentName(['AF', 'AF1'], 'AF', true)).toBe('AF2')
+})
+
 test('exportFileName keeps allowed characters and strips the rest', () => {
   expect(exportFileName('My Graph_1', 'AF')).toBe('My Graph_1')
   expect(exportFileName('a/b:c*d', 'AF')).toBe('abcd')

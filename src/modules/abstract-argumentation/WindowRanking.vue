@@ -138,6 +138,8 @@ const rankGroups = computed(() => {
     }))
 })
 
+const RANKING_HUE = 210
+
 const numericalDisplayData = computed(() => {
   if (data.value === undefined || data.value.rankingType !== 'numerical') return undefined
   const scores = data.value.ranking.map((e) => e.score)
@@ -146,13 +148,14 @@ const numericalDisplayData = computed(() => {
   const range = maxScore - minScore
   return data.value.ranking.map((entry) => {
     const t = range === 0 ? 0.5 : (entry.score - minScore) / range
-    const hue = Math.round(30 + t * 90)
+    // One hue, lightness carries the score so it survives color-blind vision.
+    const lightness = Math.round(95 - t * 25)
     return {
       ...entry,
-      bgColor: `hsl(${hue}, 55%, 90%)`,
-      borderColor: `hsl(${hue}, 55%, 62%)`,
-      // Fixed-dark, hue-matched text: the chip background is light in both themes.
-      textColor: `hsl(${hue}, 45%, 22%)`,
+      bgColor: `hsl(${RANKING_HUE}, 60%, ${lightness}%)`,
+      borderColor: `hsl(${RANKING_HUE}, 50%, ${lightness - 30}%)`,
+      // Fixed-dark text: the chip background is light in both themes.
+      textColor: `hsl(${RANKING_HUE}, 45%, 18%)`,
     }
   })
 })
@@ -192,7 +195,7 @@ const statusLine = computed(() => {
     data.value.rankingType === 'lattice'
       ? t('evaluation.ranking.levelHint')
       : t('evaluation.ranking.scoreHint')
-  return `${data.value.evaluationDurationInMs}ms · ${hint}`
+  return `${hint} · ${data.value.evaluationDurationInMs}ms`
 })
 
 function computeWeights() {
@@ -290,7 +293,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
             <div
               v-for="entry in numericalDisplayData"
               :key="entry.id"
-              class="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 border text-sm min-w-18 max-w-full"
+              class="flex items-center justify-between gap-2 rounded-field px-3 py-1.5 border text-sm min-w-18 max-w-full"
               :style="{
                 backgroundColor: entry.bgColor,
                 borderColor: entry.borderColor,
@@ -298,7 +301,7 @@ const isActive = computed(() => !suppressed && data.value !== undefined)
               }"
             >
               <span class="font-medium truncate" :title="entry.name">{{ entry.name }}</span>
-              <span class="font-mono text-xs tabular-nums opacity-60 shrink-0">{{
+              <span class="font-mono text-xs tabular-nums opacity-75 shrink-0">{{
                 formatScore(entry.score)
               }}</span>
             </div>

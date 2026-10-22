@@ -17,12 +17,12 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowDownTrayIcon, BoltIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownTrayIcon, BoltIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
 import type { GenerateController } from '@/app/generate/useGenerate'
 import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -55,8 +55,6 @@ const {
   formatParamLabel,
 } = controller
 
-const router = useRouter()
-
 function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): number {
   const raw = (e.target as HTMLInputElement).value
   return type === 'int' ? parseInt(raw) : parseFloat(raw)
@@ -64,27 +62,15 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
-    <!-- Top bar -->
-    <header
-      class="flex-none flex items-center gap-1 px-2 pr-3 border-b border-base-300 bg-base-200"
-      style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
-    >
-      <button
-        class="btn btn-square btn-ghost btn-sm"
-        :aria-label="t('generate.backToEditor')"
-        @click="router.push('/')"
-      >
-        <ChevronLeftIcon class="size-6 opacity-70" />
-      </button>
-      <span class="flex-1 text-lg font-bold py-2.5">{{
-        t('generate.title', { name: shortName })
-      }}</span>
-    </header>
+  <div class="flex flex-col h-dvh w-full bg-base-100 overflow-hidden">
+    <PageHeader
+      :title="t('generate.title', { name: shortName })"
+      :back-label="t('generate.backToEditor')"
+    />
 
     <!-- Scrollable form -->
     <div class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-5">
-      <p v-if="selectedFrameworkType" class="text-sm text-base-content/60 leading-snug -mt-1">
+      <p v-if="selectedFrameworkType" class="text-sm text-base-content/65 leading-snug -mt-1">
         {{ selectedFrameworkType.description }}
       </p>
 
@@ -102,14 +88,14 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
       <template v-else>
         <!-- Algorithm selector -->
         <div class="flex flex-col gap-1.5">
-          <label class="text-[13px] font-semibold">{{ t('generate.algorithm') }}</label>
+          <label class="text-sm font-medium">{{ t('generate.algorithm') }}</label>
           <PickerSelect
             v-model="selectedAlgorithmId"
             :options="
               algorithms.map((algo) => ({ value: algo.id, label: formatAlgorithmName(algo.id) }))
             "
           />
-          <p v-if="selectedAlgorithm" class="text-xs text-base-content/50">
+          <p v-if="selectedAlgorithm" class="text-xs text-base-content/65">
             {{ selectedAlgorithm.description }}
           </p>
         </div>
@@ -117,7 +103,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
         <!-- Dynamic algorithm parameters -->
         <template v-for="p in nonSeedParams" :key="p.name">
           <label v-if="p.type === 'bool'" class="flex items-center justify-between gap-3 py-1">
-            <span class="text-[13px] font-semibold">{{ p.description }}</span>
+            <span class="text-sm font-medium">{{ p.description }}</span>
             <input
               type="checkbox"
               class="toggle"
@@ -127,10 +113,10 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
           </label>
 
           <div v-else-if="p.type === 'string'" class="flex flex-col gap-1.5">
-            <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
+            <label class="text-sm font-medium">{{ formatParamLabel(p.name) }}</label>
             <input
               type="text"
-              class="input w-full h-12 rounded-xl bg-base-100 border-base-300 font-mono"
+              class="input w-full h-12 bg-base-100 border-base-300 font-mono"
               :placeholder="p.description"
               :value="String(paramValues[p.name] ?? '')"
               @input="paramValues[p.name] = ($event.target as HTMLInputElement).value"
@@ -139,10 +125,10 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 
           <div v-else-if="p.min !== null && p.max !== null" class="flex flex-col gap-2">
             <div class="flex items-center justify-between gap-3">
-              <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
+              <label class="text-sm font-medium">{{ formatParamLabel(p.name) }}</label>
               <input
                 type="number"
-                class="input input-sm w-20 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                class="input input-sm w-20 text-right bg-base-100 border-base-300 font-mono"
                 :min="p.min"
                 :max="p.max"
                 :step="p.step ?? (p.type === 'int' ? 1 : 0.01)"
@@ -163,31 +149,31 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 
           <div v-else class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between gap-3">
-              <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
+              <label class="text-sm font-medium">{{ formatParamLabel(p.name) }}</label>
               <input
                 type="number"
-                class="input input-sm w-24 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                class="input input-sm w-24 text-right bg-base-100 border-base-300 font-mono"
                 :step="p.step ?? (p.type === 'int' ? '1' : 'any')"
                 :value="paramValues[p.name] as number"
                 @input="paramValues[p.name] = numberFromEvent($event, p.type)"
               />
             </div>
-            <p class="text-xs text-base-content/50">{{ p.description }}</p>
+            <p class="text-xs text-base-content/65">{{ p.description }}</p>
           </div>
         </template>
 
         <!-- Type-specific parameters -->
         <template v-if="selectedFrameworkType && selectedFrameworkType.params.length > 0">
-          <div class="text-xs font-bold text-base-content/40 tracking-wide uppercase">
+          <div class="section-label">
             {{ t('generate.typeOptions') }}
           </div>
           <template v-for="p in selectedFrameworkType.params" :key="p.name">
             <div v-if="p.min !== null && p.max !== null" class="flex flex-col gap-2">
               <div class="flex items-center justify-between gap-3">
-                <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
+                <label class="text-sm font-medium">{{ formatParamLabel(p.name) }}</label>
                 <input
                   type="number"
-                  class="input input-sm w-20 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                  class="input input-sm w-20 text-right bg-base-100 border-base-300 font-mono"
                   :min="p.min"
                   :max="p.max"
                   :step="p.step ?? (p.type === 'int' ? 1 : 0.01)"
@@ -208,28 +194,28 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 
             <div v-else class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between gap-3">
-                <label class="text-[13px] font-semibold">{{ formatParamLabel(p.name) }}</label>
+                <label class="text-sm font-medium">{{ formatParamLabel(p.name) }}</label>
                 <input
                   type="number"
-                  class="input input-sm w-24 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+                  class="input input-sm w-24 text-right bg-base-100 border-base-300 font-mono"
                   :step="p.step ?? (p.type === 'int' ? '1' : 'any')"
                   :value="typeParamValues[p.name] as number"
                   @input="typeParamValues[p.name] = numberFromEvent($event, p.type)"
                 />
               </div>
-              <p class="text-xs text-base-content/50">{{ p.description }}</p>
+              <p class="text-xs text-base-content/65">{{ p.description }}</p>
             </div>
           </template>
         </template>
 
         <!-- Seed -->
         <div v-if="hasSeed" class="flex items-center justify-between gap-3 py-1">
-          <span class="text-[13px] font-semibold">{{ t('generate.fixedSeed') }}</span>
+          <span class="text-sm font-medium">{{ t('generate.fixedSeed') }}</span>
           <span class="flex items-center gap-3">
             <input
               v-if="seedEnabled"
               type="number"
-              class="input input-sm w-24 text-right rounded-lg bg-base-100 border-base-300 font-mono"
+              class="input input-sm w-24 text-right bg-base-100 border-base-300 font-mono"
               step="1"
               v-model.number="seedValue"
             />
@@ -244,8 +230,8 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
       </div>
 
       <!-- Result -->
-      <div v-if="stats !== null" class="rounded-2xl border border-primary/25 bg-primary/5 p-4">
-        <div class="text-xs font-semibold text-primary/80 tracking-wide mb-2 uppercase">
+      <div v-if="stats !== null" class="rounded-box border border-primary/25 bg-primary/5 p-4">
+        <div class="section-label text-primary/80 mb-2">
           {{ t('generate.lastGenerated') }}
         </div>
         <i18n-t
@@ -253,7 +239,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
           keypath="generate.resultShort.generatedBipolar"
           tag="p"
           scope="global"
-          class="text-sm text-base-content/70"
+          class="text-sm text-base-content/80"
         >
           <template #args
             ><strong>{{ stats.nArgs }}</strong>
@@ -273,7 +259,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
           keypath="generate.resultShort.generatedIncomplete"
           tag="p"
           scope="global"
-          class="text-sm text-base-content/70"
+          class="text-sm text-base-content/80"
         >
           <template #args
             ><strong>{{ stats.nArgs }}</strong>
@@ -293,7 +279,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
           keypath="generate.resultShort.generated"
           tag="p"
           scope="global"
-          class="text-sm text-base-content/70"
+          class="text-sm text-base-content/80"
         >
           <template #args
             ><strong>{{ stats.nArgs }}</strong>
@@ -315,7 +301,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
         </p>
         <div class="flex flex-col gap-2 mt-3">
           <button
-            class="btn btn-primary h-12 w-full rounded-2xl"
+            class="btn btn-primary h-12 w-full"
             :disabled="tooManyEdgesForEditor"
             @click="openInEditor"
           >
@@ -324,15 +310,12 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
           <div v-if="frameworkTypeId !== 'adf' && frameworkTypeId !== 'setaf'" class="flex gap-2">
             <button
               v-if="frameworkTypeId === 'abstract'"
-              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5"
               @click="downloadICCMA"
             >
               <ArrowDownTrayIcon class="size-5" /> {{ t('generate.downloadIccma') }}
             </button>
-            <button
-              class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
-              @click="downloadTGF"
-            >
+            <button class="btn btn-outline btn-primary h-12 flex-1 gap-1.5" @click="downloadTGF">
               <ArrowDownTrayIcon class="size-5" /> {{ t('generate.downloadTgf') }}
             </button>
           </div>
@@ -346,7 +329,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
       <button
-        class="btn btn-primary w-full h-13 rounded-2xl text-base"
+        class="btn btn-primary w-full h-13 text-base"
         :disabled="isLoading || algorithms.length === 0"
         @click="generate"
       >

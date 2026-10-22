@@ -17,21 +17,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { useQuery } from '@tanstack/vue-query'
-import { computed, type MaybeRef, unref } from 'vue'
+import { computed, type Ref } from 'vue'
 import z from 'zod'
 
-import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
-import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
+import type { IndexedAF } from '@/modules/abstract-argumentation/evaluation/serialisationGraph'
 import { throwIfTimeout } from '@/modules/common/evaluation/tweety-project/errors'
 import { fetchTyped, USER_ID } from '@/modules/common/evaluation/tweety-project/fetch'
 import { parseListOfSequences } from '@/modules/common/evaluation/tweety-project/listOfSequences'
 import { parserListOfSets } from '@/modules/common/evaluation/tweety-project/listOfSets'
-import type { Input } from '@/modules/common/evaluation/types'
-import { IdMapping, type UUID } from '@/modules/common/ids'
 
 const ENDPOINT_SERIALISATION = '/serialisation'
 
-const TIMEOUT_IN_MS = 10000
+export const SERIALISATION_TIMEOUT_IN_MS = 10000
 const TIMEOUT_UNIT_MS = 'ms'
 
 export interface SerialisationFunction {
@@ -56,15 +53,6 @@ export const TERMINATION_FUNCTIONS: SerialisationFunction[] = [
 
 export const KEY_DEFAULT_SELECTION_FUNCTION = 'ADM'
 export const KEY_DEFAULT_TERMINATION_FUNCTION = 'PR'
-
-export type SequenceStep = { id: ArgumentId; name: string }[]
-export type Sequence = SequenceStep[]
-
-export interface SerialisationEvaluationResult {
-  stateId: UUID
-  evaluationDurationInMs: number
-  sequences: Sequence[]
-}
 
 interface GetSequencesRequestBody {
   email: string
@@ -94,7 +82,7 @@ export async function fetchSelection(
     nr_of_arguments: numberOfArguments,
     attacks,
     selectionFunction,
-    timeout: TIMEOUT_IN_MS,
+    timeout: SERIALISATION_TIMEOUT_IN_MS,
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_SERIALISATION, body, SerialisationResponseSchema)
@@ -118,7 +106,7 @@ export async function fetchIsTerminal(
     attacks,
     extension,
     terminationFunction,
-    timeout: TIMEOUT_IN_MS,
+    timeout: SERIALISATION_TIMEOUT_IN_MS,
     unit_timeout: TIMEOUT_UNIT_MS,
   }
   const response = await fetchTyped(ENDPOINT_SERIALISATION, body, SerialisationResponseSchema)
@@ -129,7 +117,7 @@ export async function fetchIsTerminal(
   }
 }
 
-async function fetchSequences(
+export async function fetchSequences(
   numberOfArguments: number,
   attacks: number[][],
   selectionFunction: string,
@@ -142,7 +130,7 @@ async function fetchSequences(
     attacks,
     selectionFunction,
     terminationFunction,
-    timeout: TIMEOUT_IN_MS,
+    timeout: SERIALISATION_TIMEOUT_IN_MS,
     unit_timeout: TIMEOUT_UNIT_MS,
   }
 
@@ -154,73 +142,24 @@ async function fetchSequences(
   }
 }
 
-export function useSerialisationEvaluationQuery(
-  inputRef: MaybeRef<Input<AbstractArgumentation<ArgumentData>>>,
-  selectionFunctionRef: MaybeRef<string>,
-  terminationFunctionRef: MaybeRef<string>,
-  enabled: MaybeRef<boolean>,
+export function useSerialisationSequencesQuery(
+  af: Ref<IndexedAF>,
+  selectionKey: Ref<string>,
+  terminationKey: Ref<string>,
+  enabled: Ref<boolean>,
 ) {
-  const argumentData = computed(() => {
-    const input = unref(inputRef)
-    const content = input.content
-    let numberOfArguments = 0
-    const idMapping = new IdMapping<ArgumentId, number>()
-    for (const [argumentId] of content.arguments()) {
-      idMapping.add(argumentId, ++numberOfArguments)
-    }
-    const attacks: number[][] = []
-    for (const [sourceId, targetId] of content.attacks()) {
-      attacks.push([idMapping.getOrFail(sourceId), idMapping.getOrFail(targetId)])
-    }
-    return { numberOfArguments, attacks, idMapping }
-  })
-
-  const queryKey = computed(
-    () =>
-      [
-        'serialisation_get_sequences',
-        selectionFunctionRef,
-        terminationFunctionRef,
-        argumentData,
-      ] as const,
-  )
-
-  type RawResult = { evaluationDurationInMs: number; rawSequences: number[][][] }
-
-  const queryResult = useQuery<RawResult>({
-    queryKey,
-    queryFn: ({ queryKey }) => {
-      const [, selectionFunction, terminationFunction, { attacks, numberOfArguments }] =
-        queryKey as [string, string, string, { attacks: number[][]; numberOfArguments: number }]
-      return fetchSequences(numberOfArguments, attacks, selectionFunction, terminationFunction)
-    },
+  return useQuery({
+    queryKey: computed(
+      () =>
+        [
+          'serialisation_get_sequences',
+          selectionKey.value,
+          terminationKey.value,
+          af.value,
+        ] as const,
+    ),
+    queryFn: ({ queryKey: [, selection, termination, { numberOfArgs, attacks }] }) =>
+      fetchSequences(numberOfArgs, attacks, selection, termination),
     enabled,
   })
-
-  const data = computed((): SerialisationEvaluationResult | undefined => {
-    const raw = queryResult.data.value
-    if (raw === undefined) return undefined
-
-    const input = unref(inputRef)
-    const argumentIdAndData = [...input.content.arguments()]
-
-    const sequences: Sequence[] = raw.rawSequences.map((rawSequence) =>
-      rawSequence.map((rawStep) =>
-        rawStep.map((serverArgumentId) => {
-          const idAndData = argumentIdAndData[serverArgumentId - 1]
-          if (idAndData === undefined) throw new Error('Server returned invalid argument.')
-          const [id, { name }] = idAndData
-          return { id, name }
-        }),
-      ),
-    )
-
-    return {
-      stateId: input.stateId,
-      evaluationDurationInMs: raw.evaluationDurationInMs,
-      sequences,
-    }
-  })
-
-  return { ...queryResult, data }
 }

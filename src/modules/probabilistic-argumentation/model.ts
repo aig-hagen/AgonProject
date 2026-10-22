@@ -22,6 +22,13 @@ import { DirectedGraph } from '@/modules/common/graph/graph'
 
 type ArgumentId = number
 
+// Probability 0 means "never present", i.e. the element might as well be deleted.
+export const MIN_PROBABILITY = 0.01
+
+export function clampProbability(p: number): number {
+  return Math.min(1, Math.max(MIN_PROBABILITY, p))
+}
+
 export interface PafArgumentData {
   name: string
   x: number

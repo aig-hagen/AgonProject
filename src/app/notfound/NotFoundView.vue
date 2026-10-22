@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline'
+import { ChevronLeftIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 
@@ -25,12 +25,12 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <div class="h-dvh w-screen flex flex-col items-center justify-center gap-4 bg-base-100 px-6">
-    <p class="text-6xl font-bold text-base-content/20">404</p>
+  <div class="h-dvh w-full flex flex-col items-center justify-center gap-4 bg-base-100 px-6">
+    <p class="text-6xl font-bold text-base-content/40">404</p>
     <h1 class="text-xl font-bold text-center">{{ t('notFound.heading') }}</h1>
-    <p class="max-w-sm text-center text-base-content/70">{{ t('notFound.description') }}</p>
+    <p class="max-w-sm text-center text-base-content/80">{{ t('notFound.description') }}</p>
     <RouterLink to="/" class="btn btn-primary btn-sm gap-1 mt-2">
-      <ArrowLeftIcon class="size-4" />
+      <ChevronLeftIcon class="size-4" />
       {{ t('notFound.backToEditor') }}
     </RouterLink>
   </div>

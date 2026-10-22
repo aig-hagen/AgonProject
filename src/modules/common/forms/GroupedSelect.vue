@@ -31,6 +31,8 @@ export interface GroupedSelectGroup<T> {
   key: string
   displayName: string
   options: T[]
+  /** Short muted note beside the heading, e.g. why its options are disabled. */
+  note?: string
 }
 
 const {
@@ -232,7 +234,7 @@ watch(isOpen, (open) => {
     >
       <span v-if="label" class="label">{{ label }}</span>
       <span class="truncate">{{ modelValue.displayName }}</span>
-      <ChevronDownIcon v-if="isCompact" class="size-4 shrink-0 text-base-content/50" />
+      <ChevronDownIcon v-if="isCompact" class="size-4 shrink-0 text-base-content/65" />
     </label>
     <Teleport to="body">
       <div
@@ -249,10 +251,13 @@ watch(isOpen, (open) => {
         <template v-for="(group, groupIndex) in groups" :key="group.key">
           <div
             v-if="group.options.length && group.displayName"
-            class="px-3 pt-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-wider text-secondary"
+            class="section-label px-3 pt-2 pb-1"
             :class="{ 'mt-1 border-t border-base-200': groupIndex > 0 }"
           >
             {{ group.displayName }}
+            <span v-if="group.note" class="normal-case tracking-normal font-normal">
+              · {{ group.note }}
+            </span>
           </div>
           <div
             v-for="option in group.options"

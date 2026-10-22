@@ -189,13 +189,13 @@ function loadFile() {
 <template>
   <!-- Dynamic viewport height so the bottom command bar tracks iOS/Android browser chrome
        showing/hiding, instead of sitting behind it as 100vh would. -->
-  <div class="flex flex-col h-dvh w-screen m-0 bg-base-100 overflow-hidden">
+  <div class="flex flex-col h-dvh w-full m-0 bg-base-100 overflow-hidden">
     <!-- Persistent brand hero (Documents/New surfaces); the editor surface uses
          GraphEditor's own top bar. Name + tagline stay visible while switching tabs. -->
     <header
       v-if="surface !== 'editor'"
       class="flex-none relative flex flex-col items-center text-center px-6 pb-3"
-      style="padding-top: calc(env(safe-area-inset-top) + 1rem)"
+      style="padding-top: calc(env(safe-area-inset-top) + 3.5rem)"
     >
       <button
         class="btn btn-square btn-ghost btn-sm absolute left-2"
@@ -203,7 +203,7 @@ function loadFile() {
         :aria-label="t('settings.title')"
         @click="settingsOpen = true"
       >
-        <Cog6ToothIcon class="size-5 opacity-70" />
+        <Cog6ToothIcon class="size-5" />
       </button>
       <button
         v-if="selectedDocumentId !== undefined && documentState !== undefined"
@@ -212,39 +212,26 @@ function loadFile() {
         :aria-label="t('home.backToEditor')"
         @click="goTo('editor')"
       >
-        <XMarkIcon class="size-5 opacity-70" />
+        <XMarkIcon class="size-5" />
       </button>
-      <span class="grid place-items-center size-13 rounded-2xl bg-base-200 text-primary mb-2.5">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.9"
-          class="size-7"
-        >
-          <circle cx="7" cy="7" r="3" />
-          <circle cx="17" cy="17" r="3" />
-          <path d="M9.5 9.5 14.5 14.5" />
-        </svg>
-      </span>
       <h1 class="font-display text-2xl font-bold tracking-tight">AgonProject</h1>
-      <p class="text-sm text-base-content/60 mt-1 max-w-64 leading-snug">
+      <p class="text-sm text-base-content/65 mt-1 max-w-64 leading-snug">
         {{ t('home.tagline') }}
       </p>
     </header>
 
     <!-- Documents | New segmented control (both non-editor surfaces). -->
     <div v-if="surface !== 'editor'" class="flex-none px-4 pt-1 pb-1">
-      <div class="grid grid-cols-2 p-1 rounded-xl bg-base-200">
+      <div class="grid grid-cols-2 p-1 rounded-field bg-base-200">
         <button
-          class="h-9 rounded-lg text-sm font-semibold transition-colors"
+          class="h-9 rounded-field text-sm font-semibold transition-colors"
           :class="surface === 'documents' ? 'bg-base-100 shadow-sm' : 'opacity-60'"
           @click="goTo('documents')"
         >
           {{ t('home.surfaces.frameworks') }}
         </button>
         <button
-          class="h-9 rounded-lg text-sm font-semibold transition-colors"
+          class="h-9 rounded-field text-sm font-semibold transition-colors"
           :class="surface === 'new' ? 'bg-base-100 shadow-sm' : 'opacity-60'"
           @click="goTo('new')"
         >
@@ -258,7 +245,7 @@ function loadFile() {
       <div v-show="surface === 'documents'" class="absolute inset-0 overflow-y-auto px-3 pb-3 pt-1">
         <div
           v-if="confirmDeleteAll"
-          class="flex items-center gap-2 rounded-xl border border-error px-3 py-2 my-2"
+          class="flex items-center gap-2 rounded-box border border-error px-3 py-2 my-2"
         >
           <span class="flex-1 text-sm">{{ t('home.documents.confirmDeleteAll') }}</span>
           <button class="btn btn-ghost btn-sm" @click="confirmDeleteAll = false">
@@ -269,7 +256,7 @@ function loadFile() {
           </button>
         </div>
 
-        <p v-if="documents.length === 0" class="text-center opacity-60 py-10">
+        <p v-if="documents.length === 0" class="text-center text-base-content/65 py-10">
           {{ t('home.documents.empty') }}
         </p>
 
@@ -278,7 +265,7 @@ function loadFile() {
             <!-- Rename mode -->
             <div
               v-if="renamingId === document.id"
-              class="flex items-center gap-2 rounded-xl border border-primary px-3 py-2 my-1"
+              class="flex items-center gap-2 rounded-box border border-primary px-3 py-2 my-1"
             >
               <input
                 v-model="renameText"
@@ -297,7 +284,7 @@ function loadFile() {
             <!-- Default row -->
             <div
               v-else
-              class="flex items-center gap-3 rounded-xl px-2.5 py-2.5"
+              class="flex items-center gap-3 rounded-box px-2.5 py-2.5"
               :class="
                 document.id === selectedDocumentId
                   ? 'bg-primary/10 border border-primary/30'
@@ -309,36 +296,22 @@ function loadFile() {
                 @click="openDocument(document.id)"
               >
                 <span
-                  class="grid place-items-center size-11 shrink-0 rounded-xl text-xs font-bold"
-                  :class="
-                    document.id === selectedDocumentId
-                      ? 'bg-primary text-primary-content'
-                      : 'bg-base-200 text-primary'
-                  "
+                  class="grid place-items-center size-11 shrink-0 rounded-field bg-base-200 text-primary text-xs font-bold"
                 >
                   <template v-if="document.type">{{ document.type }}</template>
                   <DocumentTextIcon v-else class="size-6" />
                 </span>
                 <span class="flex flex-col min-w-0 leading-tight">
-                  <span class="truncate text-[0.95rem] font-semibold">{{
+                  <span class="truncate text-base font-semibold">{{
                     document.name || t('home.untitled')
                   }}</span>
                   <span
-                    v-if="document.id === selectedDocumentId"
-                    class="text-xs text-base-content/60"
-                    >{{ t('home.documents.openNow') }}</span
-                  >
-                  <span
-                    v-else-if="document.lastEdited !== undefined"
-                    class="text-xs text-base-content/60"
+                    v-if="document.lastEdited !== undefined"
+                    class="text-xs text-base-content/65"
                     >{{ formatEdited(document.lastEdited) }}</span
                   >
                 </span>
               </button>
-              <span
-                v-if="document.id === selectedDocumentId"
-                class="size-2 shrink-0 rounded-full bg-success"
-              />
               <button
                 class="btn btn-square btn-ghost size-11"
                 :aria-label="
@@ -346,7 +319,7 @@ function loadFile() {
                 "
                 @click="menuDocId = document.id"
               >
-                <EllipsisHorizontalIcon class="size-5 opacity-60" />
+                <EllipsisHorizontalIcon class="size-5 text-base-content/65" />
               </button>
             </div>
           </li>
@@ -424,7 +397,7 @@ function loadFile() {
       class="flex-none px-4 pt-2.5 border-t border-base-200"
       style="padding-bottom: max(env(safe-area-inset-bottom), 0.75rem)"
     >
-      <button class="btn btn-primary w-full h-13 rounded-2xl gap-2 text-base" @click="goTo('new')">
+      <button class="btn btn-primary w-full h-13 gap-2 text-base" @click="goTo('new')">
         <PlusIcon class="size-5" /> {{ t('menu.newFramework') }}
       </button>
     </footer>

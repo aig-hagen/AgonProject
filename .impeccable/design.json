@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-15T00:00:00Z",
+  "title": "Design System: AgonProject",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "AIG Blue",
+        "canonical": "var(--color-primary)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "AIG Yellow",
+        "canonical": "var(--color-secondary)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "base-100": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "var(--color-base-100)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "base-200": {
+        "role": "neutral",
+        "displayName": "Paper shade",
+        "canonical": "var(--color-base-200)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "inset": {
+        "role": "neutral",
+        "displayName": "Inset",
+        "canonical": "var(--color-inset)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "base-300": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "var(--color-base-300)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "base-content": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "var(--color-base-content)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "neutral": {
+        "role": "neutral",
+        "displayName": "Slate chip",
+        "canonical": "var(--color-neutral)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "success": {
+        "role": "status",
+        "displayName": "Success",
+        "canonical": "var(--color-success)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "warning": {
+        "role": "status",
+        "displayName": "Warning",
+        "canonical": "var(--color-warning)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "error": {
+        "role": "status",
+        "displayName": "Error",
+        "canonical": "var(--color-error)",
+        "source": "src/modules/common/theme/palette.ts"
+      },
+      "selection": {
+        "role": "neutral",
+        "displayName": "Selection",
+        "canonical": "var(--color-selection)",
+        "source": "src/modules/common/theme/palette.ts"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "AgonProject wordmark only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles in the header bar, dialog titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and sheet titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default UI text."
+      },
+      "body-reading": {
+        "displayName": "Body Reading",
+        "purpose": "Long-form pages, max ~70ch."
+      },
+      "meta": {
+        "displayName": "Meta",
+        "purpose": "Captions, hints, details."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Section headings via .section-label."
+      },
+      "label-micro": {
+        "displayName": "Label Micro",
+        "purpose": "Field labels via .field-label, badges."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Code, serialisations, TeX."
+      }
+    },
+    "inkTiers": [
+      {
+        "name": "ink",
+        "value": "var(--color-base-content)",
+        "purpose": "Default text and icons."
+      },
+      {
+        "name": "ink-80",
+        "value": "color-mix(in oklab, var(--color-base-content) 80%, transparent)",
+        "purpose": "Secondary body text."
+      },
+      {
+        "name": "ink-65",
+        "value": "color-mix(in oklab, var(--color-base-content) 65%, transparent)",
+        "purpose": "Meta, captions, labels, placeholders, empty states, muted icons. Lightest readable tier (AA)."
+      },
+      {
+        "name": "ink-40",
+        "value": "color-mix(in oklab, var(--color-base-content) 40%, transparent)",
+        "purpose": "Disabled controls and decorative glyphs only."
+      }
+    ],
+    "shadows": [
+      {
+        "name": "rest",
+        "value": "0 1px 3px 0 var(--app-shadow-color), 0 1px 2px -1px var(--app-shadow-color)",
+        "purpose": "Small floating buttons on the canvas, cascading menus."
+      },
+      {
+        "name": "raised",
+        "value": "0 10px 15px -3px var(--app-shadow-color), 0 4px 6px -4px var(--app-shadow-color)",
+        "purpose": "Dropdowns, floating segmented control, toolbar pills."
+      },
+      {
+        "name": "float",
+        "value": "0 10px 15px -3px var(--app-shadow-float), 0 4px 6px -4px var(--app-shadow-float)",
+        "purpose": "shadow-float paired with a size: floating windows, sheets, theory panel, main menu."
+      },
+      {
+        "name": "popover",
+        "value": "0 20px 25px -5px var(--app-shadow-color), 0 8px 10px -6px var(--app-shadow-color)",
+        "purpose": "Rich tooltips and term popovers."
+      },
+      {
+        "name": "footer",
+        "value": "0 -4px 6px -4px color-mix(in srgb, var(--color-shadow) 15%, transparent)",
+        "purpose": "Sticky sheet footers."
+      }
+    ],
+    "motion": [
+      {
+        "name": "sheet-slide",
+        "value": "transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)",
+        "purpose": "Bottom sheet open, close and settle."
+      },
+      {
+        "name": "fade",
+        "value": "opacity 0.2s ease",
+        "purpose": "Scrim and overlay fades."
+      },
+      {
+        "name": "segment-slide",
+        "value": "translate, width, height 300ms ease-out",
+        "purpose": "Floating segmented control indicator."
+      },
+      {
+        "name": "state",
+        "value": "colors 150ms",
+        "purpose": "Hover and selection color changes."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "compact-max",
+        "value": "768px",
+        "purpose": "Below this the compact (mobile) shell renders."
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action in a view or dialog.",
+      "html": "<button class=\"ds-btn-primary\">Compute</button>",
+      "css": ".ds-btn-primary { background: var(--color-primary); color: var(--color-primary-content); font: 600 0.875rem/1 'Inter Variable', sans-serif; height: 2rem; padding: 0 12px; border: none; border-radius: 0.5rem; cursor: pointer; transition: background 150ms; } .ds-btn-primary:hover { background: color-mix(in oklab, var(--color-primary), black 10%); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Icon Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Default for toolbars, headers and window chrome.",
+      "html": "<button class=\"ds-btn-ghost\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M6 18 18 6M6 6l12 12\"/></svg></button>",
+      "css": ".ds-btn-ghost { display: inline-grid; place-items: center; width: 2rem; height: 2rem; background: transparent; color: var(--color-base-content); border: none; border-radius: 0.5rem; cursor: pointer; transition: background 150ms; } .ds-btn-ghost:hover { background: var(--color-base-200); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Search and text fields, with a field label above.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Search</span><input class=\"ds-input\" placeholder=\"Filter terms…\" /></label>",
+      "css": ".ds-field { display: grid; gap: 4px; } .ds-field-label { font: 500 0.65rem 'Inter Variable', sans-serif; text-transform: uppercase; letter-spacing: 0.025em; color: color-mix(in oklab, var(--color-base-content) 65%, transparent); } .ds-input { height: 2rem; padding: 0 10px; font: 400 0.875rem 'Inter Variable', sans-serif; color: var(--color-base-content); background: var(--color-base-100); border: 1px solid var(--color-base-300); border-radius: 0.5rem; } .ds-input::placeholder { color: color-mix(in oklab, var(--color-base-content) 40%, transparent); } .ds-input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "The one search control, desktop and mobile.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z\"/></svg><input type=\"search\" placeholder=\"Search terms…\" /></label>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; background: var(--color-base-200); border: 1px solid var(--color-base-300); border-radius: 0.5rem; color: color-mix(in oklab, var(--color-base-content) 40%, transparent); } .ds-search:has(:focus-visible) { outline: 2px solid var(--color-focus); outline-offset: 2px; } .ds-search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font: 400 0.875rem 'Inter Variable', sans-serif; color: var(--color-base-content); } .ds-search input::placeholder { color: color-mix(in oklab, var(--color-base-content) 65%, transparent); }"
+    },
+    {
+      "name": "Header Bar",
+      "kind": "nav",
+      "refersTo": "header-bar",
+      "description": "Ruled top of every secondary page, desktop and mobile.",
+      "html": "<header class=\"ds-header\"><button class=\"ds-header-back\" aria-label=\"Back\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\"><path d=\"M15.75 19.5 8.25 12l7.5-7.5\"/></svg></button><h1 class=\"ds-header-title\">Glossary</h1><span></span></header>",
+      "css": ".ds-header { display: grid; grid-template-columns: 1fr minmax(0, auto) 1fr; align-items: center; gap: 8px; height: 48px; padding: 0 12px 0 8px; background: var(--color-base-200); border-bottom: 1px solid var(--color-base-300); } .ds-header-back { justify-self: start; display: grid; place-items: center; width: 2rem; height: 2rem; border: none; background: transparent; color: color-mix(in oklab, var(--color-base-content) 65%, transparent); border-radius: 0.5rem; cursor: pointer; } .ds-header-back:hover { background: var(--color-base-300); } .ds-header-back:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; } .ds-header-title { margin: 0; text-align: center; font: 700 1.125rem/1.4 'Inter Variable', sans-serif; color: var(--color-base-content); }"
+    },
+    {
+      "name": "Module Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "In-flow container: hairline border, no shadow.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card-title\">Abstract Argumentation</h3><p class=\"ds-card-body\">Arguments and attacks between them.</p></article>",
+      "css": ".ds-card { padding: 24px; background: var(--color-base-100); border: 1px solid var(--color-base-300); border-radius: 0.75rem; } .ds-card-title { margin: 0 0 8px; font: 600 1rem/1.375 'Inter Variable', sans-serif; color: var(--color-base-content); } .ds-card-body { margin: 0; font: 400 0.875rem/1.5 'Inter Variable', sans-serif; color: color-mix(in oklab, var(--color-base-content) 65%, transparent); }"
+    },
+    {
+      "name": "Floating Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-floating",
+      "description": "Mode switch floating over the graph canvas.",
+      "html": "<div class=\"ds-seg-float\" role=\"tablist\"><button class=\"ds-seg-float-opt is-on\" role=\"tab\" aria-selected=\"true\">Edit</button><button class=\"ds-seg-float-opt\" role=\"tab\">Evaluate</button></div>",
+      "css": ".ds-seg-float { display: inline-flex; gap: 2px; padding: 2px; background: color-mix(in oklab, var(--color-base-100) 80%, transparent); backdrop-filter: blur(12px); border: 1px solid var(--color-base-300); border-radius: 9999px; box-shadow: 0 10px 15px -3px var(--app-shadow-color); } .ds-seg-float-opt { padding: 6px 14px; font: 500 0.875rem 'Inter Variable', sans-serif; color: var(--color-base-content); background: transparent; border: none; border-radius: 9999px; cursor: pointer; transition: background 300ms ease-out, color 150ms; } .ds-seg-float-opt.is-on { background: var(--color-primary); color: var(--color-primary-content); } .ds-seg-float-opt:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Inline Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-inline",
+      "description": "Option switch inside settings and forms.",
+      "html": "<div class=\"ds-seg-inline\"><button class=\"ds-seg-inline-opt is-on\">Light</button><button class=\"ds-seg-inline-opt\">Dark</button><button class=\"ds-seg-inline-opt\">System</button></div>",
+      "css": ".ds-seg-inline { display: inline-flex; padding: 2px; background: var(--color-base-300); border-radius: 0.5rem; } .ds-seg-inline-opt { padding: 4px 12px; font: 400 0.875rem 'Inter Variable', sans-serif; color: color-mix(in oklab, var(--color-base-content) 65%, transparent); background: transparent; border: none; border-radius: 0.375rem; cursor: pointer; transition: background 150ms, color 150ms; } .ds-seg-inline-opt.is-on { background: var(--color-base-100); color: var(--color-base-content); } .ds-seg-inline-opt:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Section Label",
+      "kind": "custom",
+      "refersTo": "label",
+      "description": "Shared small caps heading for groups.",
+      "html": "<h4 class=\"ds-section-label\">Semantics</h4>",
+      "css": ".ds-section-label { margin: 0; font: 600 0.75rem 'Inter Variable', sans-serif; text-transform: uppercase; letter-spacing: 0.025em; color: color-mix(in oklab, var(--color-base-content) 65%, transparent); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lab Notebook",
+    "overview": "AgonProject is a research tool, so it should look like one: a clean notebook on the desk of an argumentation researcher. The page is pale, cool paper. The argument graph is the drawing on it. The brand blue is the pen, used to mark what matters (the selected option, the primary action, the menu entry you're about to pick) and almost nowhere else. Panels, toolbars and windows are ruled margins that frame the work and never compete with it.\n\nDensity is moderate. The editor is a working surface that people stay in for a long session, so chrome is compact (small buttons, 14px UI text, hairline borders) but never cramped. Secondary pages (glossary, generator, attributions) feel like notebook pages: a ruled header bar, then content. The serif display face appears only for the AgonProject wordmark, like a title written on the notebook's cover.\n\nColors, fonts and radii are each defined in exactly one place and consumed through tokens. Desktop and mobile are one system at two densities, not two designs.",
+    "keyCharacteristics": [
+      "Cool blue-gray paper neutrals, one brand blue accent, a warm yellow used sparingly.",
+      "Inter for everything functional; Fraunces only for the wordmark; JetBrains Mono for formulas and code.",
+      "Hairline `base-300` rules separate regions; shadows only lift things that float over the canvas.",
+      "Two radii do almost all the work: field (8px) for controls, box (12px) for containers.",
+      "Same tokens, same components on desktop and mobile; mobile only changes density and touch size."
+    ],
+    "rules": [
+      {
+        "name": "The Single Source Rule",
+        "body": "No raw hex, `rgb()` or Tailwind primitive colors (`gray-500`, `text-black`) in app code. Every color comes from a palette token. Graph rendering, export output and the standalone maintenance page are the documented exceptions.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three Inks Rule",
+        "body": "Muted text and icons use exactly three ink strengths over `base-content`: `/80` for secondary body text, `/65` for meta, captions, labels, placeholders, empty states and muted icons, `/40` only for disabled controls and decorative glyphs that carry no information. Full-strength ink is the default. No other steps, and no `opacity-*` to fake a tier.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Floor Rule",
+        "body": "`/65` is the lightest ink for text anyone needs to read: it clears WCAG AA (4.5:1) on paper and paper shade in both modes, `/60` does not in light mode. Never set readable text at `/40`.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Pen Rule",
+        "body": "Brand blue marks the one thing you're about to act on or have selected. If a screen has more than a handful of blue elements at rest, something is shouting.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Scale Rule",
+        "body": "Desktop and mobile share the scale above. No arbitrary sizes (`text-[13px]`, `text-[0.8125rem]`); snap to the nearest step (11→12, 13→14, 15→16).",
+        "section": "typography"
+      },
+      {
+        "name": "The Cover Only Rule",
+        "body": "Fraunces is the notebook's cover. If it appears on anything that isn't the wordmark, it's wrong.",
+        "section": "typography"
+      },
+      {
+        "name": "The Shared Label Rule",
+        "body": "Small caps headings always come from `.section-label` or `.field-label`, always in ink, never in `primary` or `secondary`.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Shell Rule",
+        "body": "Secondary pages never invent their own top-of-page structure. No floating back links above a big title, no margin-only layouts.",
+        "section": "layout"
+      },
+      {
+        "name": "The Same Bones Rule",
+        "body": "A desktop view and its mobile twin use the same components (header bar, search, tabs, labels). Mobile may stack, enlarge touch targets and reflow, but not restyle. The one sanctioned difference: page tabs become pills on compact screens (see Tabs).",
+        "section": "layout"
+      },
+      {
+        "name": "The Tinted Shadow Rule",
+        "body": "Never use Tailwind's opacity modifier on shadows (`shadow-lg/30`). It generates a different class that skips the palette tint. Use the named tiers.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Float Only Rule",
+        "body": "Cards and panels sitting in the page flow get a hairline border, not a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do take every color from a palette token and every typeface from a font role.",
+      "Do use ink, ink `/80`, ink `/65` and (for disabled or decorative only) ink `/40`.",
+      "Do build every secondary page on the header bar shell.",
+      "Do use `.section-label` and `.field-label` for all small caps text.",
+      "Do separate in-flow regions with `base-300` hairlines and reserve shadows for floating surfaces.",
+      "Do make compact-shell touch targets 44px.",
+      "Do reuse the same component on desktop and mobile and change only density."
+    ],
+    "donts": [
+      "Don't use arbitrary font sizes (`text-[13px]`, `text-[0.6875rem]`); snap to the scale.",
+      "Don't use `shadow-*/NN` opacity modifiers; they skip the palette tint.",
+      "Don't use Fraunces anywhere but the wordmark.",
+      "Don't color caps labels with `text-secondary` or `text-primary`.",
+      "Don't mix back icons (`ArrowLeft`, `ArrowUturnLeft`) or invent new close-button sizes.",
+      "Don't fade icons with `opacity-*` to make them muted; use the ink tiers. Opacity is for disabled states only.",
+      "Don't add a third radius for controls (`rounded-lg`, `rounded-md`); use field or box."
+    ]
+  }
+}

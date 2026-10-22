@@ -47,16 +47,16 @@ const venue = computed(() => publication.venue.replace(/^In: /, ''))
         <span class="font-medium text-base-content/80 group-hover:text-primary">
           {{ publication.shortLabel }}
         </span>
-        <span class="block line-clamp-2 text-base-content/55">{{ publication.title }}</span>
+        <span class="block line-clamp-2 text-base-content/65">{{ publication.title }}</span>
       </span>
     </template>
     <template v-else>
       <span class="text-sm font-medium leading-snug text-base-content group-hover:text-primary">
         {{ publication.title }}
-        <ArrowTopRightOnSquareIcon class="inline size-3 align-baseline opacity-50" />
+        <ArrowTopRightOnSquareIcon class="inline size-3 align-baseline text-base-content/40" />
       </span>
-      <span class="text-xs text-base-content/70">{{ surnames }} · {{ publication.year }}</span>
-      <span class="text-xs italic leading-snug text-base-content/50">{{ venue }}</span>
+      <span class="text-xs text-base-content/80">{{ surnames }} · {{ publication.year }}</span>
+      <span class="text-xs italic leading-snug text-base-content/65">{{ venue }}</span>
     </template>
   </a>
 </template>

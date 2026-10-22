@@ -22,6 +22,7 @@ import { computed, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import { nextDocumentName } from '@/app/home/homeControllerHelpers'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import { trackEvent } from '@/app/usage/report'
 import { ANALYTICS_EVENTS } from '@/app/usage/signals'
@@ -54,6 +55,7 @@ import {
 } from '@/modules/incomplete-argumentation/model'
 import { incompleteArgumentationModule } from '@/modules/incomplete-argumentation/moduleConfig'
 import {
+  clampProbability,
   type PafArgumentData,
   ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
@@ -113,12 +115,11 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
   ] as unknown as ModuleConfig<Objectish>[])
 
   function getNextName(prefix: string): string {
-    const allNames = new Set(documents.value.map((d) => d.name))
-    if (!allNames.has(prefix)) return prefix
-    for (let i = 1; ; i++) {
-      const name = prefix + i.toString(10)
-      if (!allNames.has(name)) return name
-    }
+    return nextDocumentName(
+      documents.value.map((d) => d.name),
+      prefix,
+      true,
+    )
   }
 
   // --- Framework type from URL ---
@@ -322,11 +323,11 @@ export function useGenerate(db: IDBPDatabase<DocumentsDB>, modules: ModuleConfig
           paf.addArgument(i, {
             name: String(i + 1),
             ...circularPos(i),
-            probability: data.argument_probabilities[i] ?? 1,
+            probability: clampProbability(data.argument_probabilities[i] ?? 1),
           })
         }
         data.attacks.forEach(([src, tgt], j) => {
-          paf.addAttack(src - 1, tgt - 1, data.attack_probabilities[j] ?? 1)
+          paf.addAttack(src - 1, tgt - 1, clampProbability(data.attack_probabilities[j] ?? 1))
         })
         generated.value = paf
         stats.value = { nArgs: n, nAttacks: data.attacks.length }

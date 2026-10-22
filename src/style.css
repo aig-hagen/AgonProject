@@ -22,12 +22,26 @@
     light --default,
     dark;
 }
+/* Softer than DaisyUI's 4px/8px defaults; merged into the built-in themes. */
+@plugin "daisyui/theme" {
+  name: 'light';
+  default: true;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+}
+@plugin "daisyui/theme" {
+  name: 'dark';
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+}
 
 /* Font roles: single source of truth for typefaces (self-hosted, imported in main.ts). */
 @theme {
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
   --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
+  /* The one step below text-xs: field labels and badges. */
+  --text-micro: 0.65rem;
 }
 /* JetBrains Mono lacks these math symbols, and system fallbacks render them tiny or cramped,
    so they come from the bundled KaTeX fonts instead: ∅, and ← ↑ → ↓ ⇒ ∧ ∨ ⊢ ⊣ ⊤ ⊥. */
@@ -54,6 +68,16 @@
 /* App colors (base scale, brand, status, selection) are the single source of
    truth in @/modules/common/theme/palette.ts, injected as --color-* custom
    properties before mount. Graph colors are handled separately. */
+
+/* Shared caps labels: section headings, and field labels above a control. */
+@layer components {
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-wide text-base-content/65;
+  }
+  .field-label {
+    @apply text-micro font-medium uppercase tracking-wide text-base-content/65;
+  }
+}
 
 /* Menu entry icons use the brand blue; dark mode's primary is already lifted for
    legibility, so no per-mode override is needed here. */
@@ -113,10 +137,29 @@
 .shadow-xl {
   --tw-shadow: 0 20px 25px -5px var(--app-shadow-color), 0 8px 10px -6px var(--app-shadow-color);
 }
+/* Float tier: pair with a size (`shadow-lg shadow-float`) for surfaces floating over the canvas.
+   Compound selectors rather than a variable override, so the stronger tint doesn't inherit. */
+:root {
+  --app-shadow-float: color-mix(in srgb, var(--color-shadow) 30%, transparent);
+}
+.shadow-sm.shadow-float {
+  --tw-shadow: 0 1px 3px 0 var(--app-shadow-float), 0 1px 2px -1px var(--app-shadow-float);
+}
+.shadow-md.shadow-float {
+  --tw-shadow: 0 4px 6px -1px var(--app-shadow-float), 0 2px 4px -2px var(--app-shadow-float);
+}
+.shadow-lg.shadow-float {
+  --tw-shadow: 0 10px 15px -3px var(--app-shadow-float), 0 4px 6px -4px var(--app-shadow-float);
+}
 
 html,
 body {
   background-color: var(--color-base-100);
+}
+
+/* Keep landscape content clear of the notch (viewport-fit=cover). */
+#app {
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
 }
 
 .graph-controller__graph-canvas {
@@ -124,7 +167,7 @@ body {
 }
 
 .graph-controller__grid-line {
-  stroke: var(--color-base-300, #ddd);
+  stroke: var(--color-base-300);
 }
 
 .graph-controller__link,
@@ -140,7 +183,7 @@ body {
 }
 
 .graph-controller__node {
-  stroke: var(--graph-node-stroke-color, #5a87a8);
+  stroke: var(--graph-node-stroke-color, var(--graph-default-stroke));
   stroke-width: var(--graph-node-stroke-width, 1.5px);
 }
 
@@ -150,8 +193,8 @@ body {
 }
 
 /* Node hold-to-move charge glow: dark halo on the light canvas, light halo on the dark one. */
-[data-theme='dark'] {
-  --node-charge-glow: rgba(255, 255, 255, 0.5);
+:root {
+  --node-charge-glow: var(--graph-charge-glow);
 }
 
 /* App-wide scrollbars are chrome, not graph: palette base-300 thumbs that adapt per
@@ -189,11 +232,18 @@ body {
 /* Node names render bold, matching the ABA editor's node labels. */
 .graph-controller__node-label {
   font-weight: 700;
+  color: var(--graph-node-label-color, inherit);
+}
+
+/* Plain (label-only) nodes sit on the canvas, so their label keeps the theme text color. */
+.graph-controller__node-container:has(.graph-controller__node[style*='fill: transparent'])
+  .graph-controller__node-label {
+  color: var(--color-base-content);
 }
 
 .graph-controller__badge {
   fill: var(--color-base-100);
-  stroke: var(--graph-node-color, #5a87a8);
+  stroke: var(--graph-node-color, var(--graph-default-node));
 }
 
 .graph-controller__badge-label {
@@ -223,8 +273,9 @@ body {
 }
 
 .graph-controller__label-input {
-  background-color: var(--graph-node-color, #99b7d5);
-  border: var(--graph-node-stroke-width, 1.5px) solid var(--graph-node-stroke-color, #5a87a8);
+  background-color: var(--graph-node-color, var(--graph-default-node));
+  border: var(--graph-node-stroke-width, 1.5px) solid
+    var(--graph-node-stroke-color, var(--graph-default-stroke));
   border-radius: 50vh;
   padding: 1px 8px;
   font-size: 0.875rem;

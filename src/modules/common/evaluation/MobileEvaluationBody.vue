@@ -17,7 +17,7 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { computed, inject, onUnmounted, provide, type Ref, ref, watch } from 'vue'
+import { computed, inject, provide, type Ref, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import type { EvaluationWindowQuery } from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
@@ -26,7 +26,7 @@ import {
   EVALUATION_STICKY_FOOTER_KEY,
   type EvaluationDetentLayout,
 } from '@/modules/common/evaluation/hostContext'
-import { TWEETY_TIMEOUT_IN_MS } from '@/modules/common/evaluation/tweety-project/fetch'
+import { useEvaluationStatus } from '@/modules/common/evaluation/useEvaluationStatus'
 
 // Mobile-only evaluation body for the compact host sheet. Kept separate from the
 // desktop EvaluationCard so the detent-driven layout can diverge without regressing
@@ -47,50 +47,11 @@ const showParams = computed(() => detent.value !== 'compact')
 // Let the shared result grid pin its status/copy line to the sheet bottom.
 provide(EVALUATION_STICKY_FOOTER_KEY, true)
 
-const { error, isPending, isLoading, isError, refetch } = query
+const { isPending, isLoading, refetch } = query
 
-watch(isLoading, (loading, wasLoading) => {
-  if (loading && !wasLoading) emit('evaluate')
-})
-
-const statusStrip = computed(() => {
-  if (!isError.value) return undefined
-  switch (error.value?.name) {
-    case 'ServiceUnavailableError':
-      return { kind: 'warning', message: t('evaluation.status.serviceUnavailable') }
-    case 'RateLimitError':
-      return { kind: 'warning', message: t('evaluation.status.rateLimited') }
-    case 'EvaluationTimeoutError':
-      return { kind: 'warning', message: t('evaluation.status.timedOut', { seconds: TIMEOUT_S }) }
-    case 'ReasonerError':
-      return { kind: 'error', message: error.value.message }
-    default:
-      return { kind: 'error', message: t('evaluation.status.failed') }
-  }
-})
-
-// True only on the very first evaluation, before any result exists.
-const isInitialLoad = computed(() => isLoading.value && isPending.value)
-
-const TIMEOUT_S = Math.round(TWEETY_TIMEOUT_IN_MS / 1000)
-const remainingSeconds = ref(TIMEOUT_S)
-let countdownInterval: ReturnType<typeof setInterval> | null = null
-
-watch(isLoading, (loading) => {
-  if (loading) {
-    remainingSeconds.value = TIMEOUT_S
-    countdownInterval = setInterval(() => {
-      remainingSeconds.value = Math.max(0, remainingSeconds.value - 1)
-    }, 1000)
-  } else if (countdownInterval !== null) {
-    clearInterval(countdownInterval)
-    countdownInterval = null
-  }
-})
-
-onUnmounted(() => {
-  if (countdownInterval !== null) clearInterval(countdownInterval)
-})
+const { statusStrip, isInitialLoad, elapsedSeconds } = useEvaluationStatus(query, () =>
+  emit('evaluate'),
+)
 </script>
 
 <template>
@@ -128,8 +89,8 @@ onUnmounted(() => {
 
     <slot v-if="!isPending || isLoading" name="results" />
 
-    <p v-if="isLoading" class="text-base-content/50">
-      {{ t('evaluation.status.evaluatingCountdown', { seconds: remainingSeconds }) }}
+    <p v-if="isLoading" class="text-base-content/65">
+      {{ t('evaluation.status.evaluatingElapsed', { seconds: elapsedSeconds }) }}
     </p>
   </div>
 </template>

@@ -94,7 +94,7 @@ function loadFile() {
 </script>
 
 <template>
-  <div class="screen flex flex-col h-screen w-screen m-0 bg-base-100">
+  <div class="screen flex flex-col h-screen w-full m-0 bg-base-100">
     <LayoutTabs
       class="flex-none"
       :data="documents.map((document) => ({ id: document.id, name: document.name }))"
@@ -158,7 +158,7 @@ function loadFile() {
           :aria-label="t('settings.title')"
           @click="settingsDialog?.open()"
         >
-          <Cog6ToothIcon class="size-5 opacity-70" />
+          <Cog6ToothIcon class="size-5" />
         </button>
       </div>
     </main>

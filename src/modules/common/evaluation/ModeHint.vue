@@ -17,10 +17,9 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { InformationCircleIcon } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
 
-import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
+import TermHint from '@/modules/common/evaluation/TermHint.vue'
 
 const { mode } = defineProps<{ mode: string }>()
 
@@ -35,9 +34,5 @@ const termId = computed(() =>
 </script>
 
 <template>
-  <TermTooltip v-if="termId" :id="termId" trigger-class="cursor-help inline-flex">
-    <InformationCircleIcon
-      class="size-3.5 text-base-content/40 hover:text-base-content/70 transition-colors"
-    />
-  </TermTooltip>
+  <TermHint v-if="termId" :id="termId" />
 </template>

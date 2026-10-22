@@ -42,6 +42,7 @@ const ENDPOINT = '/paf'
 export const KEY_DEFAULT_SEMANTIC = 'ST'
 export const KEY_DEFAULT_MODE = 'credulous'
 export const KEY_DEFAULT_SOLVER = 'simple'
+export const MONTE_CARLO_TRIALS = 1000
 
 export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   {
@@ -115,6 +116,7 @@ interface PafRequestBody {
   attack_probabilities: number[]
   semantics: string
   solver: string
+  nr_of_trials: number
   timeout: number
   unit_timeout: typeof TWEETY_TIMEOUT_UNIT_MS
 }
@@ -140,6 +142,7 @@ async function fetchPaf(
     attack_probabilities: attackProbabilities,
     semantics,
     solver,
+    nr_of_trials: MONTE_CARLO_TRIALS,
     timeout: TWEETY_TIMEOUT_IN_MS,
     unit_timeout: TWEETY_TIMEOUT_UNIT_MS,
   }

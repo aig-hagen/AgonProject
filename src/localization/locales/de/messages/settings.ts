@@ -56,6 +56,9 @@ export default {
   gridCellSize: {
     label: 'Rasterzellengröße',
   },
+  colorBlindColors: {
+    label: 'Farben für Farbsehschwäche',
+  },
   mergeReciprocalLinks: {
     label: 'Gegenseitige Kanten zusammenführen',
   },

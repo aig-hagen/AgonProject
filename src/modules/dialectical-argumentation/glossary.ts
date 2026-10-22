@@ -16,7 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { BESWW13, BESWW18, BW10, SW15 } from '@/modules/common/tooltip/publications'
+import {
+  BESWW13,
+  BESWW18,
+  BT25,
+  BW10,
+  KVV21,
+  KVV22,
+  SW15,
+} from '@/modules/common/tooltip/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const dialecticalArgumentationGlossary: TooltipRegistry = {
@@ -68,26 +76,32 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
     label: 'admissible',
     title: 'Admissibility (ADF)',
     content: [
-      'A three-valued interpretation $v$ of an ',
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
       { ref: 'ADF' },
-      ' is an admissible model iff $v \\leq_i \\Gamma_D(v)$, where $\\Gamma_D(v)$ is the ',
+      ' is an admissible model iff $v \\leq_i \\Gamma_D(v)$ in the ',
+      { ref: 'informationOrdering' },
+      ', where $\\Gamma_D(v)$ is the ',
       { ref: 'operator', label: 'characteristic operator' },
       ' for ADFs.',
     ],
-    reference: BW10,
+    reference: BESWW13,
   },
 
   adfCO: {
     label: 'complete',
     title: 'Complete Semantics (ADF)',
     content: [
-      'A three-valued interpretation $v$ of an ',
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
       { ref: 'ADF' },
       ' is a complete model iff $v = \\Gamma_D(v)$, where $\\Gamma_D(v)$ is the ',
       { ref: 'operator', label: 'characteristic operator' },
       ' for ADFs.',
     ],
-    reference: BW10,
+    reference: BESWW13,
   },
 
   adfGR: {
@@ -100,29 +114,35 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
       { ref: 'operator', label: 'characteristic operator' },
       ' $\\Gamma_D$.',
     ],
-    reference: BW10,
+    reference: BESWW13,
   },
 
   adfPR: {
     label: 'preferred',
     title: 'Preferred Semantics (ADF)',
     content: [
-      'A three-valued interpretation $v$ of an ',
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
       { ref: 'ADF' },
       ' is a preferred model iff $v$ is ',
       { ref: 'adfCO', label: 'complete' },
-      " and there is no complete model $v'$ such that $v <_i v'$.",
+      " and there is no complete model $v'$ such that $v <_i v'$ in the ",
+      { ref: 'informationOrdering' },
+      '.',
     ],
-    reference: BW10,
+    reference: BESWW13,
   },
 
   adfST: {
     label: 'stable',
     title: 'Stable Semantics (ADF)',
     content: [
-      'A three-valued interpretation $v$ of an ',
+      'A two-valued interpretation $v$ of an ',
       { ref: 'ADF' },
-      ' is a stable model iff $v^{-1}(\\mathbf{t}) = v_{gr}^{-1}(\\mathbf{t})$, where $v_{gr}$ is the ',
+      ' is a stable model iff $v$ is a ',
+      { ref: 'adfMOD2', label: 'two-valued model' },
+      ' of $D$ and $v^{-1}(\\mathbf{t}) = v_{gr}^{-1}(\\mathbf{t})$, where $v_{gr}$ is the ',
       { ref: 'adfGR', label: 'grounded model' },
       ' of the ',
       { ref: 'reducedAdf', label: 'reduced ADF' },
@@ -137,7 +157,7 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
     content: [
       'The reduced ADF $D_{\\downarrow v}$ of an ',
       { ref: 'ADF' },
-      " $D$ under $v$ is defined as $D_{\\downarrow v} = (v^{-1}(\\mathbf{t}), L', C')$, where in each $C'_a$ the occurences of arguments $b$ with $v(b) = \\mathbf{f}$ are substituted by $\\bot$.",
+      " $D$ under $v$ is defined as $D_{\\downarrow v} = (v^{-1}(\\mathbf{t}), L', C')$, where in each $C'_a$ the occurrences of arguments $b$ with $v(b) = \\mathbf{f}$ are substituted by $\\bot$.",
     ],
     reference: BESWW13,
   },
@@ -165,7 +185,9 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
       { ref: 'threeValuedInterpretation' },
       ' $v$ of an ',
       { ref: 'ADF' },
-      " the two-valued completions are defined as $[v]_2 = \\{ v' \\mid v \\leq_i v'$ and $(v')^{-1}(\\textbf{u}=\\emptyset\\}$.",
+      " the two-valued completions are defined as $[v]_2 = \\{ v' \\mid v \\leq_i v'$ and $(v')^{-1}(\\textbf{u})=\\emptyset\\}$, where $\\leq_i$ is the ",
+      { ref: 'informationOrdering' },
+      '.',
     ],
     reference: BESWW18,
   },
@@ -185,7 +207,9 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
     label: 'conflict-free',
     title: 'Conflict-Freeness (ADF)',
     content: [
-      'A three-valued interpretation $v$ of an ',
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
       { ref: 'ADF' },
       ' is a conflict-free model iff, for every argument $a \\in A$, $v(a) = \\mathbf{t}$ implies that $C_a$ is satisfied by at least one ',
       { ref: 'completions', label: 'two-valued completion' },
@@ -198,12 +222,128 @@ export const dialecticalArgumentationGlossary: TooltipRegistry = {
     label: 'naive',
     title: 'Naive Semantics (ADF)',
     content: [
-      'A three-valued interpretation $v$ of an ',
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
       { ref: 'ADF' },
       ' is a naive model iff $v$ is ',
       { ref: 'adfCF', label: 'conflict-free' },
-      " and there is no conflict-free model $v'$ such that $v <_i v'$.",
+      " and there is no conflict-free model $v'$ such that $v <_i v'$ in the ",
+      { ref: 'informationOrdering' },
+      '.',
     ],
     reference: SW15,
+  },
+
+  informationOrdering: {
+    label: 'information ordering',
+    title: 'Information Ordering',
+    content: [
+      'The information ordering $\\leq_i$ on truth values is given by $\\mathbf{u} <_i \\mathbf{t}$ and $\\mathbf{u} <_i \\mathbf{f}$. For two ',
+      { ref: 'threeValuedInterpretation', label: 'three-valued interpretations' },
+      ' $v_1, v_2$ we have $v_1 \\leq_i v_2$ iff $v_1(a) \\leq_i v_2(a)$ for all $a \\in A$.',
+    ],
+    reference: BESWW13,
+  },
+
+  adfMOD2: {
+    label: 'two-valued model',
+    title: 'Two-Valued Model (ADF)',
+    content: [
+      'A two-valued interpretation $v: A \\mapsto \\{\\mathbf{t}, \\mathbf{f}\\}$ of an ',
+      { ref: 'ADF' },
+      ' is a (two-valued) model iff $v(a) = v(C_a)$ for all $a \\in A$.',
+    ],
+    reference: BW10,
+  },
+
+  adfMOD3: {
+    label: 'three-valued model',
+    title: 'Three-Valued Model (ADF)',
+    content: [
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
+      { ref: 'ADF' },
+      " is a three-valued model iff $v(a) \\neq \\mathbf{u}$ implies $v(a) = v(C_a)$ for all $a \\in A$, where $v(C_a)$ is evaluated in Kleene's strong three-valued logic: negation switches $\\mathbf{t}$ and $\\mathbf{f}$ and leaves $\\mathbf{u}$ unchanged, a conjunction is $\\mathbf{t}$ if both conjuncts are $\\mathbf{t}$, $\\mathbf{f}$ if some conjunct is $\\mathbf{f}$, and $\\mathbf{u}$ otherwise; disjunction is dual.",
+    ],
+    reference: BESWW13,
+  },
+
+  adfSAD: {
+    label: 'strongly admissible',
+    title: 'Strong Admissibility (ADF)',
+    content: [
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
+      { ref: 'ADF' },
+      ' is strongly admissible iff every $a$ with $v(a) \\neq \\mathbf{u}$ is strongly justified in $v$ w.r.t. $\\{a\\}$. An argument $a$ is strongly justified in $v$ w.r.t. a set $E \\subseteq A$ iff there is a set $P \\subseteq par(a) \\setminus E$ of ',
+      { ref: 'parents' },
+      ' such that $C_a$, with every $p \\in P$ replaced by its truth value $v(p)$, is a tautology if $v(a) = \\mathbf{t}$ or unsatisfiable if $v(a) = \\mathbf{f}$, and every $p \\in P$ is strongly justified in $v$ w.r.t. $E \\cup \\{p\\}$.',
+    ],
+    reference: KVV22,
+  },
+
+  adfS2V: {
+    label: 'semi-two-valued',
+    title: 'Semi-Two-Valued Semantics (ADF)',
+    content: [
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
+      { ref: 'ADF' },
+      ' is a semi-two-valued model iff $v$ is ',
+      { ref: 'adfCO', label: 'complete' },
+      ' and $v^{-1}(\\mathbf{u})$ is $\\subseteq$-minimal among all $w^{-1}(\\mathbf{u})$ such that $w$ is a complete model.',
+    ],
+    reference: KVV21,
+  },
+
+  adfSST: {
+    label: 'semi-stable',
+    title: 'Semi-Stable Semantics (ADF)',
+    content: [
+      'A ',
+      { ref: 'adfS2V', label: 'semi-two-valued model' },
+      ' $v$ of an ',
+      { ref: 'ADF' },
+      ' is a semi-stable model iff $v^{-1}(\\mathbf{t}) = w^{-1}(\\mathbf{t})$, where $w$ is the ',
+      { ref: 'adfGR', label: 'grounded model' },
+      ' of the ',
+      { ref: 'subReduct', label: 'sub-reduct' },
+      ' $D^v$.',
+    ],
+    reference: KVV21,
+  },
+
+  subReduct: {
+    label: 'sub-reduct',
+    title: 'Sub-Reduct',
+    content: [
+      'The sub-reduct $D^v$ of an ',
+      { ref: 'ADF' },
+      ' $D$ under $v$ is defined as $D^v = (A^v, L^v, C^v)$ with $A^v = v^{-1}(\\mathbf{t}) \\cup v^{-1}(\\mathbf{u})$, $L^v = L \\cap (A^v \\times A^v)$, and where in each $C^v_a$ the occurrences of arguments $b$ with $v(b) = \\mathbf{f}$ are substituted by $\\bot$. Unlike the ',
+      { ref: 'reducedAdf', label: 'reduced ADF' },
+      ', it keeps the undecided arguments.',
+    ],
+    reference: KVV21,
+  },
+
+  adfIS: {
+    label: 'initial models',
+    title: 'Initial Models (ADF)',
+    content: [
+      'A ',
+      { ref: 'threeValuedInterpretation' },
+      ' $v$ of an ',
+      { ref: 'ADF' },
+      ' is an initial model iff $v$ is ',
+      { ref: 'adfADM', label: 'admissible' },
+      " with $v \\neq v_\\mathbf{u}$ and there is no admissible model $v' \\neq v_\\mathbf{u}$ with $v' <_i v$ in the ",
+      { ref: 'informationOrdering' },
+      ', where $v_\\mathbf{u}$ maps every argument to $\\mathbf{u}$.',
+    ],
+    reference: BT25,
   },
 }

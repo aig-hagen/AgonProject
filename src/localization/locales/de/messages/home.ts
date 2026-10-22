@@ -26,7 +26,6 @@ export default {
   },
   documents: {
     empty: 'Noch keine Argumentationsgraphen.',
-    openNow: 'Jetzt geöffnet',
     edited: 'Bearbeitet {time}',
     actionsFor: 'Aktionen für {name}',
     deleteAll: 'Alle löschen',
@@ -38,6 +37,7 @@ export default {
     soon: 'Bald',
     beta: 'Beta',
     betaHint: 'Frühe Version: nutzbar, aber einige Funktionen fehlen noch.',
+    publications: 'Publikationen',
     openExample: 'Beispiel öffnen',
     newHeading: 'Neu',
     createNew: 'Neu erstellen',

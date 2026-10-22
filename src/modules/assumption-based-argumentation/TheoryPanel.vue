@@ -246,7 +246,7 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
       compact
         ? 'w-full'
         : [
-            'w-88 max-h-full overflow-hidden rounded-box bg-base-100 border border-base-300 shadow-lg/30',
+            'w-88 max-h-full overflow-hidden rounded-box bg-base-100 border border-base-300 shadow-lg shadow-float',
             { 'self-start': collapsed },
           ]
     "
@@ -257,7 +257,7 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
       :class="{ 'border-b border-base-300': !collapsed }"
     >
       <span class="flex-1 truncate font-medium">{{ t('editor.aba.theory.title') }}</span>
-      <span class="flex items-center gap-1.5 text-xs text-base-content/70">
+      <span class="flex items-center gap-1.5 text-xs text-base-content/80">
         <span class="size-1.5 rounded-full" :class="isFlat ? 'bg-success' : 'bg-warning'"></span>
         <TermTooltip id="abaFlat">{{
           isFlat ? t('editor.aba.theory.flat') : t('editor.aba.theory.nonFlat')
@@ -353,7 +353,7 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
             </button>
           </li>
         </ul>
-        <p v-else class="text-xs italic text-base-content/60">
+        <p v-else class="text-xs italic text-base-content/65">
           {{ t('editor.aba.theory.noAssumptions') }}
         </p>
       </section>
@@ -396,7 +396,7 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
             />
             <button
               type="button"
-              class="btn btn-ghost btn-xs btn-square text-base-content/60 hover:text-error"
+              class="btn btn-ghost btn-xs btn-square text-base-content/65 hover:text-error"
               :class="
                 compact
                   ? '-ml-0.5'
@@ -409,7 +409,7 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
             </button>
           </li>
         </ul>
-        <p v-else class="text-xs italic text-base-content/60">
+        <p v-else class="text-xs italic text-base-content/65">
           {{ t('editor.aba.theory.noAtoms') }}
         </p>
       </section>
@@ -433,12 +433,12 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
             >
               <button
                 type="button"
-                class="flex-1 min-w-0 py-0.5 text-left font-(family-name:--font-graph) text-[0.6875rem] [overflow-wrap:anywhere] cursor-pointer"
+                class="flex-1 min-w-0 py-0.5 text-left font-(family-name:--font-graph) text-xs [overflow-wrap:anywhere] cursor-pointer"
                 :title="t('editor.aba.theory.editRule')"
                 @click="editingRule = r.key"
               >
                 {{ r.head }} <span class="text-base-content/40">←</span>
-                <span class="text-base-content/85">{{ r.fact ? '⊤' : r.body.join(', ') }}</span>
+                <span class="text-base-content/80">{{ r.fact ? '⊤' : r.body.join(', ') }}</span>
               </button>
               <button
                 type="button"
@@ -463,7 +463,7 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
             </div>
           </li>
         </ul>
-        <p v-else class="text-xs italic text-base-content/60">
+        <p v-else class="text-xs italic text-base-content/65">
           {{ t('editor.aba.theory.noRules') }}
         </p>
 
@@ -486,13 +486,6 @@ function saveRule(r: RuleRow, head: NodeId, names: string[]) {
 </template>
 
 <style scoped>
-.section-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  opacity: 0.6;
-}
 /* Keeps the name and contrary columns aligned across assumption rows. */
 .assm-grid {
   display: grid;

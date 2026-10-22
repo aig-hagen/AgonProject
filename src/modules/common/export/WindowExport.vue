@@ -30,12 +30,12 @@ import {
   buildAfOptionList,
   LATEX_PREAMBLE,
   LATEX_STYLE_CHOICES,
-  LATEX_STYLE_DEFAULTS,
   spliceAfOptions,
 } from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ExportSheet from '@/modules/common/export/ExportSheet.vue'
+import { useExportPreferences } from '@/modules/common/export/useExportPreferences'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
@@ -59,13 +59,13 @@ const studioHighlightStyle = HighlightStyle.define([
   },
   {
     tag: [tags.tagName, tags.name, tags.labelName, tags.className, tags.typeName],
-    color: 'var(--color-accent)',
+    color: 'color-mix(in oklab, var(--color-secondary), var(--color-base-content) 45%)',
   },
   { tag: [tags.string, tags.special(tags.string)], color: 'var(--color-success)' },
   { tag: [tags.number, tags.literal, tags.unit], color: 'var(--color-info)' },
   {
     tag: [tags.comment, tags.lineComment, tags.blockComment],
-    color: 'color-mix(in oklch, var(--color-base-content) 50%, transparent)',
+    color: 'color-mix(in oklch, var(--color-base-content) 65%, transparent)',
     fontStyle: 'italic',
   },
   {
@@ -97,12 +97,14 @@ const latexConfig = computed<ExportConfig<DocumentT> | undefined>(() =>
   exportConfigs.find((config) => config.id === ExportFormatId.Latex),
 )
 
-const selectedArgumentStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.argumentStyle)
-const selectedNameStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.nameStyle)
-const selectedAttackStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.attackStyle)
-const selectedSupportStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.supportStyle)
-const selectedNodeDistance = shallowRef<number>(LATEX_STYLE_DEFAULTS.nodeDistance)
-const selectedNodeLabels = shallowRef<NodeLabelMode>(LATEX_STYLE_DEFAULTS.nodeLabels)
+const {
+  argumentStyle: selectedArgumentStyle,
+  nameStyle: selectedNameStyle,
+  attackStyle: selectedAttackStyle,
+  supportStyle: selectedSupportStyle,
+  nodeDistance: selectedNodeDistance,
+  nodeLabels: selectedNodeLabels,
+} = useExportPreferences()
 
 // The style values are the package's own (untranslated) keywords, so label == value.
 const toOptions = (values: readonly string[]): PickerOption[] =>
@@ -361,7 +363,7 @@ onBeforeUnmount(() => {
           </ParameterField>
         </div>
         <div class="flex items-center gap-3 text-sm" :class="{ 'opacity-40': mode === 'detached' }">
-          <span class="text-base-content/70">{{ t('export.style.nodeDistance') }}</span>
+          <span class="text-base-content/80">{{ t('export.style.nodeDistance') }}</span>
           <input
             type="range"
             class="range range-xs range-primary grow max-w-xs"
@@ -371,7 +373,7 @@ onBeforeUnmount(() => {
             :disabled="mode === 'detached'"
             v-model.number="selectedNodeDistance"
           />
-          <span class="w-8 text-right font-mono text-xs opacity-70">{{
+          <span class="w-8 text-right font-mono text-xs text-base-content/80">{{
             selectedNodeDistance
           }}</span>
         </div>
@@ -381,7 +383,7 @@ onBeforeUnmount(() => {
       <div class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
         <section class="flex min-w-0 flex-col gap-1.5">
           <div class="flex items-center gap-2">
-            <span class="section-cap">{{ t('export.formatLabels.code') }}</span>
+            <span class="section-label whitespace-nowrap">{{ t('export.formatLabels.code') }}</span>
             <span class="hairline"></span>
             <span v-if="mode === 'synced'" class="badge badge-xs badge-ghost gap-1 text-success">
               <CheckCircleIcon class="size-3.5" />{{ t('export.badge.synced') }}
@@ -397,7 +399,7 @@ onBeforeUnmount(() => {
         </section>
         <section class="flex min-w-0 flex-col gap-1.5">
           <div class="flex items-center gap-2">
-            <span class="section-cap">{{ t('export.preview') }}</span>
+            <span class="section-label whitespace-nowrap">{{ t('export.preview') }}</span>
             <span class="hairline"></span>
             <span class="badge badge-xs badge-primary badge-soft gap-1">
               <ArrowPathIcon class="size-3.5" :class="{ 'animate-spin': previewLoading }" />{{
@@ -447,7 +449,7 @@ onBeforeUnmount(() => {
         keypath="export.packageNote"
         tag="p"
         scope="global"
-        class="-mt-1.5 text-xs text-base-content/50"
+        class="-mt-1.5 text-xs text-base-content/65"
       >
         <template #package>
           <a
@@ -490,16 +492,7 @@ onBeforeUnmount(() => {
   </WindowShell>
 </template>
 <style scoped>
-/* Small uppercase section cap with a hairline rule filling the rest of the row. */
-.section-cap {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-base-content);
-  opacity: 0.55;
-  white-space: nowrap;
-}
+/* Hairline rule filling the rest of a section-label row. */
 .hairline {
   flex: 1 1 auto;
   height: 1px;
@@ -560,11 +553,11 @@ onBeforeUnmount(() => {
 }
 .preamble-tag {
   flex-shrink: 0;
-  font-size: 0.6rem;
+  font-size: var(--text-micro);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.025em;
   text-transform: uppercase;
-  color: color-mix(in oklch, var(--color-base-content) 55%, transparent);
+  color: color-mix(in oklch, var(--color-base-content) 65%, transparent);
   background: var(--color-base-100);
   border: 1px solid var(--color-base-300);
   padding: 0.05rem 0.375rem;

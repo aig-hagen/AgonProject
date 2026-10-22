@@ -125,7 +125,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: 'selection function',
     title: 'Selection Function $\\alpha$',
     content: [
-      'A selection function $\\alpha$ is any function $\\alpha : 2^{2^A} \\times 2^{2^A} \\times 2^{2^A} \\mapsto 2^{2^A}$, such that $\\alpha(X,Y,Z)\\subseteq X\\cup Y\\cup Z$ for all $X,Y,Z\\subseteq 2^{2^A}$.',
+      'A selection function $\\alpha$ is any function $\\alpha : 2^{2^A} \\times 2^{2^A} \\times 2^{2^A} \\mapsto 2^{2^A}$, such that $\\alpha(X,Y,Z)\\subseteq X\\cup Y\\cup Z$ for all $X,Y,Z\\subseteq 2^A$.',
     ],
     reference: T22,
   },
@@ -186,16 +186,16 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
   termFnADM: {
     label: '$\\beta_{\\mathsf{ad}}$',
     title: 'Admissible Termination Function $\\beta_{\\mathsf{ad}}$',
-    content: [
-      'The termination function $\\beta_{\\mathsf{ad}}$ returns $\\mathsf{true}$ for every state.',
-    ],
+    content: ['The ', { ref: 'termFn' }, ' $\\beta_{\\mathsf{ad}}$ returns $1$ for every state.'],
     reference: T22,
   },
   termFnCO: {
     label: '$\\beta_{\\mathsf{co}}$',
     title: 'Complete Termination Function $\\beta_{\\mathsf{co}}$',
     content: [
-      'The termination function $\\beta_{\\mathsf{co}}$ returns $\\mathsf{true}$ iff we have that ',
+      'The ',
+      { ref: 'termFn' },
+      ' $\\beta_{\\mathsf{co}}$ returns $1$ iff we have that ',
       { ref: 'unattackedInitial', label: '$\\mathsf{is}^{\\not\\leftarrow}(F)$' },
       '$=\\emptyset$.',
     ],
@@ -205,7 +205,9 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: '$\\beta_{\\mathsf{uc}}$',
     title: 'Unchallenged Termination Function $\\beta_{\\mathsf{uc}}$',
     content: [
-      'The termination function $\\beta_{\\mathsf{uc}}$ returns $\\mathsf{true}$ iff we have that ',
+      'The ',
+      { ref: 'termFn' },
+      ' $\\beta_{\\mathsf{uc}}$ returns $1$ iff we have that ',
       { ref: 'unattackedInitial', label: '$\\mathsf{is}^{\\not\\leftarrow}(F)$' },
       '$=$',
       { ref: 'unchallengedInitial', label: '$\\mathsf{is}^{\\not\\leftrightarrow}(F)$' },
@@ -217,7 +219,9 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: '$\\beta_{\\mathsf{pr}}$',
     title: 'Preferred Termination Function $\\beta_{\\mathsf{pr}}$',
     content: [
-      'The termination function $\\beta_{\\mathsf{pr}}$ returns $\\mathsf{true}$ iff we have that ',
+      'The ',
+      { ref: 'termFn' },
+      ' $\\beta_{\\mathsf{pr}}$ returns $1$ iff we have that ',
       { ref: 'IS', label: '$\\mathsf{is}(F)$' },
       '$=\\emptyset$.',
     ],
@@ -227,7 +231,9 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: '$\\beta_{\\mathsf{st}}$',
     title: 'Stable Termination Function $\\beta_{\\mathsf{st}}$',
     content: [
-      'The termination function $\\beta_{\\mathsf{st}}$ returns $\\mathsf{true}$ iff we have $F = (\\emptyset, \\emptyset)$.',
+      'The ',
+      { ref: 'termFn' },
+      ' $\\beta_{\\mathsf{st}}$ returns $1$ iff we have $F = (\\emptyset, \\emptyset)$.',
     ],
     reference: T22,
   },
@@ -263,7 +269,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
     label: 'reduct',
     title: '$S$-Reduct',
     content: [
-      "The reduct of $F$ with respect to $S$ is the argumentation framework $F^S = (A \\setminus (S \\cup S^+), R \\cap (A' \\times A'))$.",
+      "The reduct of $F$ with respect to $S$ is the argumentation framework $F^S = (A', R \\cap (A' \\times A'))$ with $A' = A \\setminus (S \\cup S^+)$.",
     ],
     reference: BBU20,
   },
@@ -390,7 +396,7 @@ export const abstractArgumentationGlossary: TooltipRegistry = {
       { ref: 'CO' },
       ' and $\\subseteq$-minimal. The unique grounded extension is the least fixpoint of the ',
       { ref: 'charFunction' },
-      ' $\\Delta_F(\\emptyset)$.',
+      ' $\\Delta_F$.',
     ],
     reference: D95,
   },
@@ -803,7 +809,7 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
     label: 'burden number',
     title: 'Burden Number',
     content: [
-      'The Burden number of $a$ is denoted $\\mathrm{Bur}(a) = \\langle \\mathrm{Bur}_0(a), \\mathrm{Bur}_1(a), \\ldots \\rangle$, where $\\mathrm{Bur}_0(a) = 1$ and $\\mathrm{Bur}_{i}(a) = 1 + \\sum_{b \\in a^-} \\frac{1}{\\mathrm{Bur}_{i-1}(b)}$ otherwise.',
+      'The Burden number of $a$ is denoted $\\mathrm{Bur}(a) = \\langle \\mathrm{Bur}_0(a), \\mathrm{Bur}_1(a), \\ldots \\rangle$, where $\\mathrm{Bur}_0(a) = 1$ and $\\mathrm{Bur}_{i}(a) = 1 + \\sum_{b \\in a^-} \\frac{1}{\\mathrm{Bur}_{i-1}(b)}$ for $i > 0$.',
     ],
     reference: AB13,
   },
@@ -825,7 +831,7 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
     content: [
       'The serialisation index $\\mathrm{ser}_F(a)$ of an argument $a$ is defined as $\\mathrm{ser}_F(a) = \\mathrm{min}\\{ n \\mid (S_1, \\ldots, S_n)$ is a ',
       { ref: 'serialisationSequence' },
-      ' and $a \\in S_n \\}$.',
+      ' and $a \\in S_n \\}$, with $\\min \\emptyset = \\infty$.',
     ],
     reference: BT22b,
   },
@@ -843,7 +849,7 @@ export const abstractArgumentationRankingGlossary: TooltipRegistry = {
     label: 'discussion-based',
     title: 'Discussion-Based Ranking',
     content: [
-      'The discussion-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{DB}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{DB} b$ iff $\\mathrm{Dis}(b) \\succeq_{lex} \\mathrm{Dis}(a)$, where $\\mathrm{Dis}$ is the ',
+      'The discussion-based ranking associates to any AF $F$ a ranking $\\succeq_F^\\mathrm{DB}$ on $A$ such that $\\forall a,b \\in A: a \\succeq_F^\\mathrm{DB} b$ iff $\\mathrm{Dis}(a) \\succeq_{lex} \\mathrm{Dis}(b)$, where $\\mathrm{Dis}$ is the ',
       { ref: 'discussionCount' },
       '.',
     ],

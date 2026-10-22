@@ -51,8 +51,8 @@ import {
   PlayIcon,
   PlusCircleIcon,
   QuestionMarkCircleIcon,
+  RectangleGroupIcon,
   ShareIcon,
-  SparklesIcon,
   Squares2X2Icon,
   TrashIcon,
 } from '@heroicons/vue/24/outline'
@@ -107,18 +107,12 @@ import {
 } from '@/modules/common/graph-editor/graphEditor'
 import {
   adjustNodeLabelFontSize,
+  type ColorTheme,
   parseHyperLinkId,
   parseLinkId,
+  resolveCssColor,
 } from '@/modules/common/graph-editor/graphEditorUtils'
-import {
-  GRAPH_STYLE_DARK,
-  GRAPH_STYLE_DEFAULT,
-  GRAPH_STYLE_HIGH_CONTRAST,
-  GRAPH_STYLE_LIBRARY,
-  GRAPH_STYLE_MINIMAL,
-  GRAPH_STYLE_OUTLINE,
-  type GraphStyle,
-} from '@/modules/common/graph-editor/graphStyle'
+import { GRAPH_STYLES, type GraphStyle } from '@/modules/common/graph-editor/graphStyle'
 import {
   editorStateToLayoutGraph,
   layoutGraph,
@@ -468,49 +462,34 @@ const {
   snapMode,
   showHints,
   mergeReciprocalLinks,
+  graphColorScheme,
 } = useSettings()
 function pickStyle(): GraphStyle {
-  if (graphStyle !== undefined) return graphStyle
-  switch (graphStyleSetting.value) {
-    case 'high-contrast':
-      return GRAPH_STYLE_HIGH_CONTRAST
-    case 'minimal':
-      return GRAPH_STYLE_MINIMAL
-    case 'library':
-      return GRAPH_STYLE_LIBRARY
-    case 'outline':
-      return GRAPH_STYLE_OUTLINE
-    default:
-      return isDark.value ? GRAPH_STYLE_DARK : GRAPH_STYLE_DEFAULT
-  }
+  // A stale stored setting falls back to the default preset.
+  return graphStyle ?? GRAPH_STYLES[graphStyleSetting.value] ?? GRAPH_STYLES.default
 }
 
-// Resolve a CSS color that may reference palette tokens (`var(...)` / `color-mix(...)`) to a
-// concrete color, so it can be handed to the graph library (which can't parse either). Plain
-// hex/named colors pass through untouched.
-function resolveCssColor(value: string): string {
-  if (typeof document === 'undefined') return value
-  if (!value.includes('var(') && !value.includes('color-mix')) return value
-  const probe = document.createElement('span')
-  probe.style.color = value
-  probe.style.position = 'absolute'
-  probe.style.pointerEvents = 'none'
-  document.body.appendChild(probe)
-  const resolved = getComputedStyle(probe).color
-  probe.remove()
-  return resolved || value
-}
+const colorTheme = computed<ColorTheme>(() => (isDark.value ? 'dark' : 'light'))
+const resolveColor = (value: string) =>
+  resolveCssColor(value, colorTheme.value, graphColorScheme.value)
 
 const effectiveStyle = computed<GraphStyle>(() => {
-  // Referenced so token-based colors re-resolve when the theme toggles.
-  void isDark.value
   const base = pickStyle()
   return {
     ...base,
-    nodeColor: resolveCssColor(base.nodeColor),
-    linkColor: resolveCssColor(base.linkColor),
+    nodeColor: resolveColor(base.nodeColor),
+    linkColor: resolveColor(base.linkColor),
   }
 })
+
+function legendBorder(outline: NodeOutline | undefined) {
+  return outline ? { borderStyle: outline.toLowerCase(), borderWidth: '2px' } : {}
+}
+
+function linkTypeColor(type: LinkType): string {
+  const color = linkConfigs[type]?.color
+  return color ? resolveColor(color) : effectiveStyle.value.linkColor
+}
 
 const linkNames = computed(() =>
   Object.values(linkConfigs)
@@ -853,6 +832,9 @@ useHighlight({
   getIdMapping: () => idMapping,
   stateRef,
   effectiveStyle,
+  colorTheme,
+  colorScheme: graphColorScheme,
+  getNodeOutline: (id) => nodeOutlines?.get(id),
   isUncolored: (id) => nodeShapes?.get(id) === 'plain',
 })
 
@@ -941,8 +923,7 @@ function onHyperLinkCreated(link: { id: string; label?: string }, cause: EVENT_C
   })
   triggerSettle()
   void nextTick(() => {
-    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
-    graphComponentRef.value!.setColor(linkColor, link.id)
+    graphComponentRef.value!.setColor(linkTypeColor(selectedLinkType.value), link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
   })
 }
@@ -1006,8 +987,7 @@ function onLinkCreated(
   })
   triggerSettle()
   void nextTick(() => {
-    const linkColor = linkConfigs[selectedLinkType.value]?.color ?? effectiveStyle.value.linkColor
-    graphComponentRef.value!.setColor(linkColor, link.id)
+    graphComponentRef.value!.setColor(linkTypeColor(selectedLinkType.value), link.id)
     graphComponentRef.value!.setLinkArrowType(toArrowType(selectedLinkType.value), link.id)
     applyReciprocalStyle(link.id, selectedLinkType.value)
   })
@@ -1427,7 +1407,7 @@ function buildGraphJson(state: GraphEditorState) {
       return {
         sourceId: link.sourceId,
         targetId: link.targetId,
-        color: linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor,
+        color: linkTypeColor(link.type),
         arrowType: toArrowType(link.type),
         reciprocalStyle: reciprocalStyleFor(state.links, link.sourceId, link.targetId, link.type),
       }
@@ -1437,15 +1417,13 @@ function buildGraphJson(state: GraphEditorState) {
       sourceId: link.sourceId,
       targetId: link.targetId,
       kind: link.kind,
-      color: style?.color
-        ? resolveCssColor(style.color)
-        : (linkConfigs[link.type]?.color ?? effectiveStyle.value.linkColor),
+      color: style?.color ? resolveColor(style.color) : linkTypeColor(link.type),
       arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(link.type),
       arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
     }
   })
   const hyperLinks: jsonHyperLink[] = (state.hyperLinks ?? []).map((hyperLink) => {
-    const typeColor = linkConfigs[hyperLink.type]?.color ?? effectiveStyle.value.linkColor
+    const typeColor = linkTypeColor(hyperLink.type)
     if (hyperLink.kind === undefined) {
       return {
         sourceIds: hyperLink.sourceIds,
@@ -1459,7 +1437,7 @@ function buildGraphJson(state: GraphEditorState) {
       sourceIds: hyperLink.sourceIds,
       targetId: hyperLink.targetId,
       kind: hyperLink.kind,
-      color: style?.color ? resolveCssColor(style.color) : typeColor,
+      color: style?.color ? resolveColor(style.color) : typeColor,
       arrowType: style?.arrowType ? ArrowType[style.arrowType] : toArrowType(hyperLink.type),
       arrowHead: ArrowHead[style?.arrowHead ?? 'ARROW'],
     }
@@ -1581,8 +1559,7 @@ function updateLinkType(linkId: string, linkType: LinkType) {
   const publicTargetId = idMapping.getOrFail(internalTargetId)
   emit('linkChanged', { sourceId: publicSourceId, targetId: publicTargetId, type: linkType })
   const arrowType = toArrowType(linkType)
-  const linkColor = linkConfigs[linkType]?.color ?? effectiveStyle.value.linkColor
-  graphComponentRef.value!.setColor(linkColor, linkId)
+  graphComponentRef.value!.setColor(linkTypeColor(linkType), linkId)
   graphComponentRef.value!.setLinkArrowType(arrowType, linkId)
   applyReciprocalStyle(linkId, linkType)
 }
@@ -2012,6 +1989,7 @@ defineExpose({
       '--graph-node-color': effectiveStyle.nodeColor,
       '--graph-node-stroke-color': effectiveStyle.nodeStrokeColor,
       '--graph-node-stroke-width': `${effectiveStyle.nodeStrokeWidth}px`,
+      '--graph-node-label-color': effectiveStyle.nodeLabelColor,
       '--graph-link-stroke-width': `${effectiveStyle.linkStrokeWidth}px`,
     }"
   >
@@ -2058,12 +2036,15 @@ defineExpose({
     </div>
     <DefineLegend>
       <ul
-        class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
+        class="flex flex-col gap-1 rounded-box border border-base-300 bg-base-100/90 px-2.5 py-1.5 text-xs shadow-sm pointer-events-none"
       >
         <li v-for="entry in highlight?.legend" :key="entry.label" class="flex items-center gap-2">
           <span
             class="size-3 rounded-full border border-base-content/30"
-            :style="{ backgroundColor: entry.color ?? 'var(--graph-node-color)' }"
+            :style="{
+              backgroundColor: entry.color ?? 'var(--graph-node-color)',
+              ...legendBorder(entry.outline),
+            }"
           ></span>
           {{ entry.label }}
         </li>
@@ -2133,7 +2114,7 @@ defineExpose({
               @click="emit('open-extension-window')"
               :title="t('editor.toolbar.extensionSemantics')"
             >
-              <SigmaIcon class="size-6 opacity-70" />
+              <SigmaIcon class="size-6" />
             </button>
             <button
               v-if="hasRankingSlot"
@@ -2141,7 +2122,7 @@ defineExpose({
               @click="emit('open-ranking-window')"
               :title="t('editor.toolbar.rankingSemantics')"
             >
-              <SucceqIcon class="size-6 opacity-70" />
+              <SucceqIcon class="size-6" />
             </button>
             <button
               v-if="hasSerialisationSlot"
@@ -2149,7 +2130,7 @@ defineExpose({
               @click="emit('open-serialisation-window')"
               :title="t('editor.toolbar.serialisationSequences')"
             >
-              <SerialisationIcon class="size-6 opacity-70" />
+              <SerialisationIcon class="size-6" />
             </button>
           </div>
           <button
@@ -2159,7 +2140,7 @@ defineExpose({
             @click="isExportOpened = !isExportOpened"
             :title="t('menu.latexStudio')"
           >
-            <TexIcon class="size-6 opacity-70" />
+            <TexIcon class="size-6" />
           </button>
         </div>
       </div>
@@ -2180,39 +2161,28 @@ defineExpose({
     <template v-if="layoutMode === 'compact'">
       <header
         ref="mobileTopBar"
-        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 h-14 bg-base-200/95 backdrop-blur border-b border-base-300"
-        style="padding-top: env(safe-area-inset-top)"
+        class="absolute top-0 inset-x-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-2 px-2.5 bg-base-200 border-b border-base-300"
+        style="
+          padding-top: env(safe-area-inset-top);
+          height: calc(3.5rem + env(safe-area-inset-top));
+        "
       >
         <!-- Switcher chip: back to home / document picker -->
         <button
-          class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-xl bg-base-100 border border-base-300 shadow-sm"
+          class="flex items-center gap-2 h-11 min-w-0 pl-1.5 pr-2.5 rounded-field bg-base-100 border border-base-300 shadow-sm"
           :aria-label="t('editor.toolbar.backToFrameworks')"
           @click="openDocumentSwitcher"
         >
           <span
-            class="grid place-items-center size-7 shrink-0 rounded-lg bg-primary/25 text-primary"
+            v-if="typeBadge"
+            class="grid place-items-center h-7 min-w-7 px-1 shrink-0 rounded-field bg-base-200 text-primary text-micro font-bold"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="size-[1.1rem]"
-            >
-              <circle cx="7" cy="7" r="3" />
-              <circle cx="17" cy="17" r="3" />
-              <path d="M9.5 9.5 14.5 14.5" />
-            </svg>
+            {{ typeBadge }}
           </span>
-          <span class="flex flex-col items-start min-w-0 leading-tight">
-            <span class="text-sm font-semibold truncate max-w-38">{{
-              documentName || 'Untitled'
-            }}</span>
-            <span v-if="typeBadge" class="text-[0.7rem] text-base-content/60 truncate max-w-38">{{
-              typeBadge
-            }}</span>
-          </span>
-          <ChevronDownIcon class="size-4 shrink-0 opacity-50" />
+          <span class="text-sm font-semibold truncate max-w-38">{{
+            documentName || t('home.untitled')
+          }}</span>
+          <ChevronDownIcon class="size-4 shrink-0 text-base-content/65" />
         </button>
         <span class="font-display text-base font-bold text-base-content/80 text-center truncate">
           AgonProject
@@ -2223,41 +2193,41 @@ defineExpose({
           :aria-label="t('menu.label')"
           @click="isMenuOpen = true"
         >
-          <Bars3Icon class="size-6 opacity-70" />
+          <Bars3Icon class="size-6" />
         </button>
       </header>
 
       <!-- Fixed 5-button command bar: distribute every action across the available width. -->
       <nav
         ref="mobileBottomBar"
-        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200/95 backdrop-blur border-t border-base-300"
+        class="absolute bottom-0 inset-x-0 z-20 flex items-center justify-between gap-2 px-2 pt-2 bg-base-200 border-t border-base-300"
         style="padding-bottom: max(env(safe-area-inset-bottom), 0.5rem)"
       >
         <div class="contents">
           <button
             ref="mobileFitToViewButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :aria-label="t('editor.toolbar.fitToView')"
             :title="t('editor.toolbar.fitToView')"
             @click="(tutorialCenterCount++, fitToView())"
           >
-            <ArrowsPointingInIcon class="size-6 opacity-70" />
+            <ArrowsPointingInIcon class="size-6" />
           </button>
           <button
             ref="mobileRelayoutButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :aria-label="t('menu.relayout')"
             :title="t('menu.relayout')"
             @click="isRelayoutOpen = true"
           >
-            <SparklesIcon class="size-6 opacity-70" />
+            <RectangleGroupIcon class="size-6" />
           </button>
         </div>
 
         <button
           v-if="showEvaluation"
           ref="mobileEvaluateButton"
-          class="btn btn-primary h-13 min-w-0 shrink rounded-2xl px-4 gap-2 text-base font-semibold shadow-md shadow-primary/30"
+          class="btn btn-primary h-13 min-w-0 shrink px-4 gap-2 text-base font-semibold"
           @click="evaluationOpen = true"
         >
           <PlayIcon class="size-6 shrink-0" />
@@ -2267,23 +2237,23 @@ defineExpose({
         <div class="contents">
           <button
             ref="mobileExportButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :disabled="!hasExportSlot"
             :aria-label="t('menu.export')"
             :title="t('menu.export')"
             @click="isExportOpened = true"
           >
-            <ShareIcon class="size-6 opacity-70" />
+            <ShareIcon class="size-6" />
           </button>
           <button
             ref="mobileUndoButton"
-            class="btn btn-square size-11 shrink-0 rounded-xl bg-base-100 border-base-300 shadow-sm"
+            class="btn btn-square size-11 shrink-0 bg-base-100 border-base-300 shadow-sm"
             :disabled="!historyState.canUndo"
             :aria-label="t('menu.undo')"
             :title="t('menu.undo')"
             @click="emit('undo')"
           >
-            <ArrowUturnLeftIcon class="size-6 opacity-70" />
+            <ArrowUturnLeftIcon class="size-6" />
           </button>
         </div>
       </nav>
@@ -2309,7 +2279,7 @@ defineExpose({
       <BottomSheet v-model:open="isMenuOpen" :title="t('menu.label')">
         <div class="flex flex-col gap-4 pb-4">
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ t('menu.sections.framework') }}
             </h3>
             <button
@@ -2338,7 +2308,7 @@ defineExpose({
             </button>
           </section>
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ t('menu.sections.edit') }}
             </h3>
             <button
@@ -2357,7 +2327,7 @@ defineExpose({
             </button>
           </section>
           <section class="flex flex-col gap-1">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ t('menu.sections.app') }}
             </h3>
             <button class="btn btn-ghost justify-start gap-3" @click="runFromMenu(openSettings)">
@@ -2387,18 +2357,18 @@ defineExpose({
       <BottomSheet v-model:open="isRelayoutOpen" :title="t('menu.relayout')">
         <div class="flex flex-col gap-5 pb-4">
           <section v-for="group in relayoutGroups" :key="group.label" class="flex flex-col gap-2">
-            <h3 class="text-xs font-semibold uppercase tracking-wide opacity-60 px-1">
+            <h3 class="section-label px-1">
               {{ group.label }}
             </h3>
             <div class="grid grid-cols-2 gap-2.5">
               <button
                 v-for="option in group.options"
                 :key="option.layout"
-                class="flex items-center gap-3 h-14 px-3.5 rounded-xl border border-base-300 bg-base-100 text-sm font-medium text-left"
+                class="flex items-center gap-3 h-14 px-3.5 rounded-field border border-base-300 bg-base-100 text-sm font-medium text-left"
                 @click="relayoutTo(option.layout)"
               >
                 <span
-                  class="grid place-items-center size-8 shrink-0 rounded-lg bg-base-200 menu-icon"
+                  class="grid place-items-center size-8 shrink-0 rounded-field bg-base-200 menu-icon"
                 >
                   <component :is="option.icon" class="size-5" />
                 </span>

@@ -17,65 +17,48 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ChevronLeftIcon } from '@heroicons/vue/24/outline'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
 import { attributions, ctanAttributions, getAttributionId } from '@/app/third-party/attributions'
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 
 const { t } = useI18n({ useScope: 'global' })
-const router = useRouter()
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh w-screen bg-base-100 overflow-hidden">
-    <!-- Top bar -->
-    <header
-      class="flex-none flex items-center gap-1 px-2 pr-3 border-b border-base-300 bg-base-200"
-      style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
-    >
-      <button
-        class="btn btn-square btn-ghost btn-sm"
-        :aria-label="t('home.backToEditor')"
-        @click="router.push('/')"
-      >
-        <ChevronLeftIcon class="size-6 opacity-70" />
-      </button>
-      <span class="flex-1 text-lg font-bold py-2.5 leading-tight">{{
-        t('thirdParty.titleShort')
-      }}</span>
-    </header>
+  <div class="flex flex-col h-dvh w-full bg-base-100 overflow-hidden">
+    <PageHeader :title="t('thirdParty.titleShort')" :back-label="t('home.backToEditor')" />
 
     <!-- Single-column disclosure list -->
     <div
       class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4"
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
-      <p class="text-sm text-base-content/70 leading-relaxed">{{ t('thirdParty.intro') }}</p>
+      <p class="text-sm text-base-content/80 leading-relaxed">{{ t('thirdParty.intro') }}</p>
 
       <!-- TeX packages -->
-      <div class="text-xs font-bold text-base-content/40 tracking-wide uppercase">
+      <div class="section-label">
         {{ t('thirdParty.texPackages') }}
       </div>
-      <p class="text-xs text-base-content/60 leading-relaxed -mt-2">
+      <p class="text-xs text-base-content/65 leading-relaxed -mt-2">
         {{ t('thirdParty.texIntroShort') }}
       </p>
       <details
         v-for="attribution of ctanAttributions"
         :key="getAttributionId(attribution)"
-        class="rounded-2xl border border-base-300 px-3.5 py-3"
+        class="rounded-box border border-base-300 px-3.5 py-3"
       >
         <summary class="text-sm font-semibold cursor-pointer marker:text-base-content/40">
           <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
           >{{ attribution.name
           }}<template v-if="attribution.version !== undefined"
-            ><span class="text-base-content/50 font-normal">
+            ><span class="text-base-content/65 font-normal">
               @{{ attribution.version }}</span
             ></template
           >
         </summary>
         <div class="mt-2.5 flex flex-col gap-2">
-          <p class="text-xs text-base-content/70 leading-relaxed">
+          <p class="text-xs text-base-content/80 leading-relaxed">
             <i18n-t
               v-if="attribution.publisher"
               keypath="thirdParty.publishedWithPublisher"
@@ -107,35 +90,35 @@ const router = useRouter()
           </p>
           <pre
             v-if="attribution.licenseText"
-            class="text-[11px] whitespace-pre-wrap rounded-lg bg-base-200 p-2.5 overflow-x-auto"
+            class="text-xs whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
             >{{ attribution.licenseText }}</pre
           >
-          <p v-else class="text-xs text-base-content/50">
+          <p v-else class="text-xs text-base-content/65">
             {{ t('thirdParty.noLicenseText') }}
           </p>
         </div>
       </details>
 
       <!-- Libraries & projects -->
-      <div class="text-xs font-bold text-base-content/40 tracking-wide mt-1 uppercase">
+      <div class="section-label mt-1">
         {{ t('thirdParty.librariesProjects') }}
       </div>
       <details
         v-for="attribution of attributions"
         :key="getAttributionId(attribution)"
-        class="rounded-2xl border border-base-300 px-3.5 py-3"
+        class="rounded-box border border-base-300 px-3.5 py-3"
       >
         <summary class="text-sm font-semibold cursor-pointer marker:text-base-content/40">
           <template v-if="attribution.scope !== undefined">@{{ attribution.scope }}/</template
           >{{ attribution.name
           }}<template v-if="attribution.version !== undefined"
-            ><span class="text-base-content/50 font-normal">
+            ><span class="text-base-content/65 font-normal">
               @{{ attribution.version }}</span
             ></template
           >
         </summary>
         <div class="mt-2.5 flex flex-col gap-2">
-          <p class="text-xs text-base-content/70 leading-relaxed">
+          <p class="text-xs text-base-content/80 leading-relaxed">
             <i18n-t
               v-if="attribution.publisher"
               keypath="thirdParty.publishedWithPublisher"
@@ -167,10 +150,10 @@ const router = useRouter()
           </p>
           <pre
             v-if="attribution.licenseText"
-            class="text-[11px] whitespace-pre-wrap rounded-lg bg-base-200 p-2.5 overflow-x-auto"
+            class="text-xs whitespace-pre-wrap rounded-box bg-base-200 p-2.5 overflow-x-auto"
             >{{ attribution.licenseText }}</pre
           >
-          <p v-else class="text-xs text-base-content/50">
+          <p v-else class="text-xs text-base-content/65">
             {{ t('thirdParty.noLicenseText') }}
           </p>
         </div>

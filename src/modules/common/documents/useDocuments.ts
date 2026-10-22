@@ -47,6 +47,9 @@ import type { DocumentState } from '@/modules/common/state'
 
 const CHANNEL_DOCUMENTS_METADATA = 'documents'
 
+// Type labels stored before a module's prefix was renamed.
+const LEGACY_TYPES: Record<string, string> = { ABA: 'ABAF' }
+
 function getChannelDocumentContent(id: DocumentId) {
   return `document:${id}`
 }
@@ -70,7 +73,9 @@ export function useDocumentMetadata<DocumentT extends Objectish>(
   ): Promise<DocumentMetadata[]> {
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
     const nextDocuments = await metadataStore.getAll()
-    return nextDocuments
+    return nextDocuments.map((d) =>
+      d.type !== undefined && d.type in LEGACY_TYPES ? { ...d, type: LEGACY_TYPES[d.type] } : d,
+    )
   }
 
   async function createDocument(name: string, content?: DocumentT) {
@@ -282,11 +287,11 @@ export function useDocumentContent<DocumentT extends Objectish>(
     const metadataStore = tx.objectStore(OBJECT_STORE_METADATA_NAME)
     const metadata = await metadataStore.get(id)
     if (metadata !== undefined) {
-      // Type is set once (blank docs learn it on first write); it never changes afterwards.
+      // Refreshed on every write so a renamed module prefix heals stored labels.
       await metadataStore.put({
         ...metadata,
         lastEdited: Date.now(),
-        type: metadata.type ?? module.newNamePrefix,
+        type: module.newNamePrefix,
       })
     }
     await tx.done

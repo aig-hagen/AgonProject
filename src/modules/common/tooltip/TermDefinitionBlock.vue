@@ -40,7 +40,7 @@ const definition = computed(() => registry[id])
     :class="
       isCompact
         ? 'rounded-box border border-base-300 bg-inset px-2.5 py-2'
-        : 'text-xs text-base-content/60 leading-relaxed mt-2'
+        : 'text-xs text-base-content/65 leading-relaxed mt-2'
     "
   >
     <div class="flex items-center gap-1 mb-0.5">
@@ -59,14 +59,14 @@ const definition = computed(() => registry[id])
         rel="noopener noreferrer"
         :class="
           isCompact
-            ? 'grid place-items-center size-5 rounded-md bg-primary/10 text-primary hover:bg-primary/20'
-            : 'text-base-content/40 hover:text-base-content/70'
+            ? 'grid place-items-center size-5 rounded-field bg-primary/10 text-primary hover:bg-primary/20'
+            : 'text-base-content/65 hover:text-base-content'
         "
       >
         <BookOpenIcon :class="isCompact ? 'size-3' : 'size-3'" />
       </a>
     </div>
-    <span :class="isCompact ? 'block text-xs leading-snug text-base-content/70' : ''">
+    <span :class="isCompact ? 'block text-xs leading-snug text-base-content/80' : ''">
       <template v-for="(part, i) in definition.content" :key="i">
         <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
         <TermTooltip v-else :id="part.ref">

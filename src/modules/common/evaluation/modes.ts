@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-export const NODE_DARK_ORANGE = 'DarkOrange'
-export const NODE_LIGHT_ORANGE = 'PapayaWhip'
+import type { PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 
-// The colors are taken form "Sequence Explanations for Acceptance in Abstract Argumentation" by Lars Bengel and Matthias Thimm
-export const NODE_BLUE = '#99b7d5'
-export const NODE_ORANGE = '#e4bf97'
-export const NODE_GREEN = '#99ff99'
-export const NODE_LIGHT_GREEN = '#d6ffd6'
-export const NODE_RED = '#ff9999'
-export const NODE_YELLOW = '#ffff99'
+const MODE_KEYS = {
+  enumerate: 'evaluation.modes.enumerate',
+  credulous: 'evaluation.modes.credulous',
+  skeptical: 'evaluation.modes.skeptical',
+} as const
 
-export const LINK_BLACK = '#000000'
-export const LINK_BLUE = 'DarkBlue'
-export const LINK_RED = 'DarkRed'
+export type EvaluationMode = keyof typeof MODE_KEYS
 
-// #00d1b2 is the Bulma success color.
-// This green and has a good contrast to the orange of nodes.
-// Also it is consistent with the Bulma theme.
-export const HIGHLIGHT_GREEN = '#48c78e'
-// #3584e4 is the color used by Firefox for focused elements.
-// It looks good for highlighting selected nodes.
-export const HIGHLIGHT_BLUE = '#3584e4'
+type Translate = (key: string) => string
+
+export function modeLabel(t: Translate, mode: string): string {
+  return t(MODE_KEYS[mode as EvaluationMode] ?? MODE_KEYS.skeptical)
+}
+
+export function modeOptions(
+  t: Translate,
+  modes: readonly EvaluationMode[] = ['enumerate', 'credulous', 'skeptical'],
+): PickerOption[] {
+  return modes.map((mode) => ({ value: mode, label: t(MODE_KEYS[mode]) }))
+}

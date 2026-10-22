@@ -20,6 +20,9 @@ coverage
 # Generated from CHANGELOG.md by the publish workflow
 /RELEASE_NOTES.md
 
+# Impeccable design tool state (regenerate with /impeccable document)
+.impeccable/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -17,12 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 /**
- * Next unused document name for a given prefix: the bare prefix if free, else the
- * prefix with the smallest positive integer suffix that isn't already taken.
+ * Next unused document name for a given prefix: the bare prefix if free (unless
+ * `numbered`), else the prefix with the smallest free positive integer suffix.
  */
-export function nextDocumentName(existingNames: Iterable<string>, prefix: string): string {
+export function nextDocumentName(
+  existingNames: Iterable<string>,
+  prefix: string,
+  numbered = false,
+): string {
   const allNames = new Set(existingNames)
-  if (!allNames.has(prefix)) {
+  if (!numbered && !allNames.has(prefix)) {
     return prefix
   }
   for (let i = 1; ; i++) {

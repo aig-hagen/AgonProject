@@ -42,6 +42,7 @@ const {
   snapMode,
   showHints,
   mergeReciprocalLinks,
+  colorBlindColors,
 } = useSettings()
 const { resetAllTutorials } = useTutorial()
 
@@ -77,10 +78,10 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
   <div class="flex flex-col gap-6">
     <!-- Language -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.language') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.language.label') }}</span>
           <select
@@ -99,10 +100,10 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
 
     <!-- Appearance -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.appearance') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.theme.label') }}</span>
           <SegmentedControl
@@ -122,6 +123,14 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
           </select>
         </div>
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
+          <span class="text-sm">{{ t('settings.colorBlindColors.label') }}</span>
+          <SegmentedControl
+            v-model="colorBlindColors"
+            :options="booleanOptions"
+            :aria-label="t('settings.colorBlindColors.label')"
+          />
+        </div>
+        <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.mergeReciprocalLinks.label') }}</span>
           <SegmentedControl
             v-model="mergeReciprocalLinks"
@@ -134,10 +143,10 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
 
     <!-- Graph defaults -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.graphDefaults') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.physicsMode.label') }}</span>
           <SegmentedControl
@@ -173,7 +182,7 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
               step="0.5"
               v-model.number="gridCellScale"
             />
-            <span class="w-6 text-right text-sm text-base-content/60">{{ gridCellScale }}×</span>
+            <span class="w-6 text-right text-sm text-base-content/65">{{ gridCellScale }}×</span>
           </div>
         </div>
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
@@ -189,10 +198,10 @@ const themeOptions = computed<{ value: ThemePreference; label: string }[]>(() =>
 
     <!-- Tutorials -->
     <section class="flex flex-col gap-2">
-      <h4 class="px-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+      <h4 class="section-label px-1">
         {{ t('settings.sections.tutorials') }}
       </h4>
-      <div class="divide-y divide-base-200 overflow-hidden rounded-2xl border border-base-300">
+      <div class="divide-y divide-base-200 overflow-hidden rounded-box border border-base-300">
         <div class="flex items-center justify-between gap-4 bg-base-100 px-3.5 py-3">
           <span class="text-sm">{{ t('settings.showTutorials.label') }}</span>
           <SegmentedControl
