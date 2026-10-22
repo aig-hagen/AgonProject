@@ -75,8 +75,8 @@
     "@types/wawoff2": "^1.0.2",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vitejs/plugin-vue-jsx": "^5.1.4",
-    "@vitest/browser-playwright": "^4.1.11",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/browser-playwright": "^4.1.12",
+    "@vitest/coverage-v8": "^4.1.12",
     "@vitest/eslint-plugin": "^1.6.9",
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/test-utils": "^2.4.6",
@@ -93,7 +93,7 @@
     "jsdom": "^28.1.0",
     "license-check-and-add": "^4.0.5",
     "license-checker": "^25.0.1",
-    "markdownlint-cli2": "^0.23.2",
+    "markdownlint-cli2": "^0.24.0",
     "npm-run-all2": "^8.0.4",
     "oxlint": "~1.47.0",
     "playwright": "1.59.1",
@@ -103,7 +103,7 @@
     "vite": "^7.3.1",
     "vite-plugin-static-copy": "^4.1.0",
     "vite-plugin-vue-devtools": "^8.0.6",
-    "vitest": "^4.1.11",
+    "vitest": "^4.1.12",
     "vue-tsc": "^3.2.4"
   },
   "engines": {
