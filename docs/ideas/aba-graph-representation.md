@@ -96,8 +96,7 @@ The ABA editor has no `export.ts`, no export window and no quick export; other m
 
 No random generation for ABA yet (no "Generate" button).
 
-## Tutorials (missing)
+## Tutorials
 
-No `tutorials/` folder yet. Follow the other modules: a short controls tutorial (two handles,
-hubs for collective rules, fact badge, view switcher) and one on the formalism (derivation,
-contraries, flat vs. non-flat, what each view shows).
+`aba-basics` (building a theory on the canvas) and `aba-views` (view switcher) exist. Still
+missing: an `aba-evaluation` tutorial (assumption-set results, derived/out colouring).

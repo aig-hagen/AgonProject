@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Load ICCMA text files (`.af`, `.baf`, `.setaf`, `.iaf`, `.paf`, `.aba`) from the file menu; imported graphs are laid out automatically.
+- ABA tutorials: a basics tutorial for building a theory on the canvas, and a views tutorial for the AF/SetAF views.
 
 ### Changed
 

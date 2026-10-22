@@ -566,6 +566,10 @@ const tutorialContext = computed<TutorialContext>(() => ({
   gridToggleCount: tutorialGridToggleCount.value,
   ctrlSnapCount: tutorialCtrlSnapCount.value,
   isExportOpened: isExportOpened.value,
+  assumptionCount: tutorialContextExtra?.assumptionCount ?? 0,
+  ruleCount: tutorialContextExtra?.ruleCount ?? 0,
+  contraryEditCount: tutorialContextExtra?.contraryEditCount ?? 0,
+  activeView: tutorialContextExtra?.activeView ?? '',
 }))
 
 const { startTutorial, autoStartedTutorials, isTutorialDone, isActive } = useTutorial()

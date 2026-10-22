@@ -54,5 +54,5 @@ export const action = (text: string) =>
   `<kbd class="kbd kbd-sm bg-primary/10 text-primary border-primary/20">${text}</kbd>`
 
 /** A reference to a selection action-bar button: its icon plus label. */
-export const barAction = (icon: IconName, label: string) =>
-  `<kbd class="kbd kbd-sm gap-1">${icon === 'extension' ? sigmaGlyph : svg(icons[icon])}${label}</kbd>`
+export const barAction = (icon: IconName | null, label: string) =>
+  `<kbd class="kbd kbd-sm gap-1">${icon === null ? '' : icon === 'extension' ? sigmaGlyph : svg(icons[icon])}${label}</kbd>`
