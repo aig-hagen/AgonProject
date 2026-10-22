@@ -17,7 +17,7 @@
 
 ## Mobile
 
-- 34. mobile version of the serialisation sheet needs a small overhaul. especially the collapsed sheet
+- **34. [M] mobile version of the serialisation sheet needs a small overhaul.** especially the collapsed sheet
 - **7. [S] Publications on module cards.** Desktop shows a `PublicationsTooltip` on each home card
   (`BlankDocumentCanvas.vue`); the mobile cards show none.
 - **26. [M] Landscape layout.** Phones in landscape now get the compact shell, but its top and
