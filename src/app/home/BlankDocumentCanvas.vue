@@ -58,17 +58,14 @@ function openContent(content: DocumentT, modulePrefix: string) {
   <div class="h-full w-full overflow-y-auto bg-base-200">
     <div class="min-h-full flex items-center justify-center">
       <div class="max-w-5xl w-full p-4 sm:p-8 sm:pt-14">
-        <h2 class="text-2xl sm:text-4xl font-bold mb-2">
-          <span class="font-display">AgonProject</span>
-          <div class="text-lg font-normal text-base-content/70">
-            {{ t('home.tagline') }}
-          </div>
-        </h2>
+        <h1 class="font-display text-2xl sm:text-4xl font-bold">AgonProject</h1>
+        <p class="text-lg text-base-content/80 mb-2">
+          {{ t('home.tagline') }}
+        </p>
         <HelpLinks />
-        <div class="divider"></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
           <div
-            class="card relative grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6 shadow-md"
+            class="card relative grid grid-rows-subgrid row-span-3 gap-y-2 bg-base-100 border border-base-300 p-6"
             :class="{ 'opacity-50': moduleCard.underConstruction }"
             v-for="(moduleCard, index) in moduleCards"
             :key="index"
@@ -85,13 +82,13 @@ function openContent(content: DocumentT, modulePrefix: string) {
                 />
               </div>
             </div>
-            <p class="text-sm text-base-content/60">
+            <p class="text-sm text-base-content/65">
               {{ moduleCard.description }}
             </p>
             <div class="flex flex-col min-h-32">
               <template v-if="moduleCard.underConstruction">
                 <div class="flex-1"></div>
-                <p class="text-sm text-base-content/50 italic">
+                <p class="text-sm text-base-content/65 italic">
                   {{ t('home.picker.underConstruction') }}
                 </p>
               </template>
@@ -101,9 +98,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
                   :class="moduleCard.examples.length > 4 ? 'overflow-y-auto min-h-0' : ''"
                 >
                   <template v-if="moduleCard.examples.length !== 0">
-                    <h4
-                      class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2"
-                    >
+                    <h4 class="section-label mt-2">
                       {{ t('home.picker.openExample') }}
                     </h4>
                     <ul
@@ -116,14 +111,14 @@ function openContent(content: DocumentT, modulePrefix: string) {
                           :data-tip="example.description"
                         >
                           <a
-                            class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
+                            class="block px-2 py-1 rounded-field text-sm hover:bg-base-300 cursor-pointer"
                             @click="openExample(example, moduleCard.newNamePrefix)"
                             >{{ example.name }}</a
                           >
                         </span>
                         <a
                           v-else
-                          class="block px-2 py-1 rounded-lg text-sm hover:bg-base-300 cursor-pointer"
+                          class="block px-2 py-1 rounded-field text-sm hover:bg-base-300 cursor-pointer"
                           @click="openExample(example, moduleCard.newNamePrefix)"
                           >{{ example.name }}</a
                         >
@@ -131,7 +126,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
                     </ul>
                   </template>
                 </div>
-                <h4 class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mt-2">
+                <h4 class="section-label mt-2">
                   {{ t('home.picker.newHeading') }}
                 </h4>
                 <div class="flex flex-row gap-4 pl-2 mt-1">

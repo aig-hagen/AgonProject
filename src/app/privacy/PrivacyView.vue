@@ -17,16 +17,14 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { ChevronLeftIcon } from '@heroicons/vue/24/outline'
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
+import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
 const { t } = useI18n({ useScope: 'global' })
 const { layoutMode } = useLayoutMode()
-const router = useRouter()
 
 const isCompact = computed(() => layoutMode.value === 'compact')
 
@@ -39,46 +37,28 @@ const sections = computed(() => [
 </script>
 
 <template>
-  <div class="flex flex-col bg-base-100" :class="isCompact ? 'h-dvh w-screen overflow-hidden' : ''">
-    <!-- Mobile app bar -->
-    <header
-      v-if="isCompact"
-      class="flex-none flex items-center gap-1 px-2 pr-3 border-b border-base-300 bg-base-200"
-      style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
-    >
-      <button
-        class="btn btn-square btn-ghost btn-sm"
-        :aria-label="t('privacy.backToEditor')"
-        @click="router.push('/')"
-      >
-        <ChevronLeftIcon class="size-6 opacity-70" />
-      </button>
-      <span class="flex-1 text-lg font-bold py-2.5 leading-tight">{{
-        t('privacy.pageTitle')
-      }}</span>
-    </header>
+  <div class="flex flex-col h-dvh w-full overflow-hidden bg-base-100">
+    <PageHeader :title="t('privacy.pageTitle')" :back-label="t('privacy.backToEditor')" />
 
     <div
       :class="
         isCompact
           ? 'flex-1 overflow-y-auto px-4 py-4'
-          : 'm-auto flex flex-nowrap justify-center my-4 gap-4'
+          : 'flex-1 overflow-y-auto flex flex-nowrap justify-center gap-4 px-6 py-6'
       "
       :style="isCompact ? 'padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)' : ''"
     >
       <!-- Desktop section nav -->
-      <aside v-if="!isCompact" class="w-3xs">
+      <nav v-if="!isCompact" class="w-3xs shrink-0" :aria-label="t('privacy.pageTitle')">
         <ul class="menu">
-          <h2 class="menu-title">{{ t('privacy.pageTitle') }}</h2>
           <li v-for="s of sections" :key="s.id">
             <a :href="'#' + s.id">{{ s.title }}</a>
           </li>
         </ul>
-      </aside>
+      </nav>
 
       <!-- Single source of truth for the notice text -->
       <main class="max-w-3xl">
-        <h1 v-if="!isCompact" class="m-1 font-bold text-xl">{{ t('privacy.pageTitle') }}</h1>
         <i18n-t keypath="privacy.intro.text" tag="p" scope="global" class="m-1 mb-4">
           <template #emphasis
             ><strong>{{ t('privacy.intro.emphasis') }}</strong></template

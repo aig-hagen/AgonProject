@@ -219,7 +219,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
       <div class="card bg-base-100 shadow-xl w-72 border border-base-300">
         <div class="card-body p-4 gap-3">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-xs text-base-content/50 font-medium">
+            <span class="text-xs text-base-content/65 font-medium">
               {{ activeStepIndex + 1 }} / {{ stepCount }}
             </span>
             <progress
@@ -245,7 +245,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
             <div class="flex items-center gap-2">
               <button
                 v-if="!isLastStep"
-                class="btn btn-ghost btn-xs text-base-content/50"
+                class="btn btn-ghost btn-xs text-base-content/65"
                 @click="skipTutorial"
               >
                 {{ t('tutorial.controls.skip') }}
@@ -269,7 +269,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
               >
                 {{ t('tutorial.controls.next') }} →
               </button>
-              <span v-else class="text-xs text-base-content/40 italic">{{
+              <span v-else class="text-xs text-base-content/65 italic">{{
                 t('tutorial.controls.waiting')
               }}</span>
             </div>
@@ -283,7 +283,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
       <div class="card bg-base-100 shadow-xl w-80 border border-base-300">
         <div class="card-body p-4 gap-3">
           <div class="flex items-center justify-between gap-2">
-            <span class="text-xs text-base-content/50 font-medium">
+            <span class="text-xs text-base-content/65 font-medium">
               {{ activeStepIndex + 1 }} / {{ stepCount }}
             </span>
             <progress
@@ -309,7 +309,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
             <div class="flex items-center gap-2">
               <button
                 v-if="!isLastStep"
-                class="btn btn-ghost btn-xs text-base-content/50"
+                class="btn btn-ghost btn-xs text-base-content/65"
                 @click="skipTutorial"
               >
                 {{ t('tutorial.controls.skipTutorial') }}
@@ -333,7 +333,7 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
               >
                 {{ t('tutorial.controls.next') }} →
               </button>
-              <span v-else class="text-xs text-base-content/40 italic">{{
+              <span v-else class="text-xs text-base-content/65 italic">{{
                 t('tutorial.controls.waiting')
               }}</span>
             </div>

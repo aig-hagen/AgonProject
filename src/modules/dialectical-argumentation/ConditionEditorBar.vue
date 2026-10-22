@@ -134,7 +134,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
 
 <template>
   <div
-    class="absolute z-50 bg-base-100 border border-base-300 shadow-md rounded-xl pointer-events-auto min-w-72"
+    class="absolute z-50 bg-base-100 border border-base-300 shadow-md rounded-box pointer-events-auto min-w-72"
     :style="{ left: x + 'px', top: y + 'px', transform: 'translateY(calc(-100% - 8px))' }"
     @click.stop
     @keydown.esc.stop="emit('close')"
@@ -143,7 +143,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
     <div class="px-3 py-2 flex flex-col gap-1.5">
       <!-- Operator keypad + argument dropdown, above the input -->
       <div class="flex items-center gap-1.5">
-        <div class="inline-flex h-7 overflow-hidden rounded-lg border border-base-300">
+        <div class="inline-flex h-7 overflow-hidden rounded-field border border-base-300">
           <button
             class="flex h-full w-8 items-center justify-center border-r border-base-300 font-(family-name:--font-graph) text-sm transition-colors hover:bg-base-200"
             type="button"
@@ -204,7 +204,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
         <div class="dropdown dropdown-hover dropdown-top">
           <button
             tabindex="0"
-            class="flex h-7 items-center rounded-lg border border-base-300 px-2.5 text-sm transition-colors hover:bg-base-200"
+            class="flex h-7 items-center rounded-field border border-base-300 px-2.5 text-sm transition-colors hover:bg-base-200"
             type="button"
             @mousedown.prevent
           >
@@ -225,7 +225,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
             </li>
             <li
               v-if="availableArguments.length === 0"
-              class="text-xs text-base-content/50 px-2 py-1"
+              class="text-xs text-base-content/65 px-2 py-1"
             >
               {{ t('editor.condition.noArguments') }}
             </li>
@@ -233,7 +233,7 @@ function insertAtCursor(text: string, cursorOffset?: number) {
         </div>
 
         <button
-          class="ml-auto flex h-7 w-7 items-center justify-center rounded-lg text-base-content/60 transition-colors hover:bg-base-200 hover:text-base-content"
+          class="ml-auto flex h-7 w-7 items-center justify-center rounded-field text-base-content/65 transition-colors hover:bg-base-200 hover:text-base-content"
           type="button"
           :aria-label="t('common.actions.close')"
           @click="emit('close')"

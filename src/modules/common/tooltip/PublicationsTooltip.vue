@@ -19,6 +19,7 @@
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import type { Publication } from '@/app/home/moduleConfig'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
@@ -26,6 +27,8 @@ import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vu
 defineProps<{
   publications: Publication[]
 }>()
+
+const { t } = useI18n({ useScope: 'global' })
 
 const open = ref(false)
 const buttonEl = ref<HTMLButtonElement | null>(null)
@@ -57,7 +60,7 @@ function onMouseLeave() {
   <div class="shrink-0" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <button
       ref="buttonEl"
-      class="btn btn-ghost btn-xs btn-circle text-base-content/40 hover:text-base-content/70"
+      class="btn btn-ghost btn-xs btn-circle text-base-content/65 hover:text-base-content"
     >
       <BookOpenIcon class="w-4 h-4" />
     </button>
@@ -69,8 +72,8 @@ function onMouseLeave() {
         @mouseenter="onMouseEnter"
         @mouseleave="onMouseLeave"
       >
-        <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wide mb-1">
-          Publications
+        <p class="section-label mb-1">
+          {{ t('home.picker.publications') }}
         </p>
         <ul class="flex flex-col divide-y divide-base-300">
           <li v-for="(pub, i) in publications" :key="i" class="py-2 first:pt-0 last:pb-0">

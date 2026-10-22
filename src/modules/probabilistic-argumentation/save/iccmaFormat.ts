@@ -25,6 +25,7 @@ import {
   makeIccmaImport,
 } from '@/modules/common/argumentation/save/iccmaFormat'
 import {
+  clampProbability,
   type PafArgumentData,
   ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
@@ -34,7 +35,7 @@ function probability(line: IccmaLine, token: string | undefined): number {
   if (token === undefined || !Number.isFinite(value) || value < 0 || value > 1) {
     failLine(line, `"${token ?? ''}" is not a probability between 0 and 1.`)
   }
-  return value
+  return clampProbability(value)
 }
 
 export const iccmaImport = makeIccmaImport('paf', 'paf', (n, lines) => {

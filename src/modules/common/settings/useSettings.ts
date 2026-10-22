@@ -18,11 +18,13 @@
  */
 import { useStorage } from '@vueuse/core'
 import { createSharedComposable } from '@vueuse/shared'
+import { computed, watchEffect } from 'vue'
 
 import type { GridVisibility, PhysicsMode } from '@/modules/common/main-menu/types'
 import { notifyStorageFailureOnce } from '@/modules/common/notifications/storageFailure'
+import type { GraphColorScheme, GraphPresetId } from '@/modules/common/theme/palette'
 
-export type GraphStyleName = 'default' | 'high-contrast' | 'minimal' | 'library' | 'outline'
+export type GraphStyleName = GraphPresetId
 export type GridType = 'square' | 'rhombus'
 
 export const useSettings = createSharedComposable(() => {
@@ -55,6 +57,19 @@ export const useSettings = createSharedComposable(() => {
   const gridCellScale = useStorage<number>('settings:gridCellScale', 3, undefined, options)
   const snapMode = useStorage<boolean>('settings:snapMode', false, undefined, options)
   const showHints = useStorage<boolean>('settings:showHints', true, undefined, options)
+  const colorBlindColors = useStorage<boolean>(
+    'settings:colorBlindColors',
+    false,
+    undefined,
+    options,
+  )
+  const graphColorScheme = computed<GraphColorScheme>(() =>
+    colorBlindColors.value ? 'color-blind' : 'default',
+  )
+  // CSS that reads the highlight tokens directly (e.g. the legend) follows the root attribute.
+  watchEffect(() => {
+    document.documentElement.dataset.graphColors = graphColorScheme.value
+  })
   const mergeReciprocalLinks = useStorage<boolean>(
     'settings:mergeReciprocalLinks',
     false,
@@ -64,6 +79,8 @@ export const useSettings = createSharedComposable(() => {
 
   return {
     graphStyle,
+    colorBlindColors,
+    graphColorScheme,
     defaultPhysicsMode,
     defaultShowGrid,
     defaultGridType,

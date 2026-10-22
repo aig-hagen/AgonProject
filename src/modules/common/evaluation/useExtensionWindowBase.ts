@@ -92,13 +92,24 @@ export function useExtensionWindowBase(
   const resultItems = computed(
     () =>
       dataExtensionsFormatedAndSorted.value?.formatedAndSorted.map((e) => {
-        const nameEscaped = escapeTexText(e.nameFormated)
+        if (selectedMode.value !== 'enumerate') {
+          return { key: e.key, label: e.nameFormated, texLabel: escapeTexText(e.nameFormated) }
+        }
+        if (e.extension.length === 0) {
+          return { key: e.key, label: '∅', texLabel: '\\emptyset' }
+        }
         return {
           key: e.key,
-          label: selectedMode.value === 'enumerate' ? `{${e.nameFormated}}` : e.nameFormated,
-          texLabel: selectedMode.value === 'enumerate' ? `\\{${nameEscaped}\\}` : nameEscaped,
+          label: `{${e.nameFormated}}`,
+          texLabel: `\\{${escapeTexText(e.nameFormated)}\\}`,
         }
       }) ?? [],
+  )
+
+  const countLabel = computed(() =>
+    selectedMode.value === 'enumerate'
+      ? t('evaluation.counts.extensions', resultItems.value.length)
+      : t('evaluation.counts.arguments', resultItems.value.length),
   )
 
   const currentHighlight = computed<Highlight | undefined>(() => {
@@ -127,6 +138,7 @@ export function useExtensionWindowBase(
     emptyMessage,
     dataExtensionsFormatedAndSorted,
     resultItems,
+    countLabel,
     currentHighlight,
   }
 }

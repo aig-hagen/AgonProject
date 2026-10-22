@@ -11,6 +11,7 @@ Before non-trivial work, read the relevant doc rather than re-deriving conventio
 - [`docs/architecture/structure.md`](docs/architecture/structure.md) — repository layout
 - [`docs/architecture/overview.md`](docs/architecture/overview.md) — system boundaries and data flows
 - [`docs/contributing/conventions.md`](docs/contributing/conventions.md) — coding patterns (Vue, TS, state, styling, testing)
+- [`DESIGN.md`](DESIGN.md) — visual design system (tokens, type scale, components, do's and don'ts)
 - [`docs/contributing/extending.md`](docs/contributing/extending.md) — how to add argumentation modules
 - [`docs/contributing/development.md`](docs/contributing/development.md) — dev environment setup
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — contribution and review workflow

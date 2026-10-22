@@ -24,7 +24,7 @@ import {
   ArrowsPointingOutIcon,
   CursorArrowRaysIcon,
   PlusCircleIcon,
-  SparklesIcon,
+  RectangleGroupIcon,
   TrashIcon,
 } from '@heroicons/vue/24/outline'
 import { type Component, computed } from 'vue'
@@ -118,7 +118,7 @@ const rows = computed<GestureRow[]>(() => {
       desc: t('help.gestures.fitView.desc'),
     },
     {
-      icon: SparklesIcon,
+      icon: RectangleGroupIcon,
       title: t('help.gestures.relayout.title'),
       desc: t('help.gestures.relayout.desc'),
     },
@@ -136,14 +136,14 @@ const rows = computed<GestureRow[]>(() => {
       class="flex items-center gap-3.5 py-3 border-b border-base-200 last:border-b-0"
     >
       <span
-        class="grid place-items-center size-10 shrink-0 rounded-xl bg-base-200"
+        class="grid place-items-center size-10 shrink-0 rounded-field bg-base-200"
         :class="row.danger ? 'text-error' : 'text-primary/80'"
       >
         <component :is="row.icon" class="size-[1.4rem]" />
       </span>
       <span class="min-w-0">
         <span class="block text-sm font-semibold">{{ row.title }}</span>
-        <span class="block text-xs text-base-content/60 mt-0.5">{{ row.desc }}</span>
+        <span class="block text-xs text-base-content/65 mt-0.5">{{ row.desc }}</span>
       </span>
     </li>
   </ul>

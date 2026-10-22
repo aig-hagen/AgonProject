@@ -67,7 +67,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
     <div
       v-for="(moduleCard, index) in moduleCards"
       :key="index"
-      class="rounded-2xl border bg-base-100 transition-colors"
+      class="rounded-box border bg-base-100 transition-colors"
       :class="
         expanded === index && !moduleCard.underConstruction
           ? 'border-primary/30 shadow-sm'
@@ -82,12 +82,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
         @click="toggle(index)"
       >
         <span
-          class="grid place-items-center size-11 shrink-0 rounded-xl text-xs font-bold"
-          :class="
-            expanded === index && !moduleCard.underConstruction
-              ? 'bg-primary text-primary-content'
-              : 'bg-base-200 text-primary'
-          "
+          class="grid place-items-center size-11 shrink-0 rounded-field bg-base-200 text-primary text-xs font-bold"
         >
           {{ moduleCard.newNamePrefix }}
         </span>
@@ -98,7 +93,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
           </span>
           <span
             v-if="moduleCard.description"
-            class="text-xs text-base-content/60 mt-0.5"
+            class="text-xs text-base-content/65 mt-0.5"
             :class="{ 'line-clamp-2': expanded !== index }"
           >
             {{ moduleCard.description }}
@@ -106,7 +101,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
         </span>
         <span
           v-if="moduleCard.underConstruction"
-          class="text-xs italic text-base-content/50 shrink-0"
+          class="text-xs italic text-base-content/65 shrink-0"
         >
           {{ t('home.picker.soon') }}
         </span>
@@ -120,7 +115,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
       <!-- Expanded body: examples + create/generate -->
       <div v-if="expanded === index && !moduleCard.underConstruction" class="px-3.5 pb-3.5">
         <template v-if="moduleCard.examples.length !== 0">
-          <div class="text-[0.7rem] font-bold uppercase tracking-wide text-base-content/40 mb-2">
+          <div class="section-label mb-2">
             {{ t('home.picker.openExample') }}
           </div>
           <div class="flex flex-wrap gap-2 mb-3.5">
@@ -137,7 +132,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
 
         <div class="flex gap-2.5">
           <button
-            class="btn btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+            class="btn btn-primary h-12 flex-1 gap-1.5"
             @click="openContent(moduleCard.initialCotent, moduleCard.newNamePrefix)"
           >
             <PlusIcon class="size-5" /> {{ t('home.picker.createNew') }}
@@ -149,7 +144,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
                 ? moduleCard.generateHref + '&source=' + sourceDocumentId
                 : moduleCard.generateHref
             "
-            class="btn btn-outline btn-primary h-12 flex-1 gap-1.5 rounded-2xl"
+            class="btn btn-outline btn-primary h-12 flex-1 gap-1.5"
           >
             <Squares2X2Icon class="size-5" /> {{ t('home.picker.generate') }}
           </RouterLink>

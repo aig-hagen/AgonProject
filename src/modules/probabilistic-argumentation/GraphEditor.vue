@@ -51,9 +51,11 @@ import {
 } from '@/modules/probabilistic-argumentation/evaluation/extensionWindowState'
 import { availableExports } from '@/modules/probabilistic-argumentation/export'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
-import type {
-  PafArgumentData,
-  ProbabilisticArgumentation,
+import {
+  clampProbability,
+  MIN_PROBABILITY,
+  type PafArgumentData,
+  type ProbabilisticArgumentation,
 } from '@/modules/probabilistic-argumentation/model'
 import ProbabilityEditor from '@/modules/probabilistic-argumentation/ProbabilityEditor.vue'
 import { pafBasicsTutorial } from '@/modules/probabilistic-argumentation/tutorials/paf-basics'
@@ -457,7 +459,7 @@ function openPopup(label: ProbabilityLabel, event: MouseEvent) {
 }
 
 function applyEdit(value: number) {
-  const clamped = Math.max(0, Math.min(1, value))
+  const clamped = clampProbability(value)
   editingValue.value = clamped
   const lbl = editingLabel.value
   if (lbl === null) return
@@ -570,7 +572,7 @@ function onPopupKeydown(event: KeyboardEvent) {
           :title="t('editor.probabilities.title')"
           @click="isProbabilitiesOpen = !isProbabilitiesOpen"
         >
-          <AdjustmentsHorizontalIcon class="size-6 opacity-70" />
+          <AdjustmentsHorizontalIcon class="size-6" />
         </button>
       </template>
 
@@ -618,7 +620,7 @@ function onPopupKeydown(event: KeyboardEvent) {
       <template v-if="editingLabel !== null">
         <div class="fixed inset-0 z-40" @click="closeEditor" @keydown="onPopupKeydown" />
         <div
-          class="fixed z-50 bg-base-100 border border-base-300 rounded-lg shadow-xl p-3 flex flex-col gap-2 w-48"
+          class="fixed z-50 bg-base-100 border border-base-300 rounded-box shadow-xl p-3 flex flex-col gap-2 w-48"
           :style="{ left: `${editingLabel.screenX + 8}px`, top: `${editingLabel.screenY + 8}px` }"
           @click.stop
           @keydown="onPopupKeydown"
@@ -629,7 +631,7 @@ function onPopupKeydown(event: KeyboardEvent) {
             </span>
             <input
               type="number"
-              min="0"
+              :min="MIN_PROBABILITY"
               max="1"
               step="0.01"
               class="input input-xs w-16 shrink-0 pl-1.5 pr-1 text-right font-mono"
@@ -639,7 +641,7 @@ function onPopupKeydown(event: KeyboardEvent) {
           </div>
           <input
             type="range"
-            min="0"
+            :min="MIN_PROBABILITY"
             max="1"
             step="0.01"
             class="range range-xs w-full"

@@ -114,7 +114,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-screen w-screen flex items-center justify-center bg-base-100">
+  <div class="h-screen w-full flex items-center justify-center bg-base-100">
     <div v-if="errorMessage" class="flex flex-col items-center gap-4 text-center max-w-sm">
       <p class="text-error font-medium">{{ errorMessage }}</p>
       <router-link to="/" class="btn btn-primary btn-sm">{{

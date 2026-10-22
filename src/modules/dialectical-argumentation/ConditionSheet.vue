@@ -158,7 +158,7 @@ const operatorKeys = computed(() => [
               ref="input"
               type="text"
               inputmode="none"
-              class="input h-12 w-full rounded-xl border-base-300 bg-base-100 font-(family-name:--font-graph)"
+              class="input h-12 w-full border-base-300 bg-base-100 font-(family-name:--font-graph)"
               :class="{ 'input-error pr-10': isInvalid }"
               v-model="inputText"
               @input="parseAndEmit"
@@ -173,7 +173,7 @@ const operatorKeys = computed(() => [
           </div>
           <button
             type="button"
-            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-base-300 bg-base-200 text-base-content transition-colors hover:bg-base-300"
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-field border-2 border-base-300 bg-base-200 text-base-content transition-colors hover:bg-base-300"
             :aria-label="t('editor.condition.backspace')"
             :title="t('editor.condition.backspace')"
             @click="deleteAtCursor"
@@ -181,20 +181,18 @@ const operatorKeys = computed(() => [
             <BackspaceIcon class="size-5" />
           </button>
         </div>
-        <p class="text-xs opacity-50">{{ t('editor.condition.hint') }}</p>
+        <p class="text-xs text-base-content/65">{{ t('editor.condition.hint') }}</p>
       </div>
 
       <!-- Operator keypad -->
       <div class="flex flex-col gap-1.5">
-        <span class="text-xs font-semibold uppercase opacity-60">{{
-          t('editor.condition.operators')
-        }}</span>
+        <span class="section-label">{{ t('editor.condition.operators') }}</span>
         <div class="grid grid-cols-3 gap-2">
           <button
             v-for="key in operatorKeys"
             :key="key.label"
             type="button"
-            class="flex h-12 items-center justify-center rounded-xl border-2 border-base-300 bg-base-100 font-(family-name:--font-graph) text-lg text-base-content transition-colors hover:bg-base-200 active:bg-base-300"
+            class="flex h-12 items-center justify-center rounded-field border-2 border-base-300 bg-base-100 font-(family-name:--font-graph) text-lg text-base-content transition-colors hover:bg-base-200 active:bg-base-300"
             :title="key.title"
             :aria-label="key.title"
             @click="insertAtCursor(key.text, key.cursorOffset)"
@@ -206,21 +204,21 @@ const operatorKeys = computed(() => [
 
       <!-- Argument atom chips -->
       <div class="flex flex-col gap-1.5">
-        <span class="text-xs font-semibold uppercase opacity-60">{{
-          t('editor.condition.arguments')
-        }}</span>
+        <span class="section-label">{{ t('editor.condition.arguments') }}</span>
         <div v-if="availableArguments.length > 0" class="flex flex-wrap gap-1.5">
           <button
             v-for="arg in availableArguments"
             :key="arg.id"
             type="button"
-            class="btn btn-sm rounded-lg btn-soft btn-primary font-(family-name:--font-graph)"
+            class="btn btn-sm btn-soft btn-primary font-(family-name:--font-graph)"
             @click="insertAtCursor(arg.name)"
           >
             {{ arg.name }}
           </button>
         </div>
-        <p v-else class="text-xs opacity-50">{{ t('editor.condition.referenceEmpty') }}</p>
+        <p v-else class="text-xs text-base-content/65">
+          {{ t('editor.condition.referenceEmpty') }}
+        </p>
       </div>
 
       <!-- Clear: always present so clearing doesn't shift the sheet -->

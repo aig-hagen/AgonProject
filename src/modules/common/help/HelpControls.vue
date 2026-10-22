@@ -52,7 +52,7 @@ const linkNamesEnumeration = computed(
     </thead>
     <tbody>
       <tr>
-        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">
+        <td colspan="2" class="section-label pt-3 pb-1">
           {{ t('help.controls.sections.argumentsAttacks') }}
         </td>
       </tr>
@@ -135,7 +135,7 @@ const linkNamesEnumeration = computed(
       </tr>
 
       <tr>
-        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">
+        <td colspan="2" class="section-label pt-3 pb-1">
           {{ t('help.controls.sections.navigation') }}
         </td>
       </tr>
@@ -171,7 +171,7 @@ const linkNamesEnumeration = computed(
       </tr>
 
       <tr>
-        <td colspan="2" class="font-semibold pt-3 pb-1 opacity-60 text-xs uppercase tracking-wide">
+        <td colspan="2" class="section-label pt-3 pb-1">
           {{ t('help.controls.sections.general') }}
         </td>
       </tr>

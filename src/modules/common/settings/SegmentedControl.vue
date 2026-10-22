@@ -27,7 +27,7 @@ defineProps<{
 
 <template>
   <div
-    class="inline-flex items-center rounded-lg bg-base-300/60 p-0.5"
+    class="inline-flex items-center rounded-field bg-base-300/60 p-0.5"
     role="radiogroup"
     :aria-label="ariaLabel"
   >
@@ -41,7 +41,7 @@ defineProps<{
       :class="
         model === opt.value
           ? 'bg-base-100 font-medium text-base-content shadow-sm'
-          : 'text-base-content/55'
+          : 'text-base-content/65 hover:text-base-content'
       "
       @click="model = opt.value"
     >

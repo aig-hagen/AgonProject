@@ -42,12 +42,12 @@ const ENDPOINT_ADF = '/adf'
 
 // ── Semantics ─────────────────────────────────────────────────────────────────
 
-export const KEY_DEFAULT_SEMANTIC = 'ADM'
+export const KEY_DEFAULT_SEMANTIC = 'PR'
 
 export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
   {
-    key: 'adf-semantics',
-    displayName: 'ADF Semantics',
+    key: 'classical',
+    displayName: 'Classical Semantics',
     semantics: [
       { key: 'CF', displayName: 'Conflict-Free', tooltipId: 'adfCF' },
       { key: 'ADM', displayName: 'Admissible', tooltipId: 'adfADM' },
@@ -55,8 +55,24 @@ export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
       { key: 'GR', displayName: 'Grounded', tooltipId: 'adfGR' },
       { key: 'PR', displayName: 'Preferred', tooltipId: 'adfPR' },
       { key: 'ST', displayName: 'Stable', tooltipId: 'adfST' },
-      { key: 'NA', displayName: 'Naive', tooltipId: 'adfNA' },
     ],
+  },
+  {
+    key: 'admissibility-based',
+    displayName: 'Admissibility-based Semantics',
+    semantics: [
+      { key: 'SAD', displayName: 'Strongly Admissible', tooltipId: 'adfSAD' },
+      { key: 'SST', displayName: 'Semi-Stable', tooltipId: 'adfSST' },
+      { key: 'S2V', displayName: 'Semi-Two-Valued', tooltipId: 'adfS2V' },
+      { key: 'IS', displayName: 'Initial', tooltipId: 'adfIS' },
+      { key: 'MOD2', displayName: 'Two-Valued', tooltipId: 'adfMOD2' },
+      { key: 'MOD3', displayName: 'Three-Valued', tooltipId: 'adfMOD3' },
+    ],
+  },
+  {
+    key: 'non-admissible',
+    displayName: 'Non-admissible Semantics',
+    semantics: [{ key: 'NA', displayName: 'Naive', tooltipId: 'adfNA' }],
   },
 ]
 

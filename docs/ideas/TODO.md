@@ -1,99 +1,40 @@
-## Features
+# TODO
 
-- Localization of definitions, semantics, etc
-- graph style colors need update
-- labeling highlight colors - color blind mode
-- export redesign: check if there is anything that should be updated for mobile
-- store state of export window in db?
-- SVG export: open a modal, make transparent an option
+## General
 
-## ABA
+- **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
+  `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
 
-- eval view: display of semantics definitions is incomplete; semantics list should look better
-- update glossary entries; show separate for flat/nonflat in eval window
-- improve UI of theory panel;
-- better handling of the fact annotation
-- better visuals for the action bar
-- the message after making a theory nonflat in the AF view needs to change and look better
-- in AF view: show tree-derivation for each node
-- when in a AF/SETAF view, when new nodes are created they must be placed better
+## Mobile
 
-## Bugs and Issues
+- **7. [S] Publications on module cards.** Desktop shows a `PublicationsTooltip` on each home card
+  (`BlankDocumentCanvas.vue`); the mobile cards show none.
+- **26. [M] Landscape layout.** Phones in landscape now get the compact shell, but its top and
+  bottom bars leave little canvas height. Consider moving the command bar to a side rail.
+- **ADF center view.** On mobile, the centered view of an ADF may cut off acceptance conditions.
 
-- ADF center view on mobile may cut of conditions
+## Assumption-based argumentation (ABA)
 
-### desktop/general
+Feature work (BAF/ADF views, LaTeX export, generation, Δ-semantics, tutorials) is planned in
+[`aba-roadmap.md`](aba-roadmap.md). This section is editor polish.
 
-- need a ranking tutorial for AF
+### Evaluation window
 
-### Mobile
+- **11. [S] Semantics definitions.** Some semantics show incomplete definitions, and the semantics
+  list needs a cleaner layout (for ABA).
+- **12. [S] Glossary.** Update the ABA glossary entries, and in the evaluation window show the
+  definitions for flat and non-flat theories separately.
 
-#### Home and document management
+### Theory editor
 
-- show reference on main view cards somewhere
+- **13. [M] Theory panel.** Improve the layout and look of the side panel.
+- **14. [S] Fact annotation.** Improve how facts are marked and toggled.
+- **15. [S] Action bar.** Improve the visuals of the node action bar.
 
-#### Graph editor and interaction
+### Derived views (AF, SETAF)
 
-- **[Enhancement]** Extension highlighting: could use some way to deactivate highlighting (other than clicking the extension again)
-- **[Decision needed]** add some kind of toggle for physics mode: something that activated physics for a brief moment to let arguments adjust position. or something that enables pyhsics while pressed
-
-#### Sharing and export
-
-- **[Feature]** Per-share link preview cards. `index.html` now serves static Open Graph tags,
-  so a shared link shows one _generic_ branded card. To get a card specific to the shared
-  framework, the `/share/:id` route must return server-rendered HTML with per-share `og:*` tags
-  (title = framework name, description = arg/attack counts) — the share server currently only
-  serves JSON. Stretch goal: a dynamic `og:image` rendering the actual graph (server-side
-  SVG→PNG). Crawlers don't run JS, so this can't be done from the SPA.
-
-#### Settings and visual design
-
-- **[Design]** could update the creation-mode-switchers in the bottom left. visual style doesnt really fit well
-
-#### Other
-
-- Can we somehow enforce fullscreen on mobile? does that make sense?
-
-## Features
-
-### Mobile eval sheet: full-detent two-pane compare
-
-At the `full` (~90dvh) detent, the mobile evaluation sheet should show a **second, one-off,
-view-only** eval below a `Compare with` divider (`view only` + `✕` clear), so two evaluations
-can be read side by side. Rules:
-
-- Top pane = the switchable saved eval; **owns** the canvas highlight.
-- Bottom pane = a one-off eval slot (own params + result), must **not** emit `highlight` — only
-  one eval touches the canvas.
-- Needs host-local state to hold the one-off instance (not in the saved chip list).
-  See the checklist in `docs/mobile-layout.md` (Evaluate UI rework).
-
-### use tags to filter AF types
-
-Tags are now defined and associated with each module (see `src/modules/common/tags.ts` and each module's `moduleConfig.ts`). In the future, those can be used to filter AF types; can also implement a search bar on the main page.
-
-### Split Basic Tutorials into functional part and argumentation part
-
-There should be a short tutorial, just for the controls, and one more detailed tutorial that explains in more detail the specifics of the argumentation formalism.
-
-## New Framework Types
-
-### Assumption-based Argumentation (ABA)
-
-- remaining work (BAF/ADF views, export, generation, Δ-semantics, tutorials):
-  [`aba-graph-representation.md`](aba-graph-representation.md)
-
-### Extended AFs
-
-- need to implement extended edges in graph-component
-- extended attacks stored separately
-- distinguish between extended and recursive-extended AFs?
-- need TweetyProject endpoint
-- take a look at the TweetyProject reasoner (performance)
-
-### Weighted AFs
-
-- How to incorporate the Semiring? Select in EvalWindow?
-- alpha/beta parameters need to be setable in the EvalWindow as well
-- need TweetyProject endpoint
-- reconsider TweetyProject reasoners; can we extend that easily to have more semantics available? no
+- **16. [S] Non-flat notice.** The message shown when the theory becomes non-flat while in the AF
+  view needs better wording and styling.
+- **17. [M] Derivation per argument.** Show the derivation tree behind each argument node.
+- **18. [M] Placing new arguments.** When a theory edit adds arguments to the AF/SETAF view, they
+  land in poor spots. Place them near related arguments.

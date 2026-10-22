@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import type { NodeOutline } from '@aig-hagen/graph-component/lib'
 import type { Component, InjectionKey, Ref } from 'vue'
 
 import type { ExportConfig, ExportFileData } from '@/modules/common/export'
@@ -213,7 +214,8 @@ export interface GraphEditorState {
 
 export interface Highlight {
   stateId: UUID
-  groups: ReadonlyArray<{ nodes: ReadonlySet<NodeId>; color: string }>
+  // `outline` overrides the node border while highlighted (e.g. dotted for derived).
+  groups: ReadonlyArray<{ nodes: ReadonlySet<NodeId>; color: string; outline?: NodeOutline }>
   // Entries without a color use the default node color.
-  legend?: ReadonlyArray<{ label: string; color?: string }>
+  legend?: ReadonlyArray<{ label: string; color?: string; outline?: NodeOutline }>
 }

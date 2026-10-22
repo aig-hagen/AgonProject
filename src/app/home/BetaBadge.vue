@@ -17,7 +17,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { BeakerIcon } from '@heroicons/vue/24/solid'
 import { useI18n } from 'vue-i18n'
 
 defineProps<{ ribbon?: boolean }>()
@@ -31,7 +30,7 @@ const { t } = useI18n({ useScope: 'global' })
     class="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-[inherit]"
   >
     <span
-      class="pointer-events-auto absolute top-2 -right-11 flex w-32 rotate-45 items-center justify-center bg-secondary py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-secondary-content shadow-sm"
+      class="pointer-events-auto absolute top-2 -right-11 flex w-32 rotate-45 items-center justify-center bg-secondary py-0.5 text-micro font-semibold uppercase tracking-wide text-secondary-content shadow-sm"
       :title="t('home.picker.betaHint')"
     >
       {{ t('home.picker.beta') }}
@@ -39,9 +38,9 @@ const { t } = useI18n({ useScope: 'global' })
   </span>
   <span
     v-else
-    class="badge badge-sm badge-soft badge-warning shrink-0 gap-1 px-2 text-[0.65rem] font-semibold uppercase tracking-wider"
+    class="badge badge-sm badge-secondary shrink-0 px-2 text-micro font-semibold uppercase tracking-wide"
     :title="t('home.picker.betaHint')"
   >
-    <BeakerIcon class="size-3" />{{ t('home.picker.beta') }}
+    {{ t('home.picker.beta') }}
   </span>
 </template>

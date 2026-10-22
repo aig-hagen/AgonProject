@@ -69,17 +69,14 @@ The two-tier reading, drawn: every atom is a node with an acceptance condition.
   SETAF → SETAF, BAF → BAF, ADF → ADF; no BSAF module, so non-flat can't). Needs a small
   cross-module document-creation entry point.
 
-## Export (missing)
+## Export (partial)
 
-The ABA editor has no `export.ts`, no export window and no quick export; other modules pass
-`availableExports` to `WindowExport` and the quick-export bar.
+Done: ICCMA ABA format export (`export.ts`, quick export) and import (`save/iccmaFormat.ts`).
 
 - **LaTeX / TikZ:** the theory graph (atoms, assumptions, rule hubs, contraries) needs its own
   drawing, since `exportLatexArgumentationCommon` only knows arguments and attacks. Probably
   also a plain-text theory block (`p ← a`, `‾a = q`).
-- **Text formats:**
-  - ICCMA 2023 ABA track (`p aba n`, `a x`, `c x y`, `r h b…`) — the standard solver input.
-  - TweetyProject `.aba` — already built for `/aba` in `evaluation/tweetyProject.ts`; reuse it.
+- **TweetyProject `.aba`:** already built for `/aba` in `evaluation/tweetyProject.ts`; reuse it.
 - **Views:** export the active derived view with its target module's formats (AF → ICCMA/TGF,
   SETAF → `setaf`), or leave that to "open as document".
 - **Docs:** add the ABA formats to [`docs/formats/`](../formats/README.md).

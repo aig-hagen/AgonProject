@@ -19,7 +19,6 @@
 <script setup lang="ts" generic="DocumentT">
 import {
   ArrowDownTrayIcon,
-  ArrowTopRightOnSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CodeBracketIcon,
@@ -27,17 +26,14 @@ import {
   PhotoIcon,
   ShareIcon,
 } from '@heroicons/vue/24/outline'
-import { computed, inject, ref, shallowRef } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import {
-  LATEX_PREAMBLE,
-  LATEX_STYLE_CHOICES,
-  LATEX_STYLE_DEFAULTS,
-} from '@/modules/common/argumentation/export'
+import { LATEX_PREAMBLE, LATEX_STYLE_CHOICES } from '@/modules/common/argumentation/export'
 import ButtonCopy from '@/modules/common/export/ButtonCopy.vue'
 import ButtonSave from '@/modules/common/export/ButtonSave.vue'
 import ImageExportPanel from '@/modules/common/export/ImageExportPanel.vue'
+import { useExportPreferences } from '@/modules/common/export/useExportPreferences'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
 import PickerSelect, { type PickerOption } from '@/modules/common/forms/PickerSelect.vue'
 import { GRAPH_SVG_RENDERER_KEY } from '@/modules/common/graph-editor/graphEditor'
@@ -70,13 +66,9 @@ const canShareNatively = supportsNativeShare()
 type Screen = 'picker' | 'svg' | 'code'
 const screen = ref<Screen>('picker')
 
-// Same defaults and output as the desktop LaTeX studio.
-const argumentStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.argumentStyle)
-const nameStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.nameStyle)
-const attackStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.attackStyle)
-const supportStyle = shallowRef<string>(LATEX_STYLE_DEFAULTS.supportStyle)
-const nodeDistance = shallowRef<number>(LATEX_STYLE_DEFAULTS.nodeDistance)
-const nodeLabels = shallowRef<NodeLabelMode>(LATEX_STYLE_DEFAULTS.nodeLabels)
+// Shared with the desktop LaTeX studio.
+const { argumentStyle, nameStyle, attackStyle, supportStyle, nodeDistance, nodeLabels } =
+  useExportPreferences()
 
 const isBipolarDocument = computed(
   () => typeof (input as unknown as { supports?: unknown }).supports === 'function',
@@ -93,7 +85,7 @@ const styleOptions = computed<ExportStyleOptions>(() => ({
 }))
 
 // The config with a code editor (LaTeX) is both the code view and the SVG source;
-// the rest (ICCMA, TGF) are plain data downloads.
+// the rest (AF, TGF) are plain data downloads.
 const codeConfig = computed(() => exportConfigs.find((c) => c.codemirrorOptions !== undefined))
 const dataConfigs = computed(() => exportConfigs.filter((c) => c.codemirrorOptions === undefined))
 
@@ -137,7 +129,7 @@ function download(config: ExportConfig<DocumentT>) {
       <!-- One-tap share, kept apart from the format flow. -->
       <button
         v-if="quickShare"
-        class="flex items-center gap-3 h-14 px-4 rounded-2xl bg-primary text-primary-content shadow-md shadow-primary/30"
+        class="flex items-center gap-3 h-14 px-4 rounded-box bg-primary text-primary-content"
         @click="shareAndClose()"
       >
         <ShareIcon class="size-5" />
@@ -147,62 +139,62 @@ function download(config: ExportConfig<DocumentT>) {
       </button>
 
       <section v-if="graphSvgRenderer" class="flex flex-col gap-2">
-        <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
+        <h3 class="section-label px-1">
           {{ t('export.sections.image') }}
         </h3>
         <button
-          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-box border border-base-300 bg-base-100 text-left"
           @click="screen = 'svg'"
         >
-          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+          <span class="grid place-items-center size-9 shrink-0 rounded-field bg-base-200">
             <PhotoIcon class="size-5 text-primary" />
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">{{ t('export.image.title') }}</b>
-            <span class="text-xs text-base-content/60 truncate">{{
+            <span class="text-xs text-base-content/65 truncate">{{
               t('export.image.description')
             }}</span>
           </span>
-          <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
+          <ChevronRightIcon class="size-4 shrink-0 text-base-content/40" />
         </button>
       </section>
 
       <section class="flex flex-col gap-2">
-        <h3 class="text-[0.7rem] font-semibold uppercase tracking-wide text-base-content/50 px-1">
+        <h3 class="section-label px-1">
           {{ t('export.sections.text') }}
         </h3>
         <button
           v-if="codeConfig"
-          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-box border border-base-300 bg-base-100 text-left"
           @click="screen = 'code'"
         >
-          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+          <span class="grid place-items-center size-9 shrink-0 rounded-field bg-base-200">
             <CodeBracketIcon class="size-5 text-primary" />
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">{{ codeConfig.name }}</b>
-            <span class="text-xs text-base-content/60 truncate">{{
+            <span class="text-xs text-base-content/65 truncate">{{
               codeConfig.description ?? t('export.latexFallbackDescription')
             }}</span>
           </span>
-          <ChevronRightIcon class="size-4 shrink-0 opacity-30" />
+          <ChevronRightIcon class="size-4 shrink-0 text-base-content/40" />
         </button>
         <button
           v-for="config in dataConfigs"
           :key="config.id"
-          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-2xl border border-base-300 bg-base-100 text-left"
+          class="w-full flex items-center gap-3 min-h-14 px-3.5 py-2 rounded-box border border-base-300 bg-base-100 text-left"
           @click="download(config)"
         >
-          <span class="grid place-items-center size-9 shrink-0 rounded-lg bg-base-200">
+          <span class="grid place-items-center size-9 shrink-0 rounded-field bg-base-200">
             <DocumentTextIcon class="size-5 text-primary" />
           </span>
           <span class="flex-1 min-w-0 flex flex-col leading-tight">
             <b class="text-sm font-semibold">{{ config.name }}</b>
-            <span class="text-xs text-base-content/60 truncate">{{
+            <span class="text-xs text-base-content/65 truncate">{{
               config.description ?? t('export.fileFallbackDescription', { ext: config.extension })
             }}</span>
           </span>
-          <ArrowDownTrayIcon class="size-5 shrink-0 opacity-40" />
+          <ArrowDownTrayIcon class="size-5 shrink-0 text-base-content/65" />
         </button>
       </section>
     </div>
@@ -223,28 +215,18 @@ function download(config: ExportConfig<DocumentT>) {
       </button>
 
       <div class="flex items-center gap-2">
-        <a
-          v-if="codeConfig?.references?.[0]"
-          :href="codeConfig.references[0].url"
-          :title="codeConfig.references[0].label"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-ghost btn-square size-12 rounded-2xl"
-        >
-          <ArrowTopRightOnSquareIcon class="size-5" />
-        </a>
         <ButtonSave
-          class="btn btn-primary h-12 flex-1 rounded-2xl"
+          class="btn btn-primary h-12 flex-1"
           :filedata="codeFiledata"
           @export="emit('export', $event)"
         />
-        <ButtonCopy tex class="btn btn-soft h-12 flex-1 rounded-2xl" :text="codeResult?.text">{{
+        <ButtonCopy tex class="btn btn-soft h-12 flex-1" :text="codeResult?.text">{{
           t('export.formatLabels.code')
         }}</ButtonCopy>
       </div>
 
       <div v-if="isLatex" class="flex items-center gap-2">
-        <code class="flex-1 min-w-0 truncate rounded bg-base-200 px-2 py-1.5 text-[0.7rem]">{{
+        <code class="flex-1 min-w-0 truncate rounded bg-base-200 px-2 py-1.5 text-xs">{{
           LATEX_PREAMBLE
         }}</code>
         <ButtonCopy
@@ -254,9 +236,29 @@ function download(config: ExportConfig<DocumentT>) {
           icon-only
         />
       </div>
+      <i18n-t
+        v-if="isLatex"
+        keypath="export.packageNote"
+        tag="p"
+        scope="global"
+        class="-mt-1.5 px-1 text-xs text-base-content/65"
+      >
+        <template #package>
+          <a
+            v-if="codeConfig?.references?.[0]"
+            :href="codeConfig.references[0].url"
+            :title="codeConfig.references[0].label"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link link-primary"
+            >argumentation</a
+          >
+          <template v-else>argumentation</template>
+        </template>
+      </i18n-t>
 
       <pre
-        class="overflow-auto rounded bg-base-200 p-2 text-[0.7rem] leading-relaxed max-h-64"
+        class="overflow-auto rounded bg-base-200 p-2 text-xs leading-relaxed max-h-64"
       ><code>{{ codeResult?.text }}</code></pre>
 
       <details v-if="isLatex" class="collapse collapse-arrow bg-inset rounded-field">
@@ -300,7 +302,9 @@ function download(config: ExportConfig<DocumentT>) {
                 step="0.25"
                 v-model.number="nodeDistance"
               />
-              <span class="w-8 text-right font-mono text-xs opacity-70">{{ nodeDistance }}</span>
+              <span class="w-8 text-right font-mono text-xs text-base-content/80">{{
+                nodeDistance
+              }}</span>
             </div>
           </ParameterField>
         </div>
