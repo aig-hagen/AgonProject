@@ -59,6 +59,7 @@ import {
 import {
   createReusableTemplate,
   useDebounceFn,
+  useElementSize,
   useElementVisibility,
   useMediaQuery,
 } from '@vueuse/core'
@@ -828,6 +829,8 @@ watch(snapMode, (enabled) => {
 const [DefineLegend, ReuseLegend] = createReusableTemplate()
 const hasSidePanel = computed(() => layoutMode.value === 'regular' && !!slots.sidePanel)
 const legendBesidePanel = computed(() => hasSidePanel.value && !sidePanelCollapsed)
+const sidePanelRef = useTemplateRef<HTMLDivElement>('sidePanel')
+const { width: sidePanelWidth } = useElementSize(sidePanelRef)
 
 useHighlight({
   highlightRef: toRef(() => highlight),
@@ -2156,7 +2159,7 @@ defineExpose({
       class="absolute top-4 right-4 bottom-4 z-10 flex items-end gap-3 pointer-events-none"
     >
       <ReuseLegend v-if="legendBesidePanel && highlight?.legend?.length" />
-      <div class="flex self-stretch pointer-events-auto">
+      <div ref="sidePanel" class="flex self-stretch pointer-events-auto">
         <slot name="sidePanel" />
       </div>
     </div>
@@ -2415,6 +2418,7 @@ defineExpose({
         ...dynamicTutorialRefs,
       }"
       :context="tutorialContext"
+      :right-inset="hasSidePanel ? sidePanelWidth + 12 : 0"
     />
     <TutorialOverlayMobile
       v-if="tutorials && showHints && layoutMode === 'compact'"
