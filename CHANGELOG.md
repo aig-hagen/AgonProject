@@ -14,49 +14,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - ABA tutorials: a basics tutorial for building a theory on the canvas, and a views tutorial for the AF/SetAF views.
 - Web app manifest and home-screen icons: "Add to Home Screen" now opens AgonProject full-window, without browser bars.
 - ADF semantics: strongly admissible, semi-stable, semi-two-valued, initial, two-valued and three-valued, with glossary entries.
+- PNG image export (1×–3×) in a new export window with a live preview and a transparent-background toggle; fonts
+  are embedded so labels look the same outside the app.
+- Serialisation graph: all sequences as a graph of states or as a list grouped by extension; an Explore toggle
+  builds the graph step by step. Selecting or hovering a state shows it on the canvas.
 
 ### Changed
 
 - ADF evaluation now defaults to preferred semantics instead of admissible.
-- Image export now opens in a floating window with a live preview, a transparent-background toggle, and PNG export (1×–3×) alongside SVG; fonts are embedded so labels look the same outside the app.
-- Export menu: text formats download in one click and show their file extension; the image entry gets a quick transparent-SVG download.
-- Visual polish: softer, consistent corner radii app-wide, solid mobile toolbars, no glowing buttons, a clearer
-  "Relayout" icon, and full-strength toolbar icons.
-- Mobile: the editor's document chip shows the framework type (AF, BAF, …) as a badge; the home header drops its icon.
-- Desktop home: flatter module cards without the divider; section and field labels share one consistent style app-wide.
-- New blank and generated documents are numbered from the start (AF1, AF2, …) instead of starting with a bare "AF".
-- One type scale on desktop and mobile, and muted text is darker so it meets WCAG AA contrast in light mode.
-- Glossary, generator, privacy and attributions pages share one header bar with a centered title and a back button.
-- Mobile: phones in landscape keep the mobile layout instead of switching to the desktop one.
-- Privacy and third-party links in Help open in the same tab, so back returns to the editor instead of a second app instance.
-- Glossary search uses one search field style on desktop and mobile, with a visible keyboard focus ring.
-- Export options (LaTeX style, image format, scale and background) are remembered across sessions and shared between desktop and mobile.
-- Mobile LaTeX export shows the `argumentation` package note with its link, like desktop.
-- Floating windows, sheets and menus cast palette-tinted shadows; muted icons and code highlighting use the app palette.
-- Graph style presets come from the app palette: every preset now has a proper dark mode, High contrast
-  reaches 11:1 labels in light mode, Minimal is quieter, and Library uses the AIG brand colors.
-- Evaluation highlights are easier to tell apart with red-green color blindness, labels on them always pick
-  the more readable text color, and derived nodes get a dotted border.
-- Evaluation windows show the result count, put the timing last, and count elapsed time while evaluating.
-- The empty extension shows as ∅; IAF fields read Semantics · Type · Mode, matching the title.
-- Probabilistic evaluation gets a mode hint, copy buttons and a note that node labels show probabilities.
-- Probabilistic evaluation explains what the numbers mean: the mode hint shows the acceptance probability, and the
-  glossary gains subframework, subframework probability and acceptance probability.
-- Probabilistic: approximate inference samples 1,000 subframeworks; probabilities must be at least 0.01 (0 is lifted on load).
-- Serialisation window: all sequences as a graph of states or as a list grouped by extension; an Explore toggle
-  builds the graph step by step instead. Selecting or hovering a state shows it on the canvas.
-- Bipolar: the support type explanation moved into a hint; ABA explains why flat-only semantics are disabled.
+- Visual polish: one type scale, consistent corner radii and label styles, darker muted text (WCAG AA), flatter home
+  cards, and one shared header bar on the glossary, generator and info pages.
+- Graph style presets come from the app palette, and every preset now has a proper dark mode.
+- Evaluation highlights are easier to tell apart with red-green color blindness; derived nodes get a dotted border.
+- Evaluation windows show the result count and a live timer; the empty extension shows as ∅.
+- Export options are remembered across sessions, and text formats download in one click.
+- New documents are numbered from the start (AF1, AF2, …).
+- Mobile: landscape keeps the mobile layout, and the editor chip shows the framework type as a badge.
+- Probabilistic: hints and glossary entries explain the acceptance probabilities; approximate inference samples
+  1,000 subframeworks, and probabilities must be at least 0.01.
 
 ### Fixed
 
+- Glossary: corrected about a dozen definitions (ADF, iAF acceptance, rankings, serialisation and more).
+- Numerical ranking scores are readable in dark mode and no longer rely on red-green hue.
+- Privacy and third-party links in Help open in the same tab instead of a second app instance.
 - The publications tooltip heading on module cards is now translated.
-- Glossary: the ADF stable model definition now requires a two-valued model.
-- Glossary: the discussion-based ranking no longer reads backwards (larger discussion counts rank higher).
-- Glossary: possible/necessary acceptance in iAFs now distinguishes extensions, credulous and skeptical acceptance.
-- Glossary: corrected the selection function, reduct, grounded, burden number, serialisation index, SetAF and
-  ADF completion definitions.
-- Glossary: ADF admissible, complete, grounded and preferred now cite Brewka et al. (2013), where they are defined.
-- Numerical ranking scores are readable in dark mode, and their colors no longer rely on red-green hue.
 
 ## [0.13.0] - 2026-09-30
 
