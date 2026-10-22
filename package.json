@@ -41,7 +41,6 @@
     "@interactjs/interact": "^1.10.27",
     "@interactjs/modifiers": "^1.10.27",
     "@lezer/highlight": "^1.2.3",
-    "@tanstack/query-core": "^5.100.10",
     "@tanstack/vue-query": "^5.100.6",
     "@vueuse/core": "^14.2.1",
     "chevrotain": "^12.0.0",
@@ -58,11 +57,9 @@
     "vue-i18n": "^11.4.10",
     "vue-router": "^5.0.2",
     "wawoff2": "^2.0.1",
-    "xml-formatter": "^3.7.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@interactjs/dev-tools": "^1.10.27",
     "@playwright/test": "1.59.1",
     "@tailwindcss/vite": "^4.2.0",
     "@tsconfig/node24": "^24.0.4",
@@ -75,8 +72,6 @@
     "@types/wawoff2": "^1.0.2",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vitejs/plugin-vue-jsx": "^5.1.4",
-    "@vitest/browser-playwright": "^4.1.12",
-    "@vitest/coverage-v8": "^4.1.12",
     "@vitest/eslint-plugin": "^1.6.9",
     "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/test-utils": "^2.4.6",
