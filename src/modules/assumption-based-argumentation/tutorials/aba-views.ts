@@ -25,11 +25,11 @@ export const abaViewsTutorial: Tutorial = {
   steps: [
     {
       id: 'intro',
-      title: 'Views of your theory',
+      title: 'Views on ABA theories',
       body: [
-        'Your theory can be shown as other argumentation frameworks, built from its rules and contraries. These views are <strong>read-only</strong> — you edit only in the Theory view, and every view follows your changes. A set of assumptions ',
+        'An ABA theory can be instantiated via other argumentation formalisms. These views are <strong>read-only</strong>. In general, the ',
         { text: 'attacks', tooltipId: 'abaAttack' },
-        ' an assumption when it derives that assumption’s contrary.',
+        ' are derived via rules that derive the contrary of an assumption.',
       ],
       advanceOn: 'button',
     },
@@ -48,23 +48,28 @@ export const abaViewsTutorial: Tutorial = {
     {
       id: 'setaf-view',
       title: 'The SetAF view',
-      body: 'Now switch to the <strong>SetAF</strong> view. Here the nodes are just the assumptions, and each attack comes from a set of assumptions that together derive the target’s contrary. For non-flat theories this slot shows a <strong>BSAF</strong>, which adds set-supports.',
+      body: "Now switch to the <strong>SetAF</strong> view. Here the nodes are just the assumptions, and each attack comes from a set of assumptions that together derive the target's contrary. For non-flat theories this slot shows a <strong>BSAF</strong>, which adds set-supports.",
       highlight: 'viewSwitcher',
       advanceOn: 'action',
       advanceCondition: (ctx) => ctx.activeView === 'setaf',
     },
     {
-      id: 'back-to-theory',
-      title: 'Back to the theory',
-      body: 'Switch back to the <strong>Theory</strong> view to keep editing. Each view remembers its own layout.',
-      highlight: 'viewSwitcher',
-      advanceOn: 'action',
-      advanceCondition: (ctx) => ctx.activeView === 'theory',
+      id: 'edit-in-views',
+      title: 'Keep editing in the panel',
+      body: (isTouchDevice) =>
+        `The canvas is read-only here, but the <strong>Theory panel</strong>${isTouchDevice ? ' (tap <strong>Theory</strong>)' : ''} still works in every view. Add a rule or an assumption there and watch this view update right away.`,
+      highlight: 'theoryPanel',
+      advanceOn: 'button',
+      advanceCondition: (ctx, base) =>
+        ctx.ruleCount !== base.ruleCount ||
+        ctx.assumptionCount !== base.assumptionCount ||
+        ctx.contraryEditCount !== base.contraryEditCount,
     },
     {
       id: 'done',
       title: 'Great work!',
-      body: 'You now know how your theory maps to AFs and SetAFs. Switch views any time to see how an edit changes the attacks.',
+      body: 'You now know how your theory maps to AFs and SetAFs. Edit in the panel from any view to see right away how a change affects the attacks, or switch back to the <strong>Theory</strong> view to edit on the canvas. Each view remembers its own layout.',
+      highlight: 'viewSwitcher',
       advanceOn: 'button',
     },
   ],
