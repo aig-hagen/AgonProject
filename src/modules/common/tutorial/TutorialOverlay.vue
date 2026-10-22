@@ -35,12 +35,21 @@ import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import type { Tutorial, TutorialBodyPart, TutorialContext } from '@/modules/common/tutorial/types'
 import { TUTORIAL_INSTANCE_KEY, useTutorial } from '@/modules/common/tutorial/useTutorial'
 
-const { tutorials, defaultTutorialId, refs, context, isTouchDevice } = defineProps<{
+const {
+  tutorials,
+  defaultTutorialId,
+  refs,
+  context,
+  isTouchDevice,
+  rightInset = 0,
+} = defineProps<{
   tutorials: Tutorial[]
   defaultTutorialId?: string
   refs: Record<string, HTMLElement | null>
   context: TutorialContext
   isTouchDevice: boolean
+  /** Extra px to keep unanchored cards clear of a right-hand side panel. */
+  rightInset?: number
 }>()
 
 const {
@@ -279,7 +288,11 @@ const { floatingStyles } = useFloating(anchorRef, floatingEl, {
     </div>
 
     <!-- Unanchored step: fixed to top-right of editor container -->
-    <div v-else class="absolute top-4 right-4 z-50 pointer-events-auto">
+    <div
+      v-else
+      class="absolute top-4 z-50 pointer-events-auto"
+      :style="{ right: `${16 + rightInset}px` }"
+    >
       <div class="card bg-base-100 shadow-xl w-80 border border-base-300">
         <div class="card-body p-4 gap-3">
           <div class="flex items-center justify-between gap-2">

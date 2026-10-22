@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - "Color-blind friendly colors" setting: evaluation results switch to blue and red-orange, which stay apart for
   red-green and blue-yellow color blindness on every graph style.
 - Load ICCMA text files (`.af`, `.baf`, `.setaf`, `.iaf`, `.paf`, `.aba`) from the file menu; imported graphs are laid out automatically.
+- ABA tutorials: a basics tutorial for building a theory on the canvas, and a views tutorial for the AF/SetAF views.
 - Web app manifest and home-screen icons: "Add to Home Screen" now opens AgonProject full-window, without browser bars.
 - ADF semantics: strongly admissible, semi-stable, semi-two-valued, initial, two-valued and three-valued, with glossary entries.
 
