@@ -25,6 +25,7 @@ not prescribe the contributor workflow.
 - [Development setup](./contributing/development.md) — prerequisites and local services
 - [Testing](./contributing/testing.md) — test suites and CI coverage
 - [Coding conventions](./contributing/conventions.md) — TypeScript, Vue, state, styling, and test patterns
+- [Design system](./contributing/design.md) — visual tokens, type scale, components, and UI do's and don'ts
 - [Extending the application](./contributing/extending.md) — modules, evaluations, tutorials, exports, and layouts
 - [Localization](./contributing/localization.md) — English/German message catalogs and untranslated content
 - [Release process](./contributing/releases.md) — version tags, images, and GitHub releases
