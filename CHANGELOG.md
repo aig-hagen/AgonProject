@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- SetAF glossary: strongly and weakly admissible, weakly complete, preferred and grounded semantics, with the SetAF reduct.
+- SetAF and ABA semantics pickers mark semantics computed via an unproven AF reduction.
+
+### Changed
+
+- ABA semantics are grouped by family like the other modules; flat-only semantics are disabled one by one on non-flat theories.
+- SetAF evaluation uses native reasoners where available, including the strong and weak semantics.
+
+### Removed
+
+- SetAF: naive, stage2, CF2 and SCF2 semantics, whose AF reduction gave wrong results.
+
 ## [0.14.1] - 2026-10-24
 
 ### Fixed

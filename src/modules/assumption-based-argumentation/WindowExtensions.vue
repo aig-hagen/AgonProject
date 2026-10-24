@@ -22,18 +22,20 @@ import { useI18n } from 'vue-i18n'
 
 import type { ExtensionWindowInstanceState } from '@/modules/assumption-based-argumentation/evaluation/extensionWindowState'
 import {
+  type AbaSemantics,
   KNOWN_SEMANTIC_GROUPS,
   useAbaEvaluationQuery,
 } from '@/modules/assumption-based-argumentation/evaluation/tweetyProject'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
+import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
 import type { Labels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
 import { modeLabel, modeOptions } from '@/modules/common/evaluation/modes'
-import type { Semantics } from '@/modules/common/evaluation/tweety-project/semantics'
+import ReductionHint from '@/modules/common/evaluation/ReductionHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
@@ -73,7 +75,10 @@ const emit = defineEmits<{
   evaluate: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...collectiveAttacksArgumentationGlossary,
+  ...assumptionBasedArgumentationGlossary,
+})
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -81,21 +86,24 @@ const allSemantics = KNOWN_SEMANTIC_GROUPS.flatMap((g) => g.semantics)
 
 // Flat-only semantics stay visible but disabled for non-flat theories.
 const isFlat = computed(() => input.content.isFlat())
-const semanticsSelectGroups = computed<GroupedSelectGroup<Semantics & { disabled: boolean }>[]>(
-  () =>
-    KNOWN_SEMANTIC_GROUPS.map((g) => ({
-      key: g.key,
-      displayName: g.displayName,
-      options: g.semantics.map((s) => ({ ...s, disabled: g.flatOnly && !isFlat.value })),
-      note: g.flatOnly && !isFlat.value ? t('evaluation.requiresFlat') : undefined,
-    })),
+const semanticsSelectGroups = computed<
+  GroupedSelectGroup<AbaSemantics & { disabled: boolean; title?: string }>[]
+>(() =>
+  KNOWN_SEMANTIC_GROUPS.map((g) => ({
+    key: g.key,
+    displayName: g.displayName,
+    options: g.semantics.map((s) => {
+      const disabled = !!s.flatOnly && !isFlat.value
+      return { ...s, disabled, title: disabled ? t('evaluation.requiresFlat') : undefined }
+    }),
+  })),
 )
 
-function resolveSemanticFromKey(key: string): Semantics {
+function resolveSemanticFromKey(key: string): AbaSemantics {
   return allSemantics.find((s) => s.key === key) ?? allSemantics[0]!
 }
 
-const selectedSemantic = shallowRef<Semantics>(resolveSemanticFromKey(instanceState.semanticKey))
+const selectedSemantic = shallowRef<AbaSemantics>(resolveSemanticFromKey(instanceState.semanticKey))
 const selectedMode = ref<string>(instanceState.mode)
 
 watch([selectedSemantic, selectedMode], () => {
@@ -106,11 +114,14 @@ watch([selectedSemantic, selectedMode], () => {
   })
 })
 
+// Kept selected when the theory turns non-flat, but not sent to the backend.
+const needsFlat = computed(() => !!selectedSemantic.value.flatOnly && !isFlat.value)
+
 const query = useAbaEvaluationQuery(
   toRef(() => input),
   computed(() => selectedSemantic.value.key),
   selectedMode,
-  true,
+  computed(() => !needsFlat.value),
 )
 
 const {
@@ -152,7 +163,11 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
   >
     <template #parameters>
       <ParameterField :label="t('evaluation.fields.semantics')" min-width="10rem">
-        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width>
+          <template #option-suffix="{ option }">
+            <ReductionHint v-if="option.reduction" :reduction="option.reduction" />
+          </template>
+        </GroupedSelect>
       </ParameterField>
       <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
         <template #label-suffix>
@@ -163,9 +178,17 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
     </template>
     <template #parameters-footer>
       <TermDefinitionBlock v-if="selectedSemantic.tooltipId" :id="selectedSemantic.tooltipId" />
+      <ReductionHint
+        v-if="selectedSemantic.reduction"
+        :reduction="selectedSemantic.reduction"
+        with-text
+      />
     </template>
     <template #results>
-      <template v-if="dataExtensionsFormatedAndSorted !== undefined">
+      <p v-if="needsFlat" class="p-3 text-sm text-base-content/65">
+        {{ t('evaluation.flatOnlySemantics') }}
+      </p>
+      <template v-else-if="dataExtensionsFormatedAndSorted !== undefined">
         <EvaluationResultGrid
           v-model:selected="selectedExtension"
           :result-noun="t('evaluation.nouns.extensions')"

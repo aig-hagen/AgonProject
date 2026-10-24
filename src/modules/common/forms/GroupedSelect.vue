@@ -19,7 +19,7 @@
 <script
   setup
   lang="ts"
-  generic="T extends { key: string; displayName: string; disabled?: boolean }"
+  generic="T extends { key: string; displayName: string; disabled?: boolean; title?: string }"
 >
 import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/24/outline'
@@ -266,7 +266,8 @@ watch(isOpen, (open) => {
             role="option"
             :aria-selected="option.key === modelValue.key"
             :aria-disabled="option.disabled || undefined"
-            class="text-sm"
+            :title="option.title"
+            class="flex items-center gap-1.5 text-sm"
             :class="[
               isCompact ? 'px-4 py-2.5' : 'px-3 py-1',
               option.disabled ? 'cursor-not-allowed text-base-content/40' : 'cursor-pointer',
@@ -279,6 +280,7 @@ watch(isOpen, (open) => {
             @mousemove="option.disabled || (activeKey = option.key)"
           >
             {{ option.displayName }}
+            <slot name="option-suffix" :option="option" />
           </div>
         </template>
       </div>

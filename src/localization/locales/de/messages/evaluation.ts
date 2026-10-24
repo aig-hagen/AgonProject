@@ -41,6 +41,11 @@ export default {
   },
   metaSemantics: 'Meta-Semantiken',
   requiresFlat: 'erfordert eine flache Theorie',
+  flatOnlySemantics: 'Nur für flache ABAFs verfügbar.',
+  reduction: {
+    unproven:
+      'Berechnet über eine AF-Reduktion; Korrektheit noch unklar.',
+  },
   probabilityHint: 'Knotenbeschriftungen zeigen Wahrscheinlichkeiten',
   // Bipolar support-interpretation selector.
   support: {
