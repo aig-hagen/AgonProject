@@ -2159,7 +2159,11 @@ defineExpose({
       class="absolute top-4 right-4 bottom-4 z-10 flex items-end gap-3 pointer-events-none"
     >
       <ReuseLegend v-if="legendBesidePanel && highlight?.legend?.length" />
-      <div ref="sidePanel" class="flex self-stretch pointer-events-auto">
+      <div
+        ref="sidePanel"
+        class="flex pointer-events-auto"
+        :class="sidePanelCollapsed ? 'self-start' : 'self-stretch'"
+      >
         <slot name="sidePanel" />
       </div>
     </div>

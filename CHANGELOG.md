@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- ABA: nodes behind the collapsed theory panel can be clicked and dragged again.
+- ABA evaluation works again on the hosted site instead of failing with a server error.
+
 ## [0.14.0] - 2026-10-22
 
 ### Added
