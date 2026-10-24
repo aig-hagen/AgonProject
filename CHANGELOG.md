@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-10-24
+
 ### Fixed
 
 - ABA: nodes behind the collapsed theory panel can be clicked and dragged again.
@@ -212,7 +214,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Earlier versions are available on the
 [GitHub Releases page](https://github.com/aig-hagen/AgonProject/releases).
 
-[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.14.1...HEAD
+[0.14.1]: https://github.com/aig-hagen/AgonProject/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/aig-hagen/AgonProject/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/aig-hagen/AgonProject/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/aig-hagen/AgonProject/compare/v0.11.4...v0.12.0
