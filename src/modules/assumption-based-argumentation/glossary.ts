@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { BRU24, CFST18 } from '@/modules/common/tooltip/publications'
+import { BKU24, BRU24, CFST18 } from '@/modules/common/tooltip/publications'
 import type { TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 
 export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
@@ -136,6 +136,21 @@ export const assumptionBasedArgumentationGlossary: TooltipRegistry = {
       '. Otherwise it is non-flat.',
     ],
     reference: CFST18,
+  },
+
+  abaSetAF: {
+    label: '$S_D$',
+    title: 'Instantiated SetAF',
+    content: [
+      'For an ',
+      { ref: 'ABAF' },
+      ' $D = (\\mathcal{L}, \\mathcal{R}, \\mathcal{A}, \\overline{\\phantom{a}})$, the corresponding ',
+      { ref: 'SetAF' },
+      ' is $S_D = (\\mathcal{A}, R)$ with $R = \\{(T, h) \\mid h \\in \\mathcal{A},\\ T \\subseteq \\mathcal{A} \\text{ and } T$ ',
+      { ref: 'abaDerivation', label: '$\\vdash$' },
+      ' $\\overline{h}\\}$.',
+    ],
+    reference: BKU24,
   },
 
   // Semantics as in the handbook (Def. 2.8); gr as in Berthold et al. (Def. 2.3).

@@ -52,6 +52,7 @@ import { layoutUnplaced } from '@/modules/assumption-based-argumentation/views/l
 import ViewPicker from '@/modules/assumption-based-argumentation/views/ViewPicker.vue'
 import ViewSwitcher from '@/modules/assumption-based-argumentation/views/ViewSwitcher.vue'
 import WindowExtensions from '@/modules/assumption-based-argumentation/WindowExtensions.vue'
+import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import {
   useDocumentUIState,
@@ -374,7 +375,10 @@ provide(QUICK_EXPORT_KEY, {
   configs: availableExports as unknown as QuickExport['configs'],
   getInput: () => state.current.content,
 })
-provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...collectiveAttacksArgumentationGlossary,
+  ...assumptionBasedArgumentationGlossary,
+})
 
 const isTheoryOpen = ref(false)
 const isTheoryCollapsed = useDocumentUIState(db, documentId, 'theory-collapsed', false)

@@ -529,3 +529,23 @@ export const BRU24: Publication = {
     'In: Proceedings of the 21st International Conference on Principles of Knowledge Representation and Reasoning (KR 2024), pp. 128-133',
   href: 'https://doi.org/10.24963/kr.2024/12',
 }
+
+export const BKU24: Publication = {
+  shortLabel: 'Blümel et al. (2024)',
+  authors: ['Blümel, L.', 'König, M.', 'Ulbricht, M.'],
+  year: 2024,
+  title: 'Weak Admissibility for ABA via Abstract Set-Attacks',
+  venue:
+    'In: Proceedings of the 21st International Conference on Principles of Knowledge Representation and Reasoning (KR 2024), pp. 178-188',
+  href: 'https://doi.org/10.24963/kr.2024/17',
+}
+
+export const BBR25: Publication = {
+  shortLabel: 'Berthold et al. (2025)',
+  authors: ['Berthold, M.', 'Blümel, L.', 'Rapberger, A.'],
+  year: 2025,
+  title: 'On Strong and Weak Admissibility in Non-Flat Assumption-Based Argumentation',
+  venue:
+    'In: Proceedings of the 22nd International Conference on Principles of Knowledge Representation and Reasoning (KR 2025)',
+  href: 'https://doi.org/10.24963/kr.2025/14',
+}
