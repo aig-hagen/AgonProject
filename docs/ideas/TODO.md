@@ -4,6 +4,7 @@
 
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
   `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
+- **4. [S] AF serialiation tutorial.** Missing
 
 ## Glossary
 
