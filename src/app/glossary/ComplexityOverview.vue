@@ -36,9 +36,22 @@ const { table } = defineProps<{ table: ComplexityTable }>()
 const { t } = useI18n({ useScope: 'global' })
 
 const sections = computed(() => [
-  { label: table.variant ? t('glossary.complexity.general') : '', rows: table.rows },
+  {
+    label: table.variant ? t('glossary.complexity.generalHeading') : '',
+    rows: table.rows,
+  },
   ...(table.variant
-    ? [{ label: t(`glossary.complexity.${table.variant.label}`), rows: table.variant.rows }]
+    ? [
+        {
+          label: t(`glossary.complexity.${table.variant.label}Heading`),
+          note: {
+            keypath: `glossary.complexity.${table.variant.label}Note`,
+            term: table.variant.termKey,
+            termLabel: t(`glossary.complexity.${table.variant.label}Term`),
+          },
+          rows: table.variant.rows,
+        },
+      ]
     : []),
 ])
 
@@ -62,7 +75,22 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
 <template>
   <div class="flex flex-col gap-6 text-sm">
     <section v-for="section in sections" :key="section.label">
-      <h3 v-if="section.label" class="section-label mb-2">{{ section.label }}</h3>
+      <h3 v-if="section.label" class="section-heading mb-2">{{ section.label }}</h3>
+      <i18n-t
+        v-if="section.note"
+        :keypath="section.note.keypath"
+        tag="p"
+        scope="global"
+        class="leading-relaxed text-base-content/80 mb-2"
+      >
+        <template #term>
+          <GlossaryInline
+            v-if="section.note?.term"
+            :parts="[{ ref: section.note.term, label: section.note.termLabel }]"
+          />
+          <template v-else>{{ section.note?.termLabel }}</template>
+        </template>
+      </i18n-t>
       <div class="overflow-x-auto">
         <table class="border-collapse">
           <thead>
@@ -82,7 +110,7 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
               <tr>
                 <th
                   :colspan="problemsIn(section.rows).length + 1"
-                  class="section-label text-left pt-3 pb-1"
+                  class="bg-base-200 font-medium text-left px-1.5 py-1"
                 >
                   {{ group.label }}
                 </th>
@@ -106,7 +134,7 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
       </div>
     </section>
     <section>
-      <h3 class="section-label mb-2">{{ t('glossary.sources') }}</h3>
+      <h3 class="section-heading mb-2">{{ t('glossary.sources') }}</h3>
       <ol class="flex flex-col gap-2">
         <li
           v-for="(source, i) in sources"

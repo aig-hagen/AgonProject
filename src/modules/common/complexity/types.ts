@@ -83,7 +83,8 @@ export interface ComplexityTable {
   /** Semantics glossary key → results. */
   rows: Record<string, ComplexityRow>
   /** Same shape for a restricted subclass, e.g. bipolar ADFs. */
-  variant?: { label: string; rows: Record<string, ComplexityRow> }
+  /** termKey: glossary entry that defines the variant. */
+  variant?: { label: string; termKey?: string; rows: Record<string, ComplexityRow> }
 }
 
 type CellOptions = Pick<ComplexityCell, 'note' | 'comment' | 'derived'>

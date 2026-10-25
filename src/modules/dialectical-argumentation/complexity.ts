@@ -132,6 +132,7 @@ export const adfComplexity: ComplexityTable = {
   },
   variant: {
     label: 'bipolar',
+    termKey: 'adfBipolar',
     rows: {
       adfCF: {
         ver: member('classP', SW15, 'Cor. 5.2, p. 69'),
