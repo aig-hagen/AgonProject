@@ -33,7 +33,12 @@ format and the sourcing rules this skill follows. Work on one term at a time.
 
 - Frontmatter: `label`, `title` if it differs, `reference`, and `short` only for term lists.
 - Definition before the first `##`: faithful to the paper, in the notation of the module's other
-  entries, linking existing terms with `[[key]]`. One plain sentence of reading aid at most.
+  entries. It is the hover tooltip, so keep it short and readable; one plain sentence of reading
+  aid at most, and remarks go in the body.
+- List the terms the definition relies on (symbols included, e.g. $par(a)$) and look each up in
+  every module. Link each one that has an entry at its first use; for a symbol, keep the
+  notation and put the link on it (`[[parents|$par(a)$]]`). Note each term without an entry for
+  the report.
 - A body only if the user asks for one, or the paper gives properties worth stating, each cited
   with `[@KEY]` and stated as the source states it.
 - No German translation; German glossary text needs a domain expert.
@@ -56,4 +61,5 @@ Then run the `formal-reviewer` subagent on the new or changed files and fix its 
 ## 6. Report
 
 Show the entry, the source evidence (paper, page, definition number), the reviewer's remaining
-findings, and a proposed changelog line under `Added`. Wait for approval before committing.
+findings, the terms it relies on that have no entry yet, and a proposed changelog line under
+`Added`. Wait for approval before committing.

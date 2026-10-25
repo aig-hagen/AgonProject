@@ -48,12 +48,17 @@ Frontmatter:
 
 Body:
 
-- **Definition:** everything before the first `##` heading. It is what tooltips show, so keep it
-  to the formal definition plus at most one sentence of reading aid. It may use KaTeX (`$…$`) and
-  links, but no citations; the definition cites through `reference`.
+- **Definition:** everything before the first `##` heading. It is what hover tooltips show, so
+  keep it short and readable: the formal definition plus at most one sentence of reading aid.
+  Remarks, properties and caveats go below the first `##`. It may use KaTeX (`$…$`) and links,
+  but no citations; the definition cites through `reference`.
 - **Longer text:** everything from the first `##` on, shown only on the glossary page. Paragraphs,
   `##`/`###` headings, `-` lists, links, and `[@KEY]` citations, separated by blank lines.
-- **Links:** `[[key]]` or `[[key|label]]` to any entry in any module.
+- **Links:** `[[key]]` or `[[key|label]]` to any entry in any module. Link every term that has an
+  entry at its first use, notation included. Keep definitions formal and put the link on the
+  symbol itself (`$R \subseteq$ [[parents|$par(a)$]]`) rather than writing the notation out.
+- **Missing terms:** for each term a new entry relies on, check whether an entry exists. If none
+  does, flag it in the report or PR so it can be added; don't leave the gap silently.
 
 ## Publications
 
