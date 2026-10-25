@@ -27,6 +27,7 @@ not prescribe the contributor workflow.
 - [Coding conventions](./contributing/conventions.md) — TypeScript, Vue, state, styling, and test patterns
 - [Design system](./contributing/design.md) — visual tokens, type scale, components, and UI do's and don'ts
 - [Extending the application](./contributing/extending.md) — modules, evaluations, tutorials, exports, and layouts
+- [Glossary content](./contributing/glossary.md) — entries, publications, complexity and principle tables, sourcing rules
 - [Localization](./contributing/localization.md) — English/German message catalogs and untranslated content
 - [Release process](./contributing/releases.md) — version tags, images, and GitHub releases
 

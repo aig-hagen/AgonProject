@@ -58,21 +58,10 @@ Tutorial progress is persisted by [`useTutorial`](/src/modules/common/tutorial/u
 
 ## Add glossary entries
 
-Each module keeps its glossary in `glossary/`: one Markdown file per term in `glossary/en/<key>.md` and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`createGlossary`](/src/modules/common/glossary/load.ts) from the `en/` files plus any translations in sibling locale folders (see [localization](localization.md)). The file name is the term key, and keys must be unique across all modules.
+The entry, publication, and result-table formats are described in [Glossary content](./glossary.md).
+This section covers the wiring.
 
-```markdown
----
-label: admissible
-title: Admissible Set
-reference: D95
----
-
-A set $S$ is admissible if it is [[CF|conflict-free]] and [[defends]] all its members.
-```
-
-The optional `reference` names the defining publication by its key in [`publications.ts`](/src/modules/common/publications/publications.ts); an unknown key fails the build. An optional `short` field gives a shorter name for the glossary's term list, e.g. `NP` under the Complexity Classes heading instead of the full title.
-
-The text before the first `##` heading is the definition shown in tooltips. It may contain KaTeX (`$…$`) and links to other entries (`[[key]]` or `[[key|label]]`). Anything after the first heading is the longer body, shown only on the glossary page: paragraphs, `##`/`###` headings, `-` lists, and `[@KEY]` citations of entries in [`publications.ts`](/src/modules/common/publications/publications.ts). [`glossaryData.test.ts`](/src/app/glossary/glossaryData.test.ts) checks that every link resolves.
+Each module keeps its glossary in `glossary/`: Markdown entries in `glossary/<locale>/<key>.md` and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`createGlossary`](/src/modules/common/glossary/load.ts) from the eager `en/` files plus lazily loaded translations (see [localization](localization.md)).
 
 Provide the module registry from its editor:
 
@@ -82,9 +71,11 @@ provide(TOOLTIP_REGISTRY_KEY, moduleGlossary)
 
 Modules can merge the abstract-argumentation glossary with their own registry. Tutorials and evaluation result headers resolve `tooltipId` values through the registry provided by the active module.
 
-## Add complexity results
+To give the module a section on the glossary pages, add it to [`glossaryModules.json`](/src/app/glossary/glossaryModules.json) (URL prefix, directory, label, main entry) and import its registry in [`useGlossary.ts`](/src/app/glossary/useGlossary.ts).
 
-A module can list known complexity results for its semantics in `complexity.ts` (see the AF and ADF modules): one row per semantics glossary key, one cell per reasoning problem, each with its source publication and a locator (theorem, table, page). Register the table in [`complexity.ts`](/src/app/glossary/complexity.ts) and add an overview entry to the Complexity glossary. Only add results a source states; a result that merely follows from one needs a `derived` reason and a review.
+## Add complexity and principle results
+
+A module can tabulate known results for its semantics in `complexity.ts` and `principles.ts` (see the AF module). Register the tables in [`app/glossary/complexity.ts`](/src/app/glossary/complexity.ts) and [`app/glossary/principles.ts`](/src/app/glossary/principles.ts), and add an overview glossary entry for each. The cell formats and sourcing rules are in [Glossary content](./glossary.md#result-tables).
 
 ## Add exports
 
