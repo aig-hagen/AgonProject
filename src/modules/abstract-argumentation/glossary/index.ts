@@ -16,7 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+import { complexityGlossary } from '@/modules/common/complexity/glossary'
 import { createGlossary } from '@/modules/common/glossary/load'
+import { principlesGlossary } from '@/modules/common/principles/glossary'
+import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
 
 export const abstractArgumentationGlossary = createGlossary(
   import.meta.glob<string>('/src/modules/abstract-argumentation/glossary/en/*.md', {
@@ -35,3 +38,11 @@ export const abstractArgumentationGlossary = createGlossary(
     },
   ),
 )
+
+/** The AF entries plus the glossaries they link into, for every tooltip registry that shows AF entries. */
+export const abstractArgumentationTooltips = {
+  ...abstractArgumentationGlossary,
+  ...probabilisticArgumentationGlossary,
+  ...principlesGlossary,
+  ...complexityGlossary,
+}

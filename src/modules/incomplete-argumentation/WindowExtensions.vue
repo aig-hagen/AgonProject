@@ -20,7 +20,7 @@
 import { computed, provide, ref, shallowRef, toRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import type { DocumentId } from '@/modules/common/documents/db'
 import BaseEvaluationWindow from '@/modules/common/evaluation/BaseEvaluationWindow.vue'
 import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGrid.vue'
@@ -79,7 +79,7 @@ const emit = defineEmits<{
 }>()
 
 provide(TOOLTIP_REGISTRY_KEY, {
-  ...abstractArgumentationGlossary,
+  ...abstractArgumentationTooltips,
   ...incompleteArgumentationGlossary,
 })
 

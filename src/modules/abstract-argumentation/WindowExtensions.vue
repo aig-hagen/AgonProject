@@ -28,7 +28,7 @@ import {
   type MetaReasonerParameter,
   useExtensionEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProject'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
@@ -86,7 +86,7 @@ const semanticsSelectRef = useTemplateRef<{ $el: HTMLElement }>('semanticsSelect
 const modeSelectRef = useTemplateRef<{ $el: HTMLElement }>('modeSelect')
 const resultsAreaRef = useTemplateRef<HTMLElement>('resultsArea')
 
-provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationTooltips)
 
 const { t } = useI18n({ useScope: 'global' })
 

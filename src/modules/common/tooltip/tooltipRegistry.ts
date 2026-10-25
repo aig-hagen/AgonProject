@@ -31,6 +31,8 @@ export interface TooltipDefinition {
   title?: string
   /** Shorter name for the glossary's term list, where a group heading gives the context. */
   short?: string
+  /** LaTeX for the notation the entry introduces, shown as a chip beside the title. */
+  symbol?: string
   content: TooltipContentPart[]
   /** Longer content shown only on the glossary page. */
   body?: GlossaryBlock[]

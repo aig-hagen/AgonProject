@@ -28,6 +28,7 @@ import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { principleRowFor, principleTableFor } from '@/app/glossary/principles'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
+import TermSymbol from '@/modules/common/tooltip/TermSymbol.vue'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
 const {
@@ -72,6 +73,7 @@ watch(
     <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
       <MapPinIcon v-if="pinned" class="size-4 text-primary shrink-0" />
       <KatexInlineElement :text="listTitle(definition)" />
+      <TermSymbol v-if="definition.symbol" :symbol="definition.symbol" class="text-xs" />
     </h3>
     <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
       <GlossaryInline :parts="definition.content" />

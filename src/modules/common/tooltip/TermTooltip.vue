@@ -24,6 +24,7 @@ import { useI18n } from 'vue-i18n'
 import { formatCitation, publicationHref } from '@/modules/common/publications/format'
 import HoverTooltip from '@/modules/common/tooltip/HoverTooltip.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import TermSymbol from '@/modules/common/tooltip/TermSymbol.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { id, triggerClass } = defineProps<{ id: string; triggerClass?: string }>()
@@ -42,15 +43,13 @@ const definition = computed(() => registry[id])
   <HoverTooltip v-if="definition" :trigger-class="triggerClass">
     <slot><KatexInlineElement :text="definition.label" /></slot>
     <template #content="{ chargeState, graceMs }">
-      <div
-        v-if="definition.title || definition.reference"
-        class="flex items-center justify-between mb-1"
-      >
+      <div v-if="definition.title || definition.reference" class="flex items-center mb-1">
         <KatexInlineElement
           v-if="definition.title"
           :text="definition.title"
           class="font-semibold text-xs"
         />
+        <TermSymbol v-if="definition.symbol" :symbol="definition.symbol" class="ml-1.5 text-xs" />
         <a
           v-if="definition.reference"
           :href="publicationHref(definition.reference)"
@@ -83,7 +82,8 @@ const definition = computed(() => registry[id])
           "
         />
       </div>
-      <span>
+      <!-- Floated so "More" shares the last line of the definition when it fits. -->
+      <div class="flow-root">
         <template v-for="(part, i) in definition.content" :key="i">
           <KatexInlineElement v-if="typeof part === 'string'" :text="part as string" />
           <!-- Recursive: inline refs expand into nested TermTooltips automatically. -->
@@ -91,14 +91,14 @@ const definition = computed(() => registry[id])
             <KatexInlineElement v-if="part.label" :text="part.label" />
           </TermTooltip>
         </template>
-      </span>
-      <RouterLink
-        v-if="definition.body"
-        :to="{ path: '/glossary', query: { term: id } }"
-        class="block mt-1.5 text-right text-xs font-medium text-primary underline-offset-2 hover:underline"
-      >
-        {{ t('glossary.more') }} →
-      </RouterLink>
+        <RouterLink
+          v-if="definition.body"
+          :to="{ path: '/glossary', query: { term: id } }"
+          class="float-right ml-2 text-xs font-medium text-primary underline-offset-2 hover:underline"
+        >
+          {{ t('glossary.more') }} →
+        </RouterLink>
+      </div>
     </template>
   </HoverTooltip>
   <slot v-else />

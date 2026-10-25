@@ -45,7 +45,10 @@ import {
   useIndexedAF,
   useSerialisationExplorer,
 } from '@/modules/abstract-argumentation/evaluation/useSerialisationExplorer'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import {
+  abstractArgumentationGlossary,
+  abstractArgumentationTooltips,
+} from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import SerialisationGraphView from '@/modules/abstract-argumentation/SerialisationGraphView.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
@@ -95,7 +98,7 @@ const emit = defineEmits<{
   focus: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationTooltips)
 
 const { t } = useI18n({ useScope: 'global' })
 

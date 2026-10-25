@@ -21,6 +21,7 @@ import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
@@ -376,6 +377,7 @@ provide(QUICK_EXPORT_KEY, {
   getInput: () => state.current.content,
 })
 provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationTooltips,
   ...collectiveAttacksArgumentationGlossary,
   ...assumptionBasedArgumentationGlossary,
 })

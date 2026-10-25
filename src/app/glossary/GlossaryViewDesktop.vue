@@ -33,6 +33,7 @@ import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
+import TermSymbol from '@/modules/common/tooltip/TermSymbol.vue'
 
 const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>()
 
@@ -149,8 +150,13 @@ watch(
       <!-- Right: definition panel -->
       <div class="flex-1 overflow-y-auto p-8">
         <div v-if="activeDefinition" :key="activeTermKey" :class="wide ? 'max-w-5xl' : 'max-w-2xl'">
-          <h2 class="text-lg font-bold leading-snug mb-4">
+          <h2 class="flex flex-wrap items-center gap-2 text-lg font-bold leading-snug mb-4">
             <KatexInlineElement :text="termTitle(activeDefinition)" />
+            <TermSymbol
+              v-if="activeDefinition.symbol"
+              :symbol="activeDefinition.symbol"
+              class="text-sm"
+            />
           </h2>
           <p class="text-base-content/80 leading-relaxed">
             <GlossaryInline :parts="activeDefinition.content" />

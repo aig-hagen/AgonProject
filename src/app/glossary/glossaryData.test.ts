@@ -20,11 +20,11 @@ import { describe, expect, test } from 'vitest'
 
 import { plainText } from '@/app/glossary/plainText'
 import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { localeFromPath } from '@/modules/common/glossary/load'
 import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 
-const afGlossary = glossaryModules.find((m) => m.prefix === 'AF')!.glossary
 const setafGlossary = glossaryModules.find((m) => m.prefix === 'SetAF')!.glossary
 const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
 
@@ -42,7 +42,7 @@ describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey 
     const extra = prefix === 'ABA' ? setafGlossary : {}
     const scope = ['Complexity', 'Principles'].includes(prefix)
       ? allGlossaries
-      : { ...afGlossary, ...extra, ...glossary }
+      : { ...abstractArgumentationTooltips, ...extra, ...glossary }
     const missing = Object.entries(glossary).flatMap(([key, def]) =>
       entryRefs(def)
         .filter((ref) => !(ref in scope))

@@ -44,6 +44,9 @@ Frontmatter:
 - `label` (required): the inline name used in tooltips and link text.
 - `title`: the heading on the glossary page; defaults to the label.
 - `short`: a shorter name for the term list, e.g. `NP` instead of the full class name.
+- `symbol`: the notation the entry introduces, as bare LaTeX (`\mathsf{co}`), shown as a chip beside
+  the title. Use it instead of introducing the symbol in the definition text. Entries whose label
+  is already the symbol (`$E^+$`) don't need it.
 - `reference`: the key of the publication that defines the term. An unknown key fails the build.
 
 Body:

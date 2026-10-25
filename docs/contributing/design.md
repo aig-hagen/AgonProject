@@ -373,7 +373,8 @@ so controls and containers share two corner sizes.
 - **Pill** (`rounded-full`): only for things that are pills by nature: the floating segmented
   control, status dots, filter chips, toolbar pills, skeleton chips.
 - **Sheet** (16px top corners): bottom sheets and the tutorial spotlight.
-- **Chip** (4px): inline code and key chips.
+- **Chip** (4px): inline code, key chips, and glossary term symbols (`base-content/10` fill, so they
+  read on any surface).
 
 Borders are 1px `base-300` hairlines. Brand-tinted borders (`primary/40` with a `primary/5` fill)
 mark a single highlighted container, such as the pinned glossary term.

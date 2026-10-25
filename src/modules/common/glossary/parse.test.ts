@@ -91,6 +91,13 @@ describe('parseGlossaryEntry', () => {
     expect(parseGlossaryEntry('---\nlabel: x\nshort: S\n---\nT').short).toBe('S')
   })
 
+  test('reads the symbol as bare LaTeX', () => {
+    expect(parseGlossaryEntry('---\nlabel: x\nsymbol: \\mathsf{co}\n---\nT').symbol).toBe(
+      '\\mathsf{co}',
+    )
+    expect(parseGlossaryEntry('---\nlabel: x\n---\nT').symbol).toBeUndefined()
+  })
+
   test('rejects citations in the definition', () => {
     expect(() => parseGlossaryEntry('---\nlabel: x\n---\nSee [@D95].')).toThrow(/body/)
   })

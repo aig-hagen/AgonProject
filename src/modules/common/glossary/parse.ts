@@ -25,6 +25,8 @@ export interface ParsedGlossaryEntry {
   label: string
   title?: string
   short?: string
+  /** LaTeX for the notation the entry introduces (e.g. `\mathsf{co}`), shown beside the title. */
+  symbol?: string
   /** The `publications.ts` entry named by the `reference` frontmatter field. */
   reference?: Publication
   /** The formal definition: everything before the first `##` heading. */
@@ -94,7 +96,7 @@ function parseFrontmatter(block: string): Record<string, string> {
 export function parseGlossaryEntry(source: string): ParsedGlossaryEntry {
   const match = source.match(FRONTMATTER)
   if (!match) throw new Error('Glossary entry is missing its frontmatter')
-  const { label, title, short, reference } = parseFrontmatter(match[1]!)
+  const { label, title, short, symbol, reference } = parseFrontmatter(match[1]!)
   if (!label) throw new Error('Glossary entry frontmatter needs a label')
 
   const rest = source.slice(match[0].length)
@@ -109,6 +111,7 @@ export function parseGlossaryEntry(source: string): ParsedGlossaryEntry {
   const entry: ParsedGlossaryEntry = { label, content: content as TooltipContentPart[] }
   if (title) entry.title = title
   if (short) entry.short = short
+  if (symbol) entry.symbol = symbol
   if (reference) {
     const publication = publicationByKey(reference)
     if (!publication) throw new Error(`Unknown reference ${reference}`)

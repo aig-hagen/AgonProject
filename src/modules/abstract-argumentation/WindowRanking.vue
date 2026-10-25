@@ -28,7 +28,7 @@ import {
   type RankingSemantic,
   useRankingEvaluationQuery,
 } from '@/modules/abstract-argumentation/evaluation/tweetyProjectRanking'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import type { ArgumentData, ArgumentId } from '@/modules/common/argumentation/model'
 import type { DocumentId } from '@/modules/common/documents/db'
@@ -42,7 +42,7 @@ import PickerSelect from '@/modules/common/forms/PickerSelect.vue'
 import TermDefinitionBlock from '@/modules/common/tooltip/TermDefinitionBlock.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
-provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationTooltips)
 
 const {
   input,

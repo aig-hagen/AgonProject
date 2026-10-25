@@ -69,7 +69,9 @@ Provide the module registry from its editor:
 provide(TOOLTIP_REGISTRY_KEY, moduleGlossary)
 ```
 
-Modules can merge the abstract-argumentation glossary with their own registry. Tutorials and evaluation result headers resolve `tooltipId` values through the registry provided by the active module.
+Modules can merge the abstract-argumentation glossary with their own registry; merge
+`abstractArgumentationTooltips`, which also carries the PAF, principles, and complexity entries
+that AF entries link to. An entry may only link to keys its editor's registry provides. Tutorials and evaluation result headers resolve `tooltipId` values through the registry provided by the active module.
 
 To give the module a section on the glossary pages, add it to [`glossaryModules.json`](/src/app/glossary/glossaryModules.json) (URL prefix, directory, label, main entry) and import its registry in [`useGlossary.ts`](/src/app/glossary/useGlossary.ts).
 
