@@ -37,9 +37,9 @@ const { t } = useI18n({ useScope: 'global' })
       <p class="text-sm text-base-content/80 leading-relaxed">{{ t('thirdParty.intro') }}</p>
 
       <!-- TeX packages -->
-      <div class="section-label">
+      <h2 class="font-bold text-lg">
         {{ t('thirdParty.texPackages') }}
-      </div>
+      </h2>
       <p class="text-xs text-base-content/65 leading-relaxed -mt-2">
         {{ t('thirdParty.texIntroShort') }}
       </p>
@@ -100,9 +100,9 @@ const { t } = useI18n({ useScope: 'global' })
       </details>
 
       <!-- Libraries & projects -->
-      <div class="section-label mt-1">
+      <h2 class="font-bold text-lg mt-1">
         {{ t('thirdParty.librariesProjects') }}
-      </div>
+      </h2>
       <details
         v-for="attribution of attributions"
         :key="getAttributionId(attribution)"

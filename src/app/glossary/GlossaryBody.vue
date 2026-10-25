@@ -26,7 +26,7 @@ const { blocks } = defineProps<{ blocks: GlossaryBlock[] }>()
 <template>
   <div class="flex flex-col gap-3 leading-relaxed text-base-content/80">
     <template v-for="(block, i) in blocks" :key="i">
-      <h3 v-if="block.kind === 'heading' && block.level === 2" class="section-label mt-3">
+      <h3 v-if="block.kind === 'heading' && block.level === 2" class="section-heading mt-3">
         <GlossaryInline :parts="block.content" />
       </h3>
       <h4 v-else-if="block.kind === 'heading'" class="font-semibold text-base-content mt-1">

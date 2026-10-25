@@ -40,7 +40,7 @@ const problems = computed(() =>
 
 <template>
   <section v-if="result && problems.length">
-    <h3 class="section-label mb-2">{{ t('glossary.complexity.title') }}</h3>
+    <h3 class="section-heading mb-2">{{ t('glossary.complexity.title') }}</h3>
     <div class="overflow-x-auto">
       <table class="text-sm">
         <thead v-if="result.variantRow">

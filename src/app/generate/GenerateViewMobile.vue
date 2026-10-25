@@ -231,7 +231,7 @@ function numberFromEvent(e: Event, type: 'int' | 'float' | 'bool' | 'string'): n
 
       <!-- Result -->
       <div v-if="stats !== null" class="rounded-box border border-primary/25 bg-primary/5 p-4">
-        <div class="section-label text-primary/80 mb-2">
+        <div class="section-label mb-2">
           {{ t('generate.lastGenerated') }}
         </div>
         <i18n-t

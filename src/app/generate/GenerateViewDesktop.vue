@@ -194,7 +194,7 @@ const {
 
             <!-- Type-specific parameters -->
             <template v-if="selectedFrameworkType && selectedFrameworkType.params.length > 0">
-              <div class="divider text-xs text-base-content/65 my-0">
+              <div class="section-label">
                 {{ t('generate.typeOptions') }}
               </div>
               <template v-for="p in selectedFrameworkType.params" :key="p.name">

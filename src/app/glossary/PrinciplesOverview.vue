@@ -112,7 +112,7 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
               :key="group.label"
               :colspan="group.keys.length"
               :title="group.label"
-              class="section-label px-1 pb-1 border-l border-base-300"
+              class="text-xs font-medium text-base-content/65 px-1 pb-1 border-l border-base-300"
             >
               <!-- Zero width, so a long label can't widen its columns. -->
               <div class="w-0 min-w-full truncate">{{ group.label }}</div>
@@ -145,7 +145,7 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
         <tbody>
           <template v-for="group in principleGroups" :key="group.key">
             <tr>
-              <th :colspan="columns.length + 1" class="section-label text-left pt-3 pb-1">
+              <th :colspan="columns.length + 1" class="bg-base-200 font-medium text-left px-1.5 py-1">
                 {{ t(`glossary.principles.groups.${group.key}`) }}
               </th>
             </tr>
@@ -171,7 +171,7 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
     </div>
     <p class="text-xs text-base-content/65">{{ t('glossary.principles.legend') }}</p>
     <section v-if="sources.length">
-      <h3 class="section-label mb-2">{{ t('glossary.sources') }}</h3>
+      <h3 class="section-heading mb-2">{{ t('glossary.sources') }}</h3>
       <ul class="flex flex-col gap-2">
         <li v-for="(source, i) in sources" :key="i">
           <PublicationCitation :publication="source" compact />

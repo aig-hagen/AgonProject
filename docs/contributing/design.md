@@ -273,8 +273,11 @@ fonts are self-hosted through Fontsource and referenced only through the font ro
 - **Title** (600, 1rem): card titles, bottom sheet titles, the selected term in the glossary.
 - **Body** (400, 0.875rem, 1.5): the default UI text: lists, menus, buttons, window content.
 - **Body Reading** (400, 1rem, 1.625, max ~70ch): long-form pages such as privacy and attributions.
+- **Heading** (600, 1rem, ink, normal case): section headings in reading content (glossary
+  entries, result and overview tables) via the shared `.section-heading` class.
 - **Meta** (400, 0.75rem): captions, hints, evaluation details, timestamps.
-- **Label** (600, 0.75rem, uppercase, 0.025em tracking, ink `/65`): section headings via the shared
+- **Label** (600, 0.75rem, uppercase, 0.025em tracking, ink `/65`): names a group of controls or
+  list items in chrome (settings, sheets, menus, dropdown groups, panels) via the shared
   `.section-label` class.
 - **Label Micro** (500, 0.65rem as `text-micro`, uppercase, 0.025em tracking, ink `/65`): field
   labels above a control via `.field-label`, and badges. The only step below 12px.
@@ -290,6 +293,10 @@ wordmark, it's wrong.
 
 **The Shared Label Rule.** Small caps headings always come from `.section-label` or `.field-label`,
 always in ink, never in `primary` or `secondary`.
+
+**The Chrome Caps Rule.** Caps label controls and lists, not content. A heading over text or a
+table you read is a Heading. Group rows inside a table are part of the table: normal case, medium
+weight, on a `base-200` fill.
 
 ## Layout
 

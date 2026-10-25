@@ -71,13 +71,13 @@ const sectionClass = computed(() => (compact ? 'mt-3' : 'mt-6 pt-4 border-t bord
     />
     <PrinciplesResults :term-key="termKey" :class="sectionClass" />
     <section v-if="!compact && definition.reference" :class="sectionClass">
-      <h3 class="section-label mb-2">{{ t('glossary.source') }}</h3>
+      <h3 class="section-heading mb-2">{{ t('glossary.source') }}</h3>
       <PublicationCitation :publication="definition.reference" />
     </section>
     <section v-if="backlinks.length" :class="sectionClass">
       <component
         :is="compact ? 'h4' : 'h3'"
-        class="section-label"
+        class="section-heading"
         :class="compact ? 'mb-1' : 'mb-2'"
       >
         {{ t('glossary.referencedBy') }}

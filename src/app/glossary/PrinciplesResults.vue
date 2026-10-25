@@ -48,7 +48,7 @@ const groups = computed(() =>
 
 <template>
   <section v-if="row">
-    <h3 class="section-label mb-2">{{ t('glossary.principles.title') }}</h3>
+    <h3 class="section-heading mb-2">{{ t('glossary.principles.title') }}</h3>
     <div v-for="group in groups" :key="group.key" class="mb-3">
       <h4 class="text-xs font-medium text-base-content/65 mb-1">
         {{ t(`glossary.principles.groups.${group.key}`) }}
