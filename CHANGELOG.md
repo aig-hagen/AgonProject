@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - SetAF: naive, stage2, CF2 and SCF2 semantics, whose AF reduction gave wrong results.
 
+### Fixed
+
+- The mobile tutorial step counter is translated instead of always showing English.
+
 ## [0.14.1] - 2026-10-24
 
 ### Fixed

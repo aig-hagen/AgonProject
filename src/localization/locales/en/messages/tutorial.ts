@@ -29,5 +29,6 @@ export default {
     skipTutorial: 'Skip tutorial',
     done: 'Done',
     waiting: 'Waiting…',
+    progress: 'Step {current} of {total}',
   },
 }

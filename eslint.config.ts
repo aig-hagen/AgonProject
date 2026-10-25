@@ -67,6 +67,32 @@ export default defineConfigWithVueTs(
     },
   },
   {
+    files: ['src/**/*.vue'],
+    rules: {
+      // User-facing text goes through vue-i18n (docs/contributing/localization.md)
+      'vue/no-bare-strings-in-template': [
+        'error',
+        {
+          // Symbols, key names, and names that stay untranslated by design
+          allowlist: [
+            '(', ')', ',', '.', '&', '+', '-', '=', '*', '/', '#', '%', '!', '?', ':', '[', ']',
+            '{', '}', '<', '>', '•', '|', '@', '×', '→', '←', '↔', '∅', '≻', '▾', '⌘', '∧', '∨',
+            '¬', '⊤', '⊥', '·', '▶', '✕', '.tex', 'Ctrl', 'Shift', 'AgonProject', 'argumentation', '404',
+          ],
+        },
+      ],
+      // Design-system guardrails (docs/contributing/design.md, Do's and Don'ts)
+      'vue/no-restricted-class': [
+        'error',
+        '/(^|:)text-\\[\\d/',
+        '/(^|:)rounded-(lg|md)$/',
+        '/(^|:)shadow-.+\\/\\d+$/',
+        '/(^|:)[a-z]+-\\[#/',
+        '/(^|:)(text|bg|border|ring|fill|stroke|outline|divide|from|via|to)-(red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|stone)-\\d+/',
+      ],
+    },
+  },
+  {
     plugins: {
       'simple-import-sort': simpleImportSort,
     },
