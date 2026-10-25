@@ -9,6 +9,8 @@ Add notable user-visible changes under `Unreleased` as part of the change that i
 ## Prepare a release
 
 1. Identify the previous tag and review the commits since it for missing changelog entries.
+   Then tidy `Unreleased` so it describes the change from the previous release: drop fixes to
+   features added since then, and merge minor related entries into one per feature or area.
 2. Rename `## [Unreleased]` to `## [0.12.0] - YYYY-MM-DD`, then add a new empty
    `## [Unreleased]` section above it.
 3. Update the comparison links at the bottom of the changelog so `Unreleased` starts at the new tag

@@ -95,7 +95,8 @@ Unit and E2E tests are fine (`npm run test:e2e` starts its own Vite server).
 
 Record user-visible changes in [`CHANGELOG.md`](CHANGELOG.md) under `[Unreleased]`, in the
 matching `Added`/`Changed`/`Removed`/`Fixed` section. One line per entry (two at most). Don't list
-refactors or maintenance with no user-visible effect.
+refactors or maintenance with no user-visible effect. A fix or tweak to something added since the
+last release updates that entry instead of adding a new one.
 
 ## Opening a PR
 
@@ -109,4 +110,5 @@ refactors or maintenance with no user-visible effect.
 ## Publishing a release
 
 Follow [`docs/contributing/releases.md`](docs/contributing/releases.md). Publishing is triggered by
-a `v*` tag; watch the resulting workflow through completion and report its result.
+a `v*` tag; watch the resulting workflow through completion and report its result. In Claude
+Code, the `/release` skill walks through it.
