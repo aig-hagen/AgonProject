@@ -46,3 +46,19 @@ test('searches within the tag selection', () => {
     true,
   )
 })
+
+test('counts each tag against the search and the other facets', () => {
+  const { selectedTags, tagCounts, filteredEntries, reset, searchQuery } = useLiterature([])
+  selectedTags.value = ['ADF']
+  // Within its own facet a count ignores that facet's selection, since tags there combine with OR.
+  expect(tagCounts.value.AF).toBeGreaterThan(0)
+  expect(tagCounts.value.complexity).toBe(
+    filteredEntries.value.filter(({ publication }) => publication.tags?.includes('complexity'))
+      .length,
+  )
+
+  searchQuery.value = 'semi-stable'
+  reset()
+  expect(searchQuery.value).toBe('')
+  expect(selectedTags.value).toEqual([])
+})

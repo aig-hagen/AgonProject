@@ -42,7 +42,7 @@ function clear() {
     :class="isCompact ? 'h-11 pl-3.5' : 'h-9 pl-3'"
   >
     <MagnifyingGlassIcon
-      class="shrink-0 text-base-content/40 transition-colors group-focus-within:text-base-content/70"
+      class="shrink-0 text-base-content/40 transition-colors group-focus-within:text-base-content/80"
       :class="isCompact ? 'size-5' : 'size-4'"
     />
     <!-- outline-none! beats the unlayered global :focus-visible ring; the label draws it instead -->
@@ -59,7 +59,7 @@ function clear() {
     <button
       v-if="query"
       type="button"
-      class="shrink-0 grid place-items-center self-stretch text-base-content/50 hover:text-base-content outline-none!"
+      class="shrink-0 grid place-items-center self-stretch text-base-content/65 hover:text-base-content outline-none!"
       :class="isCompact ? 'w-11' : 'w-8'"
       :title="t('common.actions.clear')"
       :aria-label="t('common.actions.clear')"

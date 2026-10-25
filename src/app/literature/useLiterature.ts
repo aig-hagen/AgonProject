@@ -51,17 +51,38 @@ export function useLiterature(
       : [...selectedTags.value, tag]
   }
 
-  const filteredEntries = computed(() => {
-    const facets = [FORMALISM_TAGS, TOPIC_TAGS]
-      .map((facet) =>
-        selectedTags.value.filter((tag) => (facet as readonly string[]).includes(tag)),
-      )
-      .filter((selected) => selected.length)
-    const tagged = entries.filter(({ publication }) =>
-      facets.every((selected) => selected.some((tag) => publication.tags?.includes(tag))),
-    )
-    return searchEntries(tagged, searchQuery.value)
+  const facets = [FORMALISM_TAGS, TOPIC_TAGS] as readonly (readonly PublicationTag[])[]
+
+  // Passes the selections of every facet except `skip`.
+  const matchesFacets = (publication: Publication, skip?: readonly PublicationTag[]) =>
+    facets.every((facet) => {
+      if (facet === skip) return true
+      const selected = selectedTags.value.filter((tag) => facet.includes(tag))
+      return !selected.length || selected.some((tag) => publication.tags?.includes(tag))
+    })
+
+  const searched = computed(() => searchEntries(entries, searchQuery.value))
+
+  const filteredEntries = computed(() =>
+    searched.value.filter(({ publication }) => matchesFacets(publication)),
+  )
+
+  /** Per tag, how many results it matches given the search and the other facets' selections. */
+  const tagCounts = computed(() => {
+    const counts = {} as Record<PublicationTag, number>
+    for (const facet of facets) {
+      const pool = searched.value.filter(({ publication }) => matchesFacets(publication, facet))
+      for (const tag of facet) {
+        counts[tag] = pool.filter(({ publication }) => publication.tags?.includes(tag)).length
+      }
+    }
+    return counts
   })
+
+  function reset() {
+    searchQuery.value = ''
+    selectedTags.value = []
+  }
 
   return {
     total: entries.length,
@@ -69,6 +90,8 @@ export function useLiterature(
     searchQuery,
     selectedTags,
     toggleTag,
+    reset,
     filteredEntries,
+    tagCounts,
   }
 }

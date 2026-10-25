@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Glossary pages are prerendered as static HTML with their own title, description and structured data, so search engines can index each term.
 - Glossary entries can be translated per term; untranslated entries fall back to English.
-- Glossary: a Literature tab lists every cited publication, with search over titles, authors, venues and abstracts, formalism and topic filters, and links to where it is cited.
+- Glossary: a Literature tab lists every cited publication, with search over titles, authors, venues and abstracts, formalism and topic filters with live counts, and links to where it is cited.
 - Glossary: computational complexity results for AF and ADF semantics, each with its source, on every semantics page and in overview tables, plus a Complexity tab defining the reasoning problems and complexity classes.
 - Glossary: which principles (Directionality, Reinstatement, Modularisation, …) each AF semantics satisfies, with sources from the literature, on every semantics page, plus a Principles tab with a filterable overview table.
 - Every glossary term has its own URL (e.g. `/glossary/AF/ADM`) and page title, and the sitemap lists them all; old `?module=&term=` links still work.

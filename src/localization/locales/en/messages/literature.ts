@@ -18,11 +18,14 @@
  */
 export default {
   title: 'Literature',
-  searchPlaceholder: 'Search titles, authors, venues, abstracts…',
+  searchPlaceholder: 'Search publications…',
   count: '{n} publication | {n} publications',
   countFiltered: '{shown} of {total} publications',
   noResults: 'No publications match.',
+  reset: 'Clear all',
   clearFilters: 'Clear filters',
+  showResults: 'Show {n} publication | Show {n} publications',
+  filters: 'Filters',
   formalism: 'Formalism',
   topic: 'Topic',
   citedIn: 'Cited in',
