@@ -40,7 +40,7 @@ export function useModuleCards<DocumentT extends Objectish>(
       displayNameSingular: t(`modules.${module.id}.name`),
       description: t(`modules.${module.id}.description`),
       examples: module.examples,
-      initialCotent: module.initialCotent,
+      initialContent: module.initialContent,
       generateHref: module.generateHref,
       underConstruction: module.underConstruction,
       beta: module.beta,

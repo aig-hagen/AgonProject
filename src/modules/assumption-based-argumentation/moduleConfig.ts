@@ -96,7 +96,7 @@ export const assumptionBasedArgumentationModule: ModuleConfig<ABAF> = {
     }
   },
   examples: datasets,
-  initialCotent: initialABAF,
+  initialContent: initialABAF,
   editorComponent: GraphEditor,
   evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {

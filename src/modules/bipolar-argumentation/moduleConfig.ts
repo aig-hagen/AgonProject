@@ -89,7 +89,7 @@ export const bipoloarArgumentationModule: ModuleConfig<BipoloarArgumentation<Arg
     }
   },
   examples: datasets,
-  initialCotent: initialBipolarArgumentation,
+  initialContent: initialBipolarArgumentation,
   editorComponent: GraphEditor,
   evaluationKinds: ['extension'],
   canLoadFromObject(dataObject: Record<string, unknown>): boolean {

@@ -133,7 +133,7 @@ function openContent(content: DocumentT, modulePrefix: string) {
         <div class="flex gap-2.5">
           <button
             class="btn btn-primary h-12 flex-1 gap-1.5"
-            @click="openContent(moduleCard.initialCotent, moduleCard.newNamePrefix)"
+            @click="openContent(moduleCard.initialContent, moduleCard.newNamePrefix)"
           >
             <PlusIcon class="size-5" /> {{ t('home.picker.createNew') }}
           </button>

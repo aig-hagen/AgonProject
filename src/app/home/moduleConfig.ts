@@ -66,7 +66,7 @@ export interface ModuleConfig<DocumentT extends Objectish> {
   /**
    * The content used, when the user creates a new model.
    */
-  initialCotent: DocumentT
+  initialContent: DocumentT
   /**
    * A Vue component that is used to
    * work with models associated with this module.

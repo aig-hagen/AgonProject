@@ -73,7 +73,7 @@ export const incompleteArgumentationModule: ModuleConfig<IncompleteArgumentation
       }
     },
     examples: datasets,
-    initialCotent: initialIncompleteArgumentation,
+    initialContent: initialIncompleteArgumentation,
     editorComponent: GraphEditor,
     evaluationKinds: ['extension'],
     canLoadFromObject(dataObject: Record<string, unknown>): boolean {
