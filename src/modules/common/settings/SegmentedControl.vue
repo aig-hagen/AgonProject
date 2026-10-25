@@ -31,6 +31,7 @@ defineProps<{
     role="radiogroup"
     :aria-label="ariaLabel"
   >
+    <!-- eslint-disable vue/no-restricted-class -- nested segment steps down to 6px (design.md) -->
     <button
       v-for="opt in options"
       :key="String(opt.value)"
@@ -47,5 +48,6 @@ defineProps<{
     >
       {{ opt.label }}
     </button>
+    <!-- eslint-enable vue/no-restricted-class -->
   </div>
 </template>

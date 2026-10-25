@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Glossary: the complete, preferred and serialisable semantics entries were hidden behind the counting, propagation and serialisability-based ranking entries.
 - Glossary: corrected the categorizer definition; the tuples ranking notes that it is partial.
+- The mobile tutorial step counter is translated instead of always showing English.
 
 ## [0.14.1] - 2026-10-24
 

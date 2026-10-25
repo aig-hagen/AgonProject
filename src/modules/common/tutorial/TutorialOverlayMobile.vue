@@ -237,7 +237,9 @@ function handleStartNext() {
       <div class="rounded-box bg-base-100 border border-primary/20 shadow-xl p-3.5">
         <div class="flex items-center gap-2 mb-2">
           <span class="text-xs font-semibold text-base-content/65 shrink-0">
-            Step {{ activeStepIndex + 1 }} of {{ stepCount }}
+            {{
+              t('tutorial.controls.progress', { current: activeStepIndex + 1, total: stepCount })
+            }}
           </span>
           <progress
             class="progress progress-primary flex-1 h-1.5"

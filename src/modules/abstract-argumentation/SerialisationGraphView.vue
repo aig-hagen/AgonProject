@@ -193,12 +193,14 @@ function nodeClass(key: string) {
 
 <template>
   <div ref="container" class="overflow-auto" data-evaluation-results>
+    <!-- eslint-disable vue/no-bare-strings-in-template -->
     <span
       ref="probe"
       aria-hidden="true"
       class="invisible absolute font-(family-name:--font-graph) text-sm"
       >0000000000</span
     >
+    <!-- eslint-enable vue/no-bare-strings-in-template -->
     <div class="relative" :style="{ width: `${layout.width}px`, height: `${layout.height}px` }">
       <svg
         class="absolute inset-0 overflow-visible"

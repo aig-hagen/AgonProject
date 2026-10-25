@@ -91,7 +91,7 @@ const files = [
   'README.md',
   'CONTRIBUTING.md',
   'CHANGELOG.md',
-  'CLAUDE.md',
+  'AGENTS.md',
   ...markdownFiles(join(root, 'docs')).map((file) => relative(root, file)),
   'servers/argumentation-mcp/README.md',
   'servers/graph-gen/README.md',

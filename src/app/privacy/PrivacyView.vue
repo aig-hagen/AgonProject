@@ -94,11 +94,13 @@ const sections = computed(() => [
 
         <h2 id="imprint" class="m-1 font-bold text-lg mt-4">{{ t('privacy.imprint.title') }}</h2>
         <i18n-t keypath="privacy.imprint.responsible" tag="p" scope="global" class="m-1 mb-4">
+          <!-- eslint-disable vue/no-bare-strings-in-template -->
           <template #email
             ><a class="link link-primary" href="mailto:lars.bengel@fernuni-hagen.de"
               >lars.bengel@fernuni-hagen.de</a
             ></template
           >
+          <!-- eslint-enable vue/no-bare-strings-in-template -->
         </i18n-t>
       </main>
     </div>

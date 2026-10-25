@@ -34,7 +34,7 @@ export interface ModuleCard<DocumentT> {
   displayNameSingular: string
   description?: string
   examples: Example<DocumentT>[]
-  initialCotent: DocumentT
+  initialContent: DocumentT
   generateHref?: string
   underConstruction?: boolean
   beta?: boolean

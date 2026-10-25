@@ -30,7 +30,7 @@ const fakeModule = {
   id: 'abstract',
   newNamePrefix: 'AF',
   examples: [],
-  initialCotent: {},
+  initialContent: {},
   tags: [TAG_ABSTRACT, TAG_ATTACK],
 } as unknown as ModuleConfig<object>
 
