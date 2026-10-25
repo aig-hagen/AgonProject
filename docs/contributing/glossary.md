@@ -22,6 +22,8 @@ translations in [Localization](./localization.md#structured-content-glossaries-a
 
 One Markdown file per term. The file name is the term key; keys are unique across all modules and
 are what `[[links]]`, `tooltipId`s, table rows, and URLs (`/glossary/<prefix>/<key>`) refer to.
+Abstract-argumentation keys use the bare semantics key (`SAD`) or camelCase (`attackedSet`); other
+modules prefix theirs (`adfCO`, `setafReduct`, `abaContrary`).
 
 ```markdown
 ---
