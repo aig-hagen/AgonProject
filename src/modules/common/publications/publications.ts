@@ -989,6 +989,33 @@ export const BRU24: Publication = {
   doi: '10.24963/kr.2024/12',
 }
 
+export const BKU24: Publication = {
+  kind: 'inproceedings',
+  authors: ['Blümel, L.', 'König, M.', 'Ulbricht, M.'],
+  year: 2024,
+  tags: ['ABA', 'SetAF', 'semantics'],
+  title: 'Weak Admissibility for ABA via Abstract Set-Attacks',
+  booktitle:
+    'Proceedings of the 21st International Conference on Principles of Knowledge Representation and Reasoning',
+  acronym: 'KR 2024',
+  pages: '178–188',
+  publisher: 'ijcai.org',
+  doi: '10.24963/kr.2024/17',
+}
+
+export const BBR25: Publication = {
+  kind: 'inproceedings',
+  authors: ['Berthold, M.', 'Blümel, L.', 'Rapberger, A.'],
+  year: 2025,
+  tags: ['ABA', 'SetAF', 'semantics'],
+  title: 'On Strong and Weak Admissibility in Non-Flat Assumption-Based Argumentation',
+  booktitle:
+    'Proceedings of the 22nd International Conference on Principles of Knowledge Representation and Reasoning',
+  acronym: 'KR 2025',
+  publisher: 'ijcai.org',
+  doi: '10.24963/kr.2025/14',
+}
+
 // ── Computational Complexity ──────────────────────────────────────────────────
 
 export const DVW11: Publication = {

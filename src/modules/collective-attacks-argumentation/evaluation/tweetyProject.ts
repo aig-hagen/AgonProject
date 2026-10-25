@@ -41,55 +41,53 @@ const ENDPOINT_SETAF = '/setaf'
 
 export const KEY_DEFAULT_SEMANTIC = 'ST'
 
-export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = [
-  {
-    key: 'classical',
-    displayName: 'Classical Semantics',
-    semantics: [
-      { key: 'CF', displayName: 'Conflict-Free' },
-      { key: 'ADM', displayName: 'Admissible' },
-      { key: 'CO', displayName: 'Complete' },
-      { key: 'GR', displayName: 'Grounded' },
-      { key: 'PR', displayName: 'Preferred' },
-      { key: 'ST', displayName: 'Stable' },
-    ],
-  },
-  {
-    key: 'admissibility-based',
-    displayName: 'Admissibility-based Semantics',
-    semantics: [
-      { key: 'SAD', displayName: 'Strongly Admissible' },
-      { key: 'SST', displayName: 'Semi-Stable' },
-      { key: 'ID', displayName: 'Ideal' },
-      { key: 'EA', displayName: 'Eager' },
-      { key: 'IS', displayName: 'Initial' },
-      { key: 'UC', displayName: 'Unchallenged' },
-    ],
-  },
-  {
-    key: 'non-admissible',
-    displayName: 'Non-admissible Semantics',
-    semantics: [
-      { key: 'NA', displayName: 'Naive' },
-      { key: 'STG', displayName: 'Stage' },
-      { key: 'STG2', displayName: 'Stage2' },
-      { key: 'CF2', displayName: 'CF2' },
-      { key: 'SCF2', displayName: 'SCF2' },
-      { key: 'UD', displayName: 'Undisputed' },
-      { key: 'SUD', displayName: 'Strongly Undisputed' },
-    ],
-  },
-  {
-    key: 'weak',
-    displayName: 'Weak Semantics',
-    semantics: [
-      { key: 'WAD', displayName: 'Weakly Admissible' },
-      { key: 'WCO', displayName: 'Weakly Complete' },
-      { key: 'WGR', displayName: 'Weakly Grounded' },
-      { key: 'WPR', displayName: 'Weakly Preferred' },
-    ],
-  },
-].filter((group) => group.semantics.length > 0)
+export const KNOWN_SEMANTIC_GROUPS: SemanticsFamily[] = (
+  [
+    {
+      key: 'classical',
+      displayName: 'Classical Semantics',
+      semantics: [
+        { key: 'CF', displayName: 'Conflict-Free' },
+        { key: 'ADM', displayName: 'Admissible' },
+        { key: 'CO', displayName: 'Complete' },
+        { key: 'GR', displayName: 'Grounded' },
+        { key: 'PR', displayName: 'Preferred' },
+        { key: 'ST', displayName: 'Stable' },
+      ],
+    },
+    {
+      key: 'admissibility-based',
+      displayName: 'Admissibility-based Semantics',
+      semantics: [
+        { key: 'SAD', displayName: 'Strongly Admissible', tooltipId: 'setafSAD' },
+        { key: 'SST', displayName: 'Semi-Stable' },
+        { key: 'ID', displayName: 'Ideal' },
+        { key: 'EA', displayName: 'Eager' },
+        { key: 'IS', displayName: 'Initial', reduction: 'unproven' },
+        { key: 'UC', displayName: 'Unchallenged', reduction: 'unproven' },
+      ],
+    },
+    {
+      key: 'non-admissible',
+      displayName: 'Non-admissible Semantics',
+      semantics: [
+        { key: 'STG', displayName: 'Stage' },
+        { key: 'UD', displayName: 'Undisputed', reduction: 'unproven' },
+        { key: 'SUD', displayName: 'Strongly Undisputed', reduction: 'unproven' },
+      ],
+    },
+    {
+      key: 'weak',
+      displayName: 'Weak Semantics',
+      semantics: [
+        { key: 'WAD', displayName: 'Weakly Admissible', tooltipId: 'setafWAD' },
+        { key: 'WCO', displayName: 'Weakly Complete', tooltipId: 'setafWCO' },
+        { key: 'WGR', displayName: 'Weakly Grounded', tooltipId: 'setafWGR' },
+        { key: 'WPR', displayName: 'Weakly Preferred', tooltipId: 'setafWPR' },
+      ],
+    },
+  ] satisfies SemanticsFamily[]
+).filter((group) => group.semantics.length > 0)
 
 export {
   type Semantics,

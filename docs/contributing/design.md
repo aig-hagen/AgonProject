@@ -175,7 +175,7 @@ Desktop and mobile are one system at two densities, not two designs.
 ## Colors
 
 A cool, low-saturation paper palette with one confident institutional blue. All values, for both
-light and dark mode, live only in [`palette.ts`](src/modules/common/theme/palette.ts), which emits
+light and dark mode, live only in [`palette.ts`](../../src/modules/common/theme/palette.ts), which emits
 each token as a `--color-*` (app) or `--graph-*` (graph) custom property. This document names the
 tokens and their roles; it never restates their values.
 
@@ -263,7 +263,7 @@ screen has more than a handful of blue elements at rest, something is shouting.
 
 **Character:** A sober, highly legible sans for work, a soft literary serif for the cover. All
 fonts are self-hosted through Fontsource and referenced only through the font roles in
-[`style.css`](src/style.css), never by name.
+[`style.css`](../../src/style.css), never by name.
 
 ### Hierarchy
 
@@ -294,7 +294,7 @@ always in ink, never in `primary` or `secondary`.
 ## Layout
 
 The app switches shells by viewport width alone: below 768px (`COMPACT_MAX_WIDTH` in
-[`useLayoutMode.ts`](src/modules/common/layout/useLayoutMode.ts)) it renders the compact (mobile)
+[`useLayoutMode.ts`](../../src/modules/common/layout/useLayoutMode.ts)) it renders the compact (mobile)
 shell, otherwise the regular (desktop) one. Pointer type never changes the shell; it only adjusts
 gestures and help text. Within a shell, Tailwind's `sm` (640px) and `lg` (1024px) breakpoints tune
 grids, such as the home module cards going 1 → 2 → 3 columns.
@@ -388,7 +388,7 @@ Quiet by default, blue when it matters.
 ### Header bar
 
 The ruled top of every secondary page (see Layout), implemented once as
-[`PageHeader.vue`](src/modules/common/layout/PageHeader.vue). Paper shade background, hairline
+[`PageHeader.vue`](../../src/modules/common/layout/PageHeader.vue). Paper shade background, hairline
 below, ghost chevron back button (with its label on desktop, a 44px icon button on compact), and the
 page title centered in Headline type. Pages pass extra actions through its `actions` slot.
 
@@ -406,7 +406,7 @@ page title centered in Headline type. Pages pass extra actions through its `acti
 
 - **Style:** DaisyUI `.input` / `.select` with field radius and `base-300` border; `input-sm` on
   desktop, full-height (44px) on mobile. No other hand-rolled input wrappers.
-- **Search:** always [`SearchInput.vue`](src/modules/common/forms/SearchInput.vue): a filled paper
+- **Search:** always [`SearchInput.vue`](../../src/modules/common/forms/SearchInput.vue): a filled paper
   shade field with a hairline border, a leading magnifier in ink `/40`, 36px tall on desktop and
   44px on compact. On focus it lifts to paper with a focus-colored border, and only the field (not
   the inner input) draws the ring. A trailing × clears it once there is text.

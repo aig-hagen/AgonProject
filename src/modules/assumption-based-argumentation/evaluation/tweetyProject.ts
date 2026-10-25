@@ -38,48 +38,70 @@ const ENDPOINT_ABA = '/aba'
 
 export const KEY_DEFAULT_SEMANTIC = 'st'
 
+// Flat-only semantics are evaluated on the instantiated SetAF of the theory.
+export interface AbaSemantics extends Semantics {
+  flatOnly?: boolean
+}
+
 export interface AbaSemanticsFamily {
   key: string
   displayName: string
-  flatOnly: boolean
-  semantics: Semantics[]
+  semantics: AbaSemantics[]
 }
 
 export const KNOWN_SEMANTIC_GROUPS: AbaSemanticsFamily[] = [
   {
-    key: 'aba',
-    displayName: 'ABA Semantics',
-    flatOnly: false,
+    key: 'classical',
+    displayName: 'Classical Semantics',
     semantics: [
       { key: 'cf', displayName: 'Conflict-Free', tooltipId: 'abaCF' },
       { key: 'adm', displayName: 'Admissible', tooltipId: 'abaADM' },
       { key: 'co', displayName: 'Complete', tooltipId: 'abaCO' },
+      { key: 'gr', displayName: 'Grounded', tooltipId: 'abaGR', flatOnly: true },
       { key: 'pr', displayName: 'Preferred', tooltipId: 'abaPR' },
       { key: 'st', displayName: 'Stable', tooltipId: 'abaST' },
-      { key: 'wf', displayName: 'Well-Founded', tooltipId: 'abaWF' },
-      { key: 'id', displayName: 'Ideal', tooltipId: 'abaID' },
     ],
   },
   {
-    // Evaluated on the SETAF translation of the theory, which needs a flat theory.
-    key: 'setaf',
-    displayName: 'Via SetAF · flat only',
-    flatOnly: true,
+    key: 'admissibility-based',
+    displayName: 'Admissibility-based Semantics',
     semantics: [
-      { key: 'gr', displayName: 'Grounded', tooltipId: 'abaGR' },
-      { key: 'sad', displayName: 'Strongly Admissible' },
-      { key: 'sst', displayName: 'Semi-Stable' },
-      { key: 'ea', displayName: 'Eager' },
-      { key: 'is', displayName: 'Initial' },
-      { key: 'uc', displayName: 'Unchallenged' },
-      { key: 'stg', displayName: 'Stage' },
-      { key: 'ud', displayName: 'Undisputed' },
-      { key: 'sud', displayName: 'Strongly Undisputed' },
-      { key: 'wad', displayName: 'Weakly Admissible' },
-      { key: 'wco', displayName: 'Weakly Complete' },
-      { key: 'wgr', displayName: 'Weakly Grounded' },
-      { key: 'wpr', displayName: 'Weakly Preferred' },
+      { key: 'sad', displayName: 'Strongly Admissible', flatOnly: true },
+      { key: 'sst', displayName: 'Semi-Stable', flatOnly: true },
+      { key: 'id', displayName: 'Ideal', tooltipId: 'abaID' },
+      { key: 'ea', displayName: 'Eager', flatOnly: true },
+      { key: 'is', displayName: 'Initial', flatOnly: true, reduction: 'unproven' },
+      { key: 'uc', displayName: 'Unchallenged', flatOnly: true, reduction: 'unproven' },
     ],
+  },
+  {
+    key: 'non-admissible',
+    displayName: 'Non-admissible Semantics',
+    semantics: [
+      { key: 'stg', displayName: 'Stage', flatOnly: true },
+      { key: 'ud', displayName: 'Undisputed', flatOnly: true, reduction: 'unproven' },
+      {
+        key: 'sud',
+        displayName: 'Strongly Undisputed',
+        flatOnly: true,
+        reduction: 'unproven',
+      },
+    ],
+  },
+  {
+    key: 'weak',
+    displayName: 'Weak Semantics',
+    semantics: [
+      { key: 'wad', displayName: 'Weakly Admissible', flatOnly: true },
+      { key: 'wco', displayName: 'Weakly Complete', flatOnly: true },
+      { key: 'wgr', displayName: 'Weakly Grounded', flatOnly: true },
+      { key: 'wpr', displayName: 'Weakly Preferred', flatOnly: true },
+    ],
+  },
+  {
+    key: 'aba',
+    displayName: 'ABA-specific Semantics',
+    semantics: [{ key: 'wf', displayName: 'Well-Founded', tooltipId: 'abaWF' }],
   },
 ]
 

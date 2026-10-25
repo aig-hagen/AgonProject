@@ -43,7 +43,7 @@ Keep stable domain identifiers and machine-readable output locale-neutral. Trans
 ## Styling and theming
 
 The visual design system (type scale, ink tiers, elevation, page shell, components) is defined in
-[`DESIGN.md`](../../DESIGN.md); follow it for any UI work.
+[`design.md`](design.md); follow it for any UI work.
 
 - Prefer Tailwind and DaisyUI semantic utilities in templates.
 - Use the tokens from `palette.ts` or their `--color-*` / `--graph-*` CSS variables for application and graph colors. Do not introduce raw color values or Tailwind primitive color utilities in app code. Graph color changes must keep `palette.test.ts` (contrast and color-blind targets) passing.

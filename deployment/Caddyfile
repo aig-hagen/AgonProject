@@ -60,7 +60,11 @@ http://:8080 {
 				}
 			}
 			# log_append proxy_target http://localhost:8081
-			reverse_proxy http://localhost:8081
+			reverse_proxy http://localhost:8081 {
+				# Behind TLS termination Tweety sees http vs the browser's https Origin and
+				# rejects CORS-mapped paths like /aba; calls are same-origin, so drop it.
+				header_up -Origin
+			}
 		}
 	}
 

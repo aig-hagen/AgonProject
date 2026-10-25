@@ -69,6 +69,14 @@ export interface TutorialContext {
   ctrlSnapCount: number
   /** Whether the export panel is currently open */
   isExportOpened: boolean
+  /** Count of ABA assumptions currently in the theory — compare against baseline */
+  assumptionCount: number
+  /** Count of ABA rules currently in the theory — compare against baseline */
+  ruleCount: number
+  /** Monotonic count of ABA contrary reassignments */
+  contraryEditCount: number
+  /** Key of the canvas view currently shown (e.g. ABA theory/af/setaf); empty when not applicable */
+  activeView: string
 }
 
 export type StepPlacement =

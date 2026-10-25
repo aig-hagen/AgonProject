@@ -25,6 +25,7 @@ import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 
 const afGlossary = glossaryModules.find((m) => m.prefix === 'AF')!.glossary
+const setafGlossary = glossaryModules.find((m) => m.prefix === 'SetAF')!.glossary
 const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
 
 describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey }) => {
@@ -37,9 +38,11 @@ describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey 
   // Complexity and principle entries only appear on the glossary page, which resolves refs across
   // all modules.
   test('every [[ref]] resolves', () => {
+    // ABA also merges in the SetAF registry for its SetAF view.
+    const extra = prefix === 'ABA' ? setafGlossary : {}
     const scope = ['Complexity', 'Principles'].includes(prefix)
       ? allGlossaries
-      : { ...afGlossary, ...glossary }
+      : { ...afGlossary, ...extra, ...glossary }
     const missing = Object.entries(glossary).flatMap(([key, def]) =>
       entryRefs(def)
         .filter((ref) => !(ref in scope))

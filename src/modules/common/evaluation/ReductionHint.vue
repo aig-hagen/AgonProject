@@ -16,20 +16,30 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
+<script setup lang="ts">
+import { QuestionMarkCircleIcon } from '@heroicons/vue/24/outline'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+import type { Semantics } from '@/modules/common/evaluation/tweety-project/semantics'
+
+// Marks semantics the backend computes via an AF reduction; `withText` spells out why.
+const { reduction, withText = false } = defineProps<{
+  reduction: NonNullable<Semantics['reduction']>
+  withText?: boolean
+}>()
+
+const { t } = useI18n({ useScope: 'global' })
+const message = computed(() => t(`evaluation.reduction.${reduction}`))
+</script>
+
 <template>
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" data-slot="icon">
-    <text
-      x="12"
-      y="9"
-      text-anchor="middle"
-      dominant-baseline="central"
-      font-size="23"
-      font-weight="350"
-      font-family="ui-monospace, monospace"
-      fill="currentColor"
-      stroke="none"
-    >
-      ⪯
-    </text>
-  </svg>
+  <span
+    class="inline-flex items-start gap-1.5 text-base-content/65"
+    :class="{ 'text-xs': withText }"
+    :title="withText ? undefined : message"
+  >
+    <QuestionMarkCircleIcon class="size-3.5 shrink-0" />
+    <span v-if="withText">{{ message }}</span>
+  </span>
 </template>

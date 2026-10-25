@@ -23,6 +23,9 @@
   (`BlankDocumentCanvas.vue`); the mobile cards show none.
 - **26. [M] Landscape layout.** Phones in landscape now get the compact shell, but its top and
   bottom bars leave little canvas height. Consider moving the command bar to a side rail.
+- **ADF center view.** On mobile, the centered view of an ADF may cut off acceptance conditions.
+- **Serialisation graph sheet.** The compact detent measures the graph's font probe as a row; let results
+  declare `data-evaluation-row-height` (graph: 44px). Also check graph spacing and long edge labels.
 
 ## Assumption-based argumentation (ABA)
 

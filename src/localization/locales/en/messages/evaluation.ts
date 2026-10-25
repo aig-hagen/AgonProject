@@ -41,6 +41,10 @@ export default {
   },
   metaSemantics: 'Meta Semantics',
   requiresFlat: 'requires a flat theory',
+  flatOnlySemantics: 'Only available for flat ABAFs.',
+  reduction: {
+    unproven: 'Computed via AF-reduction; correctness unclear.',
+  },
   probabilityHint: 'Node labels show probabilities',
   // Bipolar support-interpretation selector.
   support: {

@@ -38,6 +38,7 @@ import EvaluationResultGrid from '@/modules/common/evaluation/EvaluationResultGr
 import { extensionLabels } from '@/modules/common/evaluation/labeling'
 import ModeHint from '@/modules/common/evaluation/ModeHint.vue'
 import { modeLabel, modeOptions } from '@/modules/common/evaluation/modes'
+import ReductionHint from '@/modules/common/evaluation/ReductionHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { useExtensionWindowBase } from '@/modules/common/evaluation/useExtensionWindowBase'
 import GroupedSelect, { type GroupedSelectGroup } from '@/modules/common/forms/GroupedSelect.vue'
@@ -155,7 +156,11 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
   >
     <template #parameters>
       <ParameterField :label="t('evaluation.fields.semantics')" min-width="10rem">
-        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width />
+        <GroupedSelect v-model="selectedSemantic" :groups="semanticsSelectGroups" full-width>
+          <template #option-suffix="{ option }">
+            <ReductionHint v-if="option.reduction" :reduction="option.reduction" />
+          </template>
+        </GroupedSelect>
       </ParameterField>
       <ParameterField :label="t('evaluation.fields.mode')" max-width="8rem">
         <template #label-suffix>
@@ -165,7 +170,12 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
       </ParameterField>
     </template>
     <template #parameters-footer>
-      <TermDefinitionBlock :id="selectedSemantic.key" />
+      <TermDefinitionBlock :id="selectedSemantic.tooltipId ?? selectedSemantic.key" />
+      <ReductionHint
+        v-if="selectedSemantic.reduction"
+        :reduction="selectedSemantic.reduction"
+        with-text
+      />
     </template>
     <template #results>
       <template v-if="dataExtensionsFormatedAndSorted !== undefined">

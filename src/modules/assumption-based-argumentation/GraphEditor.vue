@@ -18,7 +18,7 @@
 -->
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
-import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
+import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import {
@@ -38,6 +38,8 @@ import {
 } from '@/modules/assumption-based-argumentation/layout'
 import type { ABAF, NodeId } from '@/modules/assumption-based-argumentation/model'
 import TheoryPanel from '@/modules/assumption-based-argumentation/TheoryPanel.vue'
+import { abaBasicsTutorial } from '@/modules/assumption-based-argumentation/tutorials/aba-basics'
+import { abaViewsTutorial } from '@/modules/assumption-based-argumentation/tutorials/aba-views'
 import {
   type AbaView,
   afCanvas,
@@ -50,6 +52,7 @@ import { layoutUnplaced } from '@/modules/assumption-based-argumentation/views/l
 import ViewPicker from '@/modules/assumption-based-argumentation/views/ViewPicker.vue'
 import ViewSwitcher from '@/modules/assumption-based-argumentation/views/ViewSwitcher.vue'
 import WindowExtensions from '@/modules/assumption-based-argumentation/WindowExtensions.vue'
+import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import {
   useDocumentUIState,
@@ -75,6 +78,7 @@ import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import { useNotifications } from '@/modules/common/notifications/useNotifications'
 import { type DocumentState, modifyDocument } from '@/modules/common/state'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
+import { commonTutorials } from '@/modules/common/tutorial/editor-navigation'
 import BottomSheet from '@/modules/common/window/BottomSheet.vue'
 
 const { state, historyState, documentId } = defineProps<{
@@ -371,7 +375,10 @@ provide(QUICK_EXPORT_KEY, {
   configs: availableExports as unknown as QuickExport['configs'],
   getInput: () => state.current.content,
 })
-provide(TOOLTIP_REGISTRY_KEY, assumptionBasedArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...collectiveAttacksArgumentationGlossary,
+  ...assumptionBasedArgumentationGlossary,
+})
 
 const isTheoryOpen = ref(false)
 const isTheoryCollapsed = useDocumentUIState(db, documentId, 'theory-collapsed', false)
@@ -428,6 +435,39 @@ function setEvaluationTitle(id: string, title: string) {
   evaluationTitles.value[id] = title
 }
 
+const abaTutorials = [abaBasicsTutorial, abaViewsTutorial, ...commonTutorials]
+
+// Counts reassigned contraries of existing assumptions; promotions set a contrary too but don't count.
+const contraryEditCount = ref(0)
+watch(content, (next, prev) => {
+  for (const a of next.assumptions()) {
+    if (prev.hasNode(a) && prev.getNode(a).kind === 'assumption') {
+      if (prev.getContrary(a) !== next.getContrary(a)) contraryEditCount.value++
+    }
+  }
+})
+
+const tutorialContextExtra = computed(() => ({
+  isExtensionWindowOpen: extensionInstances.value.length > 0,
+  evaluationWindowCount: extensionInstances.value.length,
+  assumptionCount: content.value.assumptions().length,
+  ruleCount: content.value.rules().length,
+  contraryEditCount: contraryEditCount.value,
+  activeView: shownView.value,
+}))
+
+const theoryPanelRef = useTemplateRef<InstanceType<typeof TheoryPanel>>('theoryPanel')
+const theoryButtonRef = useTemplateRef<HTMLButtonElement>('theoryButton')
+const viewSwitcherRef = useTemplateRef<HTMLElement>('viewSwitcher')
+const viewPickerRef = useTemplateRef<InstanceType<typeof ViewPicker>>('viewPicker')
+
+const tutorialRefs = computed(() => ({
+  // Only one of the two layouts is mounted at a time; pick whichever is live.
+  theoryPanel: (theoryPanelRef.value?.$el as HTMLElement | undefined) ?? theoryButtonRef.value,
+  viewSwitcher:
+    viewSwitcherRef.value ?? (viewPickerRef.value?.$el as HTMLElement | undefined) ?? null,
+}))
+
 const extensionChips = computed<EvaluationChip[]>(() =>
   extensionInstances.value.map((i) => ({
     id: i.id,
@@ -475,9 +515,14 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     :history-state="historyState"
     v-model:evaluation-open="evaluationHostOpen"
     @open-extension-window="addExtensionInstance"
+    :tutorials="abaTutorials"
+    default-tutorial-id="aba-basics"
+    :tutorial-context-extra="tutorialContextExtra"
+    :tutorial-refs="tutorialRefs"
   >
     <template #sidePanel>
       <TheoryPanel
+        ref="theoryPanel"
         v-model:collapsed="isTheoryCollapsed"
         :aba="content"
         @edit="createNewState($event)"
@@ -504,6 +549,7 @@ const extensionChips = computed<EvaluationChip[]>(() =>
       </div>
       <div
         v-if="layoutMode === 'regular'"
+        ref="viewSwitcher"
         class="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-auto"
       >
         <ViewSwitcher v-model="activeView" :flat="isFlat" />
@@ -511,8 +557,12 @@ const extensionChips = computed<EvaluationChip[]>(() =>
     </template>
     <template #canvasSelector>
       <div class="flex items-center gap-2">
-        <ViewPicker v-model="activeView" :flat="isFlat" />
-        <button class="btn btn-sm btn-neutral shadow-md gap-1.5" @click="isTheoryOpen = true">
+        <ViewPicker ref="viewPicker" v-model="activeView" :flat="isFlat" />
+        <button
+          ref="theoryButton"
+          class="btn btn-sm btn-neutral shadow-md gap-1.5"
+          @click="isTheoryOpen = true"
+        >
           <BookOpenIcon class="size-4" /> {{ t('editor.aba.theory.title') }}
         </button>
       </div>

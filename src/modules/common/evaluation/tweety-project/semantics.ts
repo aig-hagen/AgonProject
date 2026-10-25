@@ -21,6 +21,8 @@ export interface Semantics {
   key: string
   displayName: string
   tooltipId?: string
+  // Set when the backend computes it via a reduction to an AF instead of a native reasoner.
+  reduction?: 'unproven'
 }
 
 export interface SemanticsFamily {
