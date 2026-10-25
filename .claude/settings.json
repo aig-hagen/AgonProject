@@ -1,18 +1,37 @@
 {
-  "includeCoAuthoredBy": false,
   "permissions": {
     "deny": [
-      "Read(node_modules/**)",
+      "Read(**/node_modules/**)",
+      "Read(**/.venv/**)",
+      "Read(**/__pycache__/**)",
+      "Read(**/package-lock.json)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
       "Read(dist/**)",
       "Read(dist-ssr/**)",
-      "Read(.venv/**)",
       "Read(coverage/**)",
       "Read(test-results/**)",
       "Read(playwright-report/**)",
       "Read(data/**)",
-      "Read(package-lock.json)",
-      "Read(.env)",
-      "Read(.env.*)"
+      "Read(servers/data/**)",
+      "Read(third-party/attribution.json)",
+      "Read(third-party/ctan-attribution.json)",
+      "Read(third-party/**/target/**)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-file.sh",
+            "timeout": 30,
+            "statusMessage": "Formatting edited file"
+          }
+        ]
+      }
     ]
   }
 }
