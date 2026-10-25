@@ -144,6 +144,10 @@ export function useGlossary(glossaryTitle: string) {
     },
     { immediate: true },
   )
+  // While that redirect is pending, views must not navigate to a fallback term over it.
+  const redirecting = computed(
+    () => typeof route.query.module === 'string' || typeof route.query.term === 'string',
+  )
 
   // Module tabs plus the Literature tab, in display order.
   const tabs = computed(() => [
@@ -278,6 +282,7 @@ export function useGlossary(glossaryTitle: string) {
     groupedTerms,
     activeDefinition,
     fallbackTermKey,
+    redirecting,
     navigate,
     selectModule,
   }

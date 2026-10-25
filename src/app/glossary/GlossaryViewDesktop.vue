@@ -48,6 +48,7 @@ const {
   groupedTerms,
   activeDefinition,
   fallbackTermKey,
+  redirecting,
   literatureActive,
   tabs,
   navigate,
@@ -71,7 +72,7 @@ function onTabKeydown(event: KeyboardEvent, index: number) {
 watch(
   [activeModulePrefix, literatureActive, activeTermKey],
   ([prefix, literature]) => {
-    if (literature || activeDefinition.value || !fallbackTermKey.value) return
+    if (literature || redirecting.value || activeDefinition.value || !fallbackTermKey.value) return
     navigate(prefix, fallbackTermKey.value, { replace: true })
   },
   { immediate: true },
