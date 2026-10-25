@@ -28,11 +28,11 @@ test('tags combine with OR within a facet and AND across facets', () => {
   const adfComplexity = filteredEntries.value.map(({ key }) => key)
   expect(adfComplexity).toContain('SW15')
   expect(adfComplexity).not.toContain('BW10')
-  expect(adfComplexity).not.toContain('DVW11')
+  expect(adfComplexity).not.toContain('DDW13')
 
   selectedTags.value = ['ADF', 'AF', 'complexity']
   expect(filteredEntries.value.map(({ key }) => key)).toEqual(
-    expect.arrayContaining(['SW15', 'DVW11']),
+    expect.arrayContaining(['SW15', 'DDW13']),
   )
 })
 

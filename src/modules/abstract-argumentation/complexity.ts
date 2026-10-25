@@ -21,9 +21,9 @@ import { complete, type ComplexityTable, member, trivial } from '@/modules/commo
 import {
   BT22,
   DD18,
+  DDW13,
   DG16,
   DUW22,
-  DVW11,
   DW20,
   FHM24,
   KPW17,
@@ -39,7 +39,7 @@ const subtractive = { note: 'under subtractive reductions' }
 const polySpace = { comment: 'with polynomial space' }
 const randomised = {
   note: 'hardness under randomised reductions',
-  comment: 'DVW11, footnote 1',
+  comment: 'DDW13, footnote 1, p. 2',
 }
 const unique = (name: string) => {
   const reason = `The ${name} extension is unique.`
@@ -143,10 +143,12 @@ export const afComplexity: ComplexityTable = {
       count: trivial(DD18, 'p. 656', unique('ideal')),
     },
     EA: {
-      ver: complete('classD2P', DVW11, 'Table 2, p. 856'),
-      exist: trivial(DVW11, 'Prop. 1, p. 853', { derived: 'The eager extension is unique.' }),
-      ne: complete('classPi2P', DVW11, 'Table 2, p. 856'),
-      count: trivial(DVW11, 'Prop. 1, p. 853', unique('eager')),
+      ver: complete('classD2P', DDW13, 'Thm. 9(iv), p. 12'),
+      cred: complete('classPi2P', DDW13, 'p. 10; Thm. 9(ii), p. 12'),
+      skept: complete('classPi2P', DDW13, 'p. 10; Thm. 9(ii), p. 12'),
+      exist: trivial(DDW13, 'Prop. 1, p. 5', { derived: 'The eager extension is unique.' }),
+      ne: complete('classPi2P', DDW13, 'Thm. 9(iii), p. 12'),
+      count: trivial(DDW13, 'Prop. 1, p. 5', unique('eager')),
     },
     SAD: {
       ver: complete('classP', DW20, 'Lemma 2, p. 182'),

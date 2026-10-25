@@ -1018,17 +1018,16 @@ export const BBR25: Publication = {
 
 // ── Computational Complexity ──────────────────────────────────────────────────
 
-export const DVW11: Publication = {
-  kind: 'inproceedings',
-  authors: ['Dvořák, W.', 'Dunne, P.E.', 'Woltran, S.'],
-  year: 2011,
+export const DDW13: Publication = {
+  kind: 'article',
+  authors: ['Dunne, P.E.', 'Dvořák, W.', 'Woltran, S.'],
+  year: 2013,
   tags: ['AF', 'complexity'],
   title: 'Parametric Properties of Ideal Semantics',
-  booktitle: 'Proceedings of the 22nd International Joint Conference on Artificial Intelligence',
-  acronym: 'IJCAI 2011',
-  pages: '851–856',
-  publisher: 'AAAI Press',
-  url: 'https://www.ijcai.org/Proceedings/11/Papers/148.pdf',
+  journal: 'Artificial Intelligence',
+  volume: '202',
+  pages: '1–28',
+  doi: '10.1016/j.artint.2013.06.004',
 }
 
 export const KPW17: Publication = {
