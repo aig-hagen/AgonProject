@@ -16,7 +16,8 @@ results). Hold the content to those rules; don't restate them in your report.
 
 Review what the caller names. If they name nothing, review the formal content changed on the
 current branch: `git diff --name-only dev...HEAD` plus uncommitted changes (`git status --short`).
-For a table, review the changed cells, not the whole table, unless asked.
+For a table, review the changed cells, not the whole table, unless asked. The caller may also ask
+only for the implementation check (7) for named semantics or a whole module.
 
 ## Sources
 
@@ -47,6 +48,14 @@ unverified; never judge a definition or result from memory.
 6. **Concrete claims.** If an entry claims extensions or acceptance for a concrete framework,
    check it with the argumentation solver (`get_capabilities` for semantics keys); never compute
    extensions by hand.
+7. **Implementation matches the definition.** For a semantics the app computes (listed in the
+   module's `evaluation/tweetyProject.ts`), trace its key through the TweetyProject web service
+   factory (`third-party/TweetyProjectTeam/TweetyProject/org-tweetyproject-web/.../services/<type>/`)
+   to the reasoner class (`org-tweetyproject-arg-<type>`), and check that the code implements our
+   glossary definition, not a variant. If it is computed via a reduction to AFs, it must carry
+   `reduction: 'unproven'` unless a paper in `publications.ts` proves the reduction correct. Read
+   the submodule (what is deployed) and name its commit (`git -C <submodule> rev-parse --short
+   HEAD`). Code too indirect to follow is **unverified**, not passed.
 
 ## Report
 
