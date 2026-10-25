@@ -1,6 +1,7 @@
 ---
 label: weakly grounded
 title: Weakly Grounded Semantics (SetAF)
+short: Weakly Grounded Semantics
 reference: BKU24
 ---
 

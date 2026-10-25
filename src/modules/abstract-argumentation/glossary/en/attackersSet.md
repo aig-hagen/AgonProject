@@ -1,7 +1,7 @@
 ---
-label: $S^-$
+label: $E^-$
 title: Attacking Arguments
 reference: V96
 ---
 
-The set of arguments attacking $S$, i.e. $S^- = \{ a \in A \mid \exists b \in S: (a,b) \in R \}$
+The set of arguments attacking $E$, i.e. $E^- = \{ a \in A \mid \exists b \in E: (a,b) \in R \}$

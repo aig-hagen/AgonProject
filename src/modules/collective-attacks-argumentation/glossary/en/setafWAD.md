@@ -1,6 +1,7 @@
 ---
 label: weakly admissible
 title: Weak Admissibility (SetAF)
+short: Weak Admissibility
 reference: BKU24
 ---
 

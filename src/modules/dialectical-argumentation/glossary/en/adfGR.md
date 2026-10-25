@@ -1,6 +1,7 @@
 ---
 label: grounded
 title: Grounded Semantics (ADF)
+short: Grounded Semantics
 reference: BESWW13
 ---
 

@@ -1,6 +1,7 @@
 ---
 label: admissible
 title: Admissibility (ABA)
+short: Admissibility
 reference: CFST18
 ---
 

@@ -27,7 +27,7 @@ import { listTitle, termTitle } from '@/app/glossary/glossaryContext'
 import GlossaryEntryDetails from '@/app/glossary/GlossaryEntryDetails.vue'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import { principleTableFor } from '@/app/glossary/principles'
-import { glossaryModules, LITERATURE_TAB, useGlossary } from '@/app/glossary/useGlossary'
+import { glossaryPath, useGlossary } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
@@ -48,6 +48,7 @@ const {
   activeDefinition,
   fallbackTermKey,
   literatureActive,
+  tabs,
   navigate,
   selectModule,
 } = useGlossary(t('glossary.title'))
@@ -55,6 +56,15 @@ const {
 const wide = computed(
   () => !!complexityTableFor(activeTermKey.value) || !!principleTableFor(activeTermKey.value),
 )
+
+function onTabKeydown(event: KeyboardEvent, index: number) {
+  const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key]
+  if (!step) return
+  event.preventDefault()
+  const next = (index + step + tabs.value.length) % tabs.value.length
+  selectModule(tabs.value[next]!.id)
+  ;((event.currentTarget as HTMLElement).parentElement!.children[next] as HTMLElement).focus()
+}
 
 // The detail panel always shows a term: without a valid one in the URL, open the fallback.
 watch(
@@ -74,30 +84,21 @@ watch(
     <!-- Module tabs -->
     <div role="tablist" class="flex gap-0 px-6 border-b border-base-300 shrink-0 overflow-x-auto">
       <button
-        v-for="m in glossaryModules"
-        :key="m.prefix"
+        v-for="(tab, i) in tabs"
+        :key="tab.id"
         role="tab"
+        :aria-selected="tab.active"
+        :tabindex="tab.active ? 0 : -1"
         class="px-4 py-2.5 text-sm border-b-2 whitespace-nowrap transition-colors"
         :class="
-          !literatureActive && m.prefix === activeModulePrefix
+          tab.active
             ? 'border-primary text-primary font-medium'
             : 'border-transparent text-base-content/65 hover:text-base-content'
         "
-        @click="selectModule(m.prefix)"
+        @click="selectModule(tab.id)"
+        @keydown="onTabKeydown($event, i)"
       >
-        {{ m.prefix }}
-      </button>
-      <button
-        role="tab"
-        class="px-4 py-2.5 text-sm border-b-2 whitespace-nowrap transition-colors"
-        :class="
-          literatureActive
-            ? 'border-primary text-primary font-medium'
-            : 'border-transparent text-base-content/65 hover:text-base-content'
-        "
-        @click="selectModule(LITERATURE_TAB)"
-      >
-        {{ t('literature.title') }}
+        {{ tab.label }}
       </button>
     </div>
 
@@ -117,30 +118,30 @@ watch(
           >
             {{ t('glossary.noResults') }}
           </p>
-          <button
+          <RouterLink
             v-if="pinnedTerm"
+            :to="glossaryPath(activeModulePrefix, pinnedTerm[0])"
             class="w-full flex items-center gap-1.5 text-left px-4 py-1.5 text-sm hover:bg-base-200 border-b border-base-300 mb-1"
             :class="{ 'bg-base-200 font-medium': pinnedTerm[0] === activeTermKey }"
-            @click="navigate(activeModulePrefix, pinnedTerm[0])"
           >
             <MapPinIcon class="size-3.5 text-primary shrink-0" />
             <span class="truncate">
               <KatexInlineElement :text="listTitle(pinnedTerm[1])" />
             </span>
-          </button>
+          </RouterLink>
           <template v-for="group in groupedTerms" :key="group.label">
             <div class="section-label px-4 pt-2 pb-0.5">
               {{ group.label }}
             </div>
-            <button
+            <RouterLink
               v-for="[key, def] in group.terms"
               :key="key"
-              class="w-full text-left px-4 py-1.5 text-sm hover:bg-base-200 truncate"
+              :to="glossaryPath(activeModulePrefix, key)"
+              class="block w-full text-left px-4 py-1.5 text-sm hover:bg-base-200 truncate"
               :class="{ 'bg-base-200 font-medium': key === activeTermKey }"
-              @click="navigate(activeModulePrefix, key)"
             >
               <KatexInlineElement :text="listTitle(def)" />
-            </button>
+            </RouterLink>
           </template>
         </div>
       </div>

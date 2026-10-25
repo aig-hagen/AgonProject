@@ -1,6 +1,7 @@
 ---
 label: initial models
 title: Initial Models (ADF)
+short: Initial Models
 reference: BT25
 ---
 

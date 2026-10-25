@@ -27,7 +27,7 @@ import { principleRowFor } from '@/app/glossary/principles'
 
 const { termKey } = defineProps<{ termKey: string }>()
 
-const { follow, titleOf } = useGlossaryContext()
+const { pathOf, titleOf } = useGlossaryContext()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -66,11 +66,11 @@ const groups = computed(() =>
         </tbody>
       </table>
     </div>
-    <button
-      class="mt-2 text-sm text-primary underline-offset-2 hover:underline"
-      @click="follow(row.table.overviewKey)"
+    <RouterLink
+      :to="pathOf(row.table.overviewKey)"
+      class="mt-2 inline-block text-sm text-primary underline-offset-2 hover:underline"
     >
       {{ t('glossary.principles.compareAll') }} →
-    </button>
+    </RouterLink>
   </section>
 </template>

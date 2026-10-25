@@ -1,6 +1,7 @@
 ---
 label: $E^\oplus_R$
 title: Range (SetAF)
+short: Range
 reference: BKU24
 ---
 

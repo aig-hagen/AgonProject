@@ -1,6 +1,7 @@
 ---
 label: conflict-free
 title: Conflict-Freeness (ABA)
+short: Conflict-Freeness
 reference: CFST18
 ---
 

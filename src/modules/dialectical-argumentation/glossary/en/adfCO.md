@@ -1,6 +1,7 @@
 ---
 label: complete
 title: Complete Semantics (ADF)
+short: Complete Semantics
 reference: BESWW13
 ---
 

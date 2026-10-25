@@ -1,6 +1,7 @@
 ---
 label: weak defence
 title: Weak Defence (SetAF)
+short: Weak Defence
 reference: BKU24
 ---
 

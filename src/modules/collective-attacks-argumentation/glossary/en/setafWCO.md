@@ -1,6 +1,7 @@
 ---
 label: weakly complete
 title: Weakly Complete Semantics (SetAF)
+short: Weakly Complete Semantics
 reference: BKU24
 ---
 

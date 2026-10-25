@@ -1,6 +1,7 @@
 ---
 label: semi-stable
 title: Semi-Stable Semantics (ADF)
+short: Semi-Stable Semantics
 reference: KVV21
 ---
 

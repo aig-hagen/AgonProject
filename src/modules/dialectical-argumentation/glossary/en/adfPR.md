@@ -1,6 +1,7 @@
 ---
 label: preferred
 title: Preferred Semantics (ADF)
+short: Preferred Semantics
 reference: BESWW13
 ---
 

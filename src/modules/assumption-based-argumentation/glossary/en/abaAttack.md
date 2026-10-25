@@ -1,6 +1,7 @@
 ---
 label: attack
 title: Attack (ABA)
+short: Attack
 reference: CFST18
 ---
 

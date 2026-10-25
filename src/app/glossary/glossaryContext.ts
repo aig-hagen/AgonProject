@@ -31,8 +31,8 @@ export type GlossaryEntries = Record<
 
 export interface GlossaryContext {
   entries: GlossaryEntries
-  /** Opens the glossary page of a term, in whichever module it lives. */
-  follow: (termKey: string) => void
+  /** The glossary page of a term, in whichever module it lives. */
+  pathOf: (termKey: string) => string
 }
 
 const GLOSSARY_CONTEXT: InjectionKey<GlossaryContext> = Symbol('glossaryContext')

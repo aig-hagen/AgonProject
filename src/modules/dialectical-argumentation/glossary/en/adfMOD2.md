@@ -1,6 +1,7 @@
 ---
 label: two-valued model
 title: Two-Valued Model (ADF)
+short: Two-Valued Model
 reference: BW10
 ---
 

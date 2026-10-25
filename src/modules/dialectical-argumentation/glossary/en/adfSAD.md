@@ -1,6 +1,7 @@
 ---
 label: strongly admissible
 title: Strong Admissibility (ADF)
+short: Strong Admissibility
 reference: KVV22
 ---
 

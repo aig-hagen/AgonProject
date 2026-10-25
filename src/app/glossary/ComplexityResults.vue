@@ -28,7 +28,7 @@ import { SHOWN_PROBLEMS } from '@/modules/common/complexity/types'
 
 const { termKey } = defineProps<{ termKey: string }>()
 
-const { follow } = useGlossaryContext()
+const { pathOf } = useGlossaryContext()
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -72,11 +72,11 @@ const problems = computed(() =>
         </tbody>
       </table>
     </div>
-    <button
-      class="mt-2 text-sm text-primary underline-offset-2 hover:underline"
-      @click="follow(result.table.overviewKey)"
+    <RouterLink
+      :to="pathOf(result.table.overviewKey)"
+      class="mt-2 inline-block text-sm text-primary underline-offset-2 hover:underline"
     >
       {{ t('glossary.complexity.compareAll') }} →
-    </button>
+    </RouterLink>
   </section>
 </template>

@@ -33,7 +33,7 @@ import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 
 const { table } = defineProps<{ table: PrincipleTable }>()
 
-const { entries, follow, titleOf } = useGlossaryContext()
+const { entries, pathOf, titleOf } = useGlossaryContext()
 // Touch layouts keep the native title: a tap would both open the tooltip and navigate.
 const { isCompact } = useLayoutMode()
 
@@ -131,13 +131,13 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
                 :is="isCompact ? 'span' : TermTooltip"
                 v-bind="isCompact ? {} : { id: key, triggerClass: '' }"
               >
-                <button
+                <RouterLink
+                  :to="pathOf(key)"
                   class="hover:text-primary"
                   :title="isCompact ? labelOf(key) : undefined"
-                  @click="follow(key)"
                 >
                   {{ key }}
-                </button>
+                </RouterLink>
               </component>
             </th>
           </tr>

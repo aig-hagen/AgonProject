@@ -1,6 +1,7 @@
 ---
 label: naive
 title: Naive Semantics (ADF)
+short: Naive Semantics
 reference: SW15
 ---
 

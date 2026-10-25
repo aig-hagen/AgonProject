@@ -1,6 +1,7 @@
 ---
 label: semi-two-valued
 title: Semi-Two-Valued Semantics (ADF)
+short: Semi-Two-Valued Semantics
 reference: KVV21
 ---
 

@@ -1,6 +1,7 @@
 ---
 label: conflict-free
 title: Conflict-Freeness (ADF)
+short: Conflict-Freeness
 reference: SW15
 ---
 

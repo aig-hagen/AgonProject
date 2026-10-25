@@ -27,7 +27,7 @@ import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 
 const { parts } = defineProps<{ parts: GlossaryInline[] }>()
 
-const { entries, follow } = useGlossaryContext()
+const { entries, pathOf } = useGlossaryContext()
 
 // On touch layouts a tap would both open the tooltip and navigate, so links stay plain.
 const { isCompact } = useLayoutMode()
@@ -49,12 +49,12 @@ const { isCompact } = useLayoutMode()
       v-else-if="entries[part.ref]"
       v-bind="isCompact ? {} : { id: part.ref, triggerClass: '' }"
     >
-      <button
+      <RouterLink
+        :to="pathOf(part.ref)"
         class="text-primary underline underline-offset-2 hover:decoration-2"
-        @click="follow(part.ref)"
       >
         <KatexInlineElement :text="part.label ?? entries[part.ref]!.definition.label" />
-      </button>
+      </RouterLink>
     </component>
     <span v-else class="text-base-content/65">
       <KatexInlineElement :text="part.label ?? part.ref" />

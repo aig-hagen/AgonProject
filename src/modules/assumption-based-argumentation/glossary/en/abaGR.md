@@ -1,6 +1,7 @@
 ---
 label: grounded
 title: Grounded Semantics (ABA)
+short: Grounded Semantics
 reference: BRU24
 ---
 

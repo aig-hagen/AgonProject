@@ -1,6 +1,7 @@
 ---
 label: well-founded
 title: Well-Founded Semantics (ABA)
+short: Well-Founded Semantics
 reference: CFST18
 ---
 

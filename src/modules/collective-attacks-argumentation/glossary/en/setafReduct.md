@@ -1,6 +1,7 @@
 ---
 label: reduct
 title: $E$-Reduct (SetAF)
+short: $E$-Reduct
 reference: BKU24
 ---
 

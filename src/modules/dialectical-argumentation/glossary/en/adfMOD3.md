@@ -1,6 +1,7 @@
 ---
 label: three-valued model
 title: Three-Valued Model (ADF)
+short: Three-Valued Model
 reference: BESWW13
 ---
 

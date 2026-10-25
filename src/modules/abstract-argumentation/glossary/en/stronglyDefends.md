@@ -4,4 +4,4 @@ title: Strong Defence
 reference: BG07
 ---
 
-A set of arguments $S$ strongly defends an argument $a$ iff for every argument $b$ attacking $a$, there is some argument $c \in S \setminus \{a\}$ attacking $b$ such that $S \setminus \{a\}$ strongly defends $c$.
+A set of arguments $E$ strongly defends an argument $a$ iff for every argument $b$ attacking $a$, there is some argument $c \in E \setminus \{a\}$ attacking $b$ such that $E \setminus \{a\}$ strongly defends $c$.

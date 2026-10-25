@@ -1,6 +1,7 @@
 ---
 label: stable
 title: Stable Semantics (ADF)
+short: Stable Semantics
 reference: BESWW13
 ---
 

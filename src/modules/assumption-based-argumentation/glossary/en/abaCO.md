@@ -1,6 +1,7 @@
 ---
 label: complete
 title: Complete Semantics (ABA)
+short: Complete Semantics
 reference: CFST18
 ---
 

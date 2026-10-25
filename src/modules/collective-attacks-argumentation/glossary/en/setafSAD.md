@@ -1,6 +1,7 @@
 ---
 label: strongly admissible
 title: Strong Admissibility (SetAF)
+short: Strong Admissibility
 reference: BBR25
 ---
 

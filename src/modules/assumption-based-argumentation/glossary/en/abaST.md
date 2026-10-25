@@ -1,6 +1,7 @@
 ---
 label: stable
 title: Stable Semantics (ABA)
+short: Stable Semantics
 reference: CFST18
 ---
 

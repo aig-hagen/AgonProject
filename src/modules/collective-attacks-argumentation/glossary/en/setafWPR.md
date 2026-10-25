@@ -1,6 +1,7 @@
 ---
 label: weakly preferred
 title: Weakly Preferred Semantics (SetAF)
+short: Weakly Preferred Semantics
 reference: BKU24
 ---
 

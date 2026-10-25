@@ -1,6 +1,7 @@
 ---
 label: preferred
 title: Preferred Semantics (ABA)
+short: Preferred Semantics
 reference: CFST18
 ---
 

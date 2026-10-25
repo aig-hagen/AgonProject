@@ -1,6 +1,7 @@
 ---
 label: ideal
 title: Ideal Semantics (ABA)
+short: Ideal Semantics
 reference: CFST18
 ---
 

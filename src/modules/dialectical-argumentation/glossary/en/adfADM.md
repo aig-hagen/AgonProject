@@ -1,6 +1,7 @@
 ---
 label: admissible
 title: Admissibility (ADF)
+short: Admissibility
 reference: BESWW13
 ---
 

@@ -46,7 +46,7 @@ const {
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
-const { follow } = useGlossaryContext()
+const { pathOf } = useGlossaryContext()
 
 const complexityOverview = computed(() => complexityTableFor(termKey))
 const principleOverview = computed(() => principleTableFor(termKey))
@@ -84,9 +84,12 @@ const sectionClass = computed(() => (compact ? 'mt-3' : 'mt-6 pt-4 border-t bord
       </component>
       <ul class="flex flex-wrap gap-y-1" :class="compact ? 'gap-x-3' : 'gap-x-4 text-sm'">
         <li v-for="link in backlinks" :key="link.key">
-          <button class="text-primary underline-offset-2 hover:underline" @click="follow(link.key)">
+          <RouterLink
+            :to="pathOf(link.key)"
+            class="text-primary underline-offset-2 hover:underline"
+          >
             <KatexInlineElement :text="termTitle(link.definition)" />
-          </button>
+          </RouterLink>
         </li>
       </ul>
     </section>

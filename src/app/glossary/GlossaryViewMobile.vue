@@ -22,7 +22,7 @@ import { nextTick, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import GlossaryCardMobile from '@/app/glossary/GlossaryCardMobile.vue'
-import { glossaryModules, LITERATURE_TAB, useGlossary } from '@/app/glossary/useGlossary'
+import { useGlossary } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
@@ -34,12 +34,12 @@ const { t } = useI18n({ useScope: 'global' })
 
 const {
   backlinks,
-  activeModulePrefix,
   activeTermKey,
   searchQuery,
   pinnedTerm,
   groupedTerms,
   literatureActive,
+  tabs,
   selectModule,
 } = useGlossary(t('glossary.title'))
 
@@ -66,28 +66,16 @@ watch(
     <div class="flex-none overflow-x-auto px-3 py-2 border-b border-base-300">
       <div class="flex gap-2 w-max">
         <button
-          v-for="m in glossaryModules"
-          :key="m.prefix"
+          v-for="tab in tabs"
+          :key="tab.id"
+          :aria-pressed="tab.active"
           class="px-3.5 h-8 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
           :class="
-            !literatureActive && m.prefix === activeModulePrefix
-              ? 'bg-primary text-primary-content'
-              : 'bg-base-200 text-base-content/80'
+            tab.active ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content/80'
           "
-          @click="selectModule(m.prefix)"
+          @click="selectModule(tab.id)"
         >
-          {{ m.prefix }}
-        </button>
-        <button
-          class="px-3.5 h-8 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
-          :class="
-            literatureActive
-              ? 'bg-primary text-primary-content'
-              : 'bg-base-200 text-base-content/80'
-          "
-          @click="selectModule(LITERATURE_TAB)"
-        >
-          {{ t('literature.title') }}
+          {{ tab.label }}
         </button>
       </div>
     </div>

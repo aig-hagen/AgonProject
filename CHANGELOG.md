@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Glossary pages are prerendered as static HTML with their own title, description and structured data, so search engines can index each term.
-- Glossary entries can be translated per term; with German selected, untranslated entries show an "English only" badge.
+- Glossary entries can be translated per term; untranslated entries fall back to English.
 - Glossary: a Literature tab lists every cited publication, with search over titles, authors, venues and abstracts, formalism and topic filters, and links to where it is cited.
 - Glossary: computational complexity results for AF and ADF semantics, each with its source, on every semantics page and in overview tables, plus a Complexity tab defining the reasoning problems and complexity classes.
 - Glossary: which principles (Directionality, Reinstatement, Modularisation, …) each AF semantics satisfies, with sources from the literature, on every semantics page, plus a Principles tab with a filterable overview table.
@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Publication references share one citation format with full venue, pages and publisher; same-author, same-year papers are labeled 2005a/2005b.
 - Glossary search brightens while typing and has a clear (×) button.
 - Glossary follows the design system more closely: shared section labels on mobile, underline link hovers, and a larger "More" tap target.
+- Glossary terms are real links (open in a new tab, copy the link); the term list drops redundant "(ABA)"/"(SetAF)"/"(ADF)" suffixes.
 - ABA semantics are grouped by family like the other modules; flat-only semantics are disabled one by one on non-flat theories.
 - SetAF evaluation uses native reasoners where available, including the strong and weak semantics.
 

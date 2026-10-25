@@ -145,6 +145,16 @@ export function useGlossary(glossaryTitle: string) {
     { immediate: true },
   )
 
+  // Module tabs plus the Literature tab, in display order.
+  const tabs = computed(() => [
+    ...glossaryModules.map((m) => ({
+      id: m.prefix,
+      label: m.prefix,
+      active: !literatureActive.value && m.prefix === activeModulePrefix.value,
+    })),
+    { id: LITERATURE_TAB, label: t('literature.title'), active: literatureActive.value },
+  ])
+
   const activeModule = computed(
     () => glossaryModules.find((m) => m.prefix === activeModulePrefix.value)!,
   )
@@ -155,8 +165,13 @@ export function useGlossary(glossaryTitle: string) {
     searchQuery.value = ''
   })
 
+  // Without LaTeX, so `$E$-Reduct` sorts and groups under E and is found by "e-reduct".
+  const plainListTitle = (def: TooltipDefinition) => plainText(listTitle(def))
+
   function matchesQuery([key, def]: [string, TooltipDefinition], q: string) {
-    return [termTitle(def), listTitle(def), key].some((name) => name.toLowerCase().includes(q))
+    return [termTitle(def), plainListTitle(def), def.label, key].some((name) =>
+      name.toLowerCase().includes(q),
+    )
   }
 
   // The framework entry, pinned above the alphabetical list (hidden when it fails the search).
@@ -172,7 +187,7 @@ export function useGlossary(glossaryTitle: string) {
   const sortedTerms = computed(() =>
     Object.entries(activeModule.value.glossary)
       .filter(([key]) => key !== activeModule.value.mainKey)
-      .sort(([, a], [, b]) => listTitle(a).localeCompare(listTitle(b))),
+      .sort(([, a], [, b]) => plainListTitle(a).localeCompare(plainListTitle(b))),
   )
 
   const filteredTerms = computed(() => {
@@ -201,7 +216,7 @@ export function useGlossary(glossaryTitle: string) {
     }
     const groups: { label: string; terms: (readonly [string, TooltipDefinition])[] }[] = []
     for (const entry of filteredTerms.value) {
-      const letter = listTitle(entry[1]).charAt(0).toUpperCase()
+      const letter = plainListTitle(entry[1]).charAt(0).toUpperCase()
       const last = groups[groups.length - 1]
       if (last?.label === letter) {
         last.terms.push(entry)
@@ -247,12 +262,9 @@ export function useGlossary(glossaryTitle: string) {
     router.push(glossaryPath(modulePrefix))
   }
 
-  function followRef(refKey: string) {
-    const entry = allEntries[refKey]
-    if (entry) navigate(entry.modulePrefix, refKey)
-  }
+  const pathOf = (termKey: string) => glossaryPath(allEntries[termKey]?.modulePrefix, termKey)
 
-  provideGlossaryContext({ entries: allEntries, follow: followRef })
+  provideGlossaryContext({ entries: allEntries, pathOf })
 
   return {
     backlinks,
@@ -260,6 +272,7 @@ export function useGlossary(glossaryTitle: string) {
     activeTermKey,
     activeModule,
     literatureActive,
+    tabs,
     searchQuery,
     pinnedTerm,
     groupedTerms,
