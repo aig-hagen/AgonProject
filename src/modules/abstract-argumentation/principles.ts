@@ -87,11 +87,11 @@ export const afPrinciples: PrincipleTable = {
         'admissibility',
         'strongAdmissibility',
         'defence',
+        'reinstatement',
+        'weakReinstatement',
+        'cfReinstatement',
+        'fundamentalLemma',
       ],
-    },
-    {
-      key: 'reinstatement',
-      principles: ['reinstatement', 'weakReinstatement', 'cfReinstatement', 'fundamentalLemma'],
     },
     {
       key: 'structureOfExtensions',
@@ -152,6 +152,8 @@ export const afPrinciples: PrincipleTable = {
     },
   ],
   hiddenByDefault: [
+    'weakReinstatement',
+    'cfReinstatement',
     'fundamentalLemma',
     'nonTriviality',
     'decisiveness',

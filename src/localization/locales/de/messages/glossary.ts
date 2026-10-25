@@ -58,7 +58,6 @@ export default {
     legend: '✓ erfüllt · ✗ verletzt · ? offen',
     groups: {
       conflictAndDefence: 'Conflict and Defence',
-      reinstatement: 'Reinstatement',
       basic: 'Basic',
       structureOfExtensions: 'Structure of Extensions',
       directionality: 'Directionality',
