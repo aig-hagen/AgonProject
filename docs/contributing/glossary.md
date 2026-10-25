@@ -60,7 +60,8 @@ Body:
 Each [`Publication`](/src/modules/common/publications/types.ts) is a named export whose name is its
 citation key (`D95`, `BCG18`). Authors are written `Last, I.`; every entry needs tags (one formalism
 tag plus topic tags from [`tags.ts`](/src/modules/common/publications/tags.ts)). Prefer a DOI,
-falling back to a URL.
+falling back to a URL. Every field comes from the paper itself or a resolved lookup (DOI,
+publisher page); leave out what can't be confirmed rather than guessing it.
 
 A publication is added only once the app cites it, and is cited in its published version where
 one exists. When citing a result, cite the earliest paper that proves it; surveys and summary

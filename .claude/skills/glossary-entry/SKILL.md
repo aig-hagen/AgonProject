@@ -20,7 +20,11 @@ format and the sourcing rules this skill follows. Work on one term at a time.
 - Use the publication key from `$ARGUMENTS`, or find the defining paper: the earliest that
   defines the term. If unsure, propose candidates and ask.
 - If the paper isn't in `publications.ts` yet, add it (kind, authors as `Last, I.`, venue, pages,
-  DOI, tags) from the PDF's first page; the app will cite it, so it qualifies.
+  DOI, tags); the app will cite it, so it qualifies. Take every field from the PDF (first page,
+  header, footer) or a lookup you actually ran, such as `https://doi.org/<DOI>` or the publisher
+  page. Never fill in a field from memory or by pattern; a guessed DOI or page range is worse than
+  none. If a field can't be found, leave it out and ask the user; say which source each field
+  came from.
 - Read the definition in `literature/<KEY>.pdf` and note its page and number. If the PDF is
   missing, stop and ask the user for it (`npm run lit:import -- <dir>` adds it); don't write a
   definition from memory.
