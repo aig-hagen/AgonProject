@@ -28,11 +28,12 @@ modules prefix theirs (`adfCO`, `setafReduct`, `abaContrary`).
 ```markdown
 ---
 label: admissible
-title: Admissible Set
+title: Admissibility
+symbol: \mathsf{ad}
 reference: D95
 ---
 
-A set $S$ is admissible if it is [[CF|conflict-free]] and [[defends]] all its members.
+A set $E \subseteq A$ is admissible iff $E$ is [[CF|conflict-free]] and [[defends]] every $a \in E$.
 
 ## Properties
 
@@ -62,6 +63,32 @@ Body:
   symbol itself (`$R \subseteq$ [[parents|$par(a)$]]`) rather than writing the notation out.
 - **Missing terms:** for each term a new entry relies on, check whether an entry exists. If none
   does, flag it in the report or PR so it can be added; don't leave the gap silently.
+
+## Style and notation
+
+Settled in the [AF glossary review](../ideas/glossary-review.md). Align with the FernUni course text
+(`m_64402_fa`) wherever possible.
+
+- **Template:** "A set $E \subseteq A$ is _X_ iff …". No "In an [[AF]] $F=(A,R)$" opener; the
+  ambient AF is implied. Name $F$ only where the definition quantifies over frameworks (semantics,
+  ranking semantics, principles).
+- **Wording:** always "iff"; say among which sets something is $\subseteq$-maximal or minimal; spell
+  out conditions ("there is no complete extension $E'$ with …") instead of $\sigma(F)$ membership.
+  Compact formulas such as $E \subseteq \bigcap \mathsf{pr}(F)$ are fine.
+- **Notation:**
+  - Extension semantics in lowercase `\mathsf` ($\mathsf{co}$, $\mathsf{wad}$, $\mathsf{ea}$), set of
+    all: $\Sigma$.
+  - Ranking semantics $\theta \in \Theta$, a named one as $\theta^{\mathsf{Cat}}$, ranking
+    $\succeq^{\theta^{\mathsf{Cat}}}_F$, functions such as $\mathsf{Cat}_F$, $\mathsf{ser}_F$.
+  - Labels $\mathsf{in}$, $\mathsf{out}$, $\mathsf{undec}$; attacks as $(a,b) \in R$; $E^+$, $E^-$,
+    $E^\oplus$ without an $F$ subscript; characteristic function $\Delta_F$.
+  - `\min`, `\colon X \to Y` (never `\mapsto`), `\cdot` for products, `\mathsf{q}\text{-}\sigma` for
+    hyphenated subscripts. Put a link on the whole symbol and keep set-builders in one math span.
+- **Symbols:** introduce notation through the `symbol` field, not in the definition text.
+- **Keep it lean:** no reading-aid sentences that restate the formula, and no new text below `##`
+  unless it is needed (a stated deviation, a moved formula). Niche helper terms are phrased inline
+  rather than given their own entry.
+- **Spelling:** British ("defence", "labelling"), also for terms a paper spells differently.
 
 ## Publications
 
