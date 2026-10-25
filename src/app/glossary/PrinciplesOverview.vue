@@ -145,7 +145,10 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
         <tbody>
           <template v-for="group in principleGroups" :key="group.key">
             <tr>
-              <th :colspan="columns.length + 1" class="bg-base-200 font-medium text-left px-1.5 py-1">
+              <th
+                :colspan="columns.length + 1"
+                class="bg-base-200 font-medium text-left px-1.5 py-1"
+              >
                 {{ t(`glossary.principles.groups.${group.key}`) }}
               </th>
             </tr>

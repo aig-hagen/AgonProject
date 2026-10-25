@@ -40,7 +40,8 @@ export default {
     bipolar: 'Bipolar',
     generalHeading: 'Allgemeine ADFs',
     bipolarHeading: 'Bipolare ADFs',
-    bipolarNote: 'Ergebnisse für {term}, unter der Annahme, dass die Kantentypen bekannt sind, also zur Eingabe gehören.',
+    bipolarNote:
+      'Ergebnisse für {term}, unter der Annahme, dass die Kantentypen bekannt sind, also zur Eingabe gehören.',
     bipolarTerm: 'bipolare ADFs',
     compareAll: 'Alle Semantiken vergleichen',
     semantics: 'Semantik',

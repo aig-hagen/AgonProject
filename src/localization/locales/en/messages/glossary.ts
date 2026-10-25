@@ -40,7 +40,8 @@ export default {
     bipolar: 'Bipolar',
     generalHeading: 'General ADFs',
     bipolarHeading: 'Bipolar ADFs',
-    bipolarNote: 'Results for {term}, assuming the link types are known, i.e. given as part of the input.',
+    bipolarNote:
+      'Results for {term}, assuming the link types are known, i.e. given as part of the input.',
     bipolarTerm: 'bipolar ADFs',
     compareAll: 'Compare all semantics',
     semantics: 'Semantics',
