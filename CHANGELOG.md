@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Glossary entries can carry a longer write-up with citations, shown on the glossary page and linked from tooltips ("More →"); each entry lists the entries that reference it.
 - SetAF glossary: strongly and weakly admissible, weakly complete, preferred and grounded semantics, with the SetAF reduct.
 - SetAF and ABA semantics pickers mark semantics computed via an unproven AF reduction.
+- AF glossary: entries show the notation they introduce (e.g. $\mathsf{co}$) beside their title, plus new entries for the range, labellings and the probabilistic ranking.
 
 ### Changed
 
@@ -26,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Glossary terms are real links (open in a new tab, copy the link); the term list drops redundant "(ABA)"/"(SetAF)"/"(ADF)" suffixes.
 - ABA semantics are grouped by family like the other modules; flat-only semantics are disabled one by one on non-flat theories.
 - SetAF evaluation uses native reasoners where available, including the strong and weak semantics.
+- AF glossary: definitions checked against their sources, with more formal wording, consistent notation, and fixes to SCF2, initial sets, social models and the counting ranking; tooltips in every editor can link to principle, complexity and PAF entries.
 
 ### Removed
 

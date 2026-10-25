@@ -4,7 +4,7 @@ title: Argument-ranking Semantics
 reference: AB13
 ---
 
-An argument-ranking semantics $\Theta$ is a function that associates to any [[AF]] $F$ a ranking $\succeq_F^\Theta$ on $A$, where $\succeq_F^\Theta$ is a [[preorder]] on $A$. $a \succeq_F^\Theta b$ means that $a$ is at least as acceptable as $b$.
+An argument-ranking semantics $\theta$ assigns to each [[AF]] $F$ a [[preorder]] $\succeq^\theta_F$ on $A$, the ranking of $F$; $a \succeq^\theta_F b$ means that $a$ is at least as acceptable as $b$.
 
 ## Further reading
 

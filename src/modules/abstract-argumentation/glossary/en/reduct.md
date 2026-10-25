@@ -4,4 +4,4 @@ title: $E$-Reduct
 reference: BBU20
 ---
 
-The reduct of $F$ with respect to $E$ is the argumentation framework $F^E = (A', R \cap (A' \times A'))$ with $A' = A \setminus (E \cup$ [[attackedSet|$E^+$]]).
+For $E \subseteq A$, the $E$-reduct of $F$ is the [[AF]] $F^E = (A', R \cap (A' \times A'))$ with $A' = A \setminus$ [[range|$E^\oplus$]].

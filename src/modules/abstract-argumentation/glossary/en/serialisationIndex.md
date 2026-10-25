@@ -1,7 +1,8 @@
 ---
 label: serialisation index
 title: Serialisation Index
+symbol: \mathsf{ser}_F
 reference: BT22b
 ---
 
-The serialisation index $\mathrm{ser}_F(a)$ of an argument $a$ is defined as $\mathrm{ser}_F(a) = \mathrm{min}\{ n \mid (S_1, \ldots, S_n)$ is a [[serialisationSequence]] and $a \in S_n \}$, with $\min \emptyset = \infty$.
+The serialisation index of $a \in A$ is $\mathsf{ser}_F(a) = \min\{ n \mid (S_1, \ldots, S_n)$ is a [[serialisationSequence|serialisation sequence]] with $a \in S_n \}$, with $\min \emptyset = \infty$.

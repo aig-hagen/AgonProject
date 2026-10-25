@@ -1,7 +1,7 @@
 ---
-label: graded defense function
-title: Graded Defense Function $d_n^m$
+label: graded defence function
+title: Graded Defence Function $d_n^m$
 reference: GM15
 ---
 
-For an [[AF]] $F=(A,R)$, a set $X \subseteq A$, and integers $m,n \geq 1$, the graded defense function is defined by $d_n^m(X) = \{x \in A \mid |\{y \in A \mid (y,x) \in R \text{ and } |\{z \in X \mid (z,y) \in R\}| < n\}| < m\}$.
+For $E \subseteq A$ and integers $m,n \geq 1$, the graded defence function is $d_n^m(E) = \{a \in A \mid |\{b \in a^- \mid |b^- \cap E| < n\}| < m\}$.

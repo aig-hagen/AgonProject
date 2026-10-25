@@ -1,7 +1,8 @@
 ---
 label: conflict-free
 title: Conflict-Freeness
+symbol: \mathsf{cf}
 reference: D95
 ---
 
-A set of arguments $E$ is conflict-free iff for all arguments $a,b \in E$ we have that $(a,b) \notin R$.
+A set $E \subseteq A$ is conflict-free iff there are no $a,b \in E$ with $(a,b) \in R$.

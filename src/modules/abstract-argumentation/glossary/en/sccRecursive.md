@@ -1,6 +1,6 @@
 ---
 label: SCC-recursive scheme
-title: SCC-Recursiveness Scheme
+title: SCC-Recursive Scheme
 reference: BGG05
 ---
 

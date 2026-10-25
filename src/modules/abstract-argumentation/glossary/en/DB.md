@@ -1,7 +1,8 @@
 ---
 label: discussion-based
 title: Discussion-Based Ranking
+symbol: \theta^{\mathsf{Dbs}}
 reference: AB13
 ---
 
-The discussion-based ranking associates to any AF $F$ a ranking $\succeq_F^\mathrm{DB}$ on $A$ such that $\forall a,b \in A: a \succeq_F^\mathrm{DB} b$ iff $\mathrm{Dis}(a) \succeq_{lex} \mathrm{Dis}(b)$, where $\mathrm{Dis}$ is the [[discussionCount]].
+The discussion-based ranking associates to any [[AF]] $F$ a [[rankingSemantics|ranking]] $\succeq^{\theta^{\mathsf{Dbs}}}_F$ on $A$ such that $\forall a,b \in A$: $a \succeq^{\theta^{\mathsf{Dbs}}}_F b$ iff $\mathsf{D}^F(a) \succeq_{\mathrm{lex}} \mathsf{D}^F(b)$, where $\mathsf{D}^F$ is the [[discussionCount|discussion count]].

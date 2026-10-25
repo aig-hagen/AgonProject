@@ -1,7 +1,11 @@
 ---
 label: qualified local function
-title: Qualified Local Function $f_{q-\sigma}$
+title: Qualified Local Function $f_{\mathsf{q}\text{-}\sigma}$
 reference: DRT20
 ---
 
-Let $f_\sigma$ be the local function of an [[sccRecursive|SCC-decomposable semantics]] $\sigma$. Its qualified local function is defined by $f_{q-\sigma}((A,R), A_{\mathrm{in}}, R_{\mathrm{in}}, L_{\mathrm{in}}) = f_\sigma((A,R), A_{\mathrm{in}}, R_{\mathrm{in}}, L'_{\mathrm{in}})$, where $L'_{\mathrm{in}}(x) = \mathrm{I}$ if $L_{\mathrm{in}}(x) = \mathrm{I}$, and $L'_{\mathrm{in}}(x) = \mathrm{O}$ if $L_{\mathrm{in}}(x) \in \{\mathrm{O}, \mathrm{U}\}$.
+The qualified local function $f_{\mathsf{q}\text{-}\sigma}$ of an [[sccDecomposability|SCC-decomposable]] [[semantics]] $\sigma$ computes the [[labelling|labellings]] of an [[scc|SCC]] like the local function $f_\sigma$ of $\sigma$, after relabelling every $\mathsf{undec}$ attacker from outside the SCC as $\mathsf{out}$.
+
+## Formal definition
+
+$f_{\mathsf{q}\text{-}\sigma}((A,R), A_{\mathrm{in}}, R_{\mathrm{in}}, L_{\mathrm{in}}) = f_\sigma((A,R), A_{\mathrm{in}}, R_{\mathrm{in}}, L'_{\mathrm{in}})$, where $L'_{\mathrm{in}}(x) = \mathsf{out}$ if $L_{\mathrm{in}}(x) = \mathsf{undec}$, and $L'_{\mathrm{in}}(x) = L_{\mathrm{in}}(x)$ otherwise [@DRT20].

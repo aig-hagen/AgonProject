@@ -133,19 +133,6 @@ export const DMT07: Publication = {
   doi: '10.1016/j.artint.2007.05.003',
 }
 
-export const XC18: Publication = {
-  kind: 'article',
-  authors: ['Xu, Y.', 'Cayrol, C.'],
-  year: 2018,
-  tags: ['AF', 'semantics'],
-  title: 'Initial Sets in Abstract Argumentation Frameworks',
-  journal: 'Journal of Applied Non-Classical Logics',
-  volume: '28',
-  number: '2–3',
-  pages: '260–279',
-  doi: '10.1080/11663081.2018.1457252',
-}
-
 export const T22: Publication = {
   kind: 'article',
   authors: ['Thimm, M.'],
@@ -1255,4 +1242,31 @@ export const EG97: Publication = {
   pages: '1–18',
   publisher: 'Springer',
   doi: '10.1007/BFb0036168',
+}
+
+export const CG09: Publication = {
+  kind: 'article',
+  authors: ['Caminada, M.', 'Gabbay, D.M.'],
+  year: 2009,
+  tags: ['AF', 'semantics'],
+  title: 'A Logical Account of Formal Argumentation',
+  journal: 'Studia Logica',
+  volume: '93',
+  pages: '109–145',
+  doi: '10.1007/s11225-009-9218-x',
+}
+
+export const TCR18: Publication = {
+  kind: 'inproceedings',
+  authors: ['Thimm, M.', 'Cerutti, F.', 'Rienstra, T.'],
+  year: 2018,
+  tags: ['AF', 'ranking'],
+  title: 'Probabilistic Graded Semantics',
+  booktitle: 'Computational Models of Argument',
+  acronym: 'COMMA 2018',
+  series: 'FAIA',
+  seriesVolume: '305',
+  pages: '369–380',
+  publisher: 'IOS Press',
+  doi: '10.3233/978-1-61499-906-5-369',
 }

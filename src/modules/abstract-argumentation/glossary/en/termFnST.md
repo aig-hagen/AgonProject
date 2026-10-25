@@ -4,4 +4,4 @@ title: Stable Termination Function $\beta_{\mathsf{st}}$
 reference: T22
 ---
 
-The [[termFn]] $\beta_{\mathsf{st}}$ returns $1$ iff we have $F = (\emptyset, \emptyset)$.
+The [[termFn|termination function]] $\beta_{\mathsf{st}}$ is defined by $\beta_{\mathsf{st}}(F,E) = 1$ iff $F = (\emptyset, \emptyset)$.

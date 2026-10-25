@@ -1,7 +1,8 @@
 ---
-label: unchallenged
-title: Unchallenged Initial Sets
+label: unchallenged initial set
+title: Unchallenged Initial Set
+symbol: \mathsf{is}^{\not\leftrightarrow}
 reference: T22
 ---
 
-An [[IS|initial]] set $E$ is called unchallenged iff [[attackersSet]]$\neq \emptyset$ and there is no other initial set $E'$ that attacks $E$.
+An [[IS|initial set]] $E$ is unchallenged iff [[attackersSet|$E^-$]] $\neq \emptyset$ and no initial set attacks $E$.

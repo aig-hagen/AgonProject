@@ -1,7 +1,8 @@
 ---
 label: stable
 title: Stable Semantics
+symbol: \mathsf{st}
 reference: D95
 ---
 
-A set of arguments $E$ is a stable extension iff $E$ is [[CF]] and we have that $E \cup$ [[attackedSet|$E^+$]] $= A$.
+A set $E \subseteq A$ is a stable [[extension]] iff $E$ is [[CF|conflict-free]] and [[range|$E^\oplus$]] $= A$.

@@ -1,7 +1,8 @@
 ---
-label: challenged
-title: Challenged Initial Sets
+label: challenged initial set
+title: Challenged Initial Set
+symbol: \mathsf{is}^{\leftrightarrow}
 reference: T22
 ---
 
-An [[IS|initial]] set $E$ is called challenged iff there is some other initial set $E'$ that attacks $E$.
+An [[IS|initial set]] $E$ is challenged iff some initial set attacks $E$.

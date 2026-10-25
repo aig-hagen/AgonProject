@@ -93,7 +93,7 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   },
   {
     key: 'IGD',
-    displayName: 'Iterated Graded Defense',
+    displayName: 'Iterated Graded Defence',
   },
   {
     key: 'SAF',
@@ -177,6 +177,7 @@ export const KNOWN_RANKING_SEMANTICS: RankingSemantic[] = [
   {
     key: 'PROB',
     displayName: 'Probabilistic',
+    tooltipId: 'rankingPROB',
     parameters: [
       {
         key: 'classicalSemantics',

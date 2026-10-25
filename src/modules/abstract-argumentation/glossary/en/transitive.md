@@ -3,4 +3,4 @@ label: transitive
 title: Transitivity
 ---
 
-A binary relation $\succeq$ is transitive iff for all $a,b,c$ we have that if $a \succeq b$ and $b \succeq c$, then $a \succeq c$.
+A binary relation $\succeq$ on a set $X$ is transitive iff for all $a,b,c \in X$, $a \succeq b$ and $b \succeq c$ imply $a \succeq c$.

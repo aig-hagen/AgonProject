@@ -4,4 +4,4 @@ title: Strong Completeness Outside Odd Cycles (SCOOC) Principle
 reference: CT19
 ---
 
-A semantics $\sigma$ satisfies the SCOOC-principle iff for any extension $E$ and every argument $a \in A$ it holds that if neither $a$ nor any $b \in$ [[attackersSet| $a^-$]] are in an odd cycle and $a \notin $[[attackedSet| $E^+$]], then $a \in E$.
+A [[semantics]] $\sigma$ satisfies SCOOC iff for every [[AF]] $F$, every $E \in \sigma(F)$, and every $a \in A$: if neither $a$ nor any $b \in$ [[attackersSet|$a^-$]] lies on an odd attack cycle and $E \cap a^- = \emptyset$, then $a \in E$.

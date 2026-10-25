@@ -1,7 +1,7 @@
 ---
-label: Product T-Norm
+label: product t-norm
 title: Product T-Norm
 reference: LM11
 ---
 
-The product T-norm is defined as $x \curlywedge y = x \times y$ .
+The product t-norm is the operation $x \curlywedge y = x \cdot y$ on $[0,1]$.

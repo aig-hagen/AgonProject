@@ -1,7 +1,8 @@
 ---
 label: semi-stable
 title: Semi-Stable Semantics
+symbol: \mathsf{sst}
 reference: C06
 ---
 
-A set of arguments $E$ is a semi-stable extension iff $E$ is [[CO]] and $E \cup $[[attackedSet|$E^+$]] is $\subseteq$-maximal.
+A set $E \subseteq A$ is a semi-stable [[extension]] iff $E$ is [[CO|complete]] and there is no complete extension $E'$ with [[range|$E^\oplus$]] $\subsetneq E'^\oplus$.

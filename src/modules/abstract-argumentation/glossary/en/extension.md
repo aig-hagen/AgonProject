@@ -4,4 +4,4 @@ title: Extension
 reference: D95
 ---
 
-An extension $E$ of an AF $F$ under a semantics $\sigma$ is a set of arguments $E \in \sigma(F)$.
+Given a [[semantics]] $\sigma$ and an [[AF]] $F$, a $\sigma$-extension of $F$ is a set $E \in \sigma(F)$.

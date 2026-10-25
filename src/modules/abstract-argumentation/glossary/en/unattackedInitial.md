@@ -1,7 +1,8 @@
 ---
-label: unattacked
-title: Unattacked Initial Sets
+label: unattacked initial set
+title: Unattacked Initial Set
+symbol: \mathsf{is}^{\not\leftarrow}
 reference: T22
 ---
 
-An [[IS|initial]] set $E$ is called unattacked iff there is no argument $a \in A$ such that $a$ attacks some argument in $E$.
+An [[IS|initial set]] $E$ is unattacked iff [[attackersSet|$E^-$]] $= \emptyset$.

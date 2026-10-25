@@ -1,7 +1,7 @@
 ---
-label: Probabilistic Sum T-CoNorm
+label: probabilistic sum t-conorm
 title: Probabilistic Sum T-CoNorm
 reference: LM11
 ---
 
-The probabilistic sum T-CoNorm is defined as $x \curlyvee y = x + y - x \times y$ .
+The probabilistic sum t-conorm is the operation $x \curlyvee y = x + y - x \cdot y$ on $[0,1]$.

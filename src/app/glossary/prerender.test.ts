@@ -38,7 +38,7 @@ describe('prerenderGlossary', () => {
     expect(html).toContain('<title>Admissibility · Glossary · AgonProject</title>')
     expect(html).toContain(`<link rel="canonical" href="${site}/glossary/AF/ADM"`)
     expect(html).toContain(`<meta property="og:url" content="${site}/glossary/AF/ADM"`)
-    expect(html).toMatch(/name="description"\s+content="A set of arguments E is admissible iff/)
+    expect(html).toMatch(/name="description"\s+content="A set E[^"]* is admissible iff/)
     expect(html).not.toMatch(/content="[^"]*\$/)
 
     const jsonLd = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]

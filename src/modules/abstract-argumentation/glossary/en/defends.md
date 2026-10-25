@@ -4,4 +4,4 @@ title: Defence
 reference: D95
 ---
 
-A set of arguments $E$ defends an argument $a$ iff for every argument $b$ attacking $a$, there is some argument $c \in E$ attacking $b$.
+A set $E \subseteq A$ defends $a \in A$ iff for every $b \in A$ with $(b,a) \in R$ there is $c \in E$ with $(c,b) \in R$.

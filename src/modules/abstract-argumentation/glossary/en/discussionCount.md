@@ -1,7 +1,8 @@
 ---
 label: discussion count
 title: Discussion Count
+symbol: \mathsf{D}^F
 reference: AB13
 ---
 
-The discussion count of an argument $a$ is the tuple $\mathrm{Dis}(a) = \langle -|\mathrm{P}^F_1(a)|, |\mathrm{P}^F_2(a)|, -|\mathrm{P}^F_3(a)|, |\mathrm{P}^F_4(a)|, \ldots \rangle$, where $\mathrm{P}^F_i(a)$ is the set of all paths of length $i$ that end in $a$.
+The discussion count of $a \in A$ is the sequence $\mathsf{D}^F(a) = \langle -|\mathsf{P}^F_1(a)|, |\mathsf{P}^F_2(a)|, -|\mathsf{P}^F_3(a)|, \ldots \rangle$, where $\mathsf{P}^F_i(a)$ is the set of attack paths $(b_i, \ldots, b_1, a)$ of length $i$ ending in $a$.
