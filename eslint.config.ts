@@ -77,7 +77,7 @@ export default defineConfigWithVueTs(
           allowlist: [
             '(', ')', ',', '.', '&', '+', '-', '=', '*', '/', '#', '%', '!', '?', ':', '[', ']',
             '{', '}', '<', '>', '•', '|', '@', '×', '→', '←', '↔', '∅', '≻', '▾', '⌘', '∧', '∨',
-            '¬', '⊤', '⊥', '·', '▶', '✕', '.tex', 'Ctrl', 'Shift', 'AgonProject', 'argumentation', '404',
+            '¬', '⊤', '⊥', '·', '–', '—', '▶', '✕', '.tex', 'Ctrl', 'Shift', 'AgonProject', 'argumentation', '404',
           ],
         },
       ],
