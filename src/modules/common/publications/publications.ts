@@ -790,6 +790,18 @@ export const CDKLM07: Publication = {
   doi: '10.1016/j.artint.2007.04.012',
 }
 
+export const BNRS18: Publication = {
+  kind: 'article',
+  authors: ['Baumeister, D.', 'Neugebauer, D.', 'Rothe, J.', 'Schadrack, H.'],
+  year: 2018,
+  tags: ['iAF', 'complexity'],
+  title: 'Verification in Incomplete Argumentation Frameworks',
+  journal: 'Artificial Intelligence',
+  volume: '264',
+  pages: '1–26',
+  doi: '10.1016/j.artint.2018.08.001',
+}
+
 export const BJNNR21: Publication = {
   kind: 'article',
   authors: ['Baumeister, D.', 'Järvisalo, M.', 'Neugebauer, D.', 'Niskanen, A.', 'Rothe, J.'],

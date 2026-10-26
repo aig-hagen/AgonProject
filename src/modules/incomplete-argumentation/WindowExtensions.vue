@@ -184,7 +184,7 @@ watch(windowTitle, (title) => emit('title', title), { immediate: true })
       </ParameterField>
       <ParameterField :label="t('evaluation.acceptanceType.label')" max-width="8rem">
         <template #label-suffix>
-          <AcceptanceTypeHint :type="selectedType" />
+          <AcceptanceTypeHint :type="selectedType" :mode="selectedMode" />
         </template>
         <PickerSelect
           ref="typeSelect"

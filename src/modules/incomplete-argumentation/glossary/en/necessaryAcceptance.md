@@ -4,4 +4,4 @@ title: Necessary Acceptance
 reference: BJNNR21
 ---
 
-Under a [[semantics]] $\sigma$, a set $S$ is a necessary $\sigma$-extension of an [[IAF]] if $S \in \sigma(F^*)$ for every [[completion]] $F^*$. An argument is necessarily [[credulousAcceptance|credulously]] (resp. [[skepticalAcceptance|skeptically]]) accepted if it is credulously (resp. skeptically) accepted in every completion.
+Given a [[semantics]] $\sigma$, an argument $a \in A$ is necessarily [[credulousAcceptance|credulously]] (resp. [[skepticalAcceptance|skeptically]]) accepted in an [[IAF]] $I = (A, A^?, R, R^?)$ iff $a$ is credulously (resp. skeptically) accepted in every [[completion]].

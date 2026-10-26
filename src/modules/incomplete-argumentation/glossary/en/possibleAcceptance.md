@@ -4,4 +4,4 @@ title: Possible Acceptance
 reference: BJNNR21
 ---
 
-Under a [[semantics]] $\sigma$, a set $S$ is a possible $\sigma$-extension of an [[IAF]] if $S \in \sigma(F^*)$ for at least one [[completion]] $F^*$. An argument is possibly [[credulousAcceptance|credulously]] (resp. [[skepticalAcceptance|skeptically]]) accepted if it is credulously (resp. skeptically) accepted in at least one completion.
+Given a [[semantics]] $\sigma$, an argument $a \in A$ is possibly [[credulousAcceptance|credulously]] (resp. [[skepticalAcceptance|skeptically]]) accepted in an [[IAF]] $I = (A, A^?, R, R^?)$ iff $a$ is credulously (resp. skeptically) accepted in some [[completion]].

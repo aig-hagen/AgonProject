@@ -21,10 +21,13 @@ import { computed } from 'vue'
 
 import TermHint from '@/modules/common/evaluation/TermHint.vue'
 
-const { type } = defineProps<{ type: string }>()
+const { type, mode } = defineProps<{ type: string; mode: string }>()
 
-// pos/nec each point at their glossary term.
-const termId = computed(() => (type === 'nec' ? 'necessaryAcceptance' : 'possibleAcceptance'))
+// Enumerate yields extensions, the other modes argument acceptance.
+const termId = computed(() => {
+  if (mode === 'enumerate') return type === 'nec' ? 'necessaryExtension' : 'possibleExtension'
+  return type === 'nec' ? 'necessaryAcceptance' : 'possibleAcceptance'
+})
 </script>
 
 <template>
