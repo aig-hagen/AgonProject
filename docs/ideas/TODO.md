@@ -9,6 +9,10 @@
   `{a}` without a conflict-free check, so for `a → a` the coalition semantics returns `{a}` instead
   of `∅`. Fix upstream in TweetyProject (only add `{a}` if `a` does not attack itself); the copy in
   `aig_course_tasks` (`org-aig-extended`) has the same code, its generator never adds self-attacks.
+- **37. [S] PAF skeptical probability with no extensions.** Tweety's `SimplePafReasoner` uses the
+  AF skeptical query, which is vacuously true when a subframework has no σ-extension, even if `a`
+  is not in it. E.g. `a`, `b`, `b → b`, P(a) = 0.5, stable: the app gives 1 instead of 0.5. Fix
+  upstream (require `a ∈ A'`); check `MonteCarloPafReasoner` too.
 
 ## Glossary
 

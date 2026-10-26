@@ -3,4 +3,4 @@ label: argument probability
 title: Argument Probability
 ---
 
-Each argument $a$ in a [[PAF]] is assigned a probability $P(a) \in (0,1]$ representing the degree of belief in the existence or validity of $a$.
+Each argument $a \in A$ of a [[PAF]] $(A, R, P)$ has a probability $P(a) \in (0,1]$ of being present.

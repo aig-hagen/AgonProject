@@ -2,7 +2,8 @@
 label: weakly preferred
 title: Weakly Preferred Semantics (SetAF)
 short: Weakly Preferred Semantics
+symbol: \mathsf{wpr}
 reference: BKU24
 ---
 
-A set $E$ is weakly preferred ($E \in \mathsf{wpr}(S)$) iff $E$ is maximal w.r.t. $\subseteq$ in [[setafWAD|$\mathsf{wad}(S)$]].
+A set $E \subseteq A$ is a weakly preferred [[extension]] iff $E$ is a $\subseteq$-maximal [[setafWAD|weakly admissible]] set.

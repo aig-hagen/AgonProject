@@ -4,4 +4,4 @@ title: Collective Attack
 reference: NP06
 ---
 
-A collective attack $(T, h) \in R$ in a [[SetAF]] means that the set of arguments $T$ jointly attacks argument $h$. Hence, the attack is only successful if all members of $T$ are accepted.
+A collective attack $(T, h) \in R$ of a [[SetAF]] $S = (A, R)$ is a joint attack of all arguments in $T$ on $h$; it succeeds only if every argument in $T$ is accepted.

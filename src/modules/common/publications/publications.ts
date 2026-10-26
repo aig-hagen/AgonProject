@@ -988,6 +988,19 @@ export const BRU24: Publication = {
   doi: '10.24963/kr.2024/12',
 }
 
+export const DKUW24: Publication = {
+  kind: 'article',
+  authors: ['Dvořák, W.', 'König, M.', 'Ulbricht, M.', 'Woltran, S.'],
+  year: 2024,
+  tags: ['SetAF', 'principles'],
+  title:
+    'Principles and their Computational Consequences for Argumentation Frameworks with Collective Attacks',
+  journal: 'Journal of Artificial Intelligence Research',
+  volume: '79',
+  pages: '69–136',
+  doi: '10.1613/jair.1.14879',
+}
+
 export const BKU24: Publication = {
   kind: 'inproceedings',
   authors: ['Blümel, L.', 'König, M.', 'Ulbricht, M.'],

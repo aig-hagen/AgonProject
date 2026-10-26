@@ -5,4 +5,4 @@ short: Range
 reference: BKU24
 ---
 
-For a set of arguments $E$, $E^+_R = \{h \in A \mid \exists (T, h) \in R : T \subseteq E\}$ and $E^\oplus_R = E \cup E^+_R$.
+Given a [[SetAF]] $S = (A, R)$ and $E \subseteq A$, the range of $E$ is $E^\oplus_R = E \cup E^+_R$, where $E^+_R = \{h \in A \mid (T, h) \in R \text{ for some } T \subseteq E\}$.
