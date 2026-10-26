@@ -23,7 +23,7 @@ import { useI18n } from 'vue-i18n'
 import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
-import { principleRowFor } from '@/app/glossary/principles'
+import { defaultPrinciples, principleRowFor } from '@/app/glossary/principles'
 
 const { termKey } = defineProps<{ termKey: string }>()
 
@@ -33,28 +33,36 @@ const { t } = useI18n({ useScope: 'global' })
 
 const row = computed(() => principleRowFor(termKey))
 
-const groups = computed(() =>
-  row.value
-    ? row.value.table.principleGroups
-        .map((group) => ({
-          key: group.key,
-          // Open results stay in the overview table only.
-          principles: group.principles.filter((p) => row.value!.row[p]?.holds !== undefined),
-        }))
-        .filter((group) => group.principles.length)
-    : [],
-)
+// Same principles as the overview's default selection, open results included.
+const groups = computed(() => {
+  if (!row.value) return []
+  const { table, row: cells } = row.value
+  const shown = new Set(defaultPrinciples(table))
+  return table.principleGroups
+    .map((group) => ({
+      key: group.key,
+      principles: group.principles.filter((p) => shown.has(p) && cells[p]),
+    }))
+    .filter((group) => group.principles.length)
+})
 </script>
 
 <template>
   <section v-if="row">
     <h3 class="section-heading mb-2">{{ t('glossary.principles.title') }}</h3>
-    <div v-for="group in groups" :key="group.key" class="mb-3">
-      <h4 class="text-xs font-medium text-base-content/65 mb-1">
-        {{ t(`glossary.principles.groups.${group.key}`) }}
-      </h4>
-      <table class="text-sm">
-        <tbody>
+    <!-- One table, so the columns line up across groups. -->
+    <table class="text-sm mb-3">
+      <tbody>
+        <template v-for="(group, i) in groups" :key="group.key">
+          <tr>
+            <th
+              colspan="2"
+              class="text-left text-xs font-medium text-base-content/65 pb-1"
+              :class="{ 'pt-3': i > 0 }"
+            >
+              {{ t(`glossary.principles.groups.${group.key}`) }}
+            </th>
+          </tr>
           <tr v-for="principle in group.principles" :key="principle" class="align-top">
             <th class="text-left font-normal pr-6 py-0.5 whitespace-nowrap">
               <GlossaryInline :parts="[{ ref: principle, label: titleOf(principle) }]" />
@@ -63,9 +71,9 @@ const groups = computed(() =>
               <PrincipleCellView :cell="row.row[principle]!" />
             </td>
           </tr>
-        </tbody>
-      </table>
-    </div>
+        </template>
+      </tbody>
+    </table>
     <RouterLink
       :to="pathOf(row.table.overviewKey)"
       class="mt-2 inline-block text-sm text-primary underline-offset-2 hover:underline"

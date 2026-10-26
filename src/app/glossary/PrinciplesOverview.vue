@@ -24,6 +24,7 @@ import FilterDropdown from '@/app/glossary/FilterDropdown.vue'
 import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
 import PrincipleCellView from '@/app/glossary/PrincipleCellView.vue'
+import { defaultPrinciples } from '@/app/glossary/principles'
 import { compareEntries } from '@/app/literature/search'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import type { PrincipleTable } from '@/modules/common/principles/types'
@@ -40,13 +41,7 @@ const { isCompact } = useLayoutMode()
 const { t } = useI18n({ useScope: 'global' })
 
 const shownSemantics = ref(new Set(table.groups.flatMap((group) => group.keys)))
-const shownPrinciples = ref(
-  new Set(
-    table.principleGroups
-      .flatMap((group) => group.principles)
-      .filter((p) => !table.hiddenByDefault?.includes(p)),
-  ),
-)
+const shownPrinciples = ref(new Set(defaultPrinciples(table)))
 const filterPrincipleGroups = computed(() =>
   table.principleGroups.map((group) => ({
     label: t(`glossary.principles.groups.${group.key}`),

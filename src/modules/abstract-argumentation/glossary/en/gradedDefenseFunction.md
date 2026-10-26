@@ -1,6 +1,7 @@
 ---
 label: graded defence function
-title: Graded Defence Function $d_n^m$
+title: Graded Defence Function
+symbol: d_n^m
 reference: GM15
 ---
 

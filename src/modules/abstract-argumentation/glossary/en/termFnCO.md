@@ -1,6 +1,7 @@
 ---
 label: $\beta_{\mathsf{co}}$
-title: Complete Termination Function $\beta_{\mathsf{co}}$
+title: Complete Termination Function
+symbol: \beta_{\mathsf{co}}
 reference: T22
 ---
 

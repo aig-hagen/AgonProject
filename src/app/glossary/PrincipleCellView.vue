@@ -50,13 +50,14 @@ const markClass = computed(
   </span>
   <span v-else class="flex flex-col">
     <span>
-      <span :class="markClass">{{ statusMark[status] }}</span>
+      <!-- Fixed width, so the sources line up whatever the mark. -->
+      <span :class="markClass" class="inline-block w-4">{{ statusMark[status] }}</span>
       <SourceLink
         v-if="cell.source"
         :publication="cell.source"
         class="text-xs text-base-content/65 hover:text-primary"
       />
     </span>
-    <span v-if="cell.remark" class="text-xs text-base-content/65">{{ cell.remark }}</span>
+    <span v-if="cell.remark" class="pl-4 text-xs text-base-content/65">{{ cell.remark }}</span>
   </span>
 </template>

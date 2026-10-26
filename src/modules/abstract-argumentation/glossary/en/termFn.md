@@ -1,6 +1,7 @@
 ---
 label: termination function
-title: Termination Function $\beta$
+title: Termination Function
+symbol: \beta
 reference: T22
 ---
 

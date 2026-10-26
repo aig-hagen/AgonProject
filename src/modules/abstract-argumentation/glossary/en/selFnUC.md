@@ -1,6 +1,7 @@
 ---
 label: $\alpha_{\mathsf{uc}}$
-title: Unchallenged Selection Function $\alpha_{\mathsf{uc}}$
+title: Unchallenged Selection Function
+symbol: \alpha_{\mathsf{uc}}
 reference: BT22
 ---
 

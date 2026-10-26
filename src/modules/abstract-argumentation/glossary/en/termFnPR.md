@@ -1,6 +1,7 @@
 ---
 label: $\beta_{\mathsf{pr}}$
-title: Preferred Termination Function $\beta_{\mathsf{pr}}$
+title: Preferred Termination Function
+symbol: \beta_{\mathsf{pr}}
 reference: T22
 ---
 

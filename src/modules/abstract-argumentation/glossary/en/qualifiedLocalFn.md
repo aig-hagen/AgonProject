@@ -1,6 +1,7 @@
 ---
 label: qualified local function
-title: Qualified Local Function $f_{\mathsf{q}\text{-}\sigma}$
+title: Qualified Local Function
+symbol: f_{\mathsf{q}\text{-}\sigma}
 reference: DRT20
 ---
 

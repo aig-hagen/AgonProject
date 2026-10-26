@@ -1,6 +1,7 @@
 ---
 label: selection function
-title: Selection Function $\alpha$
+title: Selection Function
+symbol: \alpha
 reference: T22
 ---
 

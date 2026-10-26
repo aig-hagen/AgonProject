@@ -1,6 +1,7 @@
 ---
 label: $\alpha_{\mathsf{gr}}$
-title: Grounded Selection Function $\alpha_{\mathsf{gr}}$
+title: Grounded Selection Function
+symbol: \alpha_{\mathsf{gr}}
 reference: T22
 ---
 

@@ -1,6 +1,7 @@
 ---
 label: graded neutrality function
-title: Graded Neutrality Function $n_m$
+title: Graded Neutrality Function
+symbol: n_m
 reference: GM15
 ---
 

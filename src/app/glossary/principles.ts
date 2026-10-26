@@ -32,6 +32,13 @@ export function principleRowFor(
   return table && { table, row: table.rows[termKey]! }
 }
 
+/** Principles the overview shows before any filtering, in table order. */
+export function defaultPrinciples(table: PrincipleTable): string[] {
+  return table.principleGroups
+    .flatMap((group) => group.principles)
+    .filter((p) => !table.hiddenByDefault?.includes(p))
+}
+
 export type PrincipleStatus = 'satisfied' | 'violated' | 'open'
 
 export function principleStatus(cell: PrincipleCell): PrincipleStatus {

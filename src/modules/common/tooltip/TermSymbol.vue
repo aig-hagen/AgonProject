@@ -28,6 +28,6 @@ const { symbol } = defineProps<{
 <template>
   <KatexInlineElement
     :text="`$${symbol}$`"
-    class="rounded bg-base-content/10 px-1.5 py-0.5 font-normal text-base-content"
+    class="rounded bg-base-content/10 px-1.5 py-px font-normal text-base-content"
   />
 </template>

@@ -1,6 +1,7 @@
 ---
 label: $\beta_{\mathsf{ad}}$
-title: Admissible Termination Function $\beta_{\mathsf{ad}}$
+title: Admissible Termination Function
+symbol: \beta_{\mathsf{ad}}
 reference: T22
 ---
 

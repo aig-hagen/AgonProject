@@ -18,7 +18,12 @@
  */
 import { describe, expect, test } from 'vitest'
 
-import { principleRowFor, principleStatus, principleTables } from '@/app/glossary/principles'
+import {
+  defaultPrinciples,
+  principleRowFor,
+  principleStatus,
+  principleTables,
+} from '@/app/glossary/principles'
 import { glossaryModules } from '@/app/glossary/useGlossary'
 import * as publications from '@/modules/common/publications/publications'
 
@@ -57,6 +62,11 @@ describe.each(principleTables)('$overviewKey', (table) => {
 
   test('principles hidden by default are in the table', () => {
     expect((table.hiddenByDefault ?? []).filter((p) => !grouped.includes(p))).toEqual([])
+  })
+
+  test('the default selection is every grouped principle not hidden by default', () => {
+    const hidden = table.hiddenByDefault ?? []
+    expect(defaultPrinciples(table)).toEqual(grouped.filter((p) => !hidden.includes(p)))
   })
 })
 

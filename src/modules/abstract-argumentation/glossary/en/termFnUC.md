@@ -1,6 +1,7 @@
 ---
 label: $\beta_{\mathsf{uc}}$
-title: Unchallenged Termination Function $\beta_{\mathsf{uc}}$
+title: Unchallenged Termination Function
+symbol: \beta_{\mathsf{uc}}
 reference: BT22
 ---
 

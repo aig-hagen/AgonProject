@@ -1,6 +1,7 @@
 ---
 label: $\beta_{\mathsf{st}}$
-title: Stable Termination Function $\beta_{\mathsf{st}}$
+title: Stable Termination Function
+symbol: \beta_{\mathsf{st}}
 reference: T22
 ---
 

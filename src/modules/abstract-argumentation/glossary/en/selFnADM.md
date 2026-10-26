@@ -1,6 +1,7 @@
 ---
 label: $\alpha_{\mathsf{ad}}$
-title: Admissible Selection Function $\alpha_{\mathsf{ad}}$
+title: Admissible Selection Function
+symbol: \alpha_{\mathsf{ad}}
 reference: T22
 ---
 

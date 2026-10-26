@@ -1,6 +1,7 @@
 ---
 label: semi-qualified weak local function
-title: Semi-Qualified Weak Local Function $g_{\mathsf{sq}\text{-}\sigma}$
+title: Semi-Qualified Weak Local Function
+symbol: g_{\mathsf{sq}\text{-}\sigma}
 reference: DRT20
 ---
 
