@@ -1,7 +1,8 @@
 ---
 label: completions
-title: Two-valued Completions
-reference: BESWW18
+title: Two-Valued Completions
+symbol: [v]_2
+reference: BESWW13
 ---
 
-For some [[threeValuedInterpretation]] $v$ of an [[ADF]] the two-valued completions are defined as $[v]_2 = \{ v' \mid v \leq_i v'$ and $(v')^{-1}(\textbf{u})=\emptyset\}$, where $\leq_i$ is the [[informationOrdering]].
+The two-valued completions of a [[threeValuedInterpretation]] $v$ of an [[ADF]] are $[v]_2 = \{ w \mid v \leq_i w \text{ and } w^{-1}(\mathsf{u}) = \emptyset \}$, where $\leq_i$ is the [[informationOrdering]].

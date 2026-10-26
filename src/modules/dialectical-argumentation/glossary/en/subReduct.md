@@ -1,7 +1,8 @@
 ---
 label: sub-reduct
 title: Sub-Reduct
+symbol: D^v
 reference: KVV21
 ---
 
-The sub-reduct $D^v$ of an [[ADF]] $D$ under $v$ is defined as $D^v = (A^v, L^v, C^v)$ with $A^v = v^{-1}(\mathbf{t}) \cup v^{-1}(\mathbf{u})$, $L^v = L \cap (A^v \times A^v)$, and where in each $C^v_a$ the occurrences of arguments $b$ with $v(b) = \mathbf{f}$ are substituted by $\bot$. Unlike the [[reducedAdf|reduced ADF]], it keeps the undecided arguments.
+The sub-reduct of an [[ADF]] $D = (A, L, C)$ under a [[threeValuedInterpretation|three-valued interpretation]] $v$ is $D^v = (A^v, L^v, C^v)$ with $A^v = v^{-1}(\mathsf{t}) \cup v^{-1}(\mathsf{u})$ and $L^v = L \cap (A^v \times A^v)$, where each $C^v_a$ is [[acceptanceCondition|$C_a$]] with every $b$ such that $v(b) = \mathsf{f}$ substituted by $\bot$.

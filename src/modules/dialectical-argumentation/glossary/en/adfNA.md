@@ -2,6 +2,7 @@
 label: naive
 title: Naive Semantics (ADF)
 short: Naive Semantics
+symbol: \mathsf{na}
 reference: SW15
 ---
 

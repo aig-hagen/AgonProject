@@ -4,4 +4,4 @@ title: Three-Valued Interpretation
 reference: BESWW13
 ---
 
-A three-valued interpretation $v: A \mapsto \{\mathbf{t}, \mathbf{f}, \mathbf{u}\}$ assigns to each argument $a$ in an [[ADF]] either the value $\mathbf{t}$ (accepted), $\mathbf{f}$ (rejected), or $\mathbf{u}$ (undecided).
+A three-valued interpretation of an [[ADF]] is a function $v \colon A \to \{\mathsf{t}, \mathsf{f}, \mathsf{u}\}$ that assigns each argument the value $\mathsf{t}$ (accepted), $\mathsf{f}$ (rejected) or $\mathsf{u}$ (undecided).

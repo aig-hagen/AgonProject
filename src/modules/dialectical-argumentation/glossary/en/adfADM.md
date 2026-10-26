@@ -2,7 +2,8 @@
 label: admissible
 title: Admissibility (ADF)
 short: Admissibility
+symbol: \mathsf{ad}
 reference: BESWW13
 ---
 
-A [[threeValuedInterpretation]] $v$ of an [[ADF]] is an admissible model iff $v \leq_i \Gamma_D(v)$ in the [[informationOrdering]], where $\Gamma_D(v)$ is the [[operator|characteristic operator]] for ADFs.
+A [[threeValuedInterpretation]] $v$ of an [[ADF]] $D$ is an admissible model iff $v \leq_i \Gamma_D(v)$, where $\leq_i$ is the [[informationOrdering]] and $\Gamma_D$ the [[operator|characteristic operator]].

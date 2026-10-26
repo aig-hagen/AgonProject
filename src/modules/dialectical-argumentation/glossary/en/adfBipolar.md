@@ -4,7 +4,7 @@ title: Bipolar ADF (BADF)
 reference: BW10
 ---
 
-An [[ADF]] is bipolar iff each of its links is supporting or attacking. A link $(b, a) \in L$ is supporting iff for all $R \subseteq$ [[parents|$par(a)$]], [[acceptanceCondition|$C_a$]]$(R) = \mathbf{t}$ implies $C_a(R \cup \{b\}) = \mathbf{t}$, and attacking iff for all $R \subseteq par(a)$, $C_a(R \cup \{b\}) = \mathbf{t}$ implies $C_a(R) = \mathbf{t}$.
+An [[ADF]] is bipolar iff each of its links is supporting or attacking. A link $(b, a) \in L$ is supporting iff for all $R \subseteq$ [[parents|$par(a)$]], [[acceptanceCondition|$C_a$]]$(R) = \mathsf{t}$ implies $C_a(R \cup \{b\}) = \mathsf{t}$, and attacking iff for all $R \subseteq par(a)$, $C_a(R \cup \{b\}) = \mathsf{t}$ implies $C_a(R) = \mathsf{t}$.
 
 ## Link types
 

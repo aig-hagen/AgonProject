@@ -4,7 +4,7 @@ title: Two-Valued Interpretation
 reference: BESWW13
 ---
 
-A [[threeValuedInterpretation]] $v$ of an [[ADF]] is two-valued iff $v(a) \in \{\mathbf{t}, \mathbf{f}\}$ for all $a \in A$.
+A [[threeValuedInterpretation]] $v$ of an [[ADF]] is two-valued iff $v(a) \in \{\mathsf{t}, \mathsf{f}\}$ for all $a \in A$.
 
 ## Properties
 

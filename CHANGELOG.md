@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   and deductive and necessary support say how their semantics are computed.
 - PAF and SetAF glossaries: definitions checked against the course and sources; the SetAF weak
   semantics read like their AF counterparts, and semantics entries get symbols.
+- ADF glossary: definitions checked against their sources; truth values use the course notation,
+  and semantics and notation entries get symbols.
 - Publication references share one citation format with full venue, pages and publisher; same-author, same-year papers are labeled 2005a/2005b.
 - Glossary search brightens while typing and has a clear (×) button.
 - Glossary follows the design system more closely: shared section labels on mobile, underline link hovers, and a larger "More" tap target.

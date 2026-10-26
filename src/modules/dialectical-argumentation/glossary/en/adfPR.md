@@ -2,6 +2,7 @@
 label: preferred
 title: Preferred Semantics (ADF)
 short: Preferred Semantics
+symbol: \mathsf{pr}
 reference: BESWW13
 ---
 

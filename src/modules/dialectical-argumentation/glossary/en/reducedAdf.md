@@ -1,7 +1,8 @@
 ---
 label: reduced ADF
 title: Reduced ADF
+symbol: D_{\downarrow v}
 reference: BESWW13
 ---
 
-The reduced ADF $D_{\downarrow v}$ of an [[ADF]] $D$ under $v$ is defined as $D_{\downarrow v} = (v^{-1}(\mathbf{t}), L', C')$, where in each $C'_a$ the occurrences of arguments $b$ with $v(b) = \mathbf{f}$ are substituted by $\bot$.
+The reduced ADF of an [[ADF]] $D = (A, L, C)$ under a [[twoValuedInterpretation|two-valued interpretation]] $v$ is $D_{\downarrow v} = (A', L \cap (A' \times A'), C')$ with $A' = v^{-1}(\mathsf{t})$, where each $C'_a$ is [[acceptanceCondition|$C_a$]] with every $b$ such that $v(b) = \mathsf{f}$ substituted by $\bot$.
