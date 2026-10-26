@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- BAF glossary: definitions checked against the course and sources; coalition entries get symbols,
+  and deductive and necessary support say how their semantics are computed.
 - Publication references share one citation format with full venue, pages and publisher; same-author, same-year papers are labeled 2005a/2005b.
 - Glossary search brightens while typing and has a clear (×) button.
 - Glossary follows the design system more closely: shared section labels on mobile, underline link hovers, and a larger "More" tap target.

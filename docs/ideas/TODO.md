@@ -5,6 +5,10 @@
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
   `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
 - **4. [S] AF serialiation tutorial.** Missing
+- **36. [S] BAF coalitions with self-attacks.** Tweety's `getCoalitions()` adds every singleton
+  `{a}` without a conflict-free check, so for `a → a` the coalition semantics returns `{a}` instead
+  of `∅`. Fix upstream in TweetyProject (only add `{a}` if `a` does not attack itself); the copy in
+  `aig_course_tasks` (`org-aig-extended`) has the same code, its generator never adds self-attacks.
 
 ## Glossary
 

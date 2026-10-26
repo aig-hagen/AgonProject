@@ -29,7 +29,8 @@ The AF review is applied (commits `9b501f6`, `f2239fd`, `9ee7707`). Its conventi
 
 - [ ] D7 serialisation entries (SER, serialisation, serialisability principle): maintainer to decide.
 - [ ] Remaining modules, smallest first to warm up: ~~incomplete (4)~~ (done,
-      [review](glossary-review-incomplete.md)), bipolar (6), SetAF (10), PAF
+      [review](glossary-review-incomplete.md)), ~~bipolar (6)~~ (done,
+      [review](glossary-review-bipolar.md)), SetAF (10), PAF
       (10), complexity (19), ABA (19), ADF (25), principles (51). Each gets its own review file.
 - [ ] `symbol` for the other modules' semantics entries (AF only so far).
 

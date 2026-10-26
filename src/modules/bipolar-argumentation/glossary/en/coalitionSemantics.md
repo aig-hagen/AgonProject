@@ -1,7 +1,8 @@
 ---
 label: coalition-based semantics
 title: Coalition-based Semantics
+symbol: \mathsf{b}\text{-}\mathsf{coal}\text{-}\sigma
 reference: CL10
 ---
 
-A set of arguments $E$ is a coalition-$\sigma$-extension in a [[BAF]] $B$ iff there is a $\sigma$-extension $S$ of the [[coalitionGraph]] $F_B^{\mathsf{Coal}}$ with $E = \bigcup S$.
+Given a [[semantics]] $\sigma$, a set $E \subseteq A$ is a coalition $\sigma$-extension of a [[BAF]] $B = (A, R, S)$ iff $E = \bigcup \mathcal{C}$ for some $\sigma$-extension $\mathcal{C}$ of the [[coalitionGraph|coalition graph]] $F^{\mathsf{Coal}}_B$.
