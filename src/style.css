@@ -69,8 +69,11 @@
    truth in @/modules/common/theme/palette.ts, injected as --color-* custom
    properties before mount. Graph colors are handled separately. */
 
-/* Shared caps labels: section headings, and field labels above a control. */
+/* Shared caps labels for chrome groups and field labels; .section-heading for reading content. */
 @layer components {
+  .section-heading {
+    @apply text-base font-semibold text-base-content;
+  }
   .section-label {
     @apply text-xs font-semibold uppercase tracking-wide text-base-content/65;
   }

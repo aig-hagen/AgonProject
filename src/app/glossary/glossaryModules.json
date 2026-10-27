@@ -1,0 +1,46 @@
+[
+  { "prefix": "AF", "dir": "abstract-argumentation", "label": "Abstract AF", "mainKey": "AF" },
+  { "prefix": "BAF", "dir": "bipolar-argumentation", "label": "Bipolar AF", "mainKey": "BAF" },
+  {
+    "prefix": "ADF",
+    "dir": "dialectical-argumentation",
+    "label": "Dialectical AF",
+    "mainKey": "ADF"
+  },
+  {
+    "prefix": "iAF",
+    "dir": "incomplete-argumentation",
+    "label": "Incomplete AF",
+    "mainKey": "IAF"
+  },
+  {
+    "prefix": "PAF",
+    "dir": "probabilistic-argumentation",
+    "label": "Probabilistic AF",
+    "mainKey": "PAF"
+  },
+  {
+    "prefix": "SetAF",
+    "dir": "collective-attacks-argumentation",
+    "label": "Collective Attacks",
+    "mainKey": "SetAF"
+  },
+  {
+    "prefix": "ABA",
+    "dir": "assumption-based-argumentation",
+    "label": "Assumption-based",
+    "mainKey": "ABAF"
+  },
+  {
+    "prefix": "Complexity",
+    "dir": "common/complexity",
+    "label": "Complexity",
+    "mainKey": "complexityAF"
+  },
+  {
+    "prefix": "Principles",
+    "dir": "common/principles",
+    "label": "Principles",
+    "mainKey": "principlesAF"
+  }
+]

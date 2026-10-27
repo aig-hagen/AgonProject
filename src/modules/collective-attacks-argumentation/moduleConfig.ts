@@ -29,8 +29,8 @@ import {
   loadFromString,
   saveAsString,
 } from '@/modules/collective-attacks-argumentation/save/saveFormat'
+import { BCDFP21, NP06 } from '@/modules/common/publications/publications'
 import { TAG_ABSTRACT, TAG_ATTACK, TAG_COLLECTIVE_RELATIONS } from '@/modules/common/tags'
-import { BCDFP21, NP06 } from '@/modules/common/tooltip/publications'
 
 const TYPE_KEY = 'type'
 const SET_AF_V1_TYPE = 'set-af-v1'

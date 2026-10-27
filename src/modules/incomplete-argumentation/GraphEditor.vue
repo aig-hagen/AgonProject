@@ -22,7 +22,7 @@ import { ArrowsRightLeftIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
@@ -302,7 +302,7 @@ provide(QUICK_EXPORT_KEY, {
   getInput: () => state.current.content,
 })
 provide(TOOLTIP_REGISTRY_KEY, {
-  ...abstractArgumentationGlossary,
+  ...abstractArgumentationTooltips,
   ...incompleteArgumentationGlossary,
 })
 

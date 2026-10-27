@@ -8,13 +8,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Glossary pages are prerendered as static HTML with their own title, description and structured data, so search engines can index each term.
+- Glossary entries can be translated per term; untranslated entries fall back to English.
+- Glossary: a Literature tab lists every cited publication, with search over titles, authors, venues and abstracts, formalism and topic filters with live counts, and links to where it is cited.
+- Glossary: computational complexity results for AF and ADF semantics, each with its source, on every semantics page and in overview tables, plus a Complexity tab defining the reasoning problems and complexity classes.
+- Glossary: which principles (Directionality, Reinstatement, Modularisation, …) each AF semantics satisfies, with sources from the literature, on every semantics page, plus a Principles tab with a filterable overview table.
+- AF glossary: a signature entry on which sets of extensions each semantics can realise, and the known signature on each semantics page.
+- Every glossary term has its own URL (e.g. `/glossary/AF/ADM`) and page title, and the sitemap lists them all; old `?module=&term=` links still work.
+- Glossary entries can carry a longer write-up with citations, tables and italics, shown on the glossary page and linked from tooltips ("More →"); each entry lists the entries that reference it.
 - SetAF glossary: strongly and weakly admissible, weakly complete, preferred and grounded semantics, with the SetAF reduct.
 - SetAF and ABA semantics pickers mark semantics computed via an unproven AF reduction.
+- AF glossary: entries show the notation they introduce (e.g. $\mathsf{co}$) beside their title, plus new entries for the range, labellings, the probabilistic ranking, and serialisation (states, the serialisation system and graph).
 
 ### Changed
 
+- BAF glossary: definitions checked against the course and sources; coalition entries get symbols,
+  and deductive and necessary support say how their semantics are computed.
+- PAF and SetAF glossaries: definitions checked against the course and sources; the SetAF weak
+  semantics read like their AF counterparts, and semantics entries get symbols.
+- ADF glossary: definitions checked against their sources; truth values use the course notation,
+  and semantics and notation entries get symbols.
+- ABA glossary: definitions checked against their sources, with a new defence entry; semantics and
+  notation entries get symbols, and the SetAF instantiation cites its original paper.
+- Publication references share one citation format with full venue, pages and publisher; same-author, same-year papers are labeled 2005a/2005b.
+- Glossary search brightens while typing and has a clear (×) button.
+- Glossary follows the design system more closely: shared section labels on mobile, underline link hovers, and a larger "More" tap target.
+- Glossary terms are real links (open in a new tab, copy the link); the term list drops redundant "(ABA)"/"(SetAF)"/"(ADF)" suffixes.
+- Terms with a definition tooltip, in editors and the glossary, are shown in blue instead of underlined.
 - ABA semantics are grouped by family like the other modules; flat-only semantics are disabled one by one on non-flat theories.
 - SetAF evaluation uses native reasoners where available, including the strong and weak semantics.
+- AF glossary: definitions checked against their sources, with more formal wording, consistent notation, and fixes to SCF2, initial sets, social models and the counting ranking; tooltips in every editor can link to principle, complexity and PAF entries.
+- iAF glossary: definitions checked against their sources; possible and necessary extensions get their own entries, separate from possible and necessary acceptance, and the type hint in the evaluation window links the one matching the mode.
 
 ### Removed
 
@@ -22,6 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Glossary: the complete, preferred and serialisable semantics entries were hidden behind the counting, propagation and serialisability-based ranking entries.
+- Glossary: corrected the categorizer definition; the tuples ranking notes that it is partial.
 - The mobile tutorial step counter is translated instead of always showing English.
 
 ## [0.14.1] - 2026-10-24

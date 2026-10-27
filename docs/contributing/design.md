@@ -182,7 +182,7 @@ tokens and their roles; it never restates their values.
 ### Primary
 
 - **AIG Blue** (`primary`): primary buttons, the selected segment of a segmented control, menu
-  entry icons, links, the keyboard focus ring (`focus`), and informational alerts (`info` aliases
+  entry icons, links, hoverable glossary terms (blue text, no underline), the keyboard focus ring (`focus`), and informational alerts (`info` aliases
   `primary`, so there is never a second blue). Text on it uses `primary-content`.
 
 ### Secondary
@@ -273,8 +273,11 @@ fonts are self-hosted through Fontsource and referenced only through the font ro
 - **Title** (600, 1rem): card titles, bottom sheet titles, the selected term in the glossary.
 - **Body** (400, 0.875rem, 1.5): the default UI text: lists, menus, buttons, window content.
 - **Body Reading** (400, 1rem, 1.625, max ~70ch): long-form pages such as privacy and attributions.
+- **Heading** (600, 1rem, ink, normal case): section headings in reading content (glossary
+  entries, result and overview tables) via the shared `.section-heading` class.
 - **Meta** (400, 0.75rem): captions, hints, evaluation details, timestamps.
-- **Label** (600, 0.75rem, uppercase, 0.025em tracking, ink `/65`): section headings via the shared
+- **Label** (600, 0.75rem, uppercase, 0.025em tracking, ink `/65`): names a group of controls or
+  list items in chrome (settings, sheets, menus, dropdown groups, panels) via the shared
   `.section-label` class.
 - **Label Micro** (500, 0.65rem as `text-micro`, uppercase, 0.025em tracking, ink `/65`): field
   labels above a control via `.field-label`, and badges. The only step below 12px.
@@ -290,6 +293,10 @@ wordmark, it's wrong.
 
 **The Shared Label Rule.** Small caps headings always come from `.section-label` or `.field-label`,
 always in ink, never in `primary` or `secondary`.
+
+**The Chrome Caps Rule.** Caps label controls and lists, not content. A heading over text or a
+table you read is a Heading. Group rows inside a table are part of the table: normal case, medium
+weight, on a `base-200` fill.
 
 ## Layout
 
@@ -366,7 +373,8 @@ so controls and containers share two corner sizes.
 - **Pill** (`rounded-full`): only for things that are pills by nature: the floating segmented
   control, status dots, filter chips, toolbar pills, skeleton chips.
 - **Sheet** (16px top corners): bottom sheets and the tutorial spotlight.
-- **Chip** (4px): inline code and key chips.
+- **Chip** (4px): inline code, key chips, and glossary term symbols (`base-content/10` fill, so they
+  read on any surface).
 
 Borders are 1px `base-300` hairlines. Brand-tinted borders (`primary/40` with a `primary/5` fill)
 mark a single highlighted container, such as the pinned glossary term.
@@ -408,7 +416,8 @@ page title centered in Headline type. Pages pass extra actions through its `acti
   desktop, full-height (44px) on mobile. No other hand-rolled input wrappers.
 - **Search:** always [`SearchInput.vue`](../../src/modules/common/forms/SearchInput.vue): a filled paper
   shade field with a hairline border, a leading magnifier in ink `/40`, 36px tall on desktop and
-  44px on compact.
+  44px on compact. On focus it lifts to paper with a focus-colored border, and only the field (not
+  the inner input) draws the ring. A trailing × clears it once there is text.
 - **Focus:** the shared brand focus ring.
 - **Labels:** `.field-label` above the control.
 

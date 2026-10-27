@@ -20,7 +20,7 @@
 import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import {
   createDefaultExtensionWindowInstance,
   type ExtensionWindowInstanceState,
@@ -277,7 +277,7 @@ provide(QUICK_EXPORT_KEY, {
   getInput: () => state.current.content,
 })
 provide(TOOLTIP_REGISTRY_KEY, {
-  ...abstractArgumentationGlossary,
+  ...abstractArgumentationTooltips,
   ...collectiveAttacksArgumentationGlossary,
 })
 

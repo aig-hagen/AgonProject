@@ -146,7 +146,8 @@ http://:8080 {
 		# version, throwing a VersionError and leaving a blank page until the
 		# user manually reloads.
 		header Cache-Control "no-cache"
-		try_files {path} /index.html
+		# Prerendered glossary pages live at <path>/index.html.
+		try_files {path} {path}/index.html /index.html
 		file_server
 	}
 }

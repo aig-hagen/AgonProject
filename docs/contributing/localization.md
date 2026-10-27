@@ -50,7 +50,19 @@ Rules of thumb:
 
 ## Structured content (glossaries and tutorials)
 
-Glossary and tutorial content is not part of the vue-i18n message catalogs. It currently lives in each argumentation module's `glossary.ts` and `tutorials/` directory and is available only in English. The surrounding glossary and tutorial interface is localized through the ordinary message catalogs.
+Glossary and tutorial content is not part of the vue-i18n message catalogs. The surrounding glossary and tutorial interface is localized through the ordinary message catalogs. Tutorials are English only.
+
+Glossary text is Markdown, one folder per locale and one file per term:
+
+```text
+src/modules/<type>/glossary/
+├── en/<term>.md # source text, bundled eagerly
+└── de/<term>.md # optional translation, loaded when German is selected
+```
+
+- `createGlossary` (`common/glossary/load.ts`) returns a reactive registry. `applyLocale` calls `setGlossaryLocale`, which loads the locale's files and updates every entry in place. A term with no translation falls back to English.
+- To translate a term, copy `en/<term>.md` to `<locale>/<term>.md` and translate the frontmatter `label`/`title`/`short` and the text; the `reference` may be left out, since translations inherit it from English. Keep every `[[ref]]` and `[@KEY]` as is; `glossaryData.test.ts` fails if a translation links or cites differently from its English twin.
+- German glossary text needs review by a domain expert before it is merged.
 
 ## Adding a new locale
 
@@ -74,7 +86,7 @@ All interactive chrome, notifications, and expected errors are localized. The fo
 - **Semantics labels** — semantics and semantics-family display names (e.g. the extension/ranking selectors) and meta-reasoner parameter labels/descriptions stay English. The `displayName` also feeds notation (`formatNotation`, `.toLowerCase()`), so localizing it needs a notation-vs-label split first.
 - **Generator metadata** — framework-type, algorithm, and parameter names/descriptions in the Generate view (`formatAlgorithmName`/`formatParamLabel` plus the backend `graph-gen` English `description`s).
 - **Tutorial content** — all common and per-module tutorial copy under `src/modules/**/tutorials/`. The chrome around tutorials (window title, Start/Next/Skip/Done, etc.) is already localized.
-- **Glossary content** — all term labels, titles, and definitions in module-level `glossary.ts` files. The glossary page chrome (search, empty states, navigation) is already localized.
+- **Glossary content** — no `glossary/de/` files exist yet, so every term falls back to English. The loading and fallback are in place (see above).
 
 The following is **intentionally never translated** — technical, canonical, or third-party:
 

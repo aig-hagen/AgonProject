@@ -18,44 +18,62 @@
 -->
 <script setup lang="ts">
 import { MapPinIcon } from '@heroicons/vue/24/outline'
-import { watch } from 'vue'
+import type { Objectish } from 'immer'
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
+import { complexityTableFor } from '@/app/glossary/complexity'
+import { listTitle, termTitle } from '@/app/glossary/glossaryContext'
+import GlossaryEntryDetails from '@/app/glossary/GlossaryEntryDetails.vue'
+import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
+import { principleTableFor } from '@/app/glossary/principles'
+import { glossaryPath, useGlossary } from '@/app/glossary/useGlossary'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
+import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
+import TermSymbol from '@/modules/common/tooltip/TermSymbol.vue'
+
+const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
 const {
-  allEntries,
+  backlinks,
   activeModulePrefix,
   activeTermKey,
   searchQuery,
   pinnedTerm,
   groupedTerms,
   activeDefinition,
+  fallbackTermKey,
+  redirecting,
+  literatureActive,
+  tabs,
   navigate,
-  followRef,
-} = useGlossary()
+  selectModule,
+} = useGlossary(t('glossary.title'))
 
-// Auto-select the framework (main) entry when the module changes or no valid term is in the URL.
+const wide = computed(
+  () => !!complexityTableFor(activeTermKey.value) || !!principleTableFor(activeTermKey.value),
+)
+
+function onTabKeydown(event: KeyboardEvent, index: number) {
+  const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key]
+  if (!step) return
+  event.preventDefault()
+  const next = (index + step + tabs.value.length) % tabs.value.length
+  selectModule(tabs.value[next]!.id)
+  ;((event.currentTarget as HTMLElement).parentElement!.children[next] as HTMLElement).focus()
+}
+
+// The detail panel always shows a term: without a valid one in the URL, open the fallback.
 watch(
-  activeModulePrefix,
-  (prefix) => {
-    const module = glossaryModules.find((m) => m.prefix === prefix)
-    const glossary = module?.glossary ?? {}
-    if (!activeTermKey.value || !glossary[activeTermKey.value]) {
-      const first =
-        module && glossary[module.mainKey]
-          ? [module.mainKey]
-          : Object.entries(glossary).sort(([, a], [, b]) =>
-              (a.title ?? a.label).localeCompare(b.title ?? b.label),
-            )[0]
-      if (first) navigate(prefix, first[0]!)
-    }
+  [activeModulePrefix, literatureActive, activeTermKey],
+  ([prefix, literature]) => {
+    if (literature || redirecting.value || activeDefinition.value || !fallbackTermKey.value) return
+    navigate(prefix, fallbackTermKey.value, { replace: true })
   },
   { immediate: true },
 )
@@ -68,23 +86,28 @@ watch(
     <!-- Module tabs -->
     <div role="tablist" class="flex gap-0 px-6 border-b border-base-300 shrink-0 overflow-x-auto">
       <button
-        v-for="m in glossaryModules"
-        :key="m.prefix"
+        v-for="(tab, i) in tabs"
+        :key="tab.id"
         role="tab"
+        :aria-selected="tab.active"
+        :tabindex="tab.active ? 0 : -1"
         class="px-4 py-2.5 text-sm border-b-2 whitespace-nowrap transition-colors"
         :class="
-          m.prefix === activeModulePrefix
+          tab.active
             ? 'border-primary text-primary font-medium'
             : 'border-transparent text-base-content/65 hover:text-base-content'
         "
-        @click="navigate(m.prefix, '')"
+        @click="selectModule(tab.id)"
+        @keydown="onTabKeydown($event, i)"
       >
-        {{ m.prefix }}
+        {{ tab.label }}
       </button>
     </div>
 
+    <LiteraturePanel v-if="literatureActive" :modules="modules" />
+
     <!-- Two-panel body -->
-    <div class="flex flex-1 overflow-hidden">
+    <div v-else class="flex flex-1 overflow-hidden">
       <!-- Left: term list -->
       <div class="w-64 shrink-0 flex flex-col border-r border-base-300 overflow-hidden">
         <div class="p-3 border-b border-base-300">
@@ -97,65 +120,53 @@ watch(
           >
             {{ t('glossary.noResults') }}
           </p>
-          <button
+          <RouterLink
             v-if="pinnedTerm"
+            :to="glossaryPath(activeModulePrefix, pinnedTerm[0])"
             class="w-full flex items-center gap-1.5 text-left px-4 py-1.5 text-sm hover:bg-base-200 border-b border-base-300 mb-1"
             :class="{ 'bg-base-200 font-medium': pinnedTerm[0] === activeTermKey }"
-            @click="navigate(activeModulePrefix, pinnedTerm[0])"
           >
             <MapPinIcon class="size-3.5 text-primary shrink-0" />
             <span class="truncate">
-              <KatexInlineElement :text="pinnedTerm[1].title ?? pinnedTerm[1].label" />
+              <KatexInlineElement :text="listTitle(pinnedTerm[1])" />
             </span>
-          </button>
-          <template v-for="group in groupedTerms" :key="group.letter">
+          </RouterLink>
+          <template v-for="group in groupedTerms" :key="group.label">
             <div class="section-label px-4 pt-2 pb-0.5">
-              {{ group.letter }}
+              {{ group.label }}
             </div>
-            <button
+            <RouterLink
               v-for="[key, def] in group.terms"
               :key="key"
-              class="w-full text-left px-4 py-1.5 text-sm hover:bg-base-200 truncate"
+              :to="glossaryPath(activeModulePrefix, key)"
+              class="block w-full text-left px-4 py-1.5 text-sm hover:bg-base-200 truncate"
               :class="{ 'bg-base-200 font-medium': key === activeTermKey }"
-              @click="navigate(activeModulePrefix, key)"
             >
-              <KatexInlineElement :text="def.title ?? def.label" />
-            </button>
+              <KatexInlineElement :text="listTitle(def)" />
+            </RouterLink>
           </template>
         </div>
       </div>
 
       <!-- Right: definition panel -->
       <div class="flex-1 overflow-y-auto p-8">
-        <div v-if="activeDefinition" class="max-w-2xl">
-          <div class="flex items-start gap-2 mb-4">
-            <h2 class="text-xl font-bold leading-snug">
-              <KatexInlineElement :text="activeDefinition.title ?? activeDefinition.label" />
-            </h2>
-          </div>
+        <div v-if="activeDefinition" :key="activeTermKey" :class="wide ? 'max-w-5xl' : 'max-w-2xl'">
+          <h2 class="flex flex-wrap items-center gap-2 text-lg font-bold leading-snug mb-4">
+            <KatexInlineElement :text="termTitle(activeDefinition)" />
+            <TermSymbol
+              v-if="activeDefinition.symbol"
+              :symbol="activeDefinition.symbol"
+              class="text-sm"
+            />
+          </h2>
           <p class="text-base-content/80 leading-relaxed">
-            <template v-for="(part, i) in activeDefinition.content" :key="i">
-              <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
-              <button
-                v-else-if="allEntries[part.ref]"
-                class="text-primary underline underline-offset-2 hover:opacity-70"
-                @click="followRef(part.ref)"
-              >
-                <KatexInlineElement
-                  :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
-                />
-              </button>
-              <span v-else class="text-base-content/65">
-                <KatexInlineElement :text="part.label ?? part.ref" />
-              </span>
-            </template>
+            <GlossaryInline :parts="activeDefinition.content" />
           </p>
-          <section v-if="activeDefinition.reference" class="mt-6 pt-4 border-t border-base-300">
-            <h3 class="section-label mb-2">
-              {{ t('glossary.source') }}
-            </h3>
-            <PublicationCitation :publication="activeDefinition.reference" />
-          </section>
+          <GlossaryEntryDetails
+            :term-key="activeTermKey"
+            :definition="activeDefinition"
+            :backlinks="backlinks[activeTermKey]"
+          />
         </div>
         <p v-else class="text-sm text-base-content/65">{{ t('glossary.selectTerm') }}</p>
       </div>

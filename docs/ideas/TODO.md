@@ -4,9 +4,35 @@
 
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
   `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
+- **4. [S] AF serialisation tutorial.** Missing
+- **36. [S] BAF coalitions with self-attacks.** Tweety's `getCoalitions()` adds every singleton
+  `{a}` without a conflict-free check, so for `a → a` the coalition semantics returns `{a}` instead
+  of `∅`. Fix upstream in TweetyProject (only add `{a}` if `a` does not attack itself); the copy in
+  `aig_course_tasks` (`org-aig-extended`) has the same code, its generator never adds self-attacks.
+- **37. [S] PAF skeptical probability with no extensions.** Tweety's `SimplePafReasoner` uses the
+  AF skeptical query, which is vacuously true when a subframework has no σ-extension, even if `a`
+  is not in it. E.g. `a`, `b`, `b → b`, P(a) = 0.5, stable: the app gives 1 instead of 0.5. Fix
+  upstream (require `a ∈ A'`); check `MonteCarloPafReasoner` too.
+
+## Glossary
+
+- **27. [S] After deploy.** Check that Caddy serves the prerendered `dist/glossary/**/index.html`
+  pages, then submit `/sitemap.xml` in Google Search Console.
+- **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
+  an "Open in editor" button). Later, one at a time: aliases and notation (also helps search).
+- **38. [M] Data-driven signatures, prerendered results.** Move the signature results from the
+  `## Signature` sections and the `signature.md` table into a `signatures.ts` table (cells with
+  source and locator), shown on semantics pages like the principle and complexity results.
+  `prerender.ts` renders none of these result tables yet; add them to the static pages.
+- **39. [M] Ranking principles.** ranking postulates (Abstraction,
+  Cardinality Precedence, Counter-Transitivity, etc; BDKM16).
+- **40. [M] Relations between semantics.** Inclusions like st ⊆ sst ⊆ pr ⊆ co ⊆ ad ⊆ cf as a
+  section in `semantics`.
+- **41. [L] iAF complexity table.** Ver/Cred/Skep, possible and necessary (BNRS18, BJNNR21).
 
 ## Mobile
 
+- **34. [M] mobile version of the serialisation sheet needs a small overhaul.** especially the collapsed sheet
 - **7. [S] Publications on module cards.** Desktop shows a `PublicationsTooltip` on each home card
   (`BlankDocumentCanvas.vue`); the mobile cards show none.
 - **26. [M] Landscape layout.** Phones in landscape now get the compact shell, but its top and
@@ -23,9 +49,11 @@ Feature work (BAF/ADF views, LaTeX export, generation, Δ-semantics, tutorials) 
 ### Evaluation window
 
 - **11. [S] Semantics definitions.** Some semantics show incomplete definitions, and the semantics
-  list needs a cleaner layout (for ABA).
-- **12. [S] Glossary.** Update the ABA glossary entries, and in the evaluation window show the
-  definitions for flat and non-flat theories separately.
+  list needs a cleaner layout (for ABA). Twelve flat-only semantics have no `tooltipId` (sad, sst,
+  ea, is, uc, stg, ud, sud, wad, wco, wgr, wpr); wad/wco/wgr/wpr could point to the SetAF entries
+  (BKU24 Def. 50).
+- **12. [S] Flat and non-flat definitions.** In the evaluation window, show the definitions for flat
+  and non-flat theories separately.
 
 ### Theory editor
 

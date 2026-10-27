@@ -16,20 +16,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
+import { complexityTermGroups } from '@/app/glossary/complexity'
 import {
-  abstractArgumentationGlossary,
-  abstractArgumentationRankingGlossary,
-} from '@/modules/abstract-argumentation/glossary'
+  type GlossaryEntries,
+  listTitle,
+  provideGlossaryContext,
+  termTitle,
+} from '@/app/glossary/glossaryContext'
+import glossaryModuleList from '@/app/glossary/glossaryModules.json'
+import { plainText } from '@/app/glossary/plainText'
+import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
 import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based-argumentation/glossary'
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
+import { complexityGlossary } from '@/modules/common/complexity/glossary'
+import { blockInlines } from '@/modules/common/glossary/parse'
+import type { GlossaryInline } from '@/modules/common/glossary/types'
+import { principlesGlossary } from '@/modules/common/principles/glossary'
 import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
 import { dialecticalArgumentationGlossary } from '@/modules/dialectical-argumentation/glossary'
 import { incompleteArgumentationGlossary } from '@/modules/incomplete-argumentation/glossary'
 import { probabilisticArgumentationGlossary } from '@/modules/probabilistic-argumentation/glossary'
+
+function inlineRefs(parts: GlossaryInline[]): string[] {
+  return parts.flatMap((part) => (typeof part !== 'string' && 'ref' in part ? [part.ref] : []))
+}
+
+/** Every term key an entry links to, in its definition or body. */
+export function entryRefs(def: TooltipDefinition): string[] {
+  const body = (def.body ?? []).flatMap((block) => blockInlines(block).flatMap(inlineRefs))
+  return [...inlineRefs(def.content), ...body]
+}
+
+/** Path segment of the literature tab, which lists publications instead of terms. */
+export const LITERATURE_TAB = 'Literature'
+
+export function glossaryPath(modulePrefix?: string, termKey?: string): string {
+  return ['/glossary', modulePrefix, termKey].filter(Boolean).join('/')
+}
 
 export interface GlossaryModule {
   prefix: string
@@ -37,73 +65,98 @@ export interface GlossaryModule {
   glossary: TooltipRegistry
   // Key of the "main" entry (the framework itself), pinned to the top of the list.
   mainKey: string
+  // Curated term list sections; without them the list is grouped by first letter.
+  groups?: { label: string; keys: string[] }[]
 }
 
-export const glossaryModules: GlossaryModule[] = [
-  {
-    prefix: 'AF',
-    label: 'Abstract AF',
-    glossary: { ...abstractArgumentationGlossary, ...abstractArgumentationRankingGlossary },
-    mainKey: 'AF',
-  },
-  { prefix: 'BAF', label: 'Bipolar AF', glossary: bipolarArgumentationGlossary, mainKey: 'BAF' },
-  {
-    prefix: 'ADF',
-    label: 'Dialectical AF',
-    glossary: dialecticalArgumentationGlossary,
-    mainKey: 'ADF',
-  },
-  {
-    prefix: 'iAF',
-    label: 'Incomplete AF',
-    glossary: incompleteArgumentationGlossary,
-    mainKey: 'IAF',
-  },
-  {
-    prefix: 'PAF',
-    label: 'Probabilistic AF',
-    glossary: probabilisticArgumentationGlossary,
-    mainKey: 'PAF',
-  },
-  {
-    prefix: 'SetAF',
-    label: 'Collective Attacks',
-    glossary: collectiveAttacksArgumentationGlossary,
-    mainKey: 'SetAF',
-  },
-  {
-    prefix: 'ABA',
-    label: 'Assumption-based',
-    glossary: assumptionBasedArgumentationGlossary,
-    mainKey: 'ABAF',
-  },
-]
+const registries: Record<string, TooltipRegistry> = {
+  'abstract-argumentation': abstractArgumentationGlossary,
+  'assumption-based-argumentation': assumptionBasedArgumentationGlossary,
+  'bipolar-argumentation': bipolarArgumentationGlossary,
+  'collective-attacks-argumentation': collectiveAttacksArgumentationGlossary,
+  'common/complexity': complexityGlossary,
+  'common/principles': principlesGlossary,
+  'dialectical-argumentation': dialecticalArgumentationGlossary,
+  'incomplete-argumentation': incompleteArgumentationGlossary,
+  'probabilistic-argumentation': probabilisticArgumentationGlossary,
+}
+
+const termGroups: Record<string, GlossaryModule['groups']> = {
+  'common/complexity': complexityTermGroups,
+}
+
+// The module list is JSON so the build's sitemap plugin (vite.config.ts) can read it too.
+export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
+  ({ prefix, label, dir, mainKey }) => ({
+    prefix,
+    label,
+    mainKey,
+    glossary: registries[dir]!,
+    groups: termGroups[dir],
+  }),
+)
+
+// Combined map for cross-module ref resolution; on a key clash the first module wins.
+const allEntries: GlossaryEntries = {}
+// termKey → the entries whose definition or body links to it.
+const backlinks: Record<string, { key: string; definition: TooltipDefinition }[]> = {}
+for (const m of glossaryModules) {
+  for (const [key, def] of Object.entries(m.glossary)) {
+    allEntries[key] ??= { definition: def, modulePrefix: m.prefix }
+    for (const ref of new Set(entryRefs(def))) {
+      if (ref !== key) (backlinks[ref] ??= []).push({ key, definition: def })
+    }
+  }
+}
 
 /**
  * Shared glossary state for the desktop two-panel view and the mobile inline-card view:
- * module selection, search, letter-grouping, and cross-module reference navigation.
+ * module selection, search, term grouping, and cross-module reference navigation.
  */
-export function useGlossary() {
-  // Combined map for cross-module ref resolution: termKey → { definition, modulePrefix }
-  const allEntries = computed(() => {
-    const map: Record<string, { definition: TooltipDefinition; modulePrefix: string }> = {}
-    for (const m of glossaryModules) {
-      for (const [key, def] of Object.entries(m.glossary)) {
-        if (!(key in map)) map[key] = { definition: def, modulePrefix: m.prefix }
-      }
-    }
-    return map
-  })
-
+export function useGlossary(glossaryTitle: string) {
   const route = useRoute()
   const router = useRouter()
+  const { t } = useI18n({ useScope: 'global' })
+
+  const param = (name: string) => {
+    const value = route.params[name]
+    return typeof value === 'string' && value ? value : undefined
+  }
 
   const activeModulePrefix = computed(() => {
-    const p = route.query.module as string | undefined
+    const p = param('module')
     return glossaryModules.find((m) => m.prefix === p)?.prefix ?? glossaryModules[0]!.prefix
   })
 
-  const activeTermKey = computed(() => (route.query.term as string | undefined) ?? '')
+  const activeTermKey = computed(() => param('term') ?? '')
+  const literatureActive = computed(() => param('module') === LITERATURE_TAB)
+
+  // Old `?module=&term=` links and tooltips' `?term=` (keys are unique, so the module is
+  // optional) move to the canonical path.
+  watch(
+    () => route.query,
+    ({ module, term }) => {
+      if (typeof module !== 'string' && typeof term !== 'string') return
+      const key = typeof term === 'string' ? term : undefined
+      const prefix = (key && allEntries[key]?.modulePrefix) ?? (module as string | undefined)
+      router.replace(glossaryPath(prefix, key))
+    },
+    { immediate: true },
+  )
+  // While that redirect is pending, views must not navigate to a fallback term over it.
+  const redirecting = computed(
+    () => typeof route.query.module === 'string' || typeof route.query.term === 'string',
+  )
+
+  // Module tabs plus the Literature tab, in display order.
+  const tabs = computed(() => [
+    ...glossaryModules.map((m) => ({
+      id: m.prefix,
+      label: m.prefix,
+      active: !literatureActive.value && m.prefix === activeModulePrefix.value,
+    })),
+    { id: LITERATURE_TAB, label: t('literature.title'), active: literatureActive.value },
+  ])
 
   const activeModule = computed(
     () => glossaryModules.find((m) => m.prefix === activeModulePrefix.value)!,
@@ -115,9 +168,12 @@ export function useGlossary() {
     searchQuery.value = ''
   })
 
+  // Without LaTeX, so `$E$-Reduct` sorts and groups under E and is found by "e-reduct".
+  const plainListTitle = (def: TooltipDefinition) => plainText(listTitle(def))
+
   function matchesQuery([key, def]: [string, TooltipDefinition], q: string) {
-    return (
-      (def.title ?? def.label ?? key).toLowerCase().includes(q) || key.toLowerCase().includes(q)
+    return [termTitle(def), plainListTitle(def), def.label, key].some((name) =>
+      name.toLowerCase().includes(q),
     )
   }
 
@@ -134,7 +190,7 @@ export function useGlossary() {
   const sortedTerms = computed(() =>
     Object.entries(activeModule.value.glossary)
       .filter(([key]) => key !== activeModule.value.mainKey)
-      .sort(([, a], [, b]) => (a.title ?? a.label).localeCompare(b.title ?? b.label)),
+      .sort(([, a], [, b]) => plainListTitle(a).localeCompare(plainListTitle(b))),
   )
 
   const filteredTerms = computed(() => {
@@ -144,14 +200,31 @@ export function useGlossary() {
   })
 
   const groupedTerms = computed(() => {
-    const groups: { letter: string; terms: [string, TooltipDefinition][] }[] = []
+    const curated = activeModule.value.groups
+    if (curated) {
+      const terms = new Map(filteredTerms.value)
+      const take = (keys: string[]) =>
+        keys.flatMap((key) => (terms.has(key) ? [[key, terms.get(key)!] as const] : []))
+      const groups = curated.map(({ label, keys }) => ({
+        label: t(`glossary.complexity.groups.${label}`),
+        terms: take(keys),
+      }))
+      // Terms missing from the curated groups still show up, at the end.
+      const grouped = new Set(curated.flatMap(({ keys }) => keys))
+      groups.push({
+        label: t('glossary.complexity.groups.other'),
+        terms: take([...terms.keys()].filter((key) => !grouped.has(key))),
+      })
+      return groups.filter((group) => group.terms.length)
+    }
+    const groups: { label: string; terms: (readonly [string, TooltipDefinition])[] }[] = []
     for (const entry of filteredTerms.value) {
-      const letter = (entry[1].title ?? entry[1].label ?? entry[0]).charAt(0).toUpperCase()
+      const letter = plainListTitle(entry[1]).charAt(0).toUpperCase()
       const last = groups[groups.length - 1]
-      if (last?.letter === letter) {
+      if (last?.label === letter) {
         last.terms.push(entry)
       } else {
-        groups.push({ letter, terms: [entry] })
+        groups.push({ label: letter, terms: [entry] })
       }
     }
     return groups
@@ -161,30 +234,55 @@ export function useGlossary() {
     () => activeModule.value.glossary[activeTermKey.value] as TooltipDefinition | undefined,
   )
 
-  function navigate(modulePrefix: string, termKey: string) {
-    router.replace({ path: '/glossary', query: { module: modulePrefix, term: termKey } })
+  // Shown when the URL names no valid term: the pinned entry, else the first alphabetically.
+  const fallbackTermKey = computed(() =>
+    activeModule.value.glossary[activeModule.value.mainKey]
+      ? activeModule.value.mainKey
+      : sortedTerms.value[0]?.[0],
+  )
+
+  const defaultTitle = document.title
+  watch(
+    activeDefinition,
+    (def) => {
+      document.title = def
+        ? `${plainText(termTitle(def))} · ${glossaryTitle} · AgonProject`
+        : defaultTitle
+    },
+    { immediate: true },
+  )
+  onUnmounted(() => {
+    document.title = defaultTitle
+  })
+
+  function navigate(modulePrefix: string, termKey: string, { replace = false } = {}) {
+    const to = glossaryPath(modulePrefix, termKey)
+    if (replace) router.replace(to)
+    else router.push(to)
   }
 
   function selectModule(modulePrefix: string) {
-    router.replace({ path: '/glossary', query: { module: modulePrefix } })
+    router.push(glossaryPath(modulePrefix))
   }
 
-  function followRef(refKey: string) {
-    const entry = allEntries.value[refKey]
-    if (entry) navigate(entry.modulePrefix, refKey)
-  }
+  const pathOf = (termKey: string) => glossaryPath(allEntries[termKey]?.modulePrefix, termKey)
+
+  provideGlossaryContext({ entries: allEntries, pathOf })
 
   return {
-    allEntries,
+    backlinks,
     activeModulePrefix,
     activeTermKey,
     activeModule,
+    literatureActive,
+    tabs,
     searchQuery,
     pinnedTerm,
     groupedTerms,
     activeDefinition,
+    fallbackTermKey,
+    redirecting,
     navigate,
     selectModule,
-    followRef,
   }
 }

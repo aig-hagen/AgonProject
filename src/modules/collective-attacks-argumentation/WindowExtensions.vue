@@ -20,7 +20,7 @@
 import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import type { ExtensionWindowInstanceState } from '@/modules/collective-attacks-argumentation/evaluation/extensionWindowState'
 import {
   KNOWN_SEMANTIC_GROUPS,
@@ -76,7 +76,7 @@ const emit = defineEmits<{
 }>()
 
 provide(TOOLTIP_REGISTRY_KEY, {
-  ...abstractArgumentationGlossary,
+  ...abstractArgumentationTooltips,
   ...collectiveAttacksArgumentationGlossary,
 })
 

@@ -123,6 +123,24 @@ cp .env.example .env
 npm run dev
 ```
 
+## Local Literature Collection
+
+Cited papers live in a gitignored `literature/` folder, one PDF per publication key from
+[`publications.ts`](/src/modules/common/publications/publications.ts) (e.g. `literature/D95.pdf`).
+
+```sh
+npm run lit:status            # which publications have a PDF
+npm run lit:import -- <dir>   # copy PDFs from <dir> whose DOI or title matches an entry
+npm run lit:bib               # write literature/references.bib
+npm run lit:abstracts         # fill abstracts.json for the literature search
+```
+
+`lit:import` only copies, never moves, and skips anything it can't match unambiguously.
+
+`lit:abstracts` tries Crossref, then OpenAlex, then the PDF's first pages, and keeps existing
+entries, so hand fixes in `abstracts.json` survive (`-- --refresh` refetches all). Abstracts are
+only used for search and never shown, since publishers hold their copyright.
+
 ## Extending functionalities
 
 This tool was built with the mind of being [extended](./extending.md) in the future.

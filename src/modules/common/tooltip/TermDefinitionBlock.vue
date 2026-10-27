@@ -19,16 +19,19 @@
 <script setup lang="ts">
 import { BookOpenIcon } from '@heroicons/vue/24/outline'
 import { computed, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
+import { formatCitation, publicationHref } from '@/modules/common/publications/format'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import { formatCitation } from '@/modules/common/tooltip/publications'
+import TermSymbol from '@/modules/common/tooltip/TermSymbol.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 import { TOOLTIP_REGISTRY_KEY } from '@/modules/common/tooltip/tooltipRegistry'
 
 const { id } = defineProps<{ id: string }>()
 
 const { isCompact } = useLayoutMode()
+const { t } = useI18n({ useScope: 'global' })
 
 const registry = inject(TOOLTIP_REGISTRY_KEY, {})
 const definition = computed(() => registry[id])
@@ -50,13 +53,14 @@ const definition = computed(() => registry[id])
         class="font-semibold"
         :class="isCompact ? 'text-xs text-base-content' : 'text-base-content/80'"
       />
-      <span v-if="isCompact" class="flex-1"></span>
+      <TermSymbol v-if="definition.symbol" :symbol="definition.symbol" class="ml-0.5 text-xs" />
       <a
         v-if="definition.reference"
-        :href="definition.reference.href"
+        :href="publicationHref(definition.reference)"
         :title="formatCitation(definition.reference)"
         target="_blank"
         rel="noopener noreferrer"
+        class="ml-auto"
         :class="
           isCompact
             ? 'grid place-items-center size-5 rounded-field bg-primary/10 text-primary hover:bg-primary/20'
@@ -66,13 +70,22 @@ const definition = computed(() => registry[id])
         <BookOpenIcon :class="isCompact ? 'size-3' : 'size-3'" />
       </a>
     </div>
-    <span :class="isCompact ? 'block text-xs leading-snug text-base-content/80' : ''">
+    <!-- Floated so "More" shares the last line of the definition when it fits. -->
+    <div class="flow-root" :class="isCompact ? 'text-xs leading-snug text-base-content/80' : ''">
       <template v-for="(part, i) in definition.content" :key="i">
         <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
+        <em v-else-if="'em' in part"><KatexInlineElement :text="part.em" /></em>
         <TermTooltip v-else :id="part.ref">
           <KatexInlineElement v-if="part.label" :text="part.label" />
         </TermTooltip>
       </template>
-    </span>
+      <RouterLink
+        v-if="definition.body"
+        :to="{ path: '/glossary', query: { term: id } }"
+        class="float-right ml-2 text-xs font-medium text-primary underline-offset-2 hover:underline"
+      >
+        {{ t('glossary.more') }} →
+      </RouterLink>
+    </div>
   </div>
 </template>

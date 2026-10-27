@@ -20,6 +20,7 @@ import { createI18n } from 'vue-i18n'
 
 import enMessages from '@/localization/locales/en'
 import type { LocaleMessageSchema } from '@/localization/types'
+import { setGlossaryLocale } from '@/modules/common/glossary/load'
 
 export const SUPPORTED_LOCALES = ['en', 'de'] as const
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
@@ -81,12 +82,13 @@ export async function ensureLocaleLoaded(locale: SupportedLocale): Promise<void>
 }
 
 /**
- * Apply a locale to the running app: load its bundle, switch Vue I18n, and sync
+ * Apply a locale to the running app: load its bundle and glossary, switch Vue I18n, and sync
  * `<html lang>`. Throws if the bundle fails to load so callers can keep the previous
  * locale active.
  */
 export async function applyLocale(locale: SupportedLocale): Promise<void> {
   await ensureLocaleLoaded(locale)
+  await setGlossaryLocale(locale)
   i18n.global.locale.value = locale
   if (typeof document !== 'undefined') {
     document.documentElement.lang = locale

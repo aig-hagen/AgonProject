@@ -29,13 +29,13 @@ import {
   loadFromString,
   saveAsString,
 } from '@/modules/assumption-based-argumentation/save/saveFormat'
+import { BDKT97, CFST18 } from '@/modules/common/publications/publications'
 import {
   TAG_ATTACK,
   TAG_AUGMENTED,
   TAG_COLLECTIVE_RELATIONS,
   TAG_SUPPORT,
 } from '@/modules/common/tags'
-import { BDKT97, CFST18 } from '@/modules/common/tooltip/publications'
 
 const TYPE_KEY = 'type'
 const ABAF_V1_TYPE = 'aba-v1'

@@ -26,9 +26,9 @@ import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { DocumentsDB } from '@/modules/common/documents/db'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
-// db/modules are declared to prevent Vue from warning about unrecognized attrs (same
-// pattern as GenerateView); the glossary content is imported directly by the composable.
-defineProps<{
+// db is declared to prevent Vue from warning about an unrecognized attr (same pattern as
+// GenerateView); modules feed the literature tab's "Cited in" links.
+const { modules } = defineProps<{
   db: IDBPDatabase<DocumentsDB>
   modules: ModuleConfig<Objectish>[]
 }>()
@@ -37,6 +37,6 @@ const { layoutMode } = useLayoutMode()
 </script>
 
 <template>
-  <GlossaryViewMobile v-if="layoutMode === 'compact'" />
-  <GlossaryViewDesktop v-else />
+  <GlossaryViewMobile v-if="layoutMode === 'compact'" :modules="modules" />
+  <GlossaryViewDesktop v-else :modules="modules" />
 </template>

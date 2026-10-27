@@ -20,6 +20,7 @@
 import { computed, provide, ref, shallowRef, toRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import type { ExtensionWindowInstanceState } from '@/modules/assumption-based-argumentation/evaluation/extensionWindowState'
 import {
   type AbaSemantics,
@@ -76,6 +77,7 @@ const emit = defineEmits<{
 }>()
 
 provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationTooltips,
   ...collectiveAttacksArgumentationGlossary,
   ...assumptionBasedArgumentationGlossary,
 })

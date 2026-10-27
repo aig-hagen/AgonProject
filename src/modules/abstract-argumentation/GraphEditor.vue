@@ -33,7 +33,7 @@ import {
   type SerialisationWindowInstanceState,
 } from '@/modules/abstract-argumentation/evaluation/serialisationWindowState'
 import { availableExports } from '@/modules/abstract-argumentation/export'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { type AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import { afBasicsTutorial } from '@/modules/abstract-argumentation/tutorials/af-basics'
 import { afEvaluationTutorial } from '@/modules/abstract-argumentation/tutorials/af-evaluation'
@@ -345,7 +345,7 @@ provide(QUICK_EXPORT_KEY, {
   configs: availableExports as unknown as QuickExport['configs'],
   getInput: () => state.current.content,
 })
-provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationTooltips)
 
 const afTutorials = [afBasicsTutorial, afEvaluationTutorial, ...commonTutorials]
 

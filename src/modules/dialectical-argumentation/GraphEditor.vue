@@ -22,6 +22,7 @@ import { VariableIcon } from '@heroicons/vue/24/outline'
 import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { DOCUMENTS_DB_INJECTION_KEY } from '@/modules/common/documents/db'
 import { useDocumentUIState } from '@/modules/common/documents/uiState'
 import EvaluationHost, { type EvaluationChip } from '@/modules/common/evaluation/EvaluationHost.vue'
@@ -323,7 +324,10 @@ provide(QUICK_EXPORT_KEY, {
   configs: availableExports as unknown as QuickExport['configs'],
   getInput: () => state.current.content,
 })
-provide(TOOLTIP_REGISTRY_KEY, dialecticalArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, {
+  ...abstractArgumentationTooltips,
+  ...dialecticalArgumentationGlossary,
+})
 
 const adfTutorials = [adfBasicsTutorial, adfEvaluationTutorial, ...commonTutorials]
 

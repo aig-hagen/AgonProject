@@ -45,7 +45,10 @@ import {
   useIndexedAF,
   useSerialisationExplorer,
 } from '@/modules/abstract-argumentation/evaluation/useSerialisationExplorer'
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import {
+  abstractArgumentationGlossary,
+  abstractArgumentationTooltips,
+} from '@/modules/abstract-argumentation/glossary'
 import { AbstractArgumentation } from '@/modules/abstract-argumentation/model'
 import SerialisationGraphView from '@/modules/abstract-argumentation/SerialisationGraphView.vue'
 import type { ArgumentData } from '@/modules/common/argumentation/model'
@@ -59,6 +62,7 @@ import {
   extensionLabels,
   labelsToHighlight,
 } from '@/modules/common/evaluation/labeling'
+import TermHint from '@/modules/common/evaluation/TermHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { escapeTexText } from '@/modules/common/export/texEscape'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
@@ -95,7 +99,7 @@ const emit = defineEmits<{
   focus: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationGlossary)
+provide(TOOLTIP_REGISTRY_KEY, abstractArgumentationTooltips)
 
 const { t } = useI18n({ useScope: 'global' })
 
@@ -422,12 +426,13 @@ const evaluationQuery: EvaluationWindowQuery = {
           @select="selectState"
           @hover="hovered = $event"
         />
-        <p class="text-xs text-base-content/65">
+        <p class="flex items-center gap-1 text-xs text-base-content/65">
           {{
             isExploring
               ? t('evaluation.serialisation.exploreLegend')
               : t('evaluation.serialisation.graphLegend')
           }}
+          <TermHint id="serialisationGraph" />
         </p>
       </template>
 

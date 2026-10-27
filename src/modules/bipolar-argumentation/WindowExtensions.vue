@@ -20,7 +20,7 @@
 import { computed, provide, ref, shallowRef, toRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { abstractArgumentationGlossary } from '@/modules/abstract-argumentation/glossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { effectiveAttacks } from '@/modules/bipolar-argumentation/evaluation/complexAttacks'
 import type { ExtensionWindowInstanceState } from '@/modules/bipolar-argumentation/evaluation/extensionWindowState'
 import {
@@ -75,7 +75,7 @@ const emit = defineEmits<{
   evaluate: []
 }>()
 
-provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationGlossary, ...bipolarArgumentationGlossary })
+provide(TOOLTIP_REGISTRY_KEY, { ...abstractArgumentationTooltips, ...bipolarArgumentationGlossary })
 
 const { t } = useI18n({ useScope: 'global' })
 

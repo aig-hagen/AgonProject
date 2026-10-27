@@ -17,26 +17,45 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 <script setup lang="ts">
-import { MapPinIcon } from '@heroicons/vue/24/outline'
+import type { Objectish } from 'immer'
+import { nextTick, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { glossaryModules, useGlossary } from '@/app/glossary/useGlossary'
+import GlossaryCardMobile from '@/app/glossary/GlossaryCardMobile.vue'
+import { useGlossary } from '@/app/glossary/useGlossary'
+import type { ModuleConfig } from '@/app/home/moduleConfig'
+import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
-import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
+
+const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
 const {
-  allEntries,
-  activeModulePrefix,
+  backlinks,
+  activeTermKey,
   searchQuery,
   pinnedTerm,
   groupedTerms,
+  literatureActive,
+  tabs,
   selectModule,
-  followRef,
-} = useGlossary()
+} = useGlossary(t('glossary.title'))
+
+const list = useTemplateRef('list')
+
+// Bring the term in the URL into view, e.g. after following a link or opening a shared URL.
+watch(
+  activeTermKey,
+  async (key) => {
+    await nextTick()
+    list.value
+      ?.querySelector(`[data-term="${CSS.escape(key)}"]`)
+      ?.scrollIntoView({ block: 'start' })
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -44,32 +63,35 @@ const {
     <PageHeader :title="t('glossary.title')" :back-label="t('glossary.backToEditor')" />
 
     <!-- Module selector -->
-    <div class="flex-none overflow-x-auto px-3 py-2 border-b border-base-200">
+    <div class="flex-none overflow-x-auto px-3 py-2 border-b border-base-300">
       <div class="flex gap-2 w-max">
         <button
-          v-for="m in glossaryModules"
-          :key="m.prefix"
+          v-for="tab in tabs"
+          :key="tab.id"
+          :aria-pressed="tab.active"
           class="px-3.5 h-8 rounded-full text-sm font-medium whitespace-nowrap transition-colors"
           :class="
-            m.prefix === activeModulePrefix
-              ? 'bg-primary text-primary-content'
-              : 'bg-base-200 text-base-content/80'
+            tab.active ? 'bg-primary text-primary-content' : 'bg-base-200 text-base-content/80'
           "
-          @click="selectModule(m.prefix)"
+          @click="selectModule(tab.id)"
         >
-          {{ m.prefix }}
+          {{ tab.label }}
         </button>
       </div>
     </div>
 
+    <LiteraturePanel v-if="literatureActive" :modules="modules" />
+
     <!-- Search -->
-    <div class="flex-none px-4 pt-3 pb-1">
+    <div v-if="!literatureActive" class="flex-none px-4 pt-3 pb-1">
       <SearchInput v-model="searchQuery" :placeholder="t('glossary.searchPlaceholder')" />
     </div>
 
     <!-- Entry list -->
     <div
-      class="flex-1 overflow-y-auto px-4 pt-2 flex flex-col gap-2.5"
+      v-if="!literatureActive"
+      ref="list"
+      class="flex-1 overflow-y-auto px-4 pt-2 flex flex-col gap-3"
       style="padding-bottom: max(env(safe-area-inset-bottom), 1.25rem)"
     >
       <p
@@ -78,79 +100,29 @@ const {
       >
         {{ t('glossary.noResults') }}
       </p>
-      <article v-if="pinnedTerm" class="rounded-box border border-primary/40 bg-primary/5 p-3.5">
-        <div class="flex items-start gap-2.5">
-          <div class="flex-1 min-w-0">
-            <h3 class="flex items-center gap-1.5 text-base font-semibold leading-snug">
-              <MapPinIcon class="size-4 text-primary shrink-0" />
-              <KatexInlineElement :text="pinnedTerm[1].title ?? pinnedTerm[1].label" />
-            </h3>
-            <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
-              <template v-for="(part, i) in pinnedTerm[1].content" :key="i">
-                <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
-                <button
-                  v-else-if="allEntries[part.ref]"
-                  class="text-primary underline underline-offset-2"
-                  @click="followRef(part.ref)"
-                >
-                  <KatexInlineElement
-                    :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
-                  />
-                </button>
-                <span v-else class="text-base-content/65">
-                  <KatexInlineElement :text="part.label ?? part.ref" />
-                </span>
-              </template>
-            </p>
-            <PublicationCitation
-              v-if="pinnedTerm[1].reference"
-              :publication="pinnedTerm[1].reference"
-              compact
-              class="mt-2.5 pt-2.5 border-t border-base-300"
-            />
-          </div>
+      <GlossaryCardMobile
+        v-if="pinnedTerm"
+        :key="pinnedTerm[0]"
+        :term-key="pinnedTerm[0]"
+        :definition="pinnedTerm[1]"
+        :backlinks="backlinks[pinnedTerm[0]]"
+        :active="pinnedTerm[0] === activeTermKey"
+        :data-term="pinnedTerm[0]"
+        pinned
+      />
+      <template v-for="group in groupedTerms" :key="group.label">
+        <div class="section-label mt-1.5 px-0.5">
+          {{ group.label }}
         </div>
-      </article>
-      <template v-for="group in groupedTerms" :key="group.letter">
-        <div class="text-xs font-bold text-secondary tracking-wide mt-1.5 px-0.5">
-          {{ group.letter }}
-        </div>
-        <article
+        <GlossaryCardMobile
           v-for="[key, def] in group.terms"
           :key="key"
-          class="rounded-box border border-base-300 p-3.5"
-        >
-          <div class="flex items-start gap-2.5">
-            <div class="flex-1 min-w-0">
-              <h3 class="text-base font-semibold leading-snug">
-                <KatexInlineElement :text="def.title ?? def.label" />
-              </h3>
-              <p class="mt-1.5 text-sm leading-relaxed text-base-content/80">
-                <template v-for="(part, i) in def.content" :key="i">
-                  <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
-                  <button
-                    v-else-if="allEntries[part.ref]"
-                    class="text-primary underline underline-offset-2"
-                    @click="followRef(part.ref)"
-                  >
-                    <KatexInlineElement
-                      :text="part.label ?? allEntries[part.ref]!.definition.label ?? part.ref"
-                    />
-                  </button>
-                  <span v-else class="text-base-content/65">
-                    <KatexInlineElement :text="part.label ?? part.ref" />
-                  </span>
-                </template>
-              </p>
-              <PublicationCitation
-                v-if="def.reference"
-                :publication="def.reference"
-                compact
-                class="mt-2.5 pt-2.5 border-t border-base-300"
-              />
-            </div>
-          </div>
-        </article>
+          :term-key="key"
+          :definition="def"
+          :backlinks="backlinks[key]"
+          :active="key === activeTermKey"
+          :data-term="key"
+        />
       </template>
     </div>
   </div>

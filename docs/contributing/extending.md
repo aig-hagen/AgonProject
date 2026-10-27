@@ -58,7 +58,10 @@ Tutorial progress is persisted by [`useTutorial`](/src/modules/common/tutorial/u
 
 ## Add glossary entries
 
-Each module defines a [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) in `glossary.ts`. Entries contain a label, optional title, content, and optional publication reference. Content may include KaTeX and references to other entries.
+The entry, publication, and result-table formats are described in [Glossary content](./glossary.md).
+This section covers the wiring.
+
+Each module keeps its glossary in `glossary/`: Markdown entries in `glossary/<locale>/<key>.md` and `glossary/index.ts`, which builds the module's [`TooltipRegistry`](/src/modules/common/tooltip/tooltipRegistry.ts) with [`createGlossary`](/src/modules/common/glossary/load.ts) from the eager `en/` files plus lazily loaded translations (see [localization](localization.md)).
 
 Provide the module registry from its editor:
 
@@ -66,7 +69,15 @@ Provide the module registry from its editor:
 provide(TOOLTIP_REGISTRY_KEY, moduleGlossary)
 ```
 
-Modules can merge the abstract-argumentation glossary with their own registry. Tutorials and evaluation result headers resolve `tooltipId` values through the registry provided by the active module.
+Modules can merge the abstract-argumentation glossary with their own registry; merge
+`abstractArgumentationTooltips`, which also carries the PAF, principles, and complexity entries
+that AF entries link to. An entry may only link to keys its editor's registry provides. Tutorials and evaluation result headers resolve `tooltipId` values through the registry provided by the active module.
+
+To give the module a section on the glossary pages, add it to [`glossaryModules.json`](/src/app/glossary/glossaryModules.json) (URL prefix, directory, label, main entry) and import its registry in [`useGlossary.ts`](/src/app/glossary/useGlossary.ts).
+
+## Add complexity and principle results
+
+A module can tabulate known results for its semantics in `complexity.ts` and `principles.ts` (see the AF module). Register the tables in [`app/glossary/complexity.ts`](/src/app/glossary/complexity.ts) and [`app/glossary/principles.ts`](/src/app/glossary/principles.ts), and add an overview glossary entry for each. The cell formats and sourcing rules are in [Glossary content](./glossary.md#result-tables).
 
 ## Add exports
 

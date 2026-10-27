@@ -1,0 +1,111 @@
+/*
+ * AgonProject - The platform to explore different approaches to formal argumentation.
+ *
+ * Copyright (C) 2026  Artificial Intelligence Group at the Faculty of Mathematics and Computer Science of the FernUniversität in Hagen <https://www.fernuni-hagen.de/aig/en/>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+import { describe, expect, test } from 'vitest'
+
+import { plainText } from '@/app/glossary/plainText'
+import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
+import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
+import { localeFromPath } from '@/modules/common/glossary/load'
+import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
+import { publicationByKey } from '@/modules/common/publications/lookup'
+
+const setafGlossary = glossaryModules.find((m) => m.prefix === 'SetAF')!.glossary
+const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
+
+describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey }) => {
+  test('has a registry and its main entry', () => {
+    expect(glossary).toBeDefined()
+    expect(glossary[mainKey]).toBeDefined()
+  })
+
+  // Modules provide their own registry merged over the AF one, so refs may point into either.
+  // Complexity and principle entries only appear on the glossary page, which resolves refs across
+  // all modules.
+  test('every [[ref]] resolves', () => {
+    // ABA also merges in the SetAF registry for its SetAF view.
+    const extra = prefix === 'ABA' ? setafGlossary : {}
+    const scope = ['Complexity', 'Principles'].includes(prefix)
+      ? allGlossaries
+      : { ...abstractArgumentationTooltips, ...extra, ...glossary }
+    const missing = Object.entries(glossary).flatMap(([key, def]) =>
+      entryRefs(def)
+        .filter((ref) => !(ref in scope))
+        .map((ref) => `${key} → ${ref}`),
+    )
+    expect(missing).toEqual([])
+  })
+
+  test('every [@KEY] citation names a publication', () => {
+    const missing = Object.entries(glossary).flatMap(([key, def]) =>
+      [...JSON.stringify(def.body ?? []).matchAll(/"cite":"([^"]+)"/g)]
+        .filter((m) => !publicationByKey(m[1]!))
+        .map((m) => `${key} → ${m[1]}`),
+    )
+    expect(missing).toEqual([])
+  })
+})
+
+test('term keys are unique across modules', () => {
+  const seen = new Map<string, string>()
+  const clashes: string[] = []
+  for (const { prefix, glossary } of glossaryModules)
+    for (const key of Object.keys(glossary)) {
+      if (seen.has(key)) clashes.push(`${key} (${seen.get(key)}, ${prefix})`)
+      seen.set(key, prefix)
+    }
+  expect(clashes).toEqual([])
+})
+
+test('glossaryPath builds canonical URLs', () => {
+  expect(glossaryPath()).toBe('/glossary')
+  expect(glossaryPath('AF')).toBe('/glossary/AF')
+  expect(glossaryPath('AF', 'ADM')).toBe('/glossary/AF/ADM')
+})
+
+test('plainText renders LaTeX as Unicode for page titles', () => {
+  expect(plainText('Admissible Set')).toBe('Admissible Set')
+  expect(plainText('Selection Function $\\alpha_{\\mathsf{ad}}$')).toBe('Selection Function αad')
+  expect(plainText('Complexity Class $\\Sigma_3^{\\mathsf{P}}$')).toBe('Complexity Class Σ₃ᴾ')
+  expect(plainText('Complexity Class $\\mathsf{D}_2^{\\mathsf{P}}$')).toBe('Complexity Class D₂ᴾ')
+  expect(plainText('$\\textsc{Exists}^{\\neg\\emptyset}_\\sigma$')).toBe('Exists¬∅σ')
+  expect(plainText('$S^+$ and $d_n^m$')).toBe('S⁺ and dₙᵐ')
+  expect(plainText('$E \\subseteq \\{a, b\\}$')).toBe('E ⊆ {a, b}')
+})
+
+// A translation must link and cite exactly what its English twin does.
+test('translated entries keep the refs and citations of their English twin', () => {
+  const files = import.meta.glob<string>('/src/modules/**/glossary/*/*.md', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  })
+  const links = (source: string) => {
+    const def = parseGlossaryEntry(source)
+    const cites = [...JSON.stringify(def.body ?? []).matchAll(/"cite":"([^"]+)"/g)].map((m) => m[1])
+    return { refs: [...new Set(entryRefs(def))].sort(), cites: [...new Set(cites)].sort() }
+  }
+  const mismatches = Object.entries(files)
+    .filter(([path]) => localeFromPath(path) !== 'en')
+    .flatMap(([path, source]) => {
+      const twin = files[path.replace(/\/[^/]+\/([^/]+)$/, '/en/$1')]
+      if (twin === undefined) return [`${path}: no English twin`]
+      return JSON.stringify(links(source)) === JSON.stringify(links(twin)) ? [] : [path]
+    })
+  expect(mismatches).toEqual([])
+})

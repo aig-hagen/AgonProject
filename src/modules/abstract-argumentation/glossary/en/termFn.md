@@ -1,0 +1,8 @@
+---
+label: termination function
+title: Termination Function
+symbol: \beta
+reference: T22
+---
+
+A termination function is any function $\beta$ that maps each [[serialisationState|serialisation state]] $(F, E)$, with $F$ the current [[reduct]] and $E$ the set of arguments selected so far, to $\{0,1\}$; $\beta(F,E) = 1$ means the construction may end in this state.

@@ -25,6 +25,7 @@ import generate from '@/localization/locales/en/messages/generate'
 import glossary from '@/localization/locales/en/messages/glossary'
 import help from '@/localization/locales/en/messages/help'
 import home from '@/localization/locales/en/messages/home'
+import literature from '@/localization/locales/en/messages/literature'
 import menu from '@/localization/locales/en/messages/menu'
 import modules from '@/localization/locales/en/messages/modules'
 import notFound from '@/localization/locales/en/messages/notFound'
@@ -45,6 +46,7 @@ export default {
   glossary,
   help,
   home,
+  literature,
   menu,
   modules,
   notFound,

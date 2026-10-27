@@ -74,4 +74,5 @@ data/
 *.vrb
 *.xmpi
 
-literature/
+# Local paper collection (copyrighted PDFs, notes, generated .bib)
+/literature/

@@ -1,11 +1,12 @@
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
-import { defineConfig, Plugin, PreviewServer, ViteDevServer } from 'vite'
+import { defineConfig, Plugin, PreviewServer, runnerImport, ViteDevServer } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
@@ -13,6 +14,10 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 // deployment/Caddyfile (@backend) must mirror these by hand — Caddy can't read
 // this file — so keep the two in sync when adding an endpoint.
 import backendRoutes from './config/backend-routes.json'
+import glossaryModules from './src/app/glossary/glossaryModules.json'
+
+const site = 'https://agonproject.aig.fernuni-hagen.de'
+const srcDir = fileURLToPath(new URL('./src', import.meta.url))
 
 const solverTarget = 'http://localhost:8080/'
 // Keep the Host header like Caddy does; otherwise Tweety's CORS mapping for /aba rejects the call.
@@ -91,6 +96,59 @@ function gzipFixPlugin(): Plugin {
   }
 }
 
+// sitemap.xml at build time: the home page, the literature tab and one URL per glossary term, read from the
+// glossary Markdown files so it can't drift from the content.
+function sitemapPlugin(): Plugin {
+  return {
+    name: 'sitemap',
+    apply: 'build',
+    generateBundle() {
+      const paths = ['/', '/glossary', '/glossary/Literature']
+      for (const { prefix, dir } of glossaryModules) {
+        const terms = readdirSync(
+          fileURLToPath(new URL(`./src/modules/${dir}/glossary/en`, import.meta.url)),
+        )
+        paths.push(`/glossary/${prefix}`)
+        for (const file of terms.filter((f) => f.endsWith('.md')).sort()) {
+          paths.push(`/glossary/${prefix}/${encodeURIComponent(file.slice(0, -3))}`)
+        }
+      }
+      const urls = paths.map((path) => `  <url><loc>${site}${path}</loc></url>`)
+      this.emitFile({
+        type: 'asset',
+        fileName: 'sitemap.xml',
+        source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`,
+      })
+    },
+  }
+}
+
+// Static HTML per glossary term and module (dist/glossary/<module>/<term>/index.html) for
+// crawlers. The SPA bundle still loads and takes over; deployment/Caddyfile serves these first.
+function glossaryPrerenderPlugin(): Plugin {
+  return {
+    name: 'glossary-prerender',
+    apply: 'build',
+    enforce: 'post',
+    async writeBundle({ dir }, bundle) {
+      const index = bundle['index.html']
+      if (!dir || index?.type !== 'asset') return
+      const { module } = await runnerImport<{
+        prerenderGlossary: (template: string, site: string) => { file: string; html: string }[]
+      }>('/src/app/glossary/prerender.ts', {
+        configFile: false,
+        logLevel: 'error',
+        resolve: { alias: { '@': srcDir } },
+      })
+      for (const { file, html } of module.prerenderGlossary(String(index.source), site)) {
+        const path = join(dir, file)
+        mkdirSync(dirname(path), { recursive: true })
+        writeFileSync(path, html)
+      }
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     tailwindcss(),
@@ -126,13 +184,15 @@ export default defineConfig({
     gzipFixPlugin(),
     solverBrowseNoticePlugin(),
     apiDocsPlugin(),
+    sitemapPlugin(),
+    glossaryPrerenderPlugin(),
     // The devtools overlay intercepts pointer events (disabled under e2e) and shows
     // a floating icon (set NO_DEVTOOLS=1 for clean screenshots).
     ...(process.env.E2E || process.env.NO_DEVTOOLS ? [] : [vueDevTools()]),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@': srcDir,
     },
   },
   server: {

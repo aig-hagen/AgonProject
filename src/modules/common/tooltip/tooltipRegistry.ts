@@ -18,17 +18,24 @@
  */
 import type { InjectionKey } from 'vue'
 
-import type { Publication } from '@/modules/common/tooltip/publications'
+import type { GlossaryBlock } from '@/modules/common/glossary/types'
+import type { Publication } from '@/modules/common/publications/types'
 
-/** A plain string (may contain $...$ LaTeX) or a reference to another registry entry rendered as a nested TermTooltip. */
-export type TooltipContentPart = string | { ref: string; label?: string }
+/** A plain string (may contain $...$ LaTeX), emphasised text, or a reference to another registry entry rendered as a nested TermTooltip. */
+export type TooltipContentPart = string | { em: string } | { ref: string; label?: string }
 
 export interface TooltipDefinition {
   /** Text used as the trigger when this entry is referenced inline from another definition. */
   label: string
   /** Optional bold header line shown at the top of the tooltip panel. */
   title?: string
+  /** Shorter name for the glossary's term list, where a group heading gives the context. */
+  short?: string
+  /** LaTeX for the notation the entry introduces, shown as a chip beside the title. */
+  symbol?: string
   content: TooltipContentPart[]
+  /** Longer content shown only on the glossary page. */
+  body?: GlossaryBlock[]
   reference?: Publication
 }
 

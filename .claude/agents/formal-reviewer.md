@@ -41,10 +41,13 @@ unverified; never judge a definition or result from memory.
    - The earliest proving paper is cited, not a survey.
 3. **Links and citations resolve and fit.** `[[key]]` targets exist and mean what the sentence
    says; `[@KEY]` and `reference` name the right paper. Publication metadata (authors, year,
-   venue, pages, DOI) matches the PDF.
+   venue, pages, DOI) matches the PDF. Every term or symbol with an existing entry is linked at
+   its first use (**nit** if not). A term the entry relies on that has no entry anywhere is
+   reported as **missing entry**.
 4. **Translations match.** A `de/<key>.md` links and cites exactly like its `en` twin, with
    identical math. Flag meaning drift in the prose; German wording needs expert review anyway.
-5. **Notation is consistent** with the other entries of the same module.
+5. **Notation is consistent** with the other entries of the same module, and the definition (the
+   hover tooltip) stays short and readable, with remarks moved below the first `##`.
 6. **Concrete claims.** If an entry claims extensions or acceptance for a concrete framework,
    check it with the argumentation solver (`get_capabilities` for semantics keys); never compute
    extensions by hand.
@@ -55,11 +58,12 @@ unverified; never judge a definition or result from memory.
    glossary definition, not a variant. If it is computed via a reduction to AFs, it must carry
    `reduction: 'unproven'` unless a paper in `publications.ts` proves the reduction correct. Read
    the submodule (what is deployed) and name its commit (`git -C <submodule> rev-parse --short
-   HEAD`). Code too indirect to follow is **unverified**, not passed.
+HEAD`). Code too indirect to follow is **unverified**, not passed.
 
 ## Report
 
 Findings, most severe first. For each: file and line, what is wrong, the evidence (paper, page,
 and result number), and a suggested fix. Mark each **error** (wrong content), **unverified**
-(could not check), or **nit** (notation, wording). End with one line on what you checked and what
+(could not check), **missing entry** (a term that needs its own entry), or **nit** (notation,
+wording, missing link). End with one line on what you checked and what
 you skipped. Keep it terse; no praise, no summary of correct content.
