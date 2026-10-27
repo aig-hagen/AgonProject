@@ -25,13 +25,26 @@ format and the sourcing rules this skill follows. Work on one term at a time.
   page. Never fill in a field from memory or by pattern; a guessed DOI or page range is worse than
   none. If a field can't be found, leave it out and ask the user; say which source each field
   came from.
+- For a new publication, copy its PDF to `literature/<KEY>.pdf` and run `npm run lit:abstracts`.
+  Check the abstract it writes against the PDF; text taken from a PDF can pick up the
+  introduction or a second column.
+- Results in the body cite the earliest paper that proves them. A later journal version by the
+  same authors may stand in for its workshop or conference version; a survey may not.
 - Read the definition in `literature/<KEY>.pdf` and note its page and number. If the PDF is
   missing, stop and ask the user for it (`npm run lit:import -- <dir>` adds it); don't write a
   definition from memory.
 
 ## 3. Write the entry
 
-- Frontmatter: `label`, `title` if it differs, `reference`, and `short` only for term lists.
+- Frontmatter: `label`, `title` if it differs, `reference`, `short` only for term lists, and
+  `symbol` (bare LaTeX, e.g. `\mathsf{co}`) when the entry introduces notation. Introduce the
+  symbol there, not in the definition text.
+- Before writing, read two or three related entries (same module, and the entries the new one
+  links to) and match their structure, wording and markup. Use only the syntax the guide lists;
+  the parser renders nothing else, so other Markdown shows up as raw characters.
+- Follow the style rules in the guide (template, "iff", notation); where they leave a choice,
+  use the terms and notation of the FernUni course text (`m_64402_fa`), as long as they read
+  naturally in English.
 - Definition before the first `##`: faithful to the paper, in the notation of the module's other
   entries. It is the hover tooltip, so keep it short and readable; one plain sentence of reading
   aid at most, and remarks go in the body.
