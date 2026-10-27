@@ -54,11 +54,14 @@ Body:
 
 - **Definition:** everything before the first `##` heading. It is what hover tooltips show, so
   keep it short and readable: the formal definition plus at most one sentence of reading aid.
-  Remarks, properties and caveats go below the first `##`. It may use KaTeX (`$…$`) and links,
-  but no citations; the definition cites through `reference`.
+  Remarks, properties and caveats go below the first `##`. It may use KaTeX (`$…$`), links and
+  `_emphasis_`, but no citations; the definition cites through `reference`.
 - **Longer text:** everything from the first `##` on, shown only on the glossary page. Paragraphs,
-  `##`/`###` headings, `-` lists, `|` tables (header row, `| --- |` separator, rows), links, and
-  `[@KEY]` citations, separated by blank lines. Citations render in parentheses, e.g. (T22).
+  `##`/`###` headings, `-` lists, `|` tables (header row, `| --- |` separator, rows), links,
+  `_emphasis_`, and `[@KEY]` citations, separated by blank lines. Citations render in parentheses,
+  e.g. (T22). No other Markdown is parsed.
+- **Emphasis:** `_term_` marks a term being defined, as in the template below. It doesn't apply
+  inside `$…$` math or within words.
 - **Links:** `[[key]]` or `[[key|label]]` to any entry in any module. Link every term that has an
   entry at its first use, notation included. Keep definitions formal and put the link on the
   symbol itself (`$R \subseteq$ [[parents|$par(a)$]]`) rather than writing the notation out.
@@ -101,7 +104,8 @@ publisher page); leave out what can't be confirmed rather than guessing it.
 
 A publication is added only once the app cites it, and is cited in its published version where
 one exists. When citing a result, cite the earliest paper that proves it; surveys and summary
-tables corroborate but are not the source.
+tables corroborate but are not the source. A later journal version by the same authors may stand
+in for its workshop or conference version.
 
 ## Result tables
 

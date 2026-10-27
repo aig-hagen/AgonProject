@@ -353,6 +353,19 @@ export const BLW16: Publication = {
   doi: '10.3233/978-1-61499-686-6-83',
 }
 
+export const DSLW16: Publication = {
+  kind: 'inproceedings',
+  authors: ['Dunne, P.E.', 'Spanring, C.', 'Linsbichler, T.', 'Woltran, S.'],
+  year: 2016,
+  tags: ['AF', 'semantics'],
+  title: 'Investigating the Relationship between Argumentation Semantics via Signatures',
+  booktitle: 'Proceedings of the 25th International Joint Conference on Artificial Intelligence',
+  acronym: 'IJCAI 2016',
+  pages: '1051–1057',
+  publisher: 'AAAI Press',
+  url: 'https://ijcai.org/proceedings/2016/153',
+}
+
 export const XC16: Publication = {
   kind: 'inproceedings',
   authors: ['Xu, Y.', 'Cayrol, C.'],
@@ -393,6 +406,19 @@ export const CD19: Publication = {
   number: '3',
   pages: '277–300',
   doi: '10.3233/AAC-190463',
+}
+
+export const D20: Publication = {
+  kind: 'article',
+  authors: ['Dunne, P.E.'],
+  year: 2020,
+  tags: ['AF', 'semantics'],
+  title: 'Characterizing Strongly Admissible Sets',
+  journal: 'Argument & Computation',
+  volume: '11',
+  number: '3',
+  pages: '239–255',
+  doi: '10.3233/AAC-200483',
 }
 
 export const BBU20a: Publication = {
