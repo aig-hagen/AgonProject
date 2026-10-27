@@ -58,7 +58,37 @@ export function parseInline(text: string): GlossaryInline[] {
 
 const joinLines = (lines: string[]) => lines.map((line) => line.trim()).join(' ')
 
-/** Paragraphs, `##`/`###` headings and `-` lists, separated by blank lines. */
+/** Splits a `| a | b |` table row into cells, ignoring `|` inside `[[…]]` links and `$…$` math. */
+export function splitTableRow(line: string): string[] {
+  const cells: string[] = []
+  let cell = ''
+  let inLink = false
+  let inMath = false
+  const row = line.trim().replace(/^\|/, '').replace(/\|$/, '')
+  for (let i = 0; i < row.length; i++) {
+    const char = row[i]!
+    if (!inMath && row.startsWith('[[', i)) inLink = true
+    else if (inLink && row.startsWith(']]', i)) inLink = false
+    else if (char === '$' && row[i - 1] !== '\\') inMath = !inMath
+    if (char === '|' && !inLink && !inMath) {
+      cells.push(cell.trim())
+      cell = ''
+    } else {
+      cell += char
+    }
+  }
+  cells.push(cell.trim())
+  return cells
+}
+
+/** Every inline run of a block, e.g. to collect its links or citations. */
+export function blockInlines(block: GlossaryBlock): GlossaryInline[][] {
+  if (block.kind === 'list') return block.items
+  if (block.kind === 'table') return [...block.header, ...block.rows.flat()]
+  return [block.content]
+}
+
+/** Paragraphs, `##`/`###` headings, `-` lists and `|` tables, separated by blank lines. */
 export function parseBody(markdown: string): GlossaryBlock[] {
   const blocks: GlossaryBlock[] = []
   for (const chunk of markdown.trim().split(/\n\s*\n/)) {
@@ -70,7 +100,11 @@ export function parseBody(markdown: string): GlossaryBlock[] {
       lines.shift()
       if (!lines.length) continue
     }
-    if (lines[0]!.startsWith('- ')) {
+    if (lines[0]!.startsWith('|')) {
+      // The second line is the `| --- |` separator.
+      const [header, , ...rows] = lines.map((line) => splitTableRow(line).map(parseInline))
+      blocks.push({ kind: 'table', header: header!, rows })
+    } else if (lines[0]!.startsWith('- ')) {
       const items: string[][] = []
       for (const line of lines) {
         if (line.startsWith('- ')) items.push([line.slice(2)])

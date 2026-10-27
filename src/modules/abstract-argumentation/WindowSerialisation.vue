@@ -62,6 +62,7 @@ import {
   extensionLabels,
   labelsToHighlight,
 } from '@/modules/common/evaluation/labeling'
+import TermHint from '@/modules/common/evaluation/TermHint.vue'
 import type { Input } from '@/modules/common/evaluation/types'
 import { escapeTexText } from '@/modules/common/export/texEscape'
 import ParameterField from '@/modules/common/forms/ParameterField.vue'
@@ -425,12 +426,13 @@ const evaluationQuery: EvaluationWindowQuery = {
           @select="selectState"
           @hover="hovered = $event"
         />
-        <p class="text-xs text-base-content/65">
+        <p class="flex items-center gap-1 text-xs text-base-content/65">
           {{
             isExploring
               ? t('evaluation.serialisation.exploreLegend')
               : t('evaluation.serialisation.graphLegend')
           }}
+          <TermHint id="serialisationGraph" />
         </p>
       </template>
 

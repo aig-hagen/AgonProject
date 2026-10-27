@@ -4,4 +4,4 @@ title: Serialisable Semantics
 reference: T22
 ---
 
-Computes the extensions induced by a chosen [[selFn]] and [[termFn]] by iteratively selecting [[IS|initial sets]] of the current AF and computing the [[reduct]] until the termination function accepts the current state.
+Builds extensions step by step: starting from the empty set, it repeatedly adds an [[IS|initial set]] chosen by the [[selFn|selection function]] and continues in the [[reduct]]. Every set reached that the [[termFn|termination function]] accepts is an [[serialisationSystem|extension]].

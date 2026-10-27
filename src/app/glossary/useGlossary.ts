@@ -34,6 +34,7 @@ import { assumptionBasedArgumentationGlossary } from '@/modules/assumption-based
 import { bipolarArgumentationGlossary } from '@/modules/bipolar-argumentation/glossary'
 import { collectiveAttacksArgumentationGlossary } from '@/modules/collective-attacks-argumentation/glossary'
 import { complexityGlossary } from '@/modules/common/complexity/glossary'
+import { blockInlines } from '@/modules/common/glossary/parse'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
 import { principlesGlossary } from '@/modules/common/principles/glossary'
 import type { TooltipDefinition, TooltipRegistry } from '@/modules/common/tooltip/tooltipRegistry'
@@ -47,9 +48,7 @@ function inlineRefs(parts: GlossaryInline[]): string[] {
 
 /** Every term key an entry links to, in its definition or body. */
 export function entryRefs(def: TooltipDefinition): string[] {
-  const body = (def.body ?? []).flatMap((block) =>
-    block.kind === 'list' ? block.items.flatMap(inlineRefs) : inlineRefs(block.content),
-  )
+  const body = (def.body ?? []).flatMap((block) => blockInlines(block).flatMap(inlineRefs))
   return [...inlineRefs(def.content), ...body]
 }
 

@@ -37,6 +37,24 @@ const { blocks } = defineProps<{ blocks: GlossaryBlock[] }>()
           <GlossaryInline :parts="item" />
         </li>
       </ul>
+      <div v-else-if="block.kind === 'table'" class="overflow-x-auto">
+        <table class="text-sm">
+          <thead>
+            <tr class="text-left text-xs text-base-content/65">
+              <th v-for="(cell, j) in block.header" :key="j" class="font-medium pr-6 pb-1">
+                <GlossaryInline :parts="cell" />
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, j) in block.rows" :key="j" class="align-top">
+              <td v-for="(cell, k) in row" :key="k" class="pr-6 py-1">
+                <GlossaryInline :parts="cell" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <p v-else>
         <GlossaryInline :parts="block.content" />
       </p>

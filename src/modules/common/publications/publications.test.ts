@@ -20,6 +20,7 @@ import { describe, expect, test } from 'vitest'
 
 import abstracts from '@/modules/common/publications/abstracts.json'
 import {
+  citeLabel,
   formatCitation,
   formatVenue,
   publicationHref,
@@ -91,6 +92,13 @@ describe('formatCitation', () => {
         acronym: 'X 2000',
       }),
     ).toBe('Proc. of X 2000')
+  })
+})
+
+describe('citeLabel', () => {
+  test('separates author and year with a comma', () => {
+    expect(citeLabel(publications.D95)).toBe('Dung, 1995')
+    expect(citeLabel(publications.CL05b)).toBe('Cayrol & Lagasquie-Schiex, 2005b')
   })
 })
 

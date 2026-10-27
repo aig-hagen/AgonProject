@@ -19,6 +19,7 @@
 import type { GlossaryModule } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import type { ComplexityTable } from '@/modules/common/complexity/types'
+import { blockInlines } from '@/modules/common/glossary/parse'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
 import type { PrincipleTable } from '@/modules/common/principles/types'
 import { publicationKey } from '@/modules/common/publications/lookup'
@@ -41,9 +42,7 @@ function inlineCites(parts: GlossaryInline[]): string[] {
 }
 
 function bodyCites(def: TooltipDefinition): string[] {
-  return (def.body ?? []).flatMap((block) =>
-    block.kind === 'list' ? block.items.flatMap(inlineCites) : inlineCites(block.content),
-  )
+  return (def.body ?? []).flatMap((block) => blockInlines(block).flatMap(inlineCites))
 }
 
 /**

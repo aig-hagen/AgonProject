@@ -22,7 +22,7 @@ import { plainText } from '@/app/glossary/plainText'
 import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
 import enGlossary from '@/localization/locales/en/messages/glossary'
 import type { GlossaryBlock, GlossaryInline } from '@/modules/common/glossary/types'
-import { formatCitation, publicationHref, shortLabel } from '@/modules/common/publications/format'
+import { citeLabel, formatCitation, publicationHref } from '@/modules/common/publications/format'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 import { KATEX_OPTIONS } from '@/modules/common/tooltip/katexOptions'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
@@ -96,10 +96,10 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
         if (typeof part === 'string') return renderMath(part)
         if ('cite' in part) {
           const pub = publicationByKey(part.cite)
-          if (!pub) return escapeHtml(part.cite)
+          if (!pub) return `(${escapeHtml(part.cite)})`
           const href = publicationHref(pub)
-          const label = escapeHtml(shortLabel(pub))
-          return href ? `<a href="${escapeHtml(href)}">${label}</a>` : label
+          const label = escapeHtml(citeLabel(pub))
+          return `(${href ? `<a href="${escapeHtml(href)}">${label}</a>` : label})`
         }
         const target = entries.get(part.ref)
         if (!target) return renderMath(part.label ?? part.ref)
@@ -123,6 +123,11 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
   function block(b: GlossaryBlock): string {
     if (b.kind === 'heading') return `<h${b.level}>${inline(b.content)}</h${b.level}>`
     if (b.kind === 'list') return `<ul>${b.items.map((i) => `<li>${inline(i)}</li>`).join('')}</ul>`
+    if (b.kind === 'table') {
+      const cells = (row: GlossaryInline[][], tag: string) =>
+        `<tr>${row.map((c) => `<${tag}>${inline(c)}</${tag}>`).join('')}</tr>`
+      return `<table><thead>${cells(b.header, 'th')}</thead><tbody>${b.rows.map((r) => cells(r, 'td')).join('')}</tbody></table>`
+    }
     return `<p>${inline(b.content)}</p>`
   }
 

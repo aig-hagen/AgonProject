@@ -25,3 +25,4 @@ export type GlossaryBlock =
   | { kind: 'heading'; level: 2 | 3; content: GlossaryInline[] }
   | { kind: 'paragraph'; content: GlossaryInline[] }
   | { kind: 'list'; items: GlossaryInline[][] }
+  | { kind: 'table'; header: GlossaryInline[][]; rows: GlossaryInline[][][] }

@@ -14,10 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Glossary: computational complexity results for AF and ADF semantics, each with its source, on every semantics page and in overview tables, plus a Complexity tab defining the reasoning problems and complexity classes.
 - Glossary: which principles (Directionality, Reinstatement, Modularisation, …) each AF semantics satisfies, with sources from the literature, on every semantics page, plus a Principles tab with a filterable overview table.
 - Every glossary term has its own URL (e.g. `/glossary/AF/ADM`) and page title, and the sitemap lists them all; old `?module=&term=` links still work.
-- Glossary entries can carry a longer write-up with citations, shown on the glossary page and linked from tooltips ("More →"); each entry lists the entries that reference it.
+- Glossary entries can carry a longer write-up with citations and tables, shown on the glossary page and linked from tooltips ("More →"); each entry lists the entries that reference it.
 - SetAF glossary: strongly and weakly admissible, weakly complete, preferred and grounded semantics, with the SetAF reduct.
 - SetAF and ABA semantics pickers mark semantics computed via an unproven AF reduction.
-- AF glossary: entries show the notation they introduce (e.g. $\mathsf{co}$) beside their title, plus new entries for the range, labellings and the probabilistic ranking.
+- AF glossary: entries show the notation they introduce (e.g. $\mathsf{co}$) beside their title, plus new entries for the range, labellings, the probabilistic ranking, and serialisation (states, the serialisation system and graph).
 
 ### Changed
 

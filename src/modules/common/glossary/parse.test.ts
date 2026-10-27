@@ -25,7 +25,12 @@ import {
   setGlossaryLocale,
   termKeyFromPath,
 } from '@/modules/common/glossary/load'
-import { parseBody, parseGlossaryEntry, parseInline } from '@/modules/common/glossary/parse'
+import {
+  parseBody,
+  parseGlossaryEntry,
+  parseInline,
+  splitTableRow,
+} from '@/modules/common/glossary/parse'
 import { D95 } from '@/modules/common/publications/publications'
 
 // A literal double hash trips the license-header tool (its regex marker).
@@ -63,6 +68,28 @@ describe('parseBody', () => {
       },
       { kind: 'heading', level: 3, content: ['Sources'] },
       { kind: 'list', items: [[{ cite: 'BCG18' }, ': overview of semantics'], [{ cite: 'DD18' }]] },
+    ])
+  })
+})
+
+describe('splitTableRow', () => {
+  test('keeps pipes inside links and math', () => {
+    expect(splitTableRow('| [[CO|complete]] | $|S| = 1$ | [@T22] |')).toEqual([
+      '[[CO|complete]]',
+      '$|S| = 1$',
+      '[@T22]',
+    ])
+  })
+})
+
+describe('parseBody tables', () => {
+  test('reads the header and rows, skipping the separator', () => {
+    expect(parseBody('| A | B |\n| --- | --- |\n| [[CO|co]] | [@T22] |')).toEqual([
+      {
+        kind: 'table',
+        header: [['A'], ['B']],
+        rows: [[[{ ref: 'CO', label: 'co' }], [{ cite: 'T22' }]]],
+      },
     ])
   })
 })

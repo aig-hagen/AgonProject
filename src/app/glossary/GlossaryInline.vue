@@ -21,6 +21,7 @@ import { useGlossaryContext } from '@/app/glossary/glossaryContext'
 import SourceLink from '@/app/glossary/SourceLink.vue'
 import type { GlossaryInline } from '@/modules/common/glossary/types'
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
+import { citeLabel } from '@/modules/common/publications/format'
 import { publicationByKey } from '@/modules/common/publications/lookup'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
 import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
@@ -36,14 +37,16 @@ const { isCompact } = useLayoutMode()
 <template>
   <template v-for="(part, i) in parts" :key="i">
     <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
-    <template v-else-if="'cite' in part">
-      <SourceLink
+    <!-- Muted, so citations don't read as glossary links. -->
+    <span v-else-if="'cite' in part" class="text-base-content/65"
+      >(<SourceLink
         v-if="publicationByKey(part.cite)"
         :publication="publicationByKey(part.cite)!"
-        class="text-primary underline-offset-2 hover:underline"
-      />
-      <span v-else class="text-base-content/65">{{ part.cite }}</span>
-    </template>
+        class="hover:text-primary"
+        >{{ citeLabel(publicationByKey(part.cite)!) }}</SourceLink
+      ><template v-else>{{ part.cite }}</template
+      >)</span
+    >
     <component
       :is="isCompact ? 'span' : TermTooltip"
       v-else-if="entries[part.ref]"

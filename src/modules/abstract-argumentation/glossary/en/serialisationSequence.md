@@ -8,4 +8,4 @@ A serialisation sequence is a sequence $(S_1, \ldots, S_n)$ such that $S_1$ is a
 
 ## Remarks
 
-Every serialisation sequence induces an [[ADM|admissible]] set.
+A non-empty set is [[ADM|admissible]] iff it is the union $S_1 \cup \ldots \cup S_n$ of some serialisation sequence [@T22].

@@ -57,7 +57,8 @@ Body:
   Remarks, properties and caveats go below the first `##`. It may use KaTeX (`$…$`) and links,
   but no citations; the definition cites through `reference`.
 - **Longer text:** everything from the first `##` on, shown only on the glossary page. Paragraphs,
-  `##`/`###` headings, `-` lists, links, and `[@KEY]` citations, separated by blank lines.
+  `##`/`###` headings, `-` lists, `|` tables (header row, `| --- |` separator, rows), links, and
+  `[@KEY]` citations, separated by blank lines. Citations render in parentheses, e.g. (T22).
 - **Links:** `[[key]]` or `[[key|label]]` to any entry in any module. Link every term that has an
   entry at its first use, notation included. Keep definitions formal and put the link on the
   symbol itself (`$R \subseteq$ [[parents|$par(a)$]]`) rather than writing the notation out.

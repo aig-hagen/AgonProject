@@ -29,6 +29,6 @@ const { publication } = defineProps<{ publication: Publication }>()
     :title="formatCitation(publication)"
     target="_blank"
     rel="noopener noreferrer"
-    >{{ shortLabel(publication) }}</a
+    ><slot>{{ shortLabel(publication) }}</slot></a
   >
 </template>

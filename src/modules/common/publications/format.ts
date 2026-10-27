@@ -58,6 +58,11 @@ export function shortLabel(pub: Publication): string {
   return `${baseLabel(pub)} (${pub.year}${yearSuffixes.get(pub) ?? ''})`
 }
 
+/** For parenthetical citations, e.g. "Dung, 1995"; the caller adds the parentheses. */
+export function citeLabel(pub: Publication): string {
+  return `${baseLabel(pub)}, ${pub.year}${yearSuffixes.get(pub) ?? ''}`
+}
+
 export function publicationHref(pub: Publication): string | undefined {
   return pub.doi ? `https://doi.org/${pub.doi}` : pub.url
 }
