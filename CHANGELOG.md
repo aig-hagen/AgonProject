@@ -27,6 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   semantics read like their AF counterparts, and semantics entries get symbols.
 - ADF glossary: definitions checked against their sources; truth values use the course notation,
   and semantics and notation entries get symbols.
+- ABA glossary: definitions checked against their sources, with a new defence entry; semantics and
+  notation entries get symbols, and the SetAF instantiation cites its original paper.
 - Publication references share one citation format with full venue, pages and publisher; same-author, same-year papers are labeled 2005a/2005b.
 - Glossary search brightens while typing and has a clear (×) button.
 - Glossary follows the design system more closely: shared section labels on mobile, underline link hovers, and a larger "More" tap target.

@@ -2,7 +2,8 @@
 label: ideal
 title: Ideal Semantics (ABA)
 short: Ideal Semantics
+symbol: \mathsf{id}
 reference: CFST18
 ---
 
-A set of assumptions $A \subseteq \mathcal{A}$ is ideal iff $A$ is maximal (w.r.t. $\subseteq$) such that (i) it is [[abaADM]], and (ii) for all [[abaPR]] extensions $P \subseteq \mathcal{A}$, $A \subseteq P$.
+A set of assumptions $S \subseteq \mathcal{A}$ is ideal iff $S$ is $\subseteq$-maximal among the [[abaADM|admissible]] sets that are contained in every [[abaPR|preferred]] extension.

@@ -1015,6 +1015,21 @@ export const BKU24: Publication = {
   doi: '10.24963/kr.2024/17',
 }
 
+export const KRU22: Publication = {
+  kind: 'inproceedings',
+  authors: ['König, M.', 'Rapberger, A.', 'Ulbricht, M.'],
+  year: 2022,
+  tags: ['ABA', 'SetAF', 'foundations'],
+  title: 'Just a Matter of Perspective: Intertranslating Expressive Argumentation Formalisms',
+  booktitle: 'Computational Models of Argument',
+  acronym: 'COMMA 2022',
+  series: 'FAIA',
+  seriesVolume: '353',
+  pages: '212–223',
+  publisher: 'IOS Press',
+  doi: '10.3233/FAIA220154',
+}
+
 export const BBR25: Publication = {
   kind: 'inproceedings',
   authors: ['Berthold, M.', 'Blümel, L.', 'Rapberger, A.'],

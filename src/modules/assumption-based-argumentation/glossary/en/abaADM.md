@@ -2,7 +2,8 @@
 label: admissible
 title: Admissibility (ABA)
 short: Admissibility
+symbol: \mathsf{ad}
 reference: CFST18
 ---
 
-A set of assumptions $A \subseteq \mathcal{A}$ is admissible iff it is [[abaClosure|closed]], [[abaCF]] and, for every $B \subseteq \mathcal{A}$, if $B$ is closed and [[abaAttack|attacks]] $A$, then $A$ attacks $B$.
+A set of assumptions $S \subseteq \mathcal{A}$ is admissible iff $S$ is [[abaClosure|closed]], [[abaCF]] and [[abaAttack|attacks]] every closed $T \subseteq \mathcal{A}$ that attacks $S$.

@@ -2,7 +2,8 @@
 label: preferred
 title: Preferred Semantics (ABA)
 short: Preferred Semantics
+symbol: \mathsf{pr}
 reference: CFST18
 ---
 
-A set of assumptions $A \subseteq \mathcal{A}$ is preferred iff it is maximally (w.r.t. $\subseteq$) [[abaADM]].
+A set of assumptions $S \subseteq \mathcal{A}$ is preferred iff $S$ is $\subseteq$-maximal among the [[abaADM|admissible]] sets.

@@ -45,9 +45,11 @@ Feature work (BAF/ADF views, LaTeX export, generation, Δ-semantics, tutorials) 
 ### Evaluation window
 
 - **11. [S] Semantics definitions.** Some semantics show incomplete definitions, and the semantics
-  list needs a cleaner layout (for ABA).
-- **12. [S] Glossary.** Update the ABA glossary entries, and in the evaluation window show the
-  definitions for flat and non-flat theories separately.
+  list needs a cleaner layout (for ABA). Twelve flat-only semantics have no `tooltipId` (sad, sst,
+  ea, is, uc, stg, ud, sud, wad, wco, wgr, wpr); wad/wco/wgr/wpr could point to the SetAF entries
+  (BKU24 Def. 50).
+- **12. [S] Flat and non-flat definitions.** In the evaluation window, show the definitions for flat
+  and non-flat theories separately.
 
 ### Theory editor
 
