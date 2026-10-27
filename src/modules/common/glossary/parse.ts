@@ -36,18 +36,23 @@ export interface ParsedGlossaryEntry {
 }
 
 const FRONTMATTER = /^---\n([\s\S]*?)\n---\n?/
-const INLINE = /\[\[(.+?)\]\]|\[@([\w-]+)\]/g
+// Math spans are matched only so that underscores inside them never start emphasis.
+const INLINE =
+  /(\$(?:\\.|[^$\\])*\$)|\[\[(.+?)\]\]|\[@([\w-]+)\]|(?<![\w\\])_([^_\s$](?:[^_$]*[^_\s$])?)_(?!\w)/g
 
-/** Splits text with `[[key]]` / `[[key|label]]` links and `[@KEY]` citations into parts. */
+/** Splits text with `[[key]]` / `[[key|label]]` links, `[@KEY]` citations and `_emphasis_` into parts. */
 export function parseInline(text: string): GlossaryInline[] {
   const parts: GlossaryInline[] = []
   let last = 0
   for (const match of text.matchAll(INLINE)) {
+    if (match[1]) continue
     if (match.index > last) parts.push(text.slice(last, match.index))
-    if (match[2]) {
-      parts.push({ cite: match[2] })
+    if (match[4]) {
+      parts.push({ em: match[4] })
+    } else if (match[3]) {
+      parts.push({ cite: match[3] })
     } else {
-      const [ref, label] = match[1]!.split('|', 2) as [string, string?]
+      const [ref, label] = match[2]!.split('|', 2) as [string, string?]
       parts.push(label === undefined ? { ref } : { ref, label })
     }
     last = match.index + match[0].length

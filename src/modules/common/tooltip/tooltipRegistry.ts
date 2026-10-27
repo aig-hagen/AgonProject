@@ -21,8 +21,8 @@ import type { InjectionKey } from 'vue'
 import type { GlossaryBlock } from '@/modules/common/glossary/types'
 import type { Publication } from '@/modules/common/publications/types'
 
-/** A plain string (may contain $...$ LaTeX) or a reference to another registry entry rendered as a nested TermTooltip. */
-export type TooltipContentPart = string | { ref: string; label?: string }
+/** A plain string (may contain $...$ LaTeX), emphasised text, or a reference to another registry entry rendered as a nested TermTooltip. */
+export type TooltipContentPart = string | { em: string } | { ref: string; label?: string }
 
 export interface TooltipDefinition {
   /** Text used as the trigger when this entry is referenced inline from another definition. */

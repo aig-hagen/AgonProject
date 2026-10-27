@@ -53,6 +53,18 @@ describe('parseInline', () => {
       { ref: 'extension', label: '$\\sigma$-extension' },
     ])
   })
+
+  test('parses emphasis outside math and words', () => {
+    expect(parseInline('A set is _tight_ iff $\\mathrm{Args}_\\mathbb{S}$ is.')).toEqual([
+      'A set is ',
+      { em: 'tight' },
+      ' iff $\\mathrm{Args}_\\mathbb{S}$ is.',
+    ])
+    expect(parseInline('_com-closed_, snake_case_word')).toEqual([
+      { em: 'com-closed' },
+      ', snake_case_word',
+    ])
+  })
 })
 
 describe('parseBody', () => {

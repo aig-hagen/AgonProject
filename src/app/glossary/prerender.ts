@@ -94,6 +94,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     return parts
       .map((part) => {
         if (typeof part === 'string') return renderMath(part)
+        if ('em' in part) return `<em>${renderMath(part.em)}</em>`
         if ('cite' in part) {
           const pub = publicationByKey(part.cite)
           if (!pub) return `(${escapeHtml(part.cite)})`
@@ -112,6 +113,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     return parts
       .map((part) => {
         if (typeof part === 'string') return plainText(part)
+        if ('em' in part) return plainText(part.em)
         if ('cite' in part) return ''
         return plainText(part.label ?? entries.get(part.ref)?.definition.label ?? part.ref)
       })

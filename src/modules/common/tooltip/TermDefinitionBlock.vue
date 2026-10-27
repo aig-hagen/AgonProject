@@ -74,6 +74,7 @@ const definition = computed(() => registry[id])
     <div class="flow-root" :class="isCompact ? 'text-xs leading-snug text-base-content/80' : ''">
       <template v-for="(part, i) in definition.content" :key="i">
         <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
+        <em v-else-if="'em' in part"><KatexInlineElement :text="part.em" /></em>
         <TermTooltip v-else :id="part.ref">
           <KatexInlineElement v-if="part.label" :text="part.label" />
         </TermTooltip>

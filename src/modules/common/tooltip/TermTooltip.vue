@@ -86,6 +86,7 @@ const definition = computed(() => registry[id])
       <div class="flow-root">
         <template v-for="(part, i) in definition.content" :key="i">
           <KatexInlineElement v-if="typeof part === 'string'" :text="part as string" />
+          <em v-else-if="'em' in part"><KatexInlineElement :text="part.em" /></em>
           <!-- Recursive: inline refs expand into nested TermTooltips automatically. -->
           <TermTooltip v-else :id="part.ref">
             <KatexInlineElement v-if="part.label" :text="part.label" />

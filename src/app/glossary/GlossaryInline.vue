@@ -37,6 +37,7 @@ const { isCompact } = useLayoutMode()
 <template>
   <template v-for="(part, i) in parts" :key="i">
     <KatexInlineElement v-if="typeof part === 'string'" :text="part" />
+    <em v-else-if="'em' in part"><KatexInlineElement :text="part.em" /></em>
     <!-- Muted, so citations don't read as glossary links. -->
     <span v-else-if="'cite' in part" class="text-base-content/65"
       >(<SourceLink
