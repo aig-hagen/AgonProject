@@ -18,15 +18,12 @@
 
 - **27. [S] After deploy.** Check that Caddy serves the prerendered `dist/glossary/**/index.html`
   pages, then submit `/sitemap.xml` in Google Search Console.
-- **28. [S] Derived complexity cells.** Review the unticked cells in
-  `literature/notes/complexity.md` (AF: EA cred/skept/enum, ID enum, GR enum, ADM/PR/SST/CF/NA/CF2
-  count-dec; ADF: S2V ne). Only ticked ones go into `complexity.ts`.
-- **35. [M] Glossary review leftovers.** Decide the serialisation entries (SER, serialisation,
-  serialisability principle). Check entries against sources once their PDFs are in `literature/`:
-  BAF (CL10, BGTV10, NR10), `adfSAD` (KVV22), PAF (LON11, H12). The complexity and principles
-  glossaries were not reviewed.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search), relations between semantics as a lattice
+- **38. [M] Data-driven signatures, prerendered results.** Move the signature results from the
+  `## Signature` sections and the `signature.md` table into a `signatures.ts` table (cells with
+  source and locator), shown on semantics pages like the principle and complexity results.
+  `prerender.ts` renders none of these result tables yet; add them to the static pages.
 
 ## Mobile
 
