@@ -4,7 +4,7 @@
 
 - **3. [M] AF ranking tutorial.** AF has a ranking window (`WindowRanking.vue`) but only the
   `af-basics` and `af-evaluation` tutorials. Add one that walks through the ranking semantics.
-- **4. [S] AF serialiation tutorial.** Missing
+- **4. [S] AF serialisation tutorial.** Missing
 - **36. [S] BAF coalitions with self-attacks.** Tweety's `getCoalitions()` adds every singleton
   `{a}` without a conflict-free check, so for `a → a` the coalition semantics returns `{a}` instead
   of `∅`. Fix upstream in TweetyProject (only add `{a}` if `a` does not attack itself); the copy in
@@ -19,11 +19,16 @@
 - **27. [S] After deploy.** Check that Caddy serves the prerendered `dist/glossary/**/index.html`
   pages, then submit `/sitemap.xml` in Google Search Console.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
-  an "Open in editor" button). Later, one at a time: aliases and notation (also helps search), relations between semantics as a lattice
+  an "Open in editor" button). Later, one at a time: aliases and notation (also helps search).
 - **38. [M] Data-driven signatures, prerendered results.** Move the signature results from the
   `## Signature` sections and the `signature.md` table into a `signatures.ts` table (cells with
   source and locator), shown on semantics pages like the principle and complexity results.
   `prerender.ts` renders none of these result tables yet; add them to the static pages.
+- **39. [M] Ranking principles.** ranking postulates (Abstraction,
+  Cardinality Precedence, Counter-Transitivity, etc; BDKM16).
+- **40. [M] Relations between semantics.** Inclusions like st ⊆ sst ⊆ pr ⊆ co ⊆ ad ⊆ cf as a
+  section in `semantics`.
+- **41. [L] iAF complexity table.** Ver/Cred/Skep, possible and necessary (BNRS18, BJNNR21).
 
 ## Mobile
 
