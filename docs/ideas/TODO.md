@@ -21,8 +21,10 @@
 - **28. [S] Derived complexity cells.** Review the unticked cells in
   `literature/notes/complexity.md` (AF: EA cred/skept/enum, ID enum, GR enum, ADM/PR/SST/CF/NA/CF2
   count-dec; ADF: S2V ne). Only ticked ones go into `complexity.ts`.
-- **35. [L] Review the other modules' glossaries.** Same pass as the AF review: see "Next: other
-  modules" in [glossary-review.md](glossary-review.md) and the tooling in `scripts/glossary-review/`.
+- **35. [M] Glossary review leftovers.** Decide the serialisation entries (SER, serialisation,
+  serialisability principle). Check entries against sources once their PDFs are in `literature/`:
+  BAF (CL10, BGTV10, NR10), `adfSAD` (KVV22), PAF (LON11, H12). The complexity and principles
+  glossaries were not reviewed.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search), relations between semantics as a lattice
 

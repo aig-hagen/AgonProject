@@ -66,7 +66,7 @@ Body:
 
 ## Style and notation
 
-Settled in the [AF glossary review](../ideas/glossary-review.md). Align with the FernUni course text
+Settled in the glossary reviews. Align with the FernUni course text
 (`m_64402_fa`) wherever possible.
 
 - **Template:** "A set $E \subseteq A$ is _X_ iff …". No "In an [[AF]] $F=(A,R)$" opener; the
