@@ -182,7 +182,7 @@ tokens and their roles; it never restates their values.
 ### Primary
 
 - **AIG Blue** (`primary`): primary buttons, the selected segment of a segmented control, menu
-  entry icons, links, the keyboard focus ring (`focus`), and informational alerts (`info` aliases
+  entry icons, links, hoverable glossary terms (blue text, no underline), the keyboard focus ring (`focus`), and informational alerts (`info` aliases
   `primary`, so there is never a second blue). Text on it uses `primary-content`.
 
 ### Secondary

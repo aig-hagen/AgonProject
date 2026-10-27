@@ -49,10 +49,7 @@ const { isCompact } = useLayoutMode()
       v-else-if="entries[part.ref]"
       v-bind="isCompact ? {} : { id: part.ref, triggerClass: '' }"
     >
-      <RouterLink
-        :to="pathOf(part.ref)"
-        class="text-primary underline underline-offset-2 hover:decoration-2"
-      >
+      <RouterLink :to="pathOf(part.ref)" class="text-primary">
         <KatexInlineElement :text="part.label ?? entries[part.ref]!.definition.label" />
       </RouterLink>
     </component>

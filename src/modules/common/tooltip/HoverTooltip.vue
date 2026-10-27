@@ -41,12 +41,11 @@ defineOptions({ inheritAttrs: false })
 // makes it grabbable, so the pointer can travel on to what's underneath.
 const STICKY_GRACE_MS = 350
 
-const { placement = 'bottom', triggerClass = 'cursor-help border-b border-dotted border-info' } =
-  defineProps<{
-    placement?: Placement
-    /** Styling for the trigger span; defaults to the dotted-underline text-term look. */
-    triggerClass?: string
-  }>()
+const { placement = 'bottom', triggerClass = 'cursor-help text-primary' } = defineProps<{
+  placement?: Placement
+  /** Styling for the trigger span; defaults to the colored text-term look. */
+  triggerClass?: string
+}>()
 
 const triggerEl = useTemplateRef('trigger')
 const panelEl = useTemplateRef('panel')
