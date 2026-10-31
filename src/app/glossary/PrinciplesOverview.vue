@@ -35,7 +35,8 @@ import TermTooltip from '@/modules/common/tooltip/TermTooltip.vue'
 const { table } = defineProps<{ table: PrincipleTable }>()
 
 const { entries, pathOf, titleOf } = useGlossaryContext()
-// Touch layouts keep the native title: a tap would both open the tooltip and navigate.
+// Compact: no tooltips (a tap would both open one and navigate), and the table scrolls in its own
+// box with sticky header row and first column.
 const { isCompact } = useLayoutMode()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -97,7 +98,10 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
       />
     </div>
 
-    <div v-if="columns.length && principleGroups.length" class="overflow-x-auto">
+    <div
+      v-if="columns.length && principleGroups.length"
+      :class="isCompact ? 'max-h-[70dvh] overflow-auto' : 'overflow-x-auto'"
+    >
       <table class="border-collapse">
         <thead>
           <tr class="text-left">
@@ -114,23 +118,23 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
             </th>
           </tr>
           <tr class="border-b border-base-300">
-            <th class="text-left font-medium pr-4 pb-1.5">
+            <th
+              class="text-left font-medium pr-4 pb-1.5"
+              :class="{ 'table-sticky-head table-sticky-col': isCompact }"
+            >
               {{ t('glossary.principles.principle') }}
             </th>
             <th
               v-for="key in columns"
               :key="key"
               class="w-8 min-w-8 text-xs font-medium px-0.5 pb-1.5"
+              :class="{ 'table-sticky-head': isCompact }"
             >
               <component
                 :is="isCompact ? 'span' : TermTooltip"
                 v-bind="isCompact ? {} : { id: key, triggerClass: '' }"
               >
-                <RouterLink
-                  :to="pathOf(key)"
-                  class="hover:text-primary"
-                  :title="isCompact ? labelOf(key) : undefined"
-                >
+                <RouterLink :to="pathOf(key)" class="hover:text-primary">
                   {{ key }}
                 </RouterLink>
               </component>
@@ -144,7 +148,9 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
                 :colspan="columns.length + 1"
                 class="bg-base-200 font-medium text-left px-1.5 py-1"
               >
-                {{ t(`glossary.principles.groups.${group.key}`) }}
+                <span class="sticky left-1.5">
+                  {{ t(`glossary.principles.groups.${group.key}`) }}
+                </span>
               </th>
             </tr>
             <tr
@@ -152,7 +158,13 @@ const labelOf = (key: string) => entries[key]?.definition.label ?? key
               :key="principle"
               class="border-b border-base-300"
             >
-              <th class="text-left font-normal pr-4 py-1 whitespace-nowrap">
+              <!-- Compact: names wrap in a narrow column so the marks get the width. -->
+              <th
+                class="text-left font-normal pr-4 py-1"
+                :class="
+                  isCompact ? 'table-sticky-col w-32 min-w-32 leading-snug' : 'whitespace-nowrap'
+                "
+              >
                 <GlossaryInline :parts="[{ ref: principle, label: titleOf(principle) }]" />
               </th>
               <td v-for="key in columns" :key="key" class="px-0.5 py-1 text-center">

@@ -80,6 +80,17 @@
   .field-label {
     @apply text-micro font-medium uppercase tracking-wide text-base-content/65;
   }
+  /* Overview tables: header row and first column stay put while the table scrolls in its box.
+     Collapsed borders don't move with sticky cells, so the hairlines are drawn on the cells. */
+  .table-sticky-head {
+    @apply sticky top-0 z-10 bg-base-100 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-base-300;
+  }
+  .table-sticky-col {
+    @apply sticky left-0 z-10 bg-base-100 after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-base-300;
+  }
+  .table-sticky-head.table-sticky-col {
+    @apply z-20;
+  }
 }
 
 /* Menu entry icons use the brand blue; dark mode's primary is already lifted for

@@ -28,7 +28,15 @@ test('Principles opens on its overview, followed by its entries', async ({ page 
   await page.goto('/glossary/Principles')
   await expect(page).toHaveURL(/\/glossary\/Principles\/principlesAF$/)
   await expect(page.getByRole('table')).toBeVisible()
+  // Header row and first column stay put while the table scrolls.
+  await expect(page.locator('thead th.table-sticky-col')).toHaveCSS('position', 'sticky')
   await expect(page.getByText('All entries')).toBeVisible()
+
+  // Column headers open their semantics' page; back returns to the table.
+  await page.getByRole('link', { name: 'CO', exact: true }).click()
+  await expect(page).toHaveURL(/\/glossary\/AF\/CO$/)
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page).toHaveURL(/\/glossary\/Principles\/principlesAF$/)
 })
 
 test('the index searches all modules', async ({ page }) => {

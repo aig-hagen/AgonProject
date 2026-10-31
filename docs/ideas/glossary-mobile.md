@@ -58,12 +58,12 @@ From the prototype review:
 
 ### 2. Tables
 
-- [ ] Sticky first column and header row in `ComplexityOverview` and `PrinciplesOverview`
+- [x] Sticky first column and header row in `ComplexityOverview` and `PrinciplesOverview`
       (`thead th` sticky top, first cell sticky left, wrapper with its own scroll on compact).
-- [ ] Principles: wrap principle names in a fixed-width first column on compact.
-- [ ] Principles column headers: on compact, a plain `RouterLink` without `TermTooltip`
+- [x] Principles: wrap principle names in a fixed-width first column on compact.
+- [x] Principles column headers: on compact, a plain `RouterLink` without `TermTooltip`
       (already the case); drop the `title` workaround if unused.
-- [ ] Complexity column headers link to their problem entry.
+- [x] Complexity column headers link to their problem entry.
 
 ### 3. Copy and i18n
 
@@ -73,12 +73,12 @@ From the prototype review:
 
 ### 4. Design guide
 
-- [ ] Layout → header bar: on compact pages with levels (the glossary), back returns to the
+- [x] Layout → header bar: on compact pages with levels (the glossary), back returns to the
       previous page, or goes up one level on a deep link. Other pages and desktop keep "back
       returns to the editor".
-- [ ] Same Bones Rule: the sanctioned compact difference becomes "page tabs become an index page"
+- [x] Same Bones Rule: the sanctioned compact difference becomes "page tabs become an index page"
       instead of pills; update Components → Tabs.
-- [ ] Note the sticky-table pattern (own scroll box, sticky first column and header row) under
+- [x] Note the sticky-table pattern (own scroll box, sticky first column and header row) under
       Components, if it gets reused.
 
 ### 5. Tests and follow-ups
