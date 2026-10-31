@@ -195,7 +195,8 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     const terms = [...entries.values()]
       .filter((entry) => entry.prefix === prefix)
       .sort((a, b) => termTitle(a).localeCompare(termTitle(b)))
-    const breadcrumb = `<nav><a href="/">AgonProject</a> › <a href="${glossaryPath()}">${glossaryTitle}</a> › <a href="${glossaryPath(prefix)}">${escapeHtml(label)}</a></nav>`
+    // Breadcrumbs use the prefix (as the tabs do); the page title carries the full name.
+    const breadcrumb = `<nav><a href="/">AgonProject</a> › <a href="${glossaryPath()}">${glossaryTitle}</a> › <a href="${glossaryPath(prefix)}">${prefix}</a></nav>`
 
     pages.push(
       page(
@@ -207,7 +208,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
         `${breadcrumb}<h1>${escapeHtml(label)}</h1><ul>${terms.map((t) => `<li>${termLink(t)}</li>`).join('')}</ul>`,
         [
           { '@context': 'https://schema.org', ...termSet },
-          breadcrumbList([...trail, { name: label }]),
+          breadcrumbList([...trail, { name: prefix }]),
         ],
       ),
     )
@@ -253,7 +254,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
             },
             breadcrumbList([
               ...trail,
-              { name: label, path: glossaryPath(prefix) },
+              { name: prefix, path: glossaryPath(prefix) },
               { name: title },
             ]),
           ],

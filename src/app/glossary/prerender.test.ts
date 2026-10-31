@@ -60,7 +60,7 @@ describe('prerenderGlossary', () => {
     expect(trail.itemListElement.map((item: { name: string }) => item.name)).toEqual([
       'AgonProject',
       'Glossary',
-      'Argumentation with Collective Attacks',
+      'SetAF',
       'Range (SetAF)',
     ])
     expect(trail.itemListElement.at(-2).item).toBe(`${site}/glossary/SetAF`)
