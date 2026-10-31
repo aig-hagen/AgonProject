@@ -47,8 +47,12 @@ npm run lint && npm run format && npm run format:check && npm run type-check
 npm run test:unit -- --run
 npm run build
 npm run docs:check
-npm run test:e2e
+npm run test:e2e -- --project=chromium --project="Mobile Chrome"
 ```
+
+E2E runs once, on the Chromium projects only: Firefox and WebKit don't launch on every machine,
+and CI covers them. A `browserType.launch` error is a local setup gap, not a regression; report it
+and don't rerun. Compare other failures against `dev` before calling them new.
 
 ## 5. Commit, push, tag
 

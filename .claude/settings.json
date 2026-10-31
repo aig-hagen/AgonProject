@@ -7,7 +7,7 @@
       "Read(**/package-lock.json)",
       "Read(**/.env)",
       "Read(**/.env.*)",
-      "Read(dist/**)",
+      "Read(dist/assets/**)",
       "Read(dist-ssr/**)",
       "Read(coverage/**)",
       "Read(test-results/**)",
