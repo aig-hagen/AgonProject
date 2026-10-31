@@ -19,13 +19,23 @@
 export default {
   title: 'Glossary',
   backToEditor: 'Back to editor',
-  searchPlaceholder: 'Search terms…',
+  back: 'Back',
+  searchPlaceholder: 'Search entries…',
+  searchAll: 'Search the glossary…',
+  searchModule: 'Search {name}…',
+  results: '{n} result | {n} results',
+  allEntries: 'All entries',
+  // Section labels of the mobile glossary index.
+  index: {
+    frameworks: 'Approaches',
+    topics: 'Topics',
+    references: 'References',
+  },
   noResults: 'No results',
-  selectTerm: 'Select a term from the list.',
+  selectTerm: 'Select an entry from the list.',
   source: 'Reference',
   referencedBy: 'Referenced by',
   more: 'More',
-  less: 'Less',
   sources: 'Sources',
   // Names of the glossary tabs that aren't app modules.
   modules: {

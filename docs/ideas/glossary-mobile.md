@@ -45,16 +45,16 @@ From the prototype review:
 
 ### 1. Navigation and pages
 
-- [ ] `GlossaryViewMobile.vue`: switch on route level: index, module list, or entry page.
+- [x] `GlossaryViewMobile.vue`: switch on route level: index, module list, or entry page.
       Entry pages reuse `GlossaryEntryDetails` (with the source section, as on desktop).
-- [ ] Index page component with grouped module rows and the global search over `allEntries`
+- [x] Index page component with grouped module rows and the global search over `allEntries`
       (useGlossary exports a cross-module match; keep the existing matching rules).
-- [ ] Overview homes for modules with an overview: a flag in `glossaryModules.json` (e.g.
+- [x] Overview homes for modules with an overview: a flag in `glossaryModules.json` (e.g.
       `"home": "overview"`) instead of hardcoding Complexity/Principles.
-- [ ] `PageHeader`: optional back target or handler (today it always links to `/`). Back logic:
+- [x] `PageHeader`: optional back target or handler (today it always links to `/`). Back logic:
       `router.back()` when `history.state.back` is an in-app glossary route, else push the parent.
-- [ ] Remember list scroll position and search per page across back navigation.
-- [ ] Remove `GlossaryCardMobile.vue`, the expand logic and the `data-nosnippet` stopgap.
+- [x] Remember list scroll position and search per page across back navigation.
+- [x] Remove `GlossaryCardMobile.vue`, the expand logic and the `data-nosnippet` stopgap.
 
 ### 2. Tables
 
@@ -67,9 +67,9 @@ From the prototype review:
 
 ### 3. Copy and i18n
 
-- [ ] Replace "term" in en/de strings shown on mobile (`glossary.searchPlaceholder`,
+- [x] Replace "term" in en/de strings shown on mobile (`glossary.searchPlaceholder`,
       `glossary.selectTerm`, new index strings). Check desktop uses of the same keys.
-- [ ] New keys: index group labels, "All entries", result count, per-module search placeholder.
+- [x] New keys: index group labels, "All entries", result count, per-module search placeholder.
 
 ### 4. Design guide
 
@@ -83,9 +83,9 @@ From the prototype review:
 
 ### 5. Tests and follow-ups
 
-- [ ] Unit: index search, overview-home redirect, back-target logic (history vs. parent).
-- [ ] E2E (mobile viewport): index → module → entry → back; deep link → back goes to the module
-      list; Principles opens on the table.
+- [x] Unit: index search, overview-home paths, entry module lookup.
+- [x] E2E (mobile viewport): index → module → entry → back; deep link → back goes to the module
+      list; Principles opens on the table; index search (`e2e/glossary.mobile.spec.ts`).
 - [ ] Sitemap: add `/glossary` once it is a real page on mobile; per-entry `<lastmod>` (last commit
       of the entry's `.md`, `fetch-depth: 0` in `publish.yml`, this rework's date as a floor).
 - [ ] After deploy: check search snippets again. If math still shows up three times ("E E E"),

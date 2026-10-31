@@ -3,54 +3,63 @@
     "prefix": "AF",
     "dir": "abstract-argumentation",
     "nameKey": "modules.abstract.name",
-    "mainKey": "AF"
+    "mainKey": "AF",
+    "home": "list"
   },
   {
     "prefix": "BAF",
     "dir": "bipolar-argumentation",
     "nameKey": "modules.bipolar.name",
-    "mainKey": "BAF"
+    "mainKey": "BAF",
+    "home": "list"
   },
   {
     "prefix": "ADF",
     "dir": "dialectical-argumentation",
     "nameKey": "modules.dialectical.name",
-    "mainKey": "ADF"
+    "mainKey": "ADF",
+    "home": "list"
   },
   {
     "prefix": "iAF",
     "dir": "incomplete-argumentation",
     "nameKey": "modules.incomplete.name",
-    "mainKey": "IAF"
+    "mainKey": "IAF",
+    "home": "list"
   },
   {
     "prefix": "PAF",
     "dir": "probabilistic-argumentation",
     "nameKey": "modules.probabilistic.name",
-    "mainKey": "PAF"
+    "mainKey": "PAF",
+    "home": "list"
   },
   {
     "prefix": "SetAF",
     "dir": "collective-attacks-argumentation",
     "nameKey": "modules.collectiveAttacks.name",
-    "mainKey": "SetAF"
+    "mainKey": "SetAF",
+    "home": "list"
   },
   {
     "prefix": "ABA",
     "dir": "assumption-based-argumentation",
     "nameKey": "modules.assumptionBased.name",
-    "mainKey": "ABAF"
+    "mainKey": "ABAF",
+    "home": "list"
   },
   {
     "prefix": "Complexity",
     "dir": "common/complexity",
     "nameKey": "glossary.modules.complexity",
-    "mainKey": "complexityAF"
+    "mainKey": "complexityAF",
+    "home": "overview"
   },
   {
     "prefix": "Principles",
     "dir": "common/principles",
     "nameKey": "glossary.modules.principles",
-    "mainKey": "principlesAF"
+    "mainKey": "principlesAF",
+    "home": "overview"
   }
 ]

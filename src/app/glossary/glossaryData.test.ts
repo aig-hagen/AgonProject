@@ -20,7 +20,14 @@ import { describe, expect, test } from 'vitest'
 
 import { plainText } from '@/app/glossary/plainText'
 import { messageAt } from '@/app/glossary/prerender'
-import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
+import {
+  entryModulePrefix,
+  entryRefs,
+  glossaryModules,
+  glossaryPath,
+  moduleHomePath,
+  searchGlossary,
+} from '@/app/glossary/useGlossary'
 import de from '@/localization/locales/de'
 import en from '@/localization/locales/en'
 import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
@@ -117,4 +124,23 @@ test('translated entries keep the refs and citations of their English twin', () 
       return JSON.stringify(links(source)) === JSON.stringify(links(twin)) ? [] : [path]
     })
   expect(mismatches).toEqual([])
+})
+
+test('overview modules land on their overview entry, the others on their list', () => {
+  const module = (prefix: string) => glossaryModules.find((m) => m.prefix === prefix)!
+  expect(moduleHomePath(module('AF'))).toBe('/glossary/AF')
+  expect(moduleHomePath(module('Principles'))).toBe('/glossary/Principles/principlesAF')
+  expect(moduleHomePath(module('Complexity'))).toBe('/glossary/Complexity/complexityAF')
+})
+
+test('glossary search spans all modules', () => {
+  const hits = searchGlossary('  Stable ')
+  expect(hits.map((hit) => hit.key)).toContain('ST')
+  expect(hits.find((hit) => hit.key === 'setafRange')).toBeUndefined()
+  expect(searchGlossary('weak admissibility').map((hit) => hit.modulePrefix)).toEqual(
+    expect.arrayContaining(['AF', 'SetAF']),
+  )
+  expect(searchGlossary('')).toEqual([])
+  expect(entryModulePrefix('existence')).toBe('Principles')
+  expect(entryModulePrefix('nope')).toBeUndefined()
 })

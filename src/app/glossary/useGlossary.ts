@@ -73,6 +73,10 @@ export interface GlossaryModule {
   mainKey: string
   // Curated term list sections; without them the list is grouped by first letter.
   groups?: { label: string; keys: string[] }[]
+  // Mobile lands on the main entry's page (an overview table) instead of the entry list.
+  overviewHome: boolean
+  // A cross-cutting topic (complexity, principles) rather than a formalism.
+  topic: boolean
 }
 
 const registries: Record<string, TooltipRegistry> = {
@@ -93,14 +97,26 @@ const termGroups: Record<string, GlossaryModule['groups']> = {
 
 // The module list is JSON so the build's sitemap plugin (vite.config.ts) can read it too.
 export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
-  ({ prefix, nameKey, dir, mainKey }) => ({
+  ({ prefix, nameKey, dir, mainKey, home }) => ({
     prefix,
     nameKey,
     mainKey,
     glossary: registries[dir]!,
     groups: termGroups[dir],
+    overviewHome: home === 'overview',
+    topic: dir.startsWith('common/'),
   }),
 )
+
+/** Prefix of the module an entry belongs to, or undefined for an unknown key. */
+export function entryModulePrefix(termKey: string): string | undefined {
+  return allEntries[termKey]?.modulePrefix
+}
+
+/** A module's landing page: its entry list, or its overview entry for overview-home modules. */
+export function moduleHomePath(module: GlossaryModule): string {
+  return glossaryPath(module.prefix, module.overviewHome ? module.mainKey : undefined)
+}
 
 // Combined map for cross-module ref resolution; on a key clash the first module wins.
 const allEntries: GlossaryEntries = {}
@@ -115,9 +131,28 @@ for (const m of glossaryModules) {
   }
 }
 
+// Without LaTeX, so `$E$-Reduct` sorts and groups under E and is found by "e-reduct".
+const plainListTitle = (def: TooltipDefinition) => plainText(listTitle(def))
+
+function matchesQuery(key: string, def: TooltipDefinition, q: string) {
+  return [termTitle(def), plainListTitle(def), def.label, key].some((name) =>
+    name.toLowerCase().includes(q),
+  )
+}
+
+/** Entries of all modules matching `query`, sorted by list title. */
+export function searchGlossary(query: string) {
+  const q = query.toLowerCase().trim()
+  if (!q) return []
+  return Object.entries(allEntries)
+    .filter(([key, { definition }]) => matchesQuery(key, definition, q))
+    .map(([key, { definition, modulePrefix }]) => ({ key, definition, modulePrefix }))
+    .sort((a, b) => plainListTitle(a.definition).localeCompare(plainListTitle(b.definition)))
+}
+
 /**
- * Shared glossary state for the desktop two-panel view and the mobile inline-card view:
- * module selection, search, term grouping, and cross-module reference navigation.
+ * Shared glossary state for the desktop two-panel view and the mobile drill-down view:
+ * module selection, search, entry grouping, and cross-module reference navigation.
  */
 export function useGlossary() {
   const route = useRoute()
@@ -174,22 +209,13 @@ export function useGlossary() {
     searchQuery.value = ''
   })
 
-  // Without LaTeX, so `$E$-Reduct` sorts and groups under E and is found by "e-reduct".
-  const plainListTitle = (def: TooltipDefinition) => plainText(listTitle(def))
-
-  function matchesQuery([key, def]: [string, TooltipDefinition], q: string) {
-    return [termTitle(def), plainListTitle(def), def.label, key].some((name) =>
-      name.toLowerCase().includes(q),
-    )
-  }
-
   // The framework entry, pinned above the alphabetical list (hidden when it fails the search).
   const pinnedTerm = computed<[string, TooltipDefinition] | null>(() => {
     const { mainKey, glossary } = activeModule.value
     const def = glossary[mainKey]
     if (!def) return null
     const q = searchQuery.value.toLowerCase().trim()
-    if (q && !matchesQuery([mainKey, def], q)) return null
+    if (q && !matchesQuery(mainKey, def, q)) return null
     return [mainKey, def]
   })
 
@@ -202,7 +228,7 @@ export function useGlossary() {
   const filteredTerms = computed(() => {
     const q = searchQuery.value.toLowerCase().trim()
     if (!q) return sortedTerms.value
-    return sortedTerms.value.filter((entry) => matchesQuery(entry, q))
+    return sortedTerms.value.filter(([key, def]) => matchesQuery(key, def, q))
   })
 
   const groupedTerms = computed(() => {
@@ -247,13 +273,22 @@ export function useGlossary() {
       : sortedTerms.value[0]?.[0],
   )
 
+  // The URL's module, if it names one; unlike activeModulePrefix, no fallback.
+  const moduleParam = computed(() => param('module'))
+
   const defaultTitle = document.title
   watch(
-    activeDefinition,
-    (def) => {
+    [activeDefinition, moduleParam, activeTermKey],
+    ([def, module, term]) => {
+      // The literature tab sets its own title.
+      if (literatureActive.value) return
+      const moduleName = t(activeModule.value.nameKey)
+      // A module without a term is the mobile entry list (desktop opens a term instead).
       document.title = def
-        ? pageTitle(plainText(termTitle(def)), t(activeModule.value.nameKey))
-        : defaultTitle
+        ? pageTitle(plainText(termTitle(def)), moduleName)
+        : module && !term
+          ? pageTitle(moduleName, t('glossary.title'))
+          : defaultTitle
     },
     { immediate: true },
   )
@@ -280,6 +315,7 @@ export function useGlossary() {
     activeModulePrefix,
     activeTermKey,
     activeModule,
+    moduleParam,
     literatureActive,
     tabs,
     searchQuery,
@@ -290,5 +326,6 @@ export function useGlossary() {
     redirecting,
     navigate,
     selectModule,
+    pathOf,
   }
 }

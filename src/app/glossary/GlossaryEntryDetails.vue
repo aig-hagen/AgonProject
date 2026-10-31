@@ -36,13 +36,10 @@ const {
   termKey,
   definition,
   backlinks = [],
-  compact = false,
 } = defineProps<{
   termKey: string
   definition: TooltipDefinition
   backlinks?: { key: string; definition: TooltipDefinition }[]
-  /** Mobile card: tighter spacing, and the source is shown by the card itself. */
-  compact?: boolean
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -51,38 +48,23 @@ const { pathOf } = useGlossaryContext()
 const complexityOverview = computed(() => complexityTableFor(termKey))
 const principleOverview = computed(() => principleTableFor(termKey))
 
-const overviewClass = computed(() => (compact ? 'mt-3' : 'mt-6'))
-const sectionClass = computed(() => (compact ? 'mt-3' : 'mt-6 pt-4 border-t border-base-300'))
+const sectionClass = 'mt-6 pt-4 border-t border-base-300'
 </script>
 
 <template>
   <div>
-    <GlossaryBody v-if="definition.body" :blocks="definition.body" :class="{ 'mt-4': !compact }" />
-    <ComplexityOverview
-      v-if="complexityOverview"
-      :table="complexityOverview"
-      :class="overviewClass"
-    />
+    <GlossaryBody v-if="definition.body" :blocks="definition.body" class="mt-4" />
+    <ComplexityOverview v-if="complexityOverview" :table="complexityOverview" class="mt-6" />
     <ComplexityResults :term-key="termKey" :class="sectionClass" />
-    <PrinciplesOverview
-      v-if="principleOverview"
-      :table="principleOverview"
-      :class="overviewClass"
-    />
+    <PrinciplesOverview v-if="principleOverview" :table="principleOverview" class="mt-6" />
     <PrinciplesResults :term-key="termKey" :class="sectionClass" />
-    <section v-if="!compact && definition.reference" :class="sectionClass">
+    <section v-if="definition.reference" :class="sectionClass">
       <h3 class="section-heading mb-2">{{ t('glossary.source') }}</h3>
       <PublicationCitation :publication="definition.reference" />
     </section>
     <section v-if="backlinks.length" :class="sectionClass">
-      <component
-        :is="compact ? 'h4' : 'h3'"
-        class="section-heading"
-        :class="compact ? 'mb-1' : 'mb-2'"
-      >
-        {{ t('glossary.referencedBy') }}
-      </component>
-      <ul class="flex flex-wrap gap-y-1" :class="compact ? 'gap-x-3' : 'gap-x-4 text-sm'">
+      <h3 class="section-heading mb-2">{{ t('glossary.referencedBy') }}</h3>
+      <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         <li v-for="link in backlinks" :key="link.key">
           <RouterLink
             :to="pathOf(link.key)"

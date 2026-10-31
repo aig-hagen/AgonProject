@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- Mobile glossary: an index of all formalisms with a search across them, and one page per entry instead of one long card list; Complexity and Principles open on their overview table.
 - Glossary page titles name the formalism, e.g. "Stable Semantics - Abstract Argumentation | AgonProject".
 
 ### Fixed
