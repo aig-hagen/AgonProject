@@ -6,15 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.15.1] - 2026-10-31
+
 ### Changed
 
-- Mobile glossary: an index of all formalisms with a search across them, and one page per entry instead of one long card list; Complexity and Principles open on their overview table, whose header row and first column stay in view while scrolling.
-- Glossary page titles name the formalism, e.g. "Stable Semantics - Abstract Argumentation | AgonProject".
+- Mobile glossary: an index of all approaches with a search across them, and one page per entry instead of one long card list; Complexity and Principles open on their overview table, whose header row and first column stay in view while scrolling.
+- Glossary page titles name the approach, e.g. "Stable Semantics - Abstract Argumentation | AgonProject".
 
 ### Fixed
 
-- Search results for glossary term pages no longer show text from other terms.
-- Search engines now get AgonProject's site name and each glossary page's breadcrumb path.
+- Glossary pages in search results: snippets no longer mix in text from other entries, and search engines get AgonProject's site name and each page's breadcrumb path.
 
 ## [0.15.0] - 2026-10-27
 
@@ -255,7 +256,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Earlier versions are available on the
 [GitHub Releases page](https://github.com/aig-hagen/AgonProject/releases).
 
-[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/aig-hagen/AgonProject/compare/v0.15.1...HEAD
+[0.15.1]: https://github.com/aig-hagen/AgonProject/compare/v0.15.0...v0.15.1
 [0.15.0]: https://github.com/aig-hagen/AgonProject/compare/v0.14.1...v0.15.0
 [0.14.1]: https://github.com/aig-hagen/AgonProject/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/aig-hagen/AgonProject/compare/v0.13.0...v0.14.0
