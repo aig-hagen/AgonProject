@@ -19,13 +19,23 @@
 export default {
   title: 'Glossar',
   backToEditor: 'Zurück zum Editor',
-  searchPlaceholder: 'Begriffe suchen…',
+  back: 'Zurück',
+  searchPlaceholder: 'Einträge suchen…',
+  searchAll: 'Glossar durchsuchen…',
+  searchModule: '{name} durchsuchen…',
+  results: '{n} Ergebnis | {n} Ergebnisse',
+  allEntries: 'Alle Einträge',
+  // Section labels of the mobile glossary index.
+  index: {
+    frameworks: 'Formalismen',
+    topics: 'Themen',
+    references: 'Referenzen',
+  },
   noResults: 'Keine Ergebnisse',
-  selectTerm: 'Wähle einen Begriff aus der Liste.',
+  selectTerm: 'Wähle einen Eintrag aus der Liste.',
   source: 'Referenz',
   referencedBy: 'Verwendet in',
   more: 'Mehr',
-  less: 'Weniger',
   sources: 'Quellen',
   // Names of the glossary tabs that aren't app modules.
   modules: {

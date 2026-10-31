@@ -22,7 +22,12 @@ import { RouterLink } from 'vue-router'
 
 import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 
-const { title, backLabel } = defineProps<{ title: string; backLabel: string }>()
+const { title, backLabel, onBack } = defineProps<{
+  title: string
+  backLabel: string
+  /** Replaces the default link to the editor, e.g. to go back within the page's own levels. */
+  onBack?: () => void
+}>()
 
 const { isCompact } = useLayoutMode()
 </script>
@@ -34,15 +39,16 @@ const { isCompact } = useLayoutMode()
     :class="isCompact ? 'min-h-14 px-1.5' : 'min-h-12 px-3'"
     style="padding-top: env(safe-area-inset-top)"
   >
-    <RouterLink
-      to="/"
+    <component
+      :is="onBack ? 'button' : RouterLink"
+      v-bind="onBack ? { type: 'button', onClick: onBack } : { to: '/' }"
       class="btn btn-ghost justify-self-start"
       :class="isCompact ? 'btn-square size-11' : 'btn-sm gap-1 pl-1.5'"
       :aria-label="isCompact ? backLabel : undefined"
     >
       <ChevronLeftIcon class="size-5 text-base-content/65" />
       <span v-if="!isCompact">{{ backLabel }}</span>
-    </RouterLink>
+    </component>
     <h1 class="min-w-0 truncate text-center text-lg font-bold">{{ title }}</h1>
     <div class="flex items-center justify-end gap-1">
       <slot name="actions" />

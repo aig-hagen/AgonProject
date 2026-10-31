@@ -28,12 +28,15 @@ import {
   type ComplexityTable,
   SHOWN_PROBLEMS,
 } from '@/modules/common/complexity/types'
+import { useLayoutMode } from '@/modules/common/layout/useLayoutMode'
 import type { Publication } from '@/modules/common/publications/types'
 import PublicationCitation from '@/modules/common/tooltip/PublicationCitation.vue'
 
 const { table } = defineProps<{ table: ComplexityTable }>()
 
 const { t } = useI18n({ useScope: 'global' })
+// Compact: the table scrolls in its own box, with sticky header row and first column.
+const { isCompact } = useLayoutMode()
 
 const sections = computed(() => [
   {
@@ -91,15 +94,21 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
           <template v-else>{{ section.note?.termLabel }}</template>
         </template>
       </i18n-t>
-      <div class="overflow-x-auto">
+      <div :class="isCompact ? 'max-h-[70dvh] overflow-auto' : 'overflow-x-auto'">
         <table class="border-collapse">
           <thead>
             <tr class="border-b border-base-300 text-left">
-              <th class="font-medium pr-4 pb-1.5">{{ t('glossary.complexity.semantics') }}</th>
+              <th
+                class="font-medium pr-4 pb-1.5"
+                :class="{ 'table-sticky-head table-sticky-col': isCompact }"
+              >
+                {{ t('glossary.complexity.semantics') }}
+              </th>
               <th
                 v-for="problem in problemsIn(section.rows)"
                 :key="problem"
                 class="font-medium pr-4 pb-1.5 whitespace-nowrap"
+                :class="{ 'table-sticky-head': isCompact }"
               >
                 <GlossaryInline :parts="[{ ref: problemKeys[problem] }]" />
               </th>
@@ -112,11 +121,14 @@ const sourceNumber = (source: Publication) => sources.value.indexOf(source) + 1
                   :colspan="problemsIn(section.rows).length + 1"
                   class="bg-base-200 font-medium text-left px-1.5 py-1"
                 >
-                  {{ group.label }}
+                  <span class="sticky left-1.5">{{ group.label }}</span>
                 </th>
               </tr>
               <tr v-for="key in group.keys" :key="key" class="border-b border-base-300 align-top">
-                <th class="text-left font-normal pr-4 py-1.5 whitespace-nowrap">
+                <th
+                  class="text-left font-normal pr-4 py-1.5 whitespace-nowrap"
+                  :class="{ 'table-sticky-col': isCompact }"
+                >
                   <GlossaryInline :parts="[{ ref: key }]" />
                 </th>
                 <td v-for="problem in problemsIn(section.rows)" :key="problem" class="pr-4 py-1.5">

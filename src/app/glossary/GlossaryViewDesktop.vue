@@ -23,9 +23,8 @@ import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { complexityTableFor } from '@/app/glossary/complexity'
-import { listTitle, termTitle } from '@/app/glossary/glossaryContext'
-import GlossaryEntryDetails from '@/app/glossary/GlossaryEntryDetails.vue'
-import GlossaryInline from '@/app/glossary/GlossaryInline.vue'
+import { listTitle } from '@/app/glossary/glossaryContext'
+import GlossaryEntry from '@/app/glossary/GlossaryEntry.vue'
 import { principleTableFor } from '@/app/glossary/principles'
 import { glossaryPath, useGlossary } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
@@ -33,7 +32,6 @@ import LiteraturePanel from '@/app/literature/LiteraturePanel.vue'
 import SearchInput from '@/modules/common/forms/SearchInput.vue'
 import PageHeader from '@/modules/common/layout/PageHeader.vue'
 import KatexInlineElement from '@/modules/common/tooltip/KatexInlineElement.vue'
-import TermSymbol from '@/modules/common/tooltip/TermSymbol.vue'
 
 const { modules } = defineProps<{ modules: readonly ModuleConfig<Objectish>[] }>()
 
@@ -150,24 +148,14 @@ watch(
 
       <!-- Right: definition panel -->
       <div class="flex-1 overflow-y-auto p-8">
-        <div v-if="activeDefinition" :key="activeTermKey" :class="wide ? 'max-w-5xl' : 'max-w-2xl'">
-          <h2 class="flex flex-wrap items-center gap-2 text-lg font-bold leading-snug mb-4">
-            <KatexInlineElement :text="termTitle(activeDefinition)" />
-            <TermSymbol
-              v-if="activeDefinition.symbol"
-              :symbol="activeDefinition.symbol"
-              class="text-sm"
-            />
-          </h2>
-          <p class="text-base-content/80 leading-relaxed">
-            <GlossaryInline :parts="activeDefinition.content" />
-          </p>
-          <GlossaryEntryDetails
-            :term-key="activeTermKey"
-            :definition="activeDefinition"
-            :backlinks="backlinks[activeTermKey]"
-          />
-        </div>
+        <GlossaryEntry
+          v-if="activeDefinition"
+          :key="activeTermKey"
+          :term-key="activeTermKey"
+          :definition="activeDefinition"
+          :backlinks="backlinks[activeTermKey]"
+          :class="wide ? 'max-w-5xl' : 'max-w-2xl'"
+        />
         <p v-else class="text-sm text-base-content/65">{{ t('glossary.selectTerm') }}</p>
       </div>
     </div>

@@ -324,8 +324,10 @@ Every secondary page uses the same **header bar shell**:
 
 The bar holds a ghost back button (chevron) on the left, the page title centered in Headline type,
 and optional actions on the right. It is the same component on desktop and mobile; only padding and
-touch size differ. Secondary pages are in-app routes and open in the same tab, so back always
-returns to the editor; only external sites open in a new tab (marked with ↗).
+touch size differ. Secondary pages are in-app routes and open in the same tab, so back returns to
+the editor; only external sites open in a new tab (marked with ↗). The exception is a compact page
+with levels of its own (the glossary: index → module → entry): there back returns to the previous
+page, or, without one (a deep link), goes up one level.
 
 ### Named Rules
 
@@ -334,7 +336,7 @@ back links above a big title, no margin-only layouts.
 
 **The Same Bones Rule.** A desktop view and its mobile twin use the same components (header bar,
 search, tabs, labels). Mobile may stack, enlarge touch targets and reflow, but not restyle. The one
-sanctioned difference: page tabs become pills on compact screens (see Tabs).
+sanctioned difference: page tabs become an index page on compact screens (see Tabs).
 
 ## Elevation & Depth
 
@@ -398,7 +400,8 @@ Quiet by default, blue when it matters.
 The ruled top of every secondary page (see Layout), implemented once as
 [`PageHeader.vue`](../../src/modules/common/layout/PageHeader.vue). Paper shade background, hairline
 below, ghost chevron back button (with its label on desktop, a 44px icon button on compact), and the
-page title centered in Headline type. Pages pass extra actions through its `actions` slot.
+page title centered in Headline type. Pages pass extra actions through its `actions` slot, and
+pages with levels pass `onBack` to replace the link to the editor.
 
 ### Cards / Containers
 
@@ -433,9 +436,16 @@ Two roles, one shape logic: the selected segment is always the strongest element
 ### Tabs
 
 - **Editor tabs:** DaisyUI lifted tabs on the paper shade strip, one per open document.
-- **Page tabs:** underline tabs below the header bar on desktop. On compact screens they become a
-  horizontally scrolling row of 32px pills: brand fill when selected, paper shade with ink `/80`
-  otherwise.
+- **Page tabs:** underline tabs below the header bar on desktop. On compact screens they become an
+  index page instead: one 44px row per tab, grouped under `.section-label`s, each opening its own
+  page (the glossary's module index).
+
+### Tables
+
+- **Overview tables** (complexity, principles): hairline rows, `base-200` group rows. On compact
+  screens the table scrolls in its own box (at most 70% of the viewport height) with a sticky
+  header row and first column (`.table-sticky-head`, `.table-sticky-col`); wide tables are
+  accepted, not redesigned.
 
 ### Navigation and menus
 
