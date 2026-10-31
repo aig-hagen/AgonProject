@@ -98,6 +98,9 @@ function gzipFixPlugin(): Plugin {
 
 // sitemap.xml at build time: the home page, the literature tab and one URL per glossary term, read from the
 // glossary Markdown files so it can't drift from the content.
+// Last glossary-wide change, as <lastmod> for all glossary URLs; bump it by hand after big changes.
+const GLOSSARY_UPDATED = '2026-10-31'
+
 function sitemapPlugin(): Plugin {
   return {
     name: 'sitemap',
@@ -113,7 +116,11 @@ function sitemapPlugin(): Plugin {
           paths.push(`/glossary/${prefix}/${encodeURIComponent(file.slice(0, -3))}`)
         }
       }
-      const urls = paths.map((path) => `  <url><loc>${site}${path}</loc></url>`)
+      const urls = paths.map((path) =>
+        path.startsWith('/glossary')
+          ? `  <url><loc>${site}${path}</loc><lastmod>${GLOSSARY_UPDATED}</lastmod></url>`
+          : `  <url><loc>${site}${path}</loc></url>`,
+      )
       this.emitFile({
         type: 'asset',
         fileName: 'sitemap.xml',

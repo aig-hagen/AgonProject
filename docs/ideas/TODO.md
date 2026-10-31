@@ -17,7 +17,9 @@
 ## Glossary
 
 - **27. [S] After deploy.** Check that Caddy serves the prerendered `dist/glossary/**/index.html`
-  pages, then submit `/sitemap.xml` in Google Search Console.
+  pages, then resubmit `/sitemap.xml` in Google Search Console and request indexing (URL
+  Inspection) for `/`, `/glossary`, `/glossary/AF` and a few key entries. Before the release, set
+  `GLOSSARY_UPDATED` in `vite.config.ts` to the release date.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search).
 - **42. [M] Mobile glossary rework.** Index → module → entry pages instead of one card list; plan

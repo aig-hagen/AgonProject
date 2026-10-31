@@ -86,8 +86,8 @@ From the prototype review:
 - [x] Unit: index search, overview-home paths, entry module lookup.
 - [x] E2E (mobile viewport): index → module → entry → back; deep link → back goes to the module
       list; Principles opens on the table; index search (`e2e/glossary.mobile.spec.ts`).
-- [ ] Sitemap: add `/glossary` once it is a real page on mobile; per-entry `<lastmod>` (last commit
-      of the entry's `.md`, `fetch-depth: 0` in `publish.yml`, this rework's date as a floor).
+- [x] Sitemap: one hand-set `<lastmod>` (`GLOSSARY_UPDATED` in `vite.config.ts`) for all glossary
+      URLs; set it to the release date. `/glossary` was already listed.
 - [ ] After deploy: check search snippets again. If math still shows up three times ("E E E"),
       mark KaTeX's hidden MathML/annotation copies with `data-nosnippet`.
 
