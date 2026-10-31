@@ -19,11 +19,11 @@
 - **27. [S] After deploy.** Check that Caddy serves the prerendered `dist/glossary/**/index.html`
   pages, then resubmit `/sitemap.xml` in Google Search Console and request indexing (URL
   Inspection) for `/`, `/glossary`, `/glossary/AF` and a few key entries. Before the release, set
-  `GLOSSARY_UPDATED` in `vite.config.ts` to the release date.
+  `GLOSSARY_UPDATED` in `vite.config.ts` to the release date. A few weeks later, check the search
+  snippets: if math still shows up three times ("E E E"), mark KaTeX's hidden MathML copies
+  `data-nosnippet`.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search).
-- **42. [M] Mobile glossary rework.** Index → module → entry pages instead of one card list; plan
-  in [`glossary-mobile.md`](glossary-mobile.md).
 - **43. [S] Link-preview image.** `og:image` is the 192px favicon with a `summary` card; a
   1200×630 image would make shared links look better.
 - **38. [M] Data-driven signatures, prerendered results.** Move the signature results from the
