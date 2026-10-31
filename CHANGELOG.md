@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Glossary page titles name the formalism, e.g. "Stable Semantics - Abstract Argumentation | AgonProject".
+
+### Fixed
+
+- Search results for glossary term pages no longer show text from other terms.
+- Search engines now get AgonProject's site name and each glossary page's breadcrumb path.
+
 ## [0.15.0] - 2026-10-27
 
 ### Added

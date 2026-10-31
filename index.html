@@ -11,31 +11,33 @@
     <meta name="theme-color" content="#eef2f6" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#17222c" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>AgonProject — Explore Approaches to Formal Argumentation</title>
+    <title>AgonProject - Explore Approaches to Formal Argumentation</title>
     <meta
       name="description"
-      content="AgonProject is a free web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms."
+      content="AgonProject is a web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms."
     />
     <link rel="canonical" href="https://agonproject.aig.fernuni-hagen.de/" />
     <!-- Open Graph / social link previews (WhatsApp, Slack, iMessage, …). Crawlers don't
          run JS, so these must be static in the served HTML. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="AgonProject" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="de_DE" />
     <meta property="og:url" content="https://agonproject.aig.fernuni-hagen.de/" />
-    <meta property="og:title" content="AgonProject — Explore Approaches to Formal Argumentation" />
+    <meta property="og:title" content="AgonProject - Explore Approaches to Formal Argumentation" />
     <meta
       property="og:description"
-      content="Explore formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms — free, in your browser."
+      content="Explore formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser."
     />
     <meta
       property="og:image"
       content="https://agonproject.aig.fernuni-hagen.de/favicon-192x192.png"
     />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="AgonProject — Explore Approaches to Formal Argumentation" />
+    <meta name="twitter:title" content="AgonProject - Explore Approaches to Formal Argumentation" />
     <meta
       name="twitter:description"
-      content="Explore formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms — free, in your browser."
+      content="Explore formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser."
     />
     <meta
       name="twitter:image"
@@ -50,14 +52,26 @@
         "url": "https://agonproject.aig.fernuni-hagen.de/",
         "applicationCategory": "EducationalApplication",
         "operatingSystem": "Any (web browser)",
-        "description": "A free web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser.",
+        "description": "A web platform for exploring formal argumentation: build, visualize, and evaluate abstract argumentation frameworks and related formalisms in your browser.",
         "keywords": "computational argumentation, formal argumentation, abstract argumentation, argumentation frameworks, Dung frameworks, argumentation semantics, extension-based semantics, defeasible reasoning, bipolar argumentation, probabilistic argumentation, abstract dialectical frameworks",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "sameAs": ["https://github.com/aig-hagen/AgonProject"],
         "publisher": {
           "@type": "Organization",
           "name": "Artificial Intelligence Group, FernUniversität in Hagen",
-          "url": "https://www.fernuni-hagen.de/aig/en/"
+          "url": "https://www.fernuni-hagen.de/aig/en/",
+          "logo": "https://agonproject.aig.fernuni-hagen.de/icon-512.png"
         }
+      }
+    </script>
+    <!-- Site name in search results; without it Google falls back to the parent domain's name. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "AgonProject",
+        "alternateName": "Agon Project",
+        "url": "https://agonproject.aig.fernuni-hagen.de/"
       }
     </script>
     <script>
@@ -116,7 +130,7 @@
         <h1>AgonProject</h1>
         <p>The platform to explore different approaches to formal argumentation.</p>
         <p>
-          AgonProject is a free, interactive tool for exploring formal argumentation. Build,
+          AgonProject is an interactive tool for exploring formal argumentation. Build,
           visualize, and evaluate abstract argumentation frameworks and related formalisms, 
           including bipolar, probabilistic, incomplete, and abstract dialectical frameworks, as
           well as argumentation with collective attacks. Model argumentation frameworks, compute

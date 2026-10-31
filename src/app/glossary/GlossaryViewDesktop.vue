@@ -53,7 +53,7 @@ const {
   tabs,
   navigate,
   selectModule,
-} = useGlossary(t('glossary.title'))
+} = useGlossary()
 
 const wide = computed(
   () => !!complexityTableFor(activeTermKey.value) || !!principleTableFor(activeTermKey.value),

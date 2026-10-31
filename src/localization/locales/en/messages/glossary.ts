@@ -27,6 +27,11 @@ export default {
   more: 'More',
   less: 'Less',
   sources: 'Sources',
+  // Names of the glossary tabs that aren't app modules.
+  modules: {
+    complexity: 'Computational Complexity',
+    principles: 'Argumentation Principles',
+  },
   complexity: {
     groups: {
       overviews: 'Overviews',

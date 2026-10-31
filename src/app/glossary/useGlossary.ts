@@ -59,9 +59,15 @@ export function glossaryPath(modulePrefix?: string, termKey?: string): string {
   return ['/glossary', modulePrefix, termKey].filter(Boolean).join('/')
 }
 
+/** Page title for the browser tab and search results: the page, its context, then the site. */
+export function pageTitle(page: string, context: string): string {
+  return `${page} - ${context} | AgonProject`
+}
+
 export interface GlossaryModule {
   prefix: string
-  label: string
+  // i18n key of the module's display name.
+  nameKey: string
   glossary: TooltipRegistry
   // Key of the "main" entry (the framework itself), pinned to the top of the list.
   mainKey: string
@@ -87,9 +93,9 @@ const termGroups: Record<string, GlossaryModule['groups']> = {
 
 // The module list is JSON so the build's sitemap plugin (vite.config.ts) can read it too.
 export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
-  ({ prefix, label, dir, mainKey }) => ({
+  ({ prefix, nameKey, dir, mainKey }) => ({
     prefix,
-    label,
+    nameKey,
     mainKey,
     glossary: registries[dir]!,
     groups: termGroups[dir],
@@ -113,7 +119,7 @@ for (const m of glossaryModules) {
  * Shared glossary state for the desktop two-panel view and the mobile inline-card view:
  * module selection, search, term grouping, and cross-module reference navigation.
  */
-export function useGlossary(glossaryTitle: string) {
+export function useGlossary() {
   const route = useRoute()
   const router = useRouter()
   const { t } = useI18n({ useScope: 'global' })
@@ -246,7 +252,7 @@ export function useGlossary(glossaryTitle: string) {
     activeDefinition,
     (def) => {
       document.title = def
-        ? `${plainText(termTitle(def))} · ${glossaryTitle} · AgonProject`
+        ? pageTitle(plainText(termTitle(def)), t(activeModule.value.nameKey))
         : defaultTitle
     },
     { immediate: true },

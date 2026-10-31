@@ -41,7 +41,7 @@ const {
   literatureActive,
   tabs,
   selectModule,
-} = useGlossary(t('glossary.title'))
+} = useGlossary()
 
 const list = useTemplateRef('list')
 
@@ -87,7 +87,7 @@ watch(
       <SearchInput v-model="searchQuery" :placeholder="t('glossary.searchPlaceholder')" />
     </div>
 
-    <!-- Entry list -->
+    <!-- Entry list; data-nosnippet keeps other terms out of this URL's search snippet -->
     <div
       v-if="!literatureActive"
       ref="list"
@@ -108,6 +108,7 @@ watch(
         :backlinks="backlinks[pinnedTerm[0]]"
         :active="pinnedTerm[0] === activeTermKey"
         :data-term="pinnedTerm[0]"
+        :data-nosnippet="pinnedTerm[0] === activeTermKey ? undefined : ''"
         pinned
       />
       <template v-for="group in groupedTerms" :key="group.label">
@@ -122,6 +123,7 @@ watch(
           :backlinks="backlinks[key]"
           :active="key === activeTermKey"
           :data-term="key"
+          :data-nosnippet="key === activeTermKey ? undefined : ''"
         />
       </template>
     </div>

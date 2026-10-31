@@ -20,6 +20,11 @@
   pages, then submit `/sitemap.xml` in Google Search Console.
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search).
+- **42. [M] Mobile term view.** On mobile, a term URL renders the full card list, so Google
+  (mobile-first, runs JS) indexes nearly the same page for every term. Show only the active term
+  (with a way back to the list), like the desktop detail panel. `data-nosnippet` on the other
+  cards is the stopgap. Then add per-term `<lastmod>` to the sitemap (last commit of the term's
+  `.md`, `fetch-depth: 0` in `publish.yml`), with this rework's date as a one-time floor.
 - **38. [M] Data-driven signatures, prerendered results.** Move the signature results from the
   `## Signature` sections and the `signature.md` table into a `signatures.ts` table (cells with
   source and locator), shown on semantics pages like the principle and complexity results.

@@ -35,7 +35,7 @@ describe('prerenderGlossary', () => {
 
   test('fills title, description, canonical URL and JSON-LD', () => {
     const html = pageFor('glossary/AF/ADM/index.html')
-    expect(html).toContain('<title>Admissibility · Glossary · AgonProject</title>')
+    expect(html).toContain('<title>Admissibility - Abstract Argumentation | AgonProject</title>')
     expect(html).toContain(`<link rel="canonical" href="${site}/glossary/AF/ADM"`)
     expect(html).toContain(`<meta property="og:url" content="${site}/glossary/AF/ADM"`)
     expect(html).toMatch(/name="description"\s+content="A set E[^"]* is admissible iff/)
@@ -50,6 +50,21 @@ describe('prerenderGlossary', () => {
       url: `${site}/glossary/AF/ADM`,
       inDefinedTermSet: { url: `${site}/glossary/AF` },
     })
+  })
+
+  test('adds a breadcrumb trail up to the module', () => {
+    const html = pageFor('glossary/SetAF/setafRange/index.html')
+    const trail = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+      .map((m) => JSON.parse(m[1]!))
+      .find((data) => data['@type'] === 'BreadcrumbList')
+    expect(trail.itemListElement.map((item: { name: string }) => item.name)).toEqual([
+      'AgonProject',
+      'Glossary',
+      'Argumentation with Collective Attacks',
+      'Range (SetAF)',
+    ])
+    expect(trail.itemListElement.at(-2).item).toBe(`${site}/glossary/SetAF`)
+    expect(trail.itemListElement.at(-1).item).toBeUndefined()
   })
 
   test('renders the definition with math and term links in the fallback', () => {

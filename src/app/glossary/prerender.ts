@@ -19,8 +19,8 @@
 import katex, { type KatexOptions } from 'katex'
 
 import { plainText } from '@/app/glossary/plainText'
-import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
-import enGlossary from '@/localization/locales/en/messages/glossary'
+import { entryRefs, glossaryModules, glossaryPath, pageTitle } from '@/app/glossary/useGlossary'
+import en from '@/localization/locales/en'
 import type { GlossaryBlock, GlossaryInline } from '@/modules/common/glossary/types'
 import { citeLabel, formatCitation, publicationHref } from '@/modules/common/publications/format'
 import { publicationByKey } from '@/modules/common/publications/lookup'
@@ -40,6 +40,14 @@ interface Entry {
 }
 
 const DESCRIPTION_LENGTH = 160
+
+/** The message at a dotted i18n key, or undefined if the catalog lacks it. */
+export function messageAt(catalog: object, key: string): string | undefined {
+  const value = key
+    .split('.')
+    .reduce<unknown>((node, part) => (node as Record<string, unknown> | undefined)?.[part], catalog)
+  return typeof value === 'string' ? value : undefined
+}
 
 const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
@@ -133,7 +141,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     return `<p>${inline(b.content)}</p>`
   }
 
-  function page(path: string, title: string, description: string, main: string, jsonLd: object) {
+  function page(path: string, title: string, description: string, main: string, jsonLd: object[]) {
     const url = `${site}${path}`
     const html = template
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
@@ -149,7 +157,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
       .replace(/(<meta property="og:url" content=")[^"]*"/, `$1${url}"`)
       .replace(
         '</head>',
-        `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>\n</head>`,
+        `${jsonLd.map((data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>\n`).join('')}</head>`,
       )
       .replace(
         /<main class="app-fallback">[\s\S]*?<\/main>/,
@@ -158,10 +166,27 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     return { file: `${path.slice(1)}/index.html`, html }
   }
 
-  const glossaryTitle = enGlossary.title
+  const glossaryTitle = en.glossary.title
   const pages: PrerenderedPage[] = []
 
-  for (const { prefix, label } of glossaryModules) {
+  // Breadcrumb trail for search results; the last item is the page itself, so it has no link.
+  const breadcrumbList = (trail: { name: string; path?: string }[]) => ({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: trail.map(({ name, path }, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name,
+      ...(path !== undefined && { item: `${site}${path}` }),
+    })),
+  })
+
+  for (const { prefix, nameKey } of glossaryModules) {
+    const label = messageAt(en, nameKey)!
+    const trail = [
+      { name: 'AgonProject', path: '/' },
+      { name: glossaryTitle, path: glossaryPath() },
+    ]
     const termSet = {
       '@type': 'DefinedTermSet',
       name: `AgonProject ${glossaryTitle}: ${label}`,
@@ -175,12 +200,15 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     pages.push(
       page(
         glossaryPath(prefix),
-        `${label} · ${glossaryTitle} · AgonProject`,
+        pageTitle(label, glossaryTitle),
         truncate(
-          `${label} terms in the AgonProject ${glossaryTitle.toLowerCase()}: ${terms.map((t) => plainText(termTitle(t))).join(', ')}`,
+          `${label} in the AgonProject ${glossaryTitle.toLowerCase()}: ${terms.map((t) => plainText(termTitle(t))).join(', ')}`,
         ),
         `${breadcrumb}<h1>${escapeHtml(label)}</h1><ul>${terms.map((t) => `<li>${termLink(t)}</li>`).join('')}</ul>`,
-        { '@context': 'https://schema.org', ...termSet },
+        [
+          { '@context': 'https://schema.org', ...termSet },
+          breadcrumbList([...trail, { name: label }]),
+        ],
       ),
     )
 
@@ -189,10 +217,10 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
       const title = plainText(termTitle(entry))
       const fullDescription = plain(definition.content)
       const reference = definition.reference
-        ? `<section><h2>${enGlossary.source}</h2><p>${escapeHtml(formatCitation(definition.reference))}</p></section>`
+        ? `<section><h2>${en.glossary.source}</h2><p>${escapeHtml(formatCitation(definition.reference))}</p></section>`
         : ''
       const referencedBy = backlinks.get(entry.key)?.length
-        ? `<section><h2>${enGlossary.referencedBy}</h2><ul>${backlinks
+        ? `<section><h2>${en.glossary.referencedBy}</h2><ul>${backlinks
             .get(entry.key)!
             .map((b) => `<li>${termLink(b)}</li>`)
             .join('')}</ul></section>`
@@ -210,18 +238,25 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
       pages.push(
         page(
           glossaryPath(entry.prefix, entry.key),
-          `${title} · ${glossaryTitle} · AgonProject`,
+          pageTitle(title, label),
           truncate(fullDescription),
           main,
-          {
-            '@context': 'https://schema.org',
-            '@type': 'DefinedTerm',
-            name: title,
-            termCode: entry.key,
-            description: fullDescription,
-            url: `${site}${glossaryPath(entry.prefix, entry.key)}`,
-            inDefinedTermSet: termSet,
-          },
+          [
+            {
+              '@context': 'https://schema.org',
+              '@type': 'DefinedTerm',
+              name: title,
+              termCode: entry.key,
+              description: fullDescription,
+              url: `${site}${glossaryPath(entry.prefix, entry.key)}`,
+              inDefinedTermSet: termSet,
+            },
+            breadcrumbList([
+              ...trail,
+              { name: label, path: glossaryPath(prefix) },
+              { name: title },
+            ]),
+          ],
         ),
       )
     }

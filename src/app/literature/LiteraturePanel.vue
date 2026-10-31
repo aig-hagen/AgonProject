@@ -24,7 +24,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import { termTitle } from '@/app/glossary/glossaryContext'
-import { glossaryPath } from '@/app/glossary/useGlossary'
+import { glossaryPath, pageTitle } from '@/app/glossary/useGlossary'
 import type { ModuleConfig } from '@/app/home/moduleConfig'
 import LiteratureFacets from '@/app/literature/LiteratureFacets.vue'
 import { useLiterature } from '@/app/literature/useLiterature'
@@ -68,7 +68,7 @@ watch([searchQuery, selectedTags], () => list.value?.scrollTo({ top: 0 }))
 
 const defaultTitle = document.title
 onMounted(() => {
-  document.title = `${t('literature.title')} · ${t('glossary.title')} · AgonProject`
+  document.title = pageTitle(t('literature.title'), t('glossary.title'))
 })
 onUnmounted(() => {
   document.title = defaultTitle

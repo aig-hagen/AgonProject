@@ -19,7 +19,10 @@
 import { describe, expect, test } from 'vitest'
 
 import { plainText } from '@/app/glossary/plainText'
+import { messageAt } from '@/app/glossary/prerender'
 import { entryRefs, glossaryModules, glossaryPath } from '@/app/glossary/useGlossary'
+import de from '@/localization/locales/de'
+import en from '@/localization/locales/en'
 import { abstractArgumentationTooltips } from '@/modules/abstract-argumentation/glossary'
 import { localeFromPath } from '@/modules/common/glossary/load'
 import { parseGlossaryEntry } from '@/modules/common/glossary/parse'
@@ -28,10 +31,16 @@ import { publicationByKey } from '@/modules/common/publications/lookup'
 const setafGlossary = glossaryModules.find((m) => m.prefix === 'SetAF')!.glossary
 const allGlossaries = Object.assign({}, ...glossaryModules.map((m) => m.glossary))
 
-describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey }) => {
+describe.each(glossaryModules)('$prefix glossary', ({ prefix, glossary, mainKey, nameKey }) => {
   test('has a registry and its main entry', () => {
     expect(glossary).toBeDefined()
     expect(glossary[mainKey]).toBeDefined()
+  })
+
+  // glossaryModules.json sits outside the i18n lint, so check its name keys here.
+  test('has a name in every locale', () => {
+    expect(messageAt(en, nameKey)).toBeTruthy()
+    expect(messageAt(de, nameKey)).toBeTruthy()
   })
 
   // Modules provide their own registry merged over the AF one, so refs may point into either.

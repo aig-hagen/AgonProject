@@ -53,6 +53,8 @@ const venue = computed(() => formatVenue(publication))
         <span class="font-medium text-base-content/80 group-hover:text-primary">
           {{ shortLabel(publication) }}
         </span>
+        <!-- Layout ignores these spaces, but extracted text (search snippets) needs them. -->
+        {{ ' ' }}
         <span class="block line-clamp-2 text-base-content/65">{{ publication.title }}</span>
       </span>
     </template>
@@ -61,7 +63,9 @@ const venue = computed(() => formatVenue(publication))
         {{ publication.title }}
         <ArrowTopRightOnSquareIcon class="inline size-3 align-baseline text-base-content/40" />
       </span>
+      {{ ' ' }}
       <span class="text-xs text-base-content/80">{{ surnames }} · {{ publication.year }}</span>
+      {{ ' ' }}
       <span class="text-xs italic leading-snug text-base-content/65">{{ venue }}</span>
     </template>
   </a>
