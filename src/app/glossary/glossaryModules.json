@@ -4,62 +4,71 @@
     "dir": "abstract-argumentation",
     "nameKey": "modules.abstract.name",
     "mainKey": "AF",
-    "home": "list"
+    "home": "list",
+    "description": "Definitions for abstract argumentation: argumentation frameworks, conflict-freeness, admissibility, and semantics such as grounded, preferred and stable."
   },
   {
     "prefix": "BAF",
     "dir": "bipolar-argumentation",
     "nameKey": "modules.bipolar.name",
     "mainKey": "BAF",
-    "home": "list"
+    "home": "list",
+    "description": "Definitions for bipolar argumentation: frameworks with attack and support, deductive and necessary support, coalitions and coalition-based semantics."
   },
   {
     "prefix": "ADF",
     "dir": "dialectical-argumentation",
     "nameKey": "modules.dialectical.name",
     "mainKey": "ADF",
-    "home": "list"
+    "home": "list",
+    "description": "Definitions for abstract dialectical frameworks: acceptance conditions, three-valued interpretations, and semantics such as grounded, preferred and stable."
   },
   {
     "prefix": "iAF",
     "dir": "incomplete-argumentation",
     "nameKey": "modules.incomplete.name",
     "mainKey": "IAF",
-    "home": "list"
+    "home": "list",
+    "description": "Definitions for incomplete argumentation: frameworks with uncertain arguments and attacks, completions, and possible and necessary acceptance."
   },
   {
     "prefix": "PAF",
     "dir": "probabilistic-argumentation",
     "nameKey": "modules.probabilistic.name",
     "mainKey": "PAF",
-    "home": "list"
+    "home": "list",
+    "description": "Definitions for probabilistic argumentation: argument and attack probabilities, subframeworks, the constellation approach and acceptance probabilities."
   },
   {
     "prefix": "SetAF",
     "dir": "collective-attacks-argumentation",
     "nameKey": "modules.collectiveAttacks.name",
     "mainKey": "SetAF",
-    "home": "list"
+    "home": "list",
+    "description": "Definitions for argumentation with collective attacks: range, weak defence, and semantics such as weak admissibility and weakly preferred."
   },
   {
     "prefix": "ABA",
     "dir": "assumption-based-argumentation",
     "nameKey": "modules.assumptionBased.name",
     "mainKey": "ABAF",
-    "home": "list"
+    "home": "list",
+    "description": "Definitions for assumption-based argumentation: assumptions, contraries, inference rules, attacks, and semantics such as grounded, preferred and stable."
   },
   {
     "prefix": "Complexity",
     "dir": "common/complexity",
     "nameKey": "glossary.modules.complexity",
     "mainKey": "complexityAF",
-    "home": "overview"
+    "home": "overview",
+    "description": "Overview tables for reasoning complexity: credulous and skeptical acceptance and verification for abstract argumentation and abstract dialectical frameworks."
   },
   {
     "prefix": "Principles",
     "dir": "common/principles",
     "nameKey": "glossary.modules.principles",
     "mainKey": "principlesAF",
-    "home": "overview"
+    "home": "overview",
+    "description": "Overview table for principles of argumentation semantics: which semantics satisfy reinstatement, directionality, SCC-recursiveness and more."
   }
 ]

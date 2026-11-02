@@ -78,4 +78,11 @@ describe('prerenderGlossary', () => {
   test('module pages list their terms', () => {
     expect(pageFor('glossary/ADF/index.html')).toContain('href="/glossary/ADF/ADF"')
   })
+
+  test('module pages use the curated description', () => {
+    for (const { prefix, description } of glossaryModules) {
+      expect(description.length).toBeLessThanOrEqual(160)
+      expect(pageFor(`glossary/${prefix}/index.html`)).toContain(`content="${description}"`)
+    }
+  })
 })

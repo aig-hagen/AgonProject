@@ -77,6 +77,8 @@ export interface GlossaryModule {
   overviewHome: boolean
   // A cross-cutting topic (complexity, principles) rather than a formalism.
   topic: boolean
+  // Meta description of the prerendered module page; English only, for search results.
+  description: string
 }
 
 const registries: Record<string, TooltipRegistry> = {
@@ -97,7 +99,7 @@ const termGroups: Record<string, GlossaryModule['groups']> = {
 
 // The module list is JSON so the build's sitemap plugin (vite.config.ts) can read it too.
 export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
-  ({ prefix, nameKey, dir, mainKey, home }) => ({
+  ({ prefix, nameKey, dir, mainKey, home, description }) => ({
     prefix,
     nameKey,
     mainKey,
@@ -105,6 +107,7 @@ export const glossaryModules: GlossaryModule[] = glossaryModuleList.map(
     groups: termGroups[dir],
     overviewHome: home === 'overview',
     topic: dir.startsWith('common/'),
+    description,
   }),
 )
 

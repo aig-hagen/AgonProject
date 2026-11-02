@@ -181,7 +181,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     })),
   })
 
-  for (const { prefix, nameKey } of glossaryModules) {
+  for (const { prefix, nameKey, description } of glossaryModules) {
     const label = messageAt(en, nameKey)!
     const trail = [
       { name: 'AgonProject', path: '/' },
@@ -202,9 +202,7 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
       page(
         glossaryPath(prefix),
         pageTitle(label, glossaryTitle),
-        truncate(
-          `${label} in the AgonProject ${glossaryTitle.toLowerCase()}: ${terms.map((t) => plainText(termTitle(t))).join(', ')}`,
-        ),
+        description,
         `${breadcrumb}<h1>${escapeHtml(label)}</h1><ul>${terms.map((t) => `<li>${termLink(t)}</li>`).join('')}</ul>`,
         [
           { '@context': 'https://schema.org', ...termSet },
