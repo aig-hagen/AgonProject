@@ -18,10 +18,22 @@ test('drill down from the index to an entry and back', async ({ page }) => {
   await expect(page).toHaveURL(/\/glossary$/)
 })
 
-test('a deep link goes up to the module list instead of leaving the site', async ({ page }) => {
+test('a deep link goes up level by level and out of the glossary', async ({ page }) => {
   await page.goto('/glossary/AF/ST')
   await page.getByRole('button', { name: 'Back' }).click()
   await expect(page).toHaveURL(/\/glossary\/AF$/)
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page).toHaveURL(/\/glossary$/)
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page).toHaveURL(/\/$/)
+})
+
+test('a deep link to a module home goes up to the index', async ({ page }) => {
+  await page.goto('/glossary/Principles/principlesAF')
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page).toHaveURL(/\/glossary$/)
+  await page.getByRole('button', { name: 'Back' }).click()
+  await expect(page).toHaveURL(/\/$/)
 })
 
 test('Principles opens on its overview, followed by its entries', async ({ page }) => {

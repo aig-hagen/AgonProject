@@ -108,9 +108,10 @@ const parentPath = computed(() => {
 })
 
 // Back to the previous page; without one (a deep link), up one level instead of off the site.
+// Replace, so the deep-linked page doesn't become the previous page of its parent.
 function back() {
   if (router.options.history.state.back) router.back()
-  else router.push(parentPath.value)
+  else router.replace(parentPath.value)
 }
 
 const indexQuery = ref('')

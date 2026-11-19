@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Glossary approach and topic pages describe what they offer in search results instead of listing their entries alphabetically.
 
+### Fixed
+
+- Mobile glossary: Back on a page opened from outside the site now leads up through the glossary and out of it, instead of alternating between two pages.
+
 ## [0.15.1] - 2026-10-31
 
 ### Changed
