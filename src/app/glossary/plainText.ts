@@ -58,20 +58,45 @@ const MATH_SYMBOLS: Record<string, string> = {
   curlywedge: '⋏',
   curlyvee: '⋎',
   downarrow: '↓',
+  theta: 'θ',
+  oplus: '⊕',
+  colon: ':',
+  circ: '∘',
+  bigcap: '⋂',
+  lvert: '|',
+  rvert: '|',
+  le: '≤',
+  subsetneq: '⊊',
+  supseteq: '⊇',
+  preceq: '⪯',
+  ell: 'ℓ',
+  bot: '⊥',
+  ast: '*',
+  leftrightarrow: '↔',
+  cdot: '·',
+  infty: '∞',
+  parallel: '∥',
+  min: 'min',
+  log: 'log',
 }
 const SUBSCRIPTS: Record<string, string> = Object.fromEntries(
   [...'0123456789+-aehijklmnoprstuvx'].map((c, i) => [c, '₀₁₂₃₄₅₆₇₈₉₊₋ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ'[i]!]),
 )
 const SUPERSCRIPTS: Record<string, string> = Object.fromEntries(
-  [...'0123456789+-Pmn'].map((c, i) => [c, '⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᴾᵐⁿ'[i]!]),
+  [...'0123456789+-abcdefghijklmnoprstuvwxyzABDEGHIJKLMNOPRTUW'].map((c, i) => [
+    c,
+    [...'⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁᵂ'][i]!,
+  ]),
 )
 
 // Unicode sub/superscript for single characters and numbers; words stay plain, since most
-// letters lack a Unicode form and a mix (βₚᵣ next to βad) looks inconsistent.
-function script(text: string, table: Record<string, string>): string {
+// letters lack a Unicode form and a mix (βₚᵣ next to βad) looks inconsistent. A single letter
+// without one keeps its operator, so σ_F doesn't read as "σF".
+function script(text: string, op: string, table: Record<string, string>): string {
   const chars = [...text]
   const convertible = chars.length === 1 || /^[0-9+-]+$/.test(text)
-  return convertible && chars.every((c) => c in table) ? chars.map((c) => table[c]).join('') : text
+  if (convertible && chars.every((c) => c in table)) return chars.map((c) => table[c]).join('')
+  return chars.length === 1 && /\p{L}/u.test(text) ? `${op}${text}` : text
 }
 
 /** Renders `$…$` LaTeX as Unicode text, for plain-text contexts like the page title. */
@@ -82,7 +107,7 @@ export function plainText(text: string): string {
       .replace(/\\[ ,;:!]/g, ' ')
       .replace(/\\([a-zA-Z]+)/g, (_, name: string) => MATH_SYMBOLS[name] ?? '')
       .replace(/([_^])(?:\{((?:[^{}]|\{[^{}]*\})*)\}|([^{}\s]))/g, (_, op, group, single) =>
-        script((group ?? single).replace(/[{}]/g, ''), op === '_' ? SUBSCRIPTS : SUPERSCRIPTS),
+        script((group ?? single).replace(/[{}]/g, ''), op, op === '_' ? SUBSCRIPTS : SUPERSCRIPTS),
       )
       .replace(/[{}]/g, '')
       .replace(/\uE000/g, '{')

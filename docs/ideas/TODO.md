@@ -16,12 +16,11 @@
 
 ## Glossary
 
-- **27. [S] After deploy.** Check that Caddy serves the prerendered `dist/glossary/**/index.html`
-  pages, then resubmit `/sitemap.xml` in Google Search Console and request indexing (URL
-  Inspection) for `/`, `/glossary`, `/glossary/AF` and a few key entries. Before the release, set
-  `GLOSSARY_UPDATED` in `vite.config.ts` to the release date. A few weeks later, check the search
-  snippets: if math still shows up three times ("E E E"), mark KaTeX's hidden MathML copies
-  `data-nosnippet`.
+- **27. [S] After deploy.** Before the release, set `GLOSSARY_UPDATED` in `vite.config.ts` to the
+  release date. After it, check that `/glossary` and `/glossary/Literature` serve their own
+  canonical URL, resubmit `/sitemap.xml` in Google Search Console (it was last read before the
+  per-term pages existed) and request indexing for `/glossary`, `/glossary/AF` and a few key
+  entries. Mid-December, check whether results show "AgonProject" instead of "Fernuni Hagen".
 - **33. [L] More entry content.** Each entry gets `## Intuition` and `## Example` sections (with
   an "Open in editor" button). Later, one at a time: aliases and notation (also helps search).
 - **43. [S] Link-preview image.** `og:image` is the 192px favicon with a `summary` card; a

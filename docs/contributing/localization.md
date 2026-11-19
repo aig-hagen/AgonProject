@@ -52,6 +52,8 @@ Rules of thumb:
 
 Glossary and tutorial content is not part of the vue-i18n message catalogs. The surrounding glossary and tutorial interface is localized through the ordinary message catalogs. Tutorials are English only.
 
+Text written for search results (titles and meta descriptions of the prerendered glossary pages) lives in the catalogs under `glossary.seo`, at most 160 characters each. Only English pages are prerendered, so the German catalog repeats the English text for now.
+
 Glossary text is Markdown, one folder per locale and one file per term:
 
 ```text

@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Mobile glossary: Back on a page opened from outside the site now leads up through the glossary and out of it, instead of alternating between two pages.
+- Glossary in search results: formulas no longer repeat three times in snippets, descriptions keep superscripts and symbols (e.g. Fᴱ, ⊕), and the glossary index and literature pages can be indexed on their own.
 
 ## [0.15.1] - 2026-10-31
 

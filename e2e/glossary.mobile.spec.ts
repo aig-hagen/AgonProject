@@ -51,6 +51,13 @@ test('Principles opens on its overview, followed by its entries', async ({ page 
   await expect(page).toHaveURL(/\/glossary\/Principles\/principlesAF$/)
 })
 
+test('math keeps its MathML copy out of search snippets', async ({ page }) => {
+  await page.goto('/glossary/AF/ST')
+  const mathml = page.locator('.katex-mathml')
+  await expect(mathml.first()).toBeAttached()
+  await expect(mathml).toHaveCount(await page.locator('.katex-mathml[data-nosnippet]').count())
+})
+
 test('the index searches all modules', async ({ page }) => {
   await page.goto('/glossary')
   await page.getByRole('searchbox').fill('weak admissibility')

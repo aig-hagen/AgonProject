@@ -24,6 +24,8 @@ import en from '@/localization/locales/en'
 import type { GlossaryBlock, GlossaryInline } from '@/modules/common/glossary/types'
 import { citeLabel, formatCitation, publicationHref } from '@/modules/common/publications/format'
 import { publicationByKey } from '@/modules/common/publications/lookup'
+import * as publications from '@/modules/common/publications/publications'
+import type { Publication } from '@/modules/common/publications/types'
 import { KATEX_OPTIONS } from '@/modules/common/tooltip/katexOptions'
 import type { TooltipDefinition } from '@/modules/common/tooltip/tooltipRegistry'
 
@@ -41,6 +43,10 @@ interface Entry {
 
 const DESCRIPTION_LENGTH = 160
 
+/** The curated search description of a glossary module, from the English catalog. */
+export const moduleDescription = (prefix: string) =>
+  messageAt(en, `glossary.seo.modules.${prefix}`)!
+
 /** The message at a dotted i18n key, or undefined if the catalog lacks it. */
 export function messageAt(catalog: object, key: string): string | undefined {
   const value = key
@@ -52,16 +58,19 @@ export function messageAt(catalog: object, key: string): string | undefined {
 const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 // MathML needs no stylesheet, so the static page reads fine before (or without) the app.
+// The TeX annotation goes, as crawlers would read it as a second copy of each formula.
 function renderMath(text: string): string {
   return text
     .split('$')
     .map((chunk, i) =>
       i % 2
-        ? katex.renderToString(chunk, {
-            ...(KATEX_OPTIONS as KatexOptions),
-            output: 'mathml',
-            throwOnError: false,
-          })
+        ? katex
+            .renderToString(chunk, {
+              ...(KATEX_OPTIONS as KatexOptions),
+              output: 'mathml',
+              throwOnError: false,
+            })
+            .replace(/<annotation [^>]*>[\s\S]*?<\/annotation>/g, '')
         : escapeHtml(chunk),
     )
     .join('')
@@ -181,7 +190,8 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
     })),
   })
 
-  for (const { prefix, nameKey, description } of glossaryModules) {
+  for (const { prefix, nameKey } of glossaryModules) {
+    const description = moduleDescription(prefix)
     const label = messageAt(en, nameKey)!
     const trail = [
       { name: 'AgonProject', path: '/' },
@@ -260,5 +270,46 @@ export function prerenderGlossary(template: string, site: string): PrerenderedPa
       )
     }
   }
+
+  // The index and literature pages, so they don't fall back to the home page's canonical URL.
+  const home = { name: 'AgonProject', path: '/' }
+  const indexNav = `<nav><a href="/">AgonProject</a> › <a href="${glossaryPath()}">${glossaryTitle}</a></nav>`
+  const moduleItems = glossaryModules.map(
+    ({ prefix, nameKey }) =>
+      `<li><a href="${glossaryPath(prefix)}">${escapeHtml(messageAt(en, nameKey)!)}</a>: ${escapeHtml(moduleDescription(prefix))}</li>`,
+  )
+  pages.push(
+    page(
+      glossaryPath(),
+      pageTitle(glossaryTitle, en.glossary.seo.indexContext),
+      en.glossary.seo.index,
+      `${indexNav}<h1>${glossaryTitle}</h1><ul>${moduleItems.join('')}</ul>`,
+      [breadcrumbList([home, { name: glossaryTitle }])],
+    ),
+  )
+
+  const literatureTitle = en.literature.title
+  const cited = (Object.values(publications) as Publication[])
+    .map((pub) => ({ pub, citation: formatCitation(pub) }))
+    .sort((a, b) => a.citation.localeCompare(b.citation))
+  const literatureItems = cited.map(({ pub, citation }) => {
+    const href = publicationHref(pub)
+    return `<li>${href ? `<a href="${escapeHtml(href)}">${escapeHtml(citation)}</a>` : escapeHtml(citation)}</li>`
+  })
+  pages.push(
+    page(
+      `${glossaryPath()}/Literature`,
+      pageTitle(literatureTitle, glossaryTitle),
+      en.glossary.seo.literature.replace('{count}', String(cited.length)),
+      `${indexNav}<h1>${literatureTitle}</h1><ul>${literatureItems.join('')}</ul>`,
+      [
+        breadcrumbList([
+          home,
+          { name: glossaryTitle, path: glossaryPath() },
+          { name: literatureTitle },
+        ]),
+      ],
+    ),
+  )
   return pages
 }

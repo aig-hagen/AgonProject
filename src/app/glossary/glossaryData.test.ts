@@ -99,8 +99,11 @@ test('plainText renders LaTeX as Unicode for page titles', () => {
   expect(plainText('Selection Function $\\alpha_{\\mathsf{ad}}$')).toBe('Selection Function αad')
   expect(plainText('Complexity Class $\\Sigma_3^{\\mathsf{P}}$')).toBe('Complexity Class Σ₃ᴾ')
   expect(plainText('Complexity Class $\\mathsf{D}_2^{\\mathsf{P}}$')).toBe('Complexity Class D₂ᴾ')
-  expect(plainText('$\\textsc{Exists}^{\\neg\\emptyset}_\\sigma$')).toBe('Exists¬∅σ')
+  expect(plainText('$\\textsc{Exists}^{\\neg\\emptyset}_\\sigma$')).toBe('Exists¬∅_σ')
   expect(plainText('$S^+$ and $d_n^m$')).toBe('S⁺ and dₙᵐ')
+  // A single letter without a Unicode form keeps its operator; symbols need none.
+  expect(plainText('the reduct $F^E$ and $\\sigma_F$')).toBe('the reduct Fᴱ and σ_F')
+  expect(plainText('$E^\\oplus_R$ and $E^*$')).toBe('E⊕_R and E*')
   expect(plainText('$E \\subseteq \\{a, b\\}$')).toBe('E ⊆ {a, b}')
 })
 
