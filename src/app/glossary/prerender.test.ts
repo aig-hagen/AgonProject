@@ -19,17 +19,19 @@
 import { describe, expect, test } from 'vitest'
 
 import template from '/index.html?raw'
-import { prerenderGlossary } from '@/app/glossary/prerender'
+import { moduleDescription, prerenderGlossary } from '@/app/glossary/prerender'
 import { glossaryModules } from '@/app/glossary/useGlossary'
+import de from '@/localization/locales/de'
+import en from '@/localization/locales/en'
 
 const site = 'https://example.org'
 const pages = prerenderGlossary(template, site)
 const pageFor = (file: string) => pages.find((p) => p.file === file)!.html
 
 describe('prerenderGlossary', () => {
-  test('writes one page per term and per module', () => {
+  test('writes one page per term and per module, plus index and literature', () => {
     const terms = glossaryModules.reduce((n, m) => n + Object.keys(m.glossary).length, 0)
-    expect(pages).toHaveLength(terms + glossaryModules.length)
+    expect(pages).toHaveLength(terms + glossaryModules.length + 2)
     expect(new Set(pages.map((p) => p.file)).size).toBe(pages.length)
   })
 
@@ -71,6 +73,7 @@ describe('prerenderGlossary', () => {
     const main = pageFor('glossary/AF/ADM/index.html').match(/<main[\s\S]*?<\/main>/)![0]
     expect(main).toContain('<h1>Admissibility</h1>')
     expect(main).toContain('<math')
+    expect(main).not.toContain('<annotation')
     expect(main).toContain('href="/glossary/AF/CF"')
     expect(main).not.toContain('AgonProject requires JavaScript')
   })
@@ -79,10 +82,37 @@ describe('prerenderGlossary', () => {
     expect(pageFor('glossary/ADF/index.html')).toContain('href="/glossary/ADF/ADF"')
   })
 
+  test('index and literature pages have their own canonical URL', () => {
+    const index = pageFor('glossary/index.html')
+    expect(index).toContain('<title>Glossary - Formal Argumentation | AgonProject</title>')
+    expect(index).toContain(`<link rel="canonical" href="${site}/glossary"`)
+    for (const { prefix } of glossaryModules) {
+      expect(index).toContain(`href="/glossary/${prefix}"`)
+    }
+
+    const literature = pageFor('glossary/Literature/index.html')
+    expect(literature).toContain('<title>Literature - Glossary | AgonProject</title>')
+    expect(literature).toContain(`<link rel="canonical" href="${site}/glossary/Literature"`)
+    expect(literature).toContain('href="https://doi.org/')
+  })
+
   test('module pages use the curated description', () => {
-    for (const { prefix, description } of glossaryModules) {
-      expect(description.length).toBeLessThanOrEqual(160)
-      expect(pageFor(`glossary/${prefix}/index.html`)).toContain(`content="${description}"`)
+    for (const { prefix } of glossaryModules) {
+      expect(pageFor(`glossary/${prefix}/index.html`)).toContain(
+        `content="${moduleDescription(prefix)}"`,
+      )
+    }
+  })
+
+  // Longer descriptions get cut off in search results.
+  test.each([
+    ['en', en],
+    ['de', de],
+  ])('%s search descriptions fit in 160 characters', (_, messages) => {
+    const { index, literature, modules } = messages.glossary.seo
+    expect(Object.keys(modules).sort()).toEqual(glossaryModules.map((m) => m.prefix).sort())
+    for (const text of [index, literature, ...Object.values(modules)]) {
+      expect(text.length).toBeLessThanOrEqual(160)
     }
   })
 })

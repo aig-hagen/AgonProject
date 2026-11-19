@@ -87,4 +87,27 @@ export default {
       weakAdmissibility: 'Weak Admissibility',
     },
   },
+  // English for now: only the English glossary pages are prerendered.
+  seo: {
+    indexContext: 'Formal Argumentation',
+    index:
+      'Definitions from formal argumentation, from Dung frameworks to ADFs and assumption-based argumentation, with computational complexity, principles and sources.',
+    literature:
+      'The {count} publications on formal argumentation cited in AgonProject, with links to each paper.',
+    // One per glossary module, keyed by its prefix.
+    modules: {
+      AF: 'Definitions for abstract argumentation: argumentation frameworks, conflict-freeness, admissibility, and semantics such as grounded, preferred and stable.',
+      BAF: 'Definitions for bipolar argumentation: frameworks with attack and support, deductive and necessary support, coalitions and coalition-based semantics.',
+      ADF: 'Definitions for abstract dialectical frameworks: acceptance conditions, three-valued interpretations, and semantics such as grounded, preferred and stable.',
+      iAF: 'Definitions for incomplete argumentation: frameworks with uncertain arguments and attacks, completions, and possible and necessary acceptance.',
+      PAF: 'Definitions for probabilistic argumentation: argument and attack probabilities, subframeworks, the constellation approach and acceptance probabilities.',
+      SetAF:
+        'Definitions for argumentation with collective attacks: range, weak defence, and semantics such as weak admissibility and weakly preferred.',
+      ABA: 'Definitions for assumption-based argumentation: assumptions, contraries, inference rules, attacks, and semantics such as grounded, preferred and stable.',
+      Complexity:
+        'Overview tables for reasoning complexity: credulous and skeptical acceptance and verification for abstract argumentation and abstract dialectical frameworks.',
+      Principles:
+        'Which abstract argumentation semantics satisfy which principles, from admissibility and reinstatement to directionality and SCC-recursiveness, with sources.',
+    },
+  },
 }

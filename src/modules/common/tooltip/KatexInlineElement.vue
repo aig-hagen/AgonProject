@@ -38,6 +38,10 @@ watchEffect(() => {
     ...KATEX_OPTIONS,
     delimiters: [{ left: '$', right: '$', display: false }],
   })
+  // Keeps search snippets to the visible copy; the MathML would repeat each formula twice.
+  for (const mathml of elementRef.value.querySelectorAll('.katex-mathml')) {
+    mathml.setAttribute('data-nosnippet', '')
+  }
 })
 </script>
 <template>
