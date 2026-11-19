@@ -74,6 +74,11 @@ jobs:
     name: Playwright e2e
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    # Browsers and their system libraries come preinstalled; keep the tag in sync with
+    # the @playwright/test version in package.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      options: --user 1001
     steps:
       - uses: actions/checkout@v6
         with:
@@ -87,9 +92,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install-clean
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
 
       # CI is set automatically by GitHub Actions, so playwright.config serves the
       # production build via `npm run preview`; build it first.
